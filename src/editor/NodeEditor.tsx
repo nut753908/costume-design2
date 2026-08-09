@@ -18,6 +18,7 @@ const nodeTypes: NodeTypes = {
   numberDisplay: GenericNodeView,
   skirtGenerator: GenericNodeView,
   topGenerator: GenericNodeView,
+  sleeveGenerator: GenericNodeView,
   toonMaterial: GenericNodeView,
   garmentOutput: GenericNodeView,
 };

@@ -31,6 +31,11 @@ const initialNodes: Node[] = [
   { id: 'topColor', type: 'colorInput', position: { x: 900, y: 500 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
   { id: 'topMaterial', type: 'toonMaterial', position: { x: 900, y: 600 }, data: {} },
   { id: 'topOutput', type: 'garmentOutput', position: { x: 620, y: 650 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#5b8fa8' } },
+
+  { id: 'sleeveLength', type: 'numberInput', position: { x: 40, y: 940 }, data: { value: 0.22, min: 0, max: 0.4, step: 0.01, label: 'Sleeve Length' } },
+  { id: 'sleeveRadius', type: 'numberInput', position: { x: 40, y: 1050 }, data: { value: 0.085, min: 0.05, max: 0.14, step: 0.005, label: 'Sleeve Radius' } },
+  { id: 'sleeveGen', type: 'sleeveGenerator', position: { x: 340, y: 990 }, data: {} },
+  { id: 'sleeveOutput', type: 'garmentOutput', position: { x: 620, y: 990 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#5b8fa8' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -49,6 +54,14 @@ const initialEdges: Edge[] = [
   { id: 'e-top-geometry', source: 'topGen', sourceHandle: 'geometry', target: 'topOutput', targetHandle: 'geometry' },
   { id: 'e-top-color', source: 'topColor', sourceHandle: 'color', target: 'topMaterial', targetHandle: 'color' },
   { id: 'e-top-material', source: 'topMaterial', sourceHandle: 'material', target: 'topOutput', targetHandle: 'material' },
+
+  // Sleeves reuse the Top's torso radius and material — one Color/Material node feeding two
+  // Garment Outputs, so recoloring the top recolors the sleeves too.
+  { id: 'e-sleeve-attach-radius', source: 'topRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
+  { id: 'e-sleeve-length', source: 'sleeveLength', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveLength' },
+  { id: 'e-sleeve-radius', source: 'sleeveRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },
+  { id: 'e-sleeve-geometry', source: 'sleeveGen', sourceHandle: 'geometry', target: 'sleeveOutput', targetHandle: 'geometry' },
+  { id: 'e-sleeve-material', source: 'topMaterial', sourceHandle: 'material', target: 'sleeveOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {
