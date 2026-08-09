@@ -1,0 +1,42 @@
+.rf-node {
+  min-width: 140px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #fdfaf4;
+  font-size: 12px;
+  color: #1a1a1a;
+}
+
+.rf-node__title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.rf-node__slider {
+  width: 100%;
+}
+
+.rf-node__color {
+  width: 100%;
+  height: 24px;
+  border: none;
+  padding: 0;
+  background: none;
+}
+
+.rf-node__value {
+  margin-top: 4px;
+  font-family: ui-monospace, Consolas, monospace;
+  opacity: 0.75;
+}
+
+.rf-node__socket-row {
+  position: relative;
+  padding: 3px 0 3px 10px;
+}
+
+.rf-node__socket-row--out {
+  padding: 3px 10px 3px 0;
+  text-align: right;
+}
