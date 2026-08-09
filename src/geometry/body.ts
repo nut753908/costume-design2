@@ -1,6 +1,27 @@
 import * as THREE from 'three';
 
-export const BODY_DIMENSIONS = {
+export interface BodyScaleParams {
+  /** Scales vertical lengths (legs, torso, arms) — overall height. */
+  heightScale: number;
+  /** Scales radii/spacing (torso, limbs, shoulder width) — overall build/broadness. */
+  buildScale: number;
+}
+
+export const DEFAULT_BODY_SCALE: BodyScaleParams = { heightScale: 1, buildScale: 1 };
+
+export interface BodyDimensions {
+  legHeight: number;
+  legRadius: number;
+  legSpacing: number;
+  torsoLength: number;
+  torsoRadius: number;
+  headRadius: number;
+  armLength: number;
+  armRadius: number;
+  shoulderSpacing: number;
+}
+
+const BASE_DIMENSIONS: BodyDimensions = {
   legHeight: 0.85,
   legRadius: 0.11,
   legSpacing: 0.14,
@@ -10,10 +31,33 @@ export const BODY_DIMENSIONS = {
   armLength: 0.62,
   armRadius: 0.075,
   shoulderSpacing: 0.34,
-} as const;
+};
 
-function computeLayout() {
-  const d = BODY_DIMENSIONS;
+export function computeBodyDimensions({ heightScale, buildScale }: BodyScaleParams): BodyDimensions {
+  return {
+    legHeight: BASE_DIMENSIONS.legHeight * heightScale,
+    legRadius: BASE_DIMENSIONS.legRadius * buildScale,
+    legSpacing: BASE_DIMENSIONS.legSpacing * buildScale,
+    torsoLength: BASE_DIMENSIONS.torsoLength * heightScale,
+    torsoRadius: BASE_DIMENSIONS.torsoRadius * buildScale,
+    headRadius: BASE_DIMENSIONS.headRadius,
+    armLength: BASE_DIMENSIONS.armLength * heightScale,
+    armRadius: BASE_DIMENSIONS.armRadius * buildScale,
+    shoulderSpacing: BASE_DIMENSIONS.shoulderSpacing * buildScale,
+  };
+}
+
+export interface BodyLayout {
+  feetY: number;
+  legCenterY: number;
+  waistY: number;
+  torsoCenterY: number;
+  shoulderY: number;
+  headCenterY: number;
+  armCenterY: number;
+}
+
+export function computeBodyLayout(d: BodyDimensions): BodyLayout {
   const feetY = 0;
   const legCenterY = feetY + d.legHeight / 2;
   const waistY = feetY + d.legHeight;
@@ -26,9 +70,9 @@ function computeLayout() {
   return { feetY, legCenterY, waistY, torsoCenterY, shoulderY, headCenterY, armCenterY };
 }
 
-export const BODY_LAYOUT = computeLayout();
-
-export const BODY_ANCHORS: Record<'waist' | 'shoulder', THREE.Vector3> = {
-  waist: new THREE.Vector3(0, BODY_LAYOUT.waistY, 0),
-  shoulder: new THREE.Vector3(0, BODY_LAYOUT.shoulderY, 0),
-};
+export function computeBodyAnchors(layout: BodyLayout): Record<'waist' | 'shoulder', THREE.Vector3> {
+  return {
+    waist: new THREE.Vector3(0, layout.waistY, 0),
+    shoulder: new THREE.Vector3(0, layout.shoulderY, 0),
+  };
+}

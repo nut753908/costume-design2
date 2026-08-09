@@ -8,14 +8,14 @@ import { Garments } from './Garments';
 export function Scene() {
   return (
     <Canvas
-      camera={{ position: [0, 1.1, 4.0], fov: 40 }}
+      camera={{ position: [0, 1.3, 4.8], fov: 40 }}
       gl={{ toneMapping: THREE.NoToneMapping }}
     >
       <color attach="background" args={['#f5f0e8']} />
       <Lighting />
       <Body />
       <Garments />
-      <OrbitControls target={[0, 1.1, 0]} />
+      <OrbitControls target={[0, 1.3, 0]} />
     </Canvas>
   );
 }

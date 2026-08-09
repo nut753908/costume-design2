@@ -1,24 +1,29 @@
 import { useMemo } from 'react';
 import * as THREE from 'three';
-import { BODY_DIMENSIONS as D, BODY_LAYOUT as L } from '../geometry/body';
+import { computeBodyDimensions, computeBodyLayout } from '../geometry/body';
 import { createToonMaterial } from '../rendering/ToonMaterialFactory';
 import { ToonMesh } from '../rendering/ToonMesh';
+import { useBodyScale } from '../state/useBodyScale';
 
 export function Body() {
+  const bodyScale = useBodyScale();
   const skinMaterial = useMemo(() => createToonMaterial('#f2c9a0'), []);
+
+  const D = useMemo(() => computeBodyDimensions(bodyScale), [bodyScale]);
+  const L = useMemo(() => computeBodyLayout(D), [D]);
 
   const torsoGeometry = useMemo(
     () => new THREE.CapsuleGeometry(D.torsoRadius, D.torsoLength, 4, 16),
-    [],
+    [D],
   );
-  const headGeometry = useMemo(() => new THREE.SphereGeometry(D.headRadius, 20, 16), []);
+  const headGeometry = useMemo(() => new THREE.SphereGeometry(D.headRadius, 20, 16), [D]);
   const armGeometry = useMemo(
     () => new THREE.CylinderGeometry(D.armRadius, D.armRadius * 0.85, D.armLength, 12),
-    [],
+    [D],
   );
   const legGeometry = useMemo(
     () => new THREE.CylinderGeometry(D.legRadius, D.legRadius * 0.85, D.legHeight, 12),
-    [],
+    [D],
   );
 
   return (

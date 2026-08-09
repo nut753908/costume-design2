@@ -37,7 +37,7 @@ React Flow (`src/editor/`) owns only UI state — node positions, selection, dra
 - `skirt.ts` — `THREE.LatheGeometry` built from a profile curve (waist → hem, smoothstep-eased radius).
 - `top.ts` — **not** Lathe/Extrude, because a neckline dip isn't radially symmetric. It's a hand-built ring-grid `BufferGeometry` (angle × height rings); only the top ring's vertices are pulled down per-angle (weighted by a per-neckline-type falloff function: round/v/square) to carve the neckline.
 - `sleeve.ts` — a **separate** node/geometry (`sleeveGenerator`), not merged into `top.ts`. Two short tapered tubes built in a local (outward, tangent, binormal) frame per shoulder angle, inset into the torso wall and left overlapping it (same intentional-intersection approach `body.ts` uses for arms, no boolean/hole-cutting). Mounted at the same `shoulder` anchor as the top and typically wired to share the top's `toonMaterial` node (fan-out from one Color/Material node to two Garment Outputs) so recoloring the top recolors the sleeves.
-- `body.ts` — capsule/sphere/cylinder primitives for a fixed mannequin, plus `BODY_ANCHORS` (`waist`, `shoulder`) that garments mount to.
+- `body.ts` — capsule/sphere/cylinder primitives for the mannequin. Exports pure functions (`computeBodyDimensions`/`computeBodyLayout`/`computeBodyAnchors`), not static constants — dimensions scale from a `BodyScaleParams` (`heightScale`/`buildScale`), so both the body mesh and the `waist`/`shoulder` anchors garments mount to move together as the body is resized.
 
 **Gotcha already hit once, will bite again if you add new revolved/hand-built geometry:** winding order matters and is easy to get backwards, and the visual symptom is *not* an obvious "inside-out" look — it's the garment rendering as a **solid black silhouette** (with maybe a thin sliver of the real color at one edge). That happens because the outline mesh's `BackSide`-only faces become the only visible surface once the real `FrontSide` mesh is (wrongly) culled. If a new procedural mesh renders solid black, check triangle winding first, not the material/lighting.
 
@@ -55,7 +55,10 @@ React Flow (`src/editor/`) owns only UI state — node positions, selection, dra
 
 Every `NodeTypeDefinition` (`nodes/definitions/*.ts`) needs `createDefaultData()` in addition to `evaluate()` — it's what `NodePalette.tsx` / `graphStore.addNode()` use to seed a freshly-added instance. Register the module in `nodes/definitions/index.ts` (side-effect import) and add its type to the `nodeTypes` map in `editor/NodeEditor.tsx` (reuse `GenericNodeView` unless the node needs bespoke UI like `NumberInputNode`/`ColorInputNode`/`EnumInputNode` do).
 
+### Body scale is read out-of-band, not through the socket graph
+
+`state/useBodyScale.ts` reads two conventionally-ID'd seed nodes (`bodyHeight`, `bodyBuild` — plain `numberInput` nodes, no new node type) **directly by id from the zustand store**, bypassing `evaluateGraph` entirely. This is a deliberate exception to the "everything flows through sockets" pattern: body scale isn't a garment's `{geometry, material}` output, it's a scene-wide parameter that both `Body.tsx` and `Garments.tsx` (for anchor positions) need to agree on, and there's no socket type for a structural "affects the whole scene" value. Falls back to `DEFAULT_BODY_SCALE` (1, 1) if those two nodes are deleted. Garments' own radius/length sliders are *not* auto-synced to body build — resizing the body can make existing garments look loose/tight until the user adjusts them too.
+
 ### Known MVP limitations (intentional, not bugs)
 
-- One fixed body/mannequin (no morph parameters).
 - No drag-and-drop node placement (palette click-adds at a cascading offset) and no edge/node context menu — deletion is React Flow's default Backspace-on-selection only.
