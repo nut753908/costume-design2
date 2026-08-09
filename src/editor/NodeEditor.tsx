@@ -8,6 +8,7 @@ import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
 import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
+import { NodePalette } from './NodePalette';
 
 const nodeTypes: NodeTypes = {
   numberInput: NumberInputNodeView,
@@ -64,6 +65,7 @@ export function NodeEditor() {
     >
       <Background />
       <Controls />
+      <NodePalette />
     </ReactFlow>
   );
 }

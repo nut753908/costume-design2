@@ -19,6 +19,7 @@ registerNodeType<NumberMultiplyData>({
     { id: 'factor', label: 'Factor', type: 'number' },
   ],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],
+  createDefaultData: () => ({ value: 1, factor: 2 }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const value = asNumber(inputs.value, data.value ?? 0);
     const factor = asNumber(inputs.factor, data.factor);

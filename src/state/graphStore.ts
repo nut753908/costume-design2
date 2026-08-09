@@ -11,6 +11,7 @@ import {
   type OnConnect,
 } from '@xyflow/react';
 import type { EvaluatedGraph } from '../nodes/evaluateGraph';
+import { getNodeType } from '../nodes/registry';
 
 const initialNodes: Node[] = [
   { id: 'skirtWaist', type: 'numberInput', position: { x: 40, y: 20 }, data: { value: 0.3, min: 0.15, max: 0.5, step: 0.01, label: 'Waist Radius' } },
@@ -59,6 +60,7 @@ interface GraphState {
   onConnect: OnConnect;
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
   setEvaluatedResults: (results: EvaluatedGraph) => void;
+  addNode: (type: string, position: { x: number; y: number }) => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -75,6 +77,12 @@ export const useGraphStore = create<GraphState>()(
           nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n)),
         }),
       setEvaluatedResults: (results) => set({ evaluatedResults: results }),
+      addNode: (type, position) => {
+        const def = getNodeType(type);
+        const id = `${type}-${Math.random().toString(36).slice(2, 9)}`;
+        const newNode: Node = { id, type, position, data: def.createDefaultData() };
+        set({ nodes: [...get().nodes, newNode] });
+      },
     }),
     {
       name: 'costume-design-graph',

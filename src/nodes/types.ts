@@ -23,6 +23,9 @@ export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   category: NodeCategory;
   inputs: SocketDef[];
   outputs: SocketDef[];
+  /** Fresh initial `data` for a newly added instance of this node type — called once per add
+   * (not shared/mutated across instances). */
+  createDefaultData: () => TData;
   evaluate: (inputs: Record<string, SocketValue>, data: TData) => Record<string, SocketValue>;
 }
 

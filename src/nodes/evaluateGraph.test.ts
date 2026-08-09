@@ -15,6 +15,7 @@ beforeAll(() => {
       category: 'input',
       inputs: [],
       outputs: [{ id: 'value', label: 'Value', type: 'number' }],
+      createDefaultData: () => ({ value: 0 }),
       evaluate: (_inputs, data: { value: number }) => ({
         value: { type: 'number', value: data.value },
       }),
@@ -30,6 +31,7 @@ beforeAll(() => {
         { id: 'b', label: 'B', type: 'number' },
       ],
       outputs: [{ id: 'value', label: 'Value', type: 'number' }],
+      createDefaultData: () => ({}),
       evaluate: (inputs, data: { a?: number; b?: number }) => ({
         value: {
           type: 'number',

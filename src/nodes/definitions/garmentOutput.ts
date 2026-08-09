@@ -20,6 +20,7 @@ registerNodeType<GarmentOutputData>({
     { id: 'material', label: 'Material', type: 'material' },
   ],
   outputs: [],
+  createDefaultData: () => ({ anchor: 'waist', offsetY: 0, fallbackColor: '#cccccc' }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const result: Record<string, SocketValue> = {
       anchor: { type: 'enum', value: data.anchor },

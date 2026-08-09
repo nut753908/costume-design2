@@ -28,6 +28,7 @@ registerNodeType<TopGeneratorData>({
     { id: 'necklineDepth', label: 'Neckline Depth', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
+  createDefaultData: () => ({ torsoRadius: 0.29, length: 0.5, necklineType: 'round', necklineDepth: 0.12 }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildTopGeometry({
       torsoRadius: asNumber(inputs.torsoRadius, data.torsoRadius ?? 0.29),

@@ -13,6 +13,7 @@ registerNodeType<ColorInputData>({
   category: 'input',
   inputs: [],
   outputs: [{ id: 'color', label: 'Color', type: 'color' }],
+  createDefaultData: () => ({ hex: '#cccccc', label: 'Color' }),
   evaluate: (_inputs, data): Record<string, SocketValue> => ({
     color: { type: 'color', value: new THREE.Color(data.hex) },
   }),

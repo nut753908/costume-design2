@@ -24,6 +24,7 @@ registerNodeType<SkirtGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
+  createDefaultData: () => ({ waistRadius: 0.34, length: 0.5, flare: 0.6, segments: 24 }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildSkirtGeometry({
       waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? 0.34),

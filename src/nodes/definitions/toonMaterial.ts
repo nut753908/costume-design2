@@ -13,6 +13,7 @@ registerNodeType<ToonMaterialData>({
   category: 'material',
   inputs: [{ id: 'color', label: 'Color', type: 'color' }],
   outputs: [{ id: 'material', label: 'Material', type: 'material' }],
+  createDefaultData: () => ({ color: '#cccccc' }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const color = inputs.color?.type === 'color' ? inputs.color.value : new THREE.Color(data.color ?? '#cccccc');
     return { material: { type: 'material', value: createToonMaterial(color) } };

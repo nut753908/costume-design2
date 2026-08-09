@@ -13,6 +13,7 @@ registerNodeType<NumberDisplayData>({
   category: 'output',
   inputs: [{ id: 'value', label: 'Value', type: 'number' }],
   outputs: [],
+  createDefaultData: () => ({ label: 'Display' }),
   evaluate: (inputs): Record<string, SocketValue> => ({
     value: inputs.value ?? { type: 'number', value: 0 },
   }),
