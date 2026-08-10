@@ -2,7 +2,7 @@ import type { NodeTypeDefinition } from './types';
 
 export const nodeTypeRegistry = new Map<string, NodeTypeDefinition<any>>();
 
-/** The single place new node types (garment generators, inputs, etc.) get registered. */
+/** 新しいノードタイプ(ガーメントジェネレーター、入力など)が登録される唯一の場所。 */
 export function registerNodeType<TData>(def: NodeTypeDefinition<TData>): void {
   if (nodeTypeRegistry.has(def.type)) {
     throw new Error(`Node type "${def.type}" is already registered`);

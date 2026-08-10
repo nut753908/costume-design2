@@ -3,9 +3,9 @@ import type { Node, Edge } from '@xyflow/react';
 import type { GraphEdge, GraphNode } from '../nodes/types';
 import { useGraphStore } from './graphStore';
 
-/** Derives evaluator-ready node data from React Flow's nodes, keeping the same array
- * reference across position-only changes (dragging) so downstream useMemo/useEffect hooks
- * only retrigger on actual id/type/data changes — never on drag. */
+/** React Flow のノードから evaluator が使える形式のノードデータを導出する。位置のみの
+ * 変更(ドラッグ)では同じ配列参照を保つことで、下流の useMemo/useEffect フックが
+ * id/type/data の実際の変更時にのみ再トリガーされ、ドラッグ中には再トリガーされないようにする。 */
 export function useNodesLite(): GraphNode[] {
   const nodes = useGraphStore((s) => s.nodes);
   const cacheRef = useRef<GraphNode[]>([]);

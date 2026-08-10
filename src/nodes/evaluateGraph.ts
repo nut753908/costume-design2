@@ -40,8 +40,8 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
         continue;
       }
 
-      // Unconnected socket falls back to the node's own literal data value —
-      // the same behavior as an unwired Geometry Nodes socket using its widget default.
+      // 未接続のソケットはノード自身のリテラルな data 値にフォールバックする —
+      // これは未接続の Geometry Nodes ソケットがウィジェットのデフォルト値を使うのと同じ挙動。
       const literal = literalSocketValue(socket.type, node.data[socket.id]);
       if (literal !== undefined) {
         inputs[socket.id] = literal;
@@ -56,8 +56,9 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
 
 function literalSocketValue(type: SocketValue['type'], raw: unknown): SocketValue | undefined {
   if (raw === undefined) return undefined;
-  // 'color' literals live in node.data as plain hex strings (UI-editable, JSON-serializable);
-  // convert to THREE.Color here so every SocketValue of type 'color' has a consistent runtime shape.
+  // 'color' のリテラル値は node.data に単純な hex 文字列として保持される(UIで編集可能、
+  // JSONシリアライズ可能)。ここで THREE.Color に変換し、'color' 型の SocketValue が
+  // 常に一貫した実行時の形になるようにする。
   if (type === 'color') {
     return { type, value: new THREE.Color(raw as THREE.ColorRepresentation) };
   }

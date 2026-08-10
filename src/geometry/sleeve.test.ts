@@ -22,7 +22,7 @@ describe('buildSleeveGeometry', () => {
     const geometry = buildSleeveGeometry({ ...BASE, sleeveLength: 0.22 });
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
-    // Symmetric about the central axis: roughly equal extent on both sides.
+    // 中心軸に対して対称: 両側でおおよそ同じ広がりを持つ。
     expect(box.max.x).toBeGreaterThan(0);
     expect(box.min.x).toBeLessThan(0);
     expect(box.max.x).toBeCloseTo(-box.min.x, 1);
@@ -47,7 +47,7 @@ describe('buildSleeveGeometry', () => {
   it('has the expected vertex count for the given segment count', () => {
     const geometry = buildSleeveGeometry({ ...BASE, sleeveLength: 0.22 });
     const vertexCount = geometry.getAttribute('position').count;
-    // 2 tubes * 2 rows * (segments + 1) columns
+    // 2チューブ * 2行 * (segments + 1) 列
     expect(vertexCount).toBe(2 * 2 * (BASE.segments + 1));
   });
 });

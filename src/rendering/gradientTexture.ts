@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 let cached: THREE.DataTexture | null = null;
 
-/** Shared 4-step toon gradient map so all garments/body share the same cel-shading bands. */
+/** すべてのガーメント/ボディが同じセルシェーディングの帯を共有するための、共通の4段階トゥーングラデーションマップ。 */
 export function getToonGradientTexture(): THREE.DataTexture {
   if (cached) return cached;
 

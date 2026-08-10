@@ -1,19 +1,19 @@
 # React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+このテンプレートは、HMR といくつかの Oxlint ルールを備えた、Vite で React を動かすための最小構成を提供します。
 
-Currently, two official plugins are available:
+現在、2つの公式プラグインが利用可能です。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) は [Oxc](https://oxc.rs) を使用
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) は [SWC](https://swc.rs/) を使用
 
 ## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+このテンプレートでは、開発/ビルドのパフォーマンスへの影響を考慮して React Compiler は有効化されていません。有効化する場合は[このドキュメント](https://react.dev/learn/react-compiler/installation)を参照してください。
 
-## Expanding the Oxlint configuration
+## Oxlint 設定の拡張
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+プロダクションアプリケーションを開発している場合は、`oxlint-tsgolint` をインストールし `.oxlintrc.json` を編集して、型を考慮した(type-aware)lint ルールを有効化することを推奨します。
 
 ```json
 {
@@ -29,4 +29,4 @@ If you are developing a production application, we recommend enabling type-aware
 }
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+ルールとカテゴリの全一覧は [Oxlint のルールドキュメント](https://oxc.rs/docs/guide/usage/linter/rules)を参照してください。

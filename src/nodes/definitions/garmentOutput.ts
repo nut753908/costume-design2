@@ -9,8 +9,8 @@ export interface GarmentOutputData extends Record<string, unknown> {
   fallbackColor?: string;
 }
 
-/** Terminal node: tags a geometry+material pair with where on the body it mounts.
- * Scene.tsx reads evaluated results for every node and renders any that carry a geometry. */
+/** 終端ノード: geometry+material のペアに、ボディのどこに取り付けるかをタグ付けする。
+ * Scene.tsx はすべてのノードの評価結果を読み取り、geometry を持つものをレンダリングする。 */
 registerNodeType<GarmentOutputData>({
   type: 'garmentOutput',
   label: 'Garment Output',

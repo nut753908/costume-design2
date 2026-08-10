@@ -11,9 +11,9 @@ export interface TopParams {
   heightSegments: number;
 }
 
-const NECKLINE_HALF_WIDTH = Math.PI / 3; // dip tapers to zero 60 degrees from front on each side
+const NECKLINE_HALF_WIDTH = Math.PI / 3; // 落ち込みは正面から左右60度でゼロまでテーパーする
 
-/** 0 (front, angle=0) is the deepest point of the dip, tapering to 0 at NECKLINE_HALF_WIDTH. */
+/** 0(正面、angle=0)が落ち込みの最深点で、NECKLINE_HALF_WIDTH で0までテーパーする。 */
 function necklineWeight(type: NecklineType, angle: number): number {
   let a = angle;
   if (a > Math.PI) a -= Math.PI * 2;
@@ -31,15 +31,15 @@ function necklineWeight(type: NecklineType, angle: number): number {
   }
 }
 
-/** Builds a sleeveless top as a ring-grid tube (not a Lathe/Extrude — those can't produce a
- * non-radially-symmetric neckline). Only the top ring's vertices are pulled down per-angle to
- * carve the neckline; the rest of the tube is a plain cylinder wall. */
+/** ノースリーブのトップスをリンググリッドのチューブとして構築する(Lathe/Extrude では
+ * ないのは、放射対称でないネックラインを作れないため)。最上段のリングの頂点のみを
+ * 角度ごとに引き下げてネックラインを彫り込み、残りのチューブは単純な円柱の壁とする。 */
 export function buildTopGeometry(params: TopParams): THREE.BufferGeometry {
   const { torsoRadius, length, necklineType, necklineDepth, angleSegments, heightSegments } = params;
 
   const positions: number[] = [];
   for (let row = 0; row <= heightSegments; row++) {
-    const v = row / heightSegments; // 0 at top (shoulder line), 1 at hem
+    const v = row / heightSegments; // 上(肩のライン)で0、裾で1
     const baseY = -v * length;
 
     for (let col = 0; col <= angleSegments; col++) {
@@ -60,7 +60,7 @@ export function buildTopGeometry(params: TopParams): THREE.BufferGeometry {
       const b = a + rowStride;
       const c = a + 1;
       const d = b + 1;
-      // Wound so the wall's outward normal (away from the Y axis) is front-facing.
+      // 壁の外向き法線(Y軸から離れる方向)が表面になるように巻き順を設定。
       indices.push(a, b, c);
       indices.push(c, b, d);
     }

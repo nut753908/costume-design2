@@ -10,7 +10,7 @@ interface ToonMeshProps {
   outlineThickness?: number;
 }
 
-/** A toon-shaded mesh paired with its inverted-hull outline. */
+/** トゥーンシェーディングされたメッシュと、そのインバーテッドハル(法線反転殻)アウトラインをペアにしたもの。 */
 export function ToonMesh({
   geometry,
   material,

@@ -8,8 +8,8 @@ function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type
   return value.type === 'number' || value.type === 'enum';
 }
 
-/** Generic renderer for node types with no dedicated custom UI yet — shows label,
- * input/output socket rows, and (for terminal nodes) the live evaluated value. */
+/** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
+ * 入出力ソケットの行、(終端ノードの場合は)リアルタイムの評価値を表示する。 */
 export function GenericNodeView({ id, type, data }: NodeProps) {
   const def = getNodeType(type ?? '');
   const evaluated = useGraphStore((s) => s.evaluatedResults);

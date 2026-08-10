@@ -57,7 +57,7 @@ describe('buildTopGeometry', () => {
     const shallowPos = shallow.getAttribute('position').array as Float32Array;
     const deepPos = deep.getAttribute('position').array as Float32Array;
 
-    // Bottom row is the last (angleSegments + 1) vertices.
+    // 最下段の行は末尾の (angleSegments + 1) 個の頂点。
     const rowStride = (BASE.angleSegments + 1) * 3;
     const lastRowStart = shallowPos.length - rowStride;
     for (let i = lastRowStart; i < shallowPos.length; i++) {

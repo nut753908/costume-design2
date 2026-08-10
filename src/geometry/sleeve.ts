@@ -1,21 +1,21 @@
 import * as THREE from 'three';
 
 export interface SleeveParams {
-  /** Roughly the torso radius — where the sleeve plugs into the torso wall. */
+  /** おおよそ胴体の半径 — sleeve が胴体の壁に接続する位置。 */
   attachRadius: number;
   sleeveRadius: number;
   sleeveLength: number;
   segments: number;
 }
 
-const SLEEVE_ANGLES = [Math.PI / 2, -Math.PI / 2] as const; // right and left shoulder
-const SLEEVE_DROOP = Math.PI / 5; // ~36 degrees below horizontal
-const SLEEVE_INSET = 0.75; // start ring pulled inward so it overlaps the torso wall, not floating
-const SLEEVE_TAPER = 0.85; // end-ring radius relative to start-ring radius
+const SLEEVE_ANGLES = [Math.PI / 2, -Math.PI / 2] as const; // 右肩と左肩
+const SLEEVE_DROOP = Math.PI / 5; // 水平から約36度下がる
+const SLEEVE_INSET = 0.75; // 開始リングを内側に引き込み、浮かずに胴体の壁と重なるようにする
+const SLEEVE_TAPER = 0.85; // 開始リングに対する終了リングの半径の割合
 
-/** Builds two short tapered tubes (left/right) as a single geometry, meant to overlap the top's
- * torso wall at the shoulder the same way body.ts's arm cylinders overlap the torso capsule —
- * no boolean/hole-cutting, just intentional intersection. */
+/** テーパー状の短いチューブ(左右)を1つのジオメトリとして構築する。body.ts の腕の円柱が
+ * 胴体のカプセルと重なるのと同じ方法で、肩の位置で top の胴体の壁と重なることを意図している —
+ * ブーリアン演算や穴あけは行わず、意図的な交差のみ。 */
 export function buildSleeveGeometry(params: SleeveParams): THREE.BufferGeometry {
   const { attachRadius, sleeveRadius, sleeveLength, segments } = params;
   const positions: number[] = [];
@@ -52,7 +52,7 @@ function appendSleeveTube(
   const origin = outward.clone().multiplyScalar(attachRadius * SLEEVE_INSET);
 
   const baseIndex = positions.length / 3;
-  const rows = 2; // start ring (at the torso) + end ring (sleeve tip) — a straight tapered tube
+  const rows = 2; // 開始リング(胴体側) + 終了リング(袖先) — まっすぐなテーパーチューブ
 
   for (let row = 0; row < rows; row++) {
     const t = row / (rows - 1);

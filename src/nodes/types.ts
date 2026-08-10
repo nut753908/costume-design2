@@ -23,21 +23,21 @@ export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   category: NodeCategory;
   inputs: SocketDef[];
   outputs: SocketDef[];
-  /** Fresh initial `data` for a newly added instance of this node type — called once per add
-   * (not shared/mutated across instances). */
+  /** このノードタイプの新規追加インスタンスのための、まっさらな初期 `data` — 追加のたびに
+   * 一度だけ呼ばれる(インスタンス間で共有/変更されることはない)。 */
   createDefaultData: () => TData;
   evaluate: (inputs: Record<string, SocketValue>, data: TData) => Record<string, SocketValue>;
 }
 
-/** Minimal shape evaluateGraph needs from a node — decoupled from React Flow's own Node<T> type
- * so the evaluator (and its tests) don't depend on the UI library. */
+/** evaluateGraph がノードに対して必要とする最小限の形 — React Flow 自身の Node<T> 型から
+ * 切り離すことで、evaluator(とそのテスト)が UI ライブラリに依存しないようにする。 */
 export interface GraphNode {
   id: string;
   type: string;
   data: Record<string, unknown>;
 }
 
-/** Minimal shape evaluateGraph needs from an edge — decoupled from React Flow's own Edge type. */
+/** evaluateGraph がエッジに対して必要とする最小限の形 — React Flow 自身の Edge 型から切り離したもの。 */
 export interface GraphEdge {
   source: string;
   sourceHandle: string | null | undefined;

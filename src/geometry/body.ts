@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 export interface BodyScaleParams {
-  /** Scales vertical lengths (legs, torso, arms) — overall height. */
+  /** 縦方向の長さ(脚、胴体、腕)をスケールする — 全体の身長。 */
   heightScale: number;
-  /** Scales radii/spacing (torso, limbs, shoulder width) — overall build/broadness. */
+  /** 半径/間隔(胴体、四肢、肩幅)をスケールする — 全体の体格/横幅。 */
   buildScale: number;
 }
 

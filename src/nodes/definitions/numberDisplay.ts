@@ -5,8 +5,8 @@ export interface NumberDisplayData extends Record<string, unknown> {
   label?: string;
 }
 
-/** A terminal node that surfaces a numeric value for on-screen inspection — useful for
- * previewing intermediate values in a subgraph, and doubles as the M2 pipeline proof node. */
+/** 数値を画面上で確認できるようにする終端ノード — サブグラフ内の中間値を
+ * プレビューするのに便利で、M2 パイプラインの動作確認用ノードも兼ねる。 */
 registerNodeType<NumberDisplayData>({
   type: 'numberDisplay',
   label: 'Number Display',

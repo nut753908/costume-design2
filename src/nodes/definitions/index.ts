@@ -1,4 +1,4 @@
-// Side-effect imports: each definition registers itself with the node type registry.
+// 副作用インポート: 各 definition が自身をノードタイプレジストリに登録する。
 import './numberInput';
 import './numberMultiply';
 import './numberDisplay';

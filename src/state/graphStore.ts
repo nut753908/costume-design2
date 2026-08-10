@@ -14,8 +14,8 @@ import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 import { getNodeType } from '../nodes/registry';
 
 const initialNodes: Node[] = [
-  // Read directly by id in state/useBodyScale.ts — not wired to anything via edges, since body
-  // scale is a scene-wide parameter rather than a garment's geometry/material output.
+  // state/useBodyScale.ts で id により直接読み取られる — ボディスケールはガーメントの
+  // geometry/material 出力ではなくシーン全体のパラメータであるため、エッジで何にも配線されていない。
   { id: 'bodyHeight', type: 'numberInput', position: { x: 1160, y: 20 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
   { id: 'bodyBuild', type: 'numberInput', position: { x: 1160, y: 130 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
 
@@ -60,8 +60,8 @@ const initialEdges: Edge[] = [
   { id: 'e-top-color', source: 'topColor', sourceHandle: 'color', target: 'topMaterial', targetHandle: 'color' },
   { id: 'e-top-material', source: 'topMaterial', sourceHandle: 'material', target: 'topOutput', targetHandle: 'material' },
 
-  // Sleeves reuse the Top's torso radius and material — one Color/Material node feeding two
-  // Garment Outputs, so recoloring the top recolors the sleeves too.
+  // Sleeve は Top の胴体半径とマテリアルを再利用する — 1つの Color/Material ノードが
+  // 2つの Garment Output に供給しているため、top を再着色すると sleeve も一緒に再着色される。
   { id: 'e-sleeve-attach-radius', source: 'topRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
   { id: 'e-sleeve-length', source: 'sleeveLength', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveLength' },
   { id: 'e-sleeve-radius', source: 'sleeveRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },
