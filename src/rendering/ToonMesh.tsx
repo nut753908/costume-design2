@@ -10,7 +10,7 @@ interface ToonMeshProps {
   outlineThickness?: number;
 }
 
-/** トゥーンシェーディングされたメッシュと、そのインバーテッドハル(法線反転殻)アウトラインをペアにしたもの。 */
+/** トゥーンシェーディングされたメッシュと、そのインバーテッドハル(法線を反転させた拡大複製)アウトラインをペアにしたもの。 */
 export function ToonMesh({
   geometry,
   material,

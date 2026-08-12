@@ -8,7 +8,7 @@ interface OutlineProps {
   thickness?: number;
 }
 
-/** インバーテッドハル(法線反転殻)アウトライン: メッシュを裏面のみで複製し、わずかに拡大したもの。 */
+/** インバーテッドハル(法線を反転させた拡大複製)アウトライン: メッシュを裏面のみで複製し、わずかに拡大したもの。 */
 export function Outline({ geometry, color = '#181818', thickness = 0.022 }: OutlineProps) {
   const material = useMemo(
     () => new THREE.MeshBasicMaterial({ color, side: THREE.BackSide }),

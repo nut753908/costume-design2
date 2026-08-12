@@ -61,7 +61,7 @@ const initialEdges: Edge[] = [
   { id: 'e-top-material', source: 'topMaterial', sourceHandle: 'material', target: 'topOutput', targetHandle: 'material' },
 
   // Sleeve は Top の胴体半径とマテリアルを再利用する — 1つの Color/Material ノードが
-  // 2つの Garment Output に供給しているため、top を再着色すると sleeve も一緒に再着色される。
+  // 2つの Garment Output に供給しているため、Top を再着色すると Sleeve も一緒に再着色される。
   { id: 'e-sleeve-attach-radius', source: 'topRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
   { id: 'e-sleeve-length', source: 'sleeveLength', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveLength' },
   { id: 'e-sleeve-radius', source: 'sleeveRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },

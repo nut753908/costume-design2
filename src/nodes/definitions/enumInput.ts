@@ -13,7 +13,7 @@ registerNodeType<EnumInputData>({
   category: 'input',
   inputs: [],
   outputs: [{ id: 'value', label: 'Value', type: 'enum' }],
-  // Top のネックラインが現時点で唯一の enum の利用先であるため、ネックラインの選択肢をデフォルトにしている。
+  // Top のネックラインが現時点で唯一の enum の利用箇所であるため、ネックラインの選択肢をデフォルトにしている。
   createDefaultData: () => ({ value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' }),
   evaluate: (_inputs, data): Record<string, SocketValue> => ({
     value: { type: 'enum', value: data.value },

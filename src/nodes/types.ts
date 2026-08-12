@@ -23,8 +23,8 @@ export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   category: NodeCategory;
   inputs: SocketDef[];
   outputs: SocketDef[];
-  /** このノードタイプの新規追加インスタンスのための、まっさらな初期 `data` — 追加のたびに
-   * 一度だけ呼ばれる(インスタンス間で共有/変更されることはない)。 */
+  /** このノードタイプの新しいインスタンスを追加するたびに一度だけ呼ばれる、
+   * まっさらな初期 `data`(インスタンス間で共有/変更されることはない)。 */
   createDefaultData: () => TData;
   evaluate: (inputs: Record<string, SocketValue>, data: TData) => Record<string, SocketValue>;
 }

@@ -23,8 +23,8 @@ export function buildSkirtGeometry(params: SkirtParams): THREE.BufferGeometry {
     const y = -t * length;
     points.push(new THREE.Vector2(radius, y));
   }
-  // LatheGeometry は外向きの巻き順/法線を得るためプロファイルが下→上の順であることを
-  // 期待するため、上(ウエスト)→下(裾)の順で構築した上記の配列を反転する。
+  // LatheGeometry は外向きの巻き順/法線を得るために、プロファイルが下→上の順であることを
+  // 期待する。そのため、上(ウエスト)→下(裾)の順で構築した上記の配列を反転する。
   points.reverse();
 
   return new THREE.LatheGeometry(points, segments);
