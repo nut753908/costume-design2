@@ -12,6 +12,7 @@ import {
 } from '@xyflow/react';
 import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 import { getNodeType } from '../nodes/registry';
+import { computeAutoLayout } from '../nodes/autoLayout';
 
 const initialNodes: Node[] = [
   // state/useBodyScale.ts で id により直接読み取られる — ボディスケールはガーメントの
@@ -220,6 +221,7 @@ interface GraphState {
   copySelected: () => void;
   pasteClipboard: () => void;
   duplicateSelected: () => void;
+  autoLayout: () => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -364,6 +366,25 @@ export const useGraphStore = create<GraphState>()(
         duplicateSelected: () => {
           get().copySelected();
           get().pasteClipboard();
+        },
+        autoLayout: () => {
+          const state = get();
+          if (state.nodes.length === 0) return;
+          pushHistory();
+          const graphNodes = state.nodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data }));
+          const graphEdges = state.edges.map((e) => ({
+            source: e.source,
+            sourceHandle: e.sourceHandle,
+            target: e.target,
+            targetHandle: e.targetHandle,
+          }));
+          const positions = computeAutoLayout(graphNodes, graphEdges);
+          set({
+            nodes: state.nodes.map((n) => {
+              const position = positions.get(n.id);
+              return position ? { ...n, position } : n;
+            }),
+          });
         },
       };
     },

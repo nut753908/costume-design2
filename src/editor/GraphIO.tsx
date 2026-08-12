@@ -1,5 +1,5 @@
 import { useRef, type ChangeEvent } from 'react';
-import { Panel, type Node, type Edge } from '@xyflow/react';
+import { Panel, useReactFlow, type Node, type Edge } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { nodeTypeRegistry } from '../nodes/registry';
 
@@ -24,7 +24,15 @@ export function GraphIO() {
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
   const loadGraph = useGraphStore((s) => s.loadGraph);
+  const autoLayout = useGraphStore((s) => s.autoLayout);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { fitView } = useReactFlow();
+
+  const handleAutoLayout = () => {
+    autoLayout();
+    // ノードの新しい位置が React Flow 内部ストアに反映されてから fitView するため1フレーム待つ。
+    requestAnimationFrame(() => fitView({ padding: 0.2, duration: 300 }));
+  };
 
   const handleExport = () => {
     const file: GraphFile = { nodes, edges };
@@ -63,6 +71,9 @@ export function GraphIO() {
       </button>
       <button type="button" className="graph-io__button" onClick={handleImportClick}>
         Import JSON
+      </button>
+      <button type="button" className="graph-io__button" onClick={handleAutoLayout}>
+        Arrange
       </button>
       <input ref={fileInputRef} type="file" accept="application/json" hidden onChange={handleFileChange} />
     </Panel>
