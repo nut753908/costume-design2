@@ -1,16 +1,13 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildJacketGeometry } from '../../geometry/jacket';
+import { asNumber } from '../socketHelpers';
 
 export interface JacketGeneratorData extends Record<string, unknown> {
   shoulderRadius?: number;
   length?: number;
   hemFlare?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<JacketGeneratorData>({

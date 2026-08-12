@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildGlassesGeometry } from '../../geometry/glasses';
+import { asNumber } from '../socketHelpers';
 
 export interface GlassesGeneratorData extends Record<string, unknown> {
   lensRadius?: number;
@@ -9,10 +10,6 @@ export interface GlassesGeneratorData extends Record<string, unknown> {
   bridgeThickness?: number;
   templeLength?: number;
   templeThickness?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<GlassesGeneratorData>({

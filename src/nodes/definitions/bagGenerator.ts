@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildBagGeometry } from '../../geometry/bag';
+import { asNumber } from '../socketHelpers';
 
 export interface BagGeneratorData extends Record<string, unknown> {
   strapWidth?: number;
@@ -11,10 +12,6 @@ export interface BagGeneratorData extends Record<string, unknown> {
   bagWidth?: number;
   bagHeight?: number;
   bagDepth?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<BagGeneratorData>({

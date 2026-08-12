@@ -1,16 +1,13 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildHatGeometry } from '../../geometry/hat';
+import { asNumber } from '../socketHelpers';
 
 export interface HatGeneratorData extends Record<string, unknown> {
   brimRadius?: number;
   crownRadius?: number;
   height?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<HatGeneratorData>({

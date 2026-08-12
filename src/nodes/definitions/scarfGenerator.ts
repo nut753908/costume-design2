@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildScarfGeometry } from '../../geometry/scarf';
+import { asNumber } from '../socketHelpers';
 
 export interface ScarfGeneratorData extends Record<string, unknown> {
   neckRadius?: number;
@@ -8,10 +9,6 @@ export interface ScarfGeneratorData extends Record<string, unknown> {
   tailWidth?: number;
   tailLength?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<ScarfGeneratorData>({

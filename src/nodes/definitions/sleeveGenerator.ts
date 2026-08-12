@@ -1,15 +1,12 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildSleeveGeometry } from '../../geometry/sleeve';
+import { asNumber } from '../socketHelpers';
 
 export interface SleeveGeneratorData extends Record<string, unknown> {
   attachRadius?: number;
   sleeveRadius?: number;
   sleeveLength?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<SleeveGeneratorData>({

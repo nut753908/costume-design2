@@ -2,20 +2,13 @@ import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildTopGeometry } from '../../geometry/top';
 import type { NecklineType } from '../../geometry/neckline';
+import { asNumber, asEnum } from '../socketHelpers';
 
 export interface TopGeneratorData extends Record<string, unknown> {
   torsoRadius?: number;
   length?: number;
   necklineType?: NecklineType;
   necklineDepth?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
-}
-
-function asNecklineType(v: SocketValue | undefined, fallback: NecklineType): NecklineType {
-  return v?.type === 'enum' ? (v.value as NecklineType) : fallback;
 }
 
 registerNodeType<TopGeneratorData>({
@@ -34,7 +27,7 @@ registerNodeType<TopGeneratorData>({
     const geometry = buildTopGeometry({
       torsoRadius: asNumber(inputs.torsoRadius, data.torsoRadius ?? 0.29),
       length: asNumber(inputs.length, data.length ?? 0.5),
-      necklineType: asNecklineType(inputs.necklineType, data.necklineType ?? 'round'),
+      necklineType: asEnum<NecklineType>(inputs.necklineType, data.necklineType ?? 'round'),
       necklineDepth: asNumber(inputs.necklineDepth, data.necklineDepth ?? 0.12),
       angleSegments: 24,
       heightSegments: 10,

@@ -1,16 +1,13 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildBeltGeometry } from '../../geometry/belt';
+import { asNumber } from '../socketHelpers';
 
 export interface BeltGeneratorData extends Record<string, unknown> {
   radius?: number;
   thickness?: number;
   bulge?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<BeltGeneratorData>({

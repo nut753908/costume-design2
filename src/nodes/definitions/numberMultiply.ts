@@ -1,13 +1,10 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
+import { asNumber } from '../socketHelpers';
 
 export interface NumberMultiplyData extends Record<string, unknown> {
   value?: number;
   factor: number;
-}
-
-function asNumber(value: SocketValue | undefined, fallback: number): number {
-  return value?.type === 'number' ? value.value : fallback;
 }
 
 registerNodeType<NumberMultiplyData>({

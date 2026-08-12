@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildShoesGeometry } from '../../geometry/shoes';
+import { asNumber } from '../socketHelpers';
 
 export interface ShoesGeneratorData extends Record<string, unknown> {
   soleRadius?: number;
@@ -9,10 +10,6 @@ export interface ShoesGeneratorData extends Record<string, unknown> {
   toeLength?: number;
   legSpacing?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<ShoesGeneratorData>({

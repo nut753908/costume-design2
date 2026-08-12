@@ -1,16 +1,13 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildSkirtGeometry } from '../../geometry/skirt';
+import { asNumber } from '../socketHelpers';
 
 export interface SkirtGeneratorData extends Record<string, unknown> {
   waistRadius?: number;
   length?: number;
   flare?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<SkirtGeneratorData>({

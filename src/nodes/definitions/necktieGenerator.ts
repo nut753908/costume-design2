@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildNecktieGeometry } from '../../geometry/necktie';
+import { asNumber } from '../socketHelpers';
 
 export interface NecktieGeneratorData extends Record<string, unknown> {
   knotWidth?: number;
@@ -10,10 +11,6 @@ export interface NecktieGeneratorData extends Record<string, unknown> {
   bladeBottomWidth?: number;
   bladeThickness?: number;
   bladeLength?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<NecktieGeneratorData>({

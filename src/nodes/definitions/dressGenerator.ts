@@ -2,6 +2,7 @@ import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildDressGeometry } from '../../geometry/dress';
 import type { NecklineType } from '../../geometry/neckline';
+import { asNumber, asEnum } from '../socketHelpers';
 
 export interface DressGeneratorData extends Record<string, unknown> {
   torsoRadius?: number;
@@ -9,14 +10,6 @@ export interface DressGeneratorData extends Record<string, unknown> {
   length?: number;
   necklineType?: NecklineType;
   necklineDepth?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
-}
-
-function asNecklineType(v: SocketValue | undefined, fallback: NecklineType): NecklineType {
-  return v?.type === 'enum' ? (v.value as NecklineType) : fallback;
 }
 
 registerNodeType<DressGeneratorData>({
@@ -43,7 +36,7 @@ registerNodeType<DressGeneratorData>({
       torsoRadius: asNumber(inputs.torsoRadius, data.torsoRadius ?? 0.29),
       hemRadius: asNumber(inputs.hemRadius, data.hemRadius ?? 0.55),
       length: asNumber(inputs.length, data.length ?? 0.9),
-      necklineType: asNecklineType(inputs.necklineType, data.necklineType ?? 'round'),
+      necklineType: asEnum<NecklineType>(inputs.necklineType, data.necklineType ?? 'round'),
       necklineDepth: asNumber(inputs.necklineDepth, data.necklineDepth ?? 0.12),
       angleSegments: 24,
       heightSegments: 14,

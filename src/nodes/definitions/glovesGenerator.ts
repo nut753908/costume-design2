@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
 import { buildGlovesGeometry } from '../../geometry/gloves';
+import { asNumber } from '../socketHelpers';
 
 export interface GlovesGeneratorData extends Record<string, unknown> {
   wristRadius?: number;
@@ -8,10 +9,6 @@ export interface GlovesGeneratorData extends Record<string, unknown> {
   length?: number;
   armSpacing?: number;
   segments?: number;
-}
-
-function asNumber(v: SocketValue | undefined, fallback: number): number {
-  return v?.type === 'number' ? v.value : fallback;
 }
 
 registerNodeType<GlovesGeneratorData>({
