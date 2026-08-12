@@ -5,6 +5,7 @@ import {
   useReactFlow,
   Background,
   Controls,
+  MiniMap,
   type NodeTypes,
   type EdgeTypes,
   type Connection,
@@ -120,6 +121,15 @@ function NodeEditorInner() {
     >
       <Background />
       <Controls />
+      <MiniMap
+        position="bottom-right"
+        pannable
+        zoomable
+        nodeColor="#fdfaf4"
+        nodeStrokeColor="#333"
+        maskColor="#fdfaf4b3"
+        style={{ width: 150, height: 110 }}
+      />
       <NodePalette />
       <HistoryControls />
       <GraphIO />
