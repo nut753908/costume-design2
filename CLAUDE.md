@@ -57,7 +57,7 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 
 ### 新しいノードタイプの追加
 
-すべての `NodeTypeDefinition` (`nodes/definitions/*.ts`) は、`evaluate()` に加えて `createDefaultData()` が必要です — これは `NodePalette.tsx` / `graphStore.addNode()` が新規追加インスタンスの初期値を作る際に使われます。モジュールは `nodes/definitions/index.ts` に登録(副作用インポート)し、そのタイプを `editor/NodeEditor.tsx` の `nodeTypes` マップに追加してください(`NumberInputNode`/`ColorInputNode`/`EnumInputNode` のような専用 UI が必要な場合を除き、`GenericNodeView` を再利用します)。
+手順は `add-node-type` スキルを参照してください。
 
 ### ボディスケールはソケットグラフを介さず帯域外で読み取られる
 
