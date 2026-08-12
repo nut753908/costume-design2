@@ -65,4 +65,5 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 
 ### 既知の MVP の制約(意図的なもので、バグではありません)
 
-- ドラッグ&ドロップによるノード配置はありません(パレットをクリックするとカスケード状のオフセットで追加されます)。右クリックのコンテキストメニューもまだありませんが、ノード削除は各ノードカードのタイトル行にある×ボタン(`NodeTitleBar`)、エッジ削除はエッジ中央に表示される×ボタン(`DeletableEdge`)から行えます。選択後の Backspace による削除(React Flow のデフォルト)も引き続き使えます。
+- ノードの追加方法は3通りあります: (1) パレット(`NodePalette.tsx`)の項目をクリックするとカスケード状のオフセットで追加、(2) パレットの項目をキャンバスへドラッグ&ドロップすると、ドロップした座標に追加、(3) キャンバスを右クリックするとその場に `ContextMenu.tsx` が開き、選んだノードタイプがクリック位置に追加されます。いずれも最終的には `useGraphStore().addNode(type, position)` を呼び出しており、位置の変換には React Flow の `screenToFlowPosition` を使っています(そのため `NodeEditor.tsx` は `ReactFlowProvider` で自身をラップし、内側のコンポーネントで `useReactFlow()` を呼ぶ構成になっています)。カテゴリ別のノードタイプ一覧は `nodes/registry.ts` の `groupNodeTypesByCategory()` に共通化されており、パレットとコンテキストメニューの両方がこれを参照します。
+- ノード削除は各ノードカードのタイトル行にある×ボタン(`NodeTitleBar`)、エッジ削除はエッジ中央に表示される×ボタン(`DeletableEdge`)から行えます。選択後の Backspace による削除(React Flow のデフォルト)も引き続き使えます。
