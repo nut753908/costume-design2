@@ -1,6 +1,25 @@
-import type { NodeTypeDefinition } from './types';
+import type { NodeCategory, NodeTypeDefinition } from './types';
 
 export const nodeTypeRegistry = new Map<string, NodeTypeDefinition<any>>();
+
+const CATEGORY_ORDER: NodeCategory[] = ['input', 'generator', 'material', 'output'];
+
+/** 登録済みノードタイプをカテゴリ別にグループ化する。パレットとコンテキストメニューで共有する。 */
+export function groupNodeTypesByCategory(): {
+  category: NodeCategory;
+  items: { type: string; label: string }[];
+}[] {
+  const byCategory = new Map<NodeCategory, { type: string; label: string }[]>();
+  for (const def of nodeTypeRegistry.values()) {
+    const list = byCategory.get(def.category) ?? [];
+    list.push({ type: def.type, label: def.label });
+    byCategory.set(def.category, list);
+  }
+  return CATEGORY_ORDER.filter((c) => byCategory.has(c)).map((c) => ({
+    category: c,
+    items: byCategory.get(c)!,
+  }));
+}
 
 /** 新しいノードタイプ(ガーメントジェネレーター、入力など)が登録される唯一の場所。 */
 export function registerNodeType<TData>(def: NodeTypeDefinition<TData>): void {

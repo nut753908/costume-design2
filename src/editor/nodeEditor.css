@@ -147,6 +147,48 @@
   width: 120px;
 }
 
+.context-menu {
+  position: fixed;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #fdfaf4e6;
+  font-size: 12px;
+  color: #1a1a1a;
+  max-height: calc(100% - 40px);
+  overflow-y: auto;
+}
+
+.context-menu__group-title {
+  font-weight: 600;
+  opacity: 0.6;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.context-menu__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 4px 8px;
+  margin-bottom: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.context-menu__item:hover {
+  background: #eee6d8;
+}
+
 .rf-edge__delete {
   position: absolute;
   pointer-events: all;

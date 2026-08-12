@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { ReactFlow, Background, Controls, type NodeTypes, type EdgeTypes, type Connection, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
@@ -12,6 +12,7 @@ import { NodePalette } from './NodePalette';
 import { DeletableEdge } from './DeletableEdge';
 import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
+import { ContextMenu, type ContextMenuState } from './ContextMenu';
 
 const nodeTypes: NodeTypes = {
   numberInput: NumberInputNodeView,
@@ -42,6 +43,7 @@ export function NodeEditor() {
   const onNodesChange = useGraphStore((s) => s.onNodesChange);
   const onEdgesChange = useGraphStore((s) => s.onEdgesChange);
   const onConnect = useGraphStore((s) => s.onConnect);
+  const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
 
   // 宣言された型(number/color/enum/geometry/material)が同じソケット同士の接続のみを許可する。
   // Geometry Nodes が型の合わないソケット接続を拒否するのと同じ挙動。
@@ -76,6 +78,12 @@ export function NodeEditor() {
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       isValidConnection={isValidConnection}
+      onPaneContextMenu={(event) => {
+        event.preventDefault();
+        setMenuState({ x: event.clientX, y: event.clientY });
+      }}
+      onPaneClick={() => setMenuState(null)}
+      onMoveStart={() => setMenuState(null)}
       fitView
     >
       <Background />
@@ -83,6 +91,7 @@ export function NodeEditor() {
       <NodePalette />
       <GraphIO />
       <PresetPanel />
+      <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
     </ReactFlow>
   );
 }

@@ -1,35 +1,15 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { Panel, useReactFlow } from '@xyflow/react';
-import { nodeTypeRegistry } from '../nodes/registry';
+import { groupNodeTypesByCategory } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
-import type { NodeCategory } from '../nodes/types';
-
-const CATEGORY_LABELS: Record<NodeCategory, string> = {
-  input: 'Inputs',
-  generator: 'Generators',
-  material: 'Materials',
-  output: 'Outputs',
-};
-
-const CATEGORY_ORDER: NodeCategory[] = ['input', 'generator', 'material', 'output'];
+import { CATEGORY_LABELS } from './nodeCategoryLabels';
 
 export function NodePalette() {
   const addNode = useGraphStore((s) => s.addNode);
   const { screenToFlowPosition } = useReactFlow();
   const cascadeRef = useRef(0);
 
-  const groups = useMemo(() => {
-    const byCategory = new Map<NodeCategory, { type: string; label: string }[]>();
-    for (const def of nodeTypeRegistry.values()) {
-      const list = byCategory.get(def.category) ?? [];
-      list.push({ type: def.type, label: def.label });
-      byCategory.set(def.category, list);
-    }
-    return CATEGORY_ORDER.filter((c) => byCategory.has(c)).map((c) => ({
-      category: c,
-      items: byCategory.get(c)!,
-    }));
-  }, []);
+  const groups = useMemo(() => groupNodeTypesByCategory(), []);
 
   const handleAdd = useCallback(
     (type: string) => {
