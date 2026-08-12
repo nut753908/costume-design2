@@ -98,6 +98,15 @@ const initialNodes: Node[] = [
   { id: 'scarfColor', type: 'colorInput', position: { x: 900, y: 1710 }, data: { hex: '#8a2e3a', label: 'Scarf Color' } },
   { id: 'scarfMaterial', type: 'toonMaterial', position: { x: 900, y: 1810 }, data: {} },
   { id: 'scarfOutput', type: 'garmentOutput', position: { x: 620, y: 3600 }, data: { anchor: 'shoulder', offsetY: 0.08, fallbackColor: '#8a2e3a' } },
+
+  { id: 'jacketShoulderRadius', type: 'numberInput', position: { x: 40, y: 3930 }, data: { value: 0.34, min: 0.25, max: 0.5, step: 0.01, label: 'Shoulder Radius' } },
+  { id: 'jacketLength', type: 'numberInput', position: { x: 40, y: 4040 }, data: { value: 0.42, min: 0.2, max: 0.8, step: 0.01, label: 'Length' } },
+  { id: 'jacketHemFlare', type: 'numberInput', position: { x: 40, y: 4150 }, data: { value: 0.15, min: 0, max: 1.5, step: 0.05, label: 'Hem Flare' } },
+  { id: 'jacketSegments', type: 'numberInput', position: { x: 40, y: 4260 }, data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
+  { id: 'jacketGen', type: 'jacketGenerator', position: { x: 340, y: 4040 }, data: {} },
+  { id: 'jacketColor', type: 'colorInput', position: { x: 900, y: 1910 }, data: { hex: '#4a5c3e', label: 'Jacket Color' } },
+  { id: 'jacketMaterial', type: 'toonMaterial', position: { x: 900, y: 2010 }, data: {} },
+  { id: 'jacketOutput', type: 'garmentOutput', position: { x: 620, y: 4040 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#4a5c3e' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -175,6 +184,14 @@ const initialEdges: Edge[] = [
   { id: 'e-scarf-geometry', source: 'scarfGen', sourceHandle: 'geometry', target: 'scarfOutput', targetHandle: 'geometry' },
   { id: 'e-scarf-color', source: 'scarfColor', sourceHandle: 'color', target: 'scarfMaterial', targetHandle: 'color' },
   { id: 'e-scarf-material', source: 'scarfMaterial', sourceHandle: 'material', target: 'scarfOutput', targetHandle: 'material' },
+
+  { id: 'e-jacket-shoulder-radius', source: 'jacketShoulderRadius', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'shoulderRadius' },
+  { id: 'e-jacket-length', source: 'jacketLength', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'length' },
+  { id: 'e-jacket-hem-flare', source: 'jacketHemFlare', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'hemFlare' },
+  { id: 'e-jacket-segments', source: 'jacketSegments', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'segments' },
+  { id: 'e-jacket-geometry', source: 'jacketGen', sourceHandle: 'geometry', target: 'jacketOutput', targetHandle: 'geometry' },
+  { id: 'e-jacket-color', source: 'jacketColor', sourceHandle: 'color', target: 'jacketMaterial', targetHandle: 'color' },
+  { id: 'e-jacket-material', source: 'jacketMaterial', sourceHandle: 'material', target: 'jacketOutput', targetHandle: 'material' },
 ];
 
 interface HistorySnapshot {
