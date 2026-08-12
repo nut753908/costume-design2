@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
+import * as THREE from 'three';
 import { evaluateGraph, GraphCycleError, hasCycle } from './evaluateGraph';
 import { registerNodeType, nodeTypeRegistry } from './registry';
 import type { GraphEdge, GraphNode, SocketValue } from './types';
@@ -40,6 +41,19 @@ beforeAll(() => {
       }),
     });
   }
+  if (!nodeTypeRegistry.has('testColorSink')) {
+    registerNodeType({
+      type: 'testColorSink',
+      label: 'Test Color Sink',
+      category: 'generator',
+      inputs: [{ id: 'color', label: 'Color', type: 'color' }],
+      outputs: [{ id: 'color', label: 'Color', type: 'color' }],
+      createDefaultData: () => ({}),
+      // 受け取った color ソケットの値をそのまま素通しする — literalSocketValue が
+      // 未接続ソケットを正しく THREE.Color に変換しているかをテストから覗くための道具。
+      evaluate: (inputs) => ({ color: inputs.color! }),
+    });
+  }
 });
 
 describe('evaluateGraph', () => {
@@ -62,6 +76,12 @@ describe('evaluateGraph', () => {
     const nodes: GraphNode[] = [{ id: 'add', type: 'testAdd', data: { a: 10, b: 5 } }];
     const result = evaluateGraph(nodes, []);
     expect(result.get('add')?.value).toEqual({ type: 'number', value: 15 });
+  });
+
+  it('未接続の color ソケットは data のリテラルな hex 文字列を THREE.Color に変換してフォールバックする', () => {
+    const nodes: GraphNode[] = [{ id: 'sink', type: 'testColorSink', data: { color: '#336699' } }];
+    const result = evaluateGraph(nodes, []);
+    expect(result.get('sink')?.color).toEqual({ type: 'color', value: new THREE.Color('#336699') });
   });
 
   it('接続された入力と未接続のリテラルフォールバックが混在しても動作する', () => {
