@@ -13,4 +13,5 @@ import './shoesGenerator';
 import './glovesGenerator';
 import './hatGenerator';
 import './beltGenerator';
+import './scarfGenerator';
 import './garmentOutput';

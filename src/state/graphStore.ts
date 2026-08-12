@@ -87,6 +87,16 @@ const initialNodes: Node[] = [
   { id: 'beltColor', type: 'colorInput', position: { x: 900, y: 1510 }, data: { hex: '#3a2e26', label: 'Belt Color' } },
   { id: 'beltMaterial', type: 'toonMaterial', position: { x: 900, y: 1610 }, data: {} },
   { id: 'beltOutput', type: 'garmentOutput', position: { x: 620, y: 3040 }, data: { anchor: 'waist', offsetY: 0, fallbackColor: '#3a2e26' } },
+
+  { id: 'scarfNeckRadius', type: 'numberInput', position: { x: 40, y: 3380 }, data: { value: 0.19, min: 0.14, max: 0.3, step: 0.005, label: 'Neck Radius' } },
+  { id: 'scarfBandThickness', type: 'numberInput', position: { x: 40, y: 3490 }, data: { value: 0.05, min: 0.02, max: 0.1, step: 0.005, label: 'Band Thickness' } },
+  { id: 'scarfTailWidth', type: 'numberInput', position: { x: 40, y: 3600 }, data: { value: 0.09, min: 0.04, max: 0.16, step: 0.005, label: 'Tail Width' } },
+  { id: 'scarfTailLength', type: 'numberInput', position: { x: 40, y: 3710 }, data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01, label: 'Tail Length' } },
+  { id: 'scarfSegments', type: 'numberInput', position: { x: 40, y: 3820 }, data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
+  { id: 'scarfGen', type: 'scarfGenerator', position: { x: 340, y: 3600 }, data: {} },
+  { id: 'scarfColor', type: 'colorInput', position: { x: 900, y: 1710 }, data: { hex: '#8a2e3a', label: 'Scarf Color' } },
+  { id: 'scarfMaterial', type: 'toonMaterial', position: { x: 900, y: 1810 }, data: {} },
+  { id: 'scarfOutput', type: 'garmentOutput', position: { x: 620, y: 3600 }, data: { anchor: 'shoulder', offsetY: 0.08, fallbackColor: '#8a2e3a' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -155,6 +165,15 @@ const initialEdges: Edge[] = [
   { id: 'e-belt-geometry', source: 'beltGen', sourceHandle: 'geometry', target: 'beltOutput', targetHandle: 'geometry' },
   { id: 'e-belt-color', source: 'beltColor', sourceHandle: 'color', target: 'beltMaterial', targetHandle: 'color' },
   { id: 'e-belt-material', source: 'beltMaterial', sourceHandle: 'material', target: 'beltOutput', targetHandle: 'material' },
+
+  { id: 'e-scarf-neck-radius', source: 'scarfNeckRadius', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'neckRadius' },
+  { id: 'e-scarf-band-thickness', source: 'scarfBandThickness', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'bandThickness' },
+  { id: 'e-scarf-tail-width', source: 'scarfTailWidth', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'tailWidth' },
+  { id: 'e-scarf-tail-length', source: 'scarfTailLength', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'tailLength' },
+  { id: 'e-scarf-segments', source: 'scarfSegments', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'segments' },
+  { id: 'e-scarf-geometry', source: 'scarfGen', sourceHandle: 'geometry', target: 'scarfOutput', targetHandle: 'geometry' },
+  { id: 'e-scarf-color', source: 'scarfColor', sourceHandle: 'color', target: 'scarfMaterial', targetHandle: 'color' },
+  { id: 'e-scarf-material', source: 'scarfMaterial', sourceHandle: 'material', target: 'scarfOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {
