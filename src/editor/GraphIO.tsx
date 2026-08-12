@@ -60,6 +60,11 @@ export function GraphIO() {
         alert(`無効なグラフファイルです(${GRAPH_VALIDATION_MESSAGES[error]})。`);
         return;
       }
+      // loadGraph() は履歴(past/future)も一緒にクリアするため、インポート後は
+      // Undo で現在のグラフに戻せない。取り返しがつかない操作である旨を確認する。
+      if (!confirm('現在のグラフを破棄してインポートします。この操作は元に戻せません。よろしいですか?')) {
+        return;
+      }
       loadGraph(parsed.nodes, parsed.edges);
     } catch {
       alert('JSON の読み込みに失敗しました。');
