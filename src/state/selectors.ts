@@ -30,22 +30,24 @@ export function useEdgesLite(): GraphEdge[] {
   }, [edges]);
 }
 
-function toGraphNode(n: Node): GraphNode {
+// テスト用に export している。React フックの外からでも、リアクティビティの要である
+// 参照等価性の比較ロジック(sameNodes/sameEdges)を直接検証できるようにするため。
+export function toGraphNode(n: Node): GraphNode {
   return { id: n.id, type: n.type ?? '', data: n.data };
 }
 
-function toGraphEdge(e: Edge): GraphEdge {
+export function toGraphEdge(e: Edge): GraphEdge {
   return { source: e.source, sourceHandle: e.sourceHandle, target: e.target, targetHandle: e.targetHandle };
 }
 
-function sameNodes(a: GraphNode[], b: GraphNode[]): boolean {
+export function sameNodes(a: GraphNode[], b: GraphNode[]): boolean {
   return (
     a.length === b.length &&
     a.every((n, i) => n.id === b[i].id && n.type === b[i].type && n.data === b[i].data)
   );
 }
 
-function sameEdges(a: GraphEdge[], b: GraphEdge[]): boolean {
+export function sameEdges(a: GraphEdge[], b: GraphEdge[]): boolean {
   return (
     a.length === b.length &&
     a.every(
