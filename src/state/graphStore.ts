@@ -151,6 +151,18 @@ export const initialNodes: Node[] = [
   { id: 'bagColor', type: 'colorInput', position: { x: 900, y: 2510 }, data: { hex: '#8a4a2e', label: 'Bag Color' } },
   { id: 'bagMaterial', type: 'toonMaterial', position: { x: 900, y: 2610 }, data: {} },
   { id: 'bagOutput', type: 'garmentOutput', position: { x: 620, y: 5830 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#8a4a2e' } },
+
+  { id: 'necktieKnotWidth', type: 'numberInput', position: { x: 40, y: 6270 }, data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005, label: 'Knot Width' } },
+  { id: 'necktieKnotHeight', type: 'numberInput', position: { x: 40, y: 6380 }, data: { value: 0.04, min: 0.02, max: 0.07, step: 0.005, label: 'Knot Height' } },
+  { id: 'necktieKnotThickness', type: 'numberInput', position: { x: 40, y: 6490 }, data: { value: 0.025, min: 0.01, max: 0.05, step: 0.005, label: 'Knot Thickness' } },
+  { id: 'necktieBladeTopWidth', type: 'numberInput', position: { x: 40, y: 6600 }, data: { value: 0.035, min: 0.015, max: 0.06, step: 0.005, label: 'Blade Top Width' } },
+  { id: 'necktieBladeBottomWidth', type: 'numberInput', position: { x: 40, y: 6710 }, data: { value: 0.06, min: 0.03, max: 0.12, step: 0.005, label: 'Blade Bottom Width' } },
+  { id: 'necktieBladeThickness', type: 'numberInput', position: { x: 40, y: 6820 }, data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001, label: 'Blade Thickness' } },
+  { id: 'necktieBladeLength', type: 'numberInput', position: { x: 40, y: 6930 }, data: { value: 0.4, min: 0.2, max: 0.7, step: 0.01, label: 'Blade Length' } },
+  { id: 'necktieGen', type: 'necktieGenerator', position: { x: 340, y: 6600 }, data: {} },
+  { id: 'necktieColor', type: 'colorInput', position: { x: 900, y: 2710 }, data: { hex: '#7a1f2b', label: 'Necktie Color' } },
+  { id: 'necktieMaterial', type: 'toonMaterial', position: { x: 900, y: 2810 }, data: {} },
+  { id: 'necktieOutput', type: 'garmentOutput', position: { x: 620, y: 6600 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#7a1f2b' } },
 ];
 
 export const initialEdges: Edge[] = [
@@ -289,6 +301,17 @@ export const initialEdges: Edge[] = [
   { id: 'e-bag-geometry', source: 'bagGen', sourceHandle: 'geometry', target: 'bagOutput', targetHandle: 'geometry' },
   { id: 'e-bag-color', source: 'bagColor', sourceHandle: 'color', target: 'bagMaterial', targetHandle: 'color' },
   { id: 'e-bag-material', source: 'bagMaterial', sourceHandle: 'material', target: 'bagOutput', targetHandle: 'material' },
+
+  { id: 'e-necktie-knot-width', source: 'necktieKnotWidth', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'knotWidth' },
+  { id: 'e-necktie-knot-height', source: 'necktieKnotHeight', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'knotHeight' },
+  { id: 'e-necktie-knot-thickness', source: 'necktieKnotThickness', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'knotThickness' },
+  { id: 'e-necktie-blade-top-width', source: 'necktieBladeTopWidth', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'bladeTopWidth' },
+  { id: 'e-necktie-blade-bottom-width', source: 'necktieBladeBottomWidth', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'bladeBottomWidth' },
+  { id: 'e-necktie-blade-thickness', source: 'necktieBladeThickness', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'bladeThickness' },
+  { id: 'e-necktie-blade-length', source: 'necktieBladeLength', sourceHandle: 'value', target: 'necktieGen', targetHandle: 'bladeLength' },
+  { id: 'e-necktie-geometry', source: 'necktieGen', sourceHandle: 'geometry', target: 'necktieOutput', targetHandle: 'geometry' },
+  { id: 'e-necktie-color', source: 'necktieColor', sourceHandle: 'color', target: 'necktieMaterial', targetHandle: 'color' },
+  { id: 'e-necktie-material', source: 'necktieMaterial', sourceHandle: 'material', target: 'necktieOutput', targetHandle: 'material' },
 ];
 
 interface HistorySnapshot {

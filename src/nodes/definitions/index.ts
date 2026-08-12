@@ -9,6 +9,7 @@ import './skirtGenerator';
 import './topGenerator';
 import './dressGenerator';
 import './bagGenerator';
+import './necktieGenerator';
 import './sleeveGenerator';
 import './pantsGenerator';
 import './shoesGenerator';

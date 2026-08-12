@@ -39,6 +39,7 @@ const nodeTypes: NodeTypes = {
   topGenerator: GenericNodeView,
   dressGenerator: GenericNodeView,
   bagGenerator: GenericNodeView,
+  necktieGenerator: GenericNodeView,
   sleeveGenerator: GenericNodeView,
   pantsGenerator: GenericNodeView,
   shoesGenerator: GenericNodeView,
