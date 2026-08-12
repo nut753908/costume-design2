@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { buildSkirtGeometry } from './skirt';
+import { expectOutwardWinding } from './windingTestHelpers';
 
 function positions(geometry: THREE.BufferGeometry): Float32Array {
   return geometry.getAttribute('position').array as Float32Array;
@@ -49,5 +50,9 @@ describe('buildSkirtGeometry', () => {
     const fine = buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 0.5, segments: 32 });
 
     expect(positions(fine).length).toBeGreaterThan(positions(coarse).length);
+  });
+
+  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+    expectOutwardWinding(buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 0.5, segments: 16 }));
   });
 });

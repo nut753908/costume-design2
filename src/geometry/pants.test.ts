@@ -1,7 +1,18 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { buildPantsGeometry } from './pants';
+import { expectOutwardWinding } from './windingTestHelpers';
 
 const BASE = { waistRadius: 0.16, hemRadius: 0.1, legSpacing: 0.14, segments: 12 } as const;
+
+// 左右2本の脚は legSpacing だけ X方向にずらされているため、Y軸ではなくそれぞれの脚自身の
+// 中心軸(x=±legSpacing)を基準に外向きかどうかを判定する。waistRadius > legSpacing だと
+// 脚が中心線をまたいで重心の符号だけでは左右を判別できないため、mirrorPair.ts が
+// build([-1,1]) の順に結合していることを利用して index 配列の前半/後半で判定する。
+function legAxisPoint(centroid: THREE.Vector3, i: number, totalIndexCount: number): THREE.Vector3 {
+  const side = i < totalIndexCount / 2 ? -1 : 1;
+  return new THREE.Vector3(side * BASE.legSpacing, centroid.y, 0);
+}
 
 describe('buildPantsGeometry', () => {
   it('NaN 頂点のない、妥当で退化していないジオメトリを生成する', () => {
@@ -55,5 +66,9 @@ describe('buildPantsGeometry', () => {
     const coarse = buildPantsGeometry({ ...BASE, inseam: 0.75, segments: 8 });
     const fine = buildPantsGeometry({ ...BASE, inseam: 0.75, segments: 32 });
     expect(fine.getAttribute('position').count).toBeGreaterThan(coarse.getAttribute('position').count);
+  });
+
+  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+    expectOutwardWinding(buildPantsGeometry({ ...BASE, inseam: 0.75 }), legAxisPoint);
   });
 });

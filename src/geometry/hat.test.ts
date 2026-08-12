@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildHatGeometry } from './hat';
+import { expectOutwardWinding } from './windingTestHelpers';
 
 function positions(geometry: ReturnType<typeof buildHatGeometry>): Float32Array {
   return geometry.getAttribute('position').array as Float32Array;
@@ -47,5 +48,9 @@ describe('buildHatGeometry', () => {
     const coarse = buildHatGeometry({ brimRadius: 0.2, crownRadius: 0.02, height: 0.35, segments: 8 });
     const fine = buildHatGeometry({ brimRadius: 0.2, crownRadius: 0.02, height: 0.35, segments: 32 });
     expect(positions(fine).length).toBeGreaterThan(positions(coarse).length);
+  });
+
+  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+    expectOutwardWinding(buildHatGeometry({ brimRadius: 0.2, crownRadius: 0.02, height: 0.35, segments: 16 }));
   });
 });

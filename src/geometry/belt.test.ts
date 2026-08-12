@@ -1,39 +1,9 @@
-import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { buildBeltGeometry } from './belt';
+import { expectOutwardWinding } from './windingTestHelpers';
 
 function positions(geometry: ReturnType<typeof buildBeltGeometry>): Float32Array {
   return geometry.getAttribute('position').array as Float32Array;
-}
-
-/** 三角形の巻き順が外向き(FrontSide で正しく可視化される向き)かどうかを検証する。
- * CLAUDE.md にある通り、この手のジオメトリで巻き順が逆になると症状は「裏返って見える」
- * ではなく「真っ黒なシルエット」になるため、目視ではなく数値で検知できるようにしておく。
- * belt は半径0(Y軸)に触れないリング状のため、全面が Y軸から外向きの法線を持つはず。 */
-function expectOutwardWinding(geometry: THREE.BufferGeometry): void {
-  const index = geometry.getIndex()!;
-  const pos = geometry.getAttribute('position');
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  let outward = 0;
-  let inward = 0;
-
-  for (let i = 0; i < index.count; i += 3) {
-    a.fromBufferAttribute(pos, index.getX(i));
-    b.fromBufferAttribute(pos, index.getX(i + 1));
-    c.fromBufferAttribute(pos, index.getX(i + 2));
-
-    const faceNormal = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a));
-    const centroid = new THREE.Vector3().add(a).add(b).add(c).divideScalar(3);
-    const radial = new THREE.Vector3(centroid.x, 0, centroid.z).normalize();
-
-    if (faceNormal.dot(radial) > 0) outward++;
-    else inward++;
-  }
-
-  expect(outward).toBeGreaterThan(0);
-  expect(inward).toBe(0);
 }
 
 describe('buildBeltGeometry', () => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTopGeometry, type NecklineType } from './top';
+import { expectOutwardWinding } from './windingTestHelpers';
 
 const BASE = {
   torsoRadius: 0.3,
@@ -49,6 +50,14 @@ describe('buildTopGeometry', () => {
       const deep = build(type, 0.3);
       expect(topRowMinY(deep)).toBeLessThan(topRowMinY(shallow));
     }
+  });
+
+  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+    // necklineDepth を深くすると、ネックラインの落ち込み部分は局所的に急な傾斜(オーバー
+    // ハング状)になり、正しく巻かれていても Y軸からの単純な放射方向とは法線が一致しなく
+    // なる。indices.push(a, b, c) / (c, b, d) の巻き順ルール自体は necklineDepth に関わらず
+    // 同一なので、彫り込みのない(=単純な円柱の壁になる)状態で巻き順ルールを検証する。
+    expectOutwardWinding(build('round', 0));
   });
 
   it('裾(最下段の行)は necklineDepth の影響を受けない', () => {

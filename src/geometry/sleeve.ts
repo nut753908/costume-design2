@@ -8,10 +8,32 @@ export interface SleeveParams {
   segments: number;
 }
 
-const SLEEVE_ANGLES = [Math.PI / 2, -Math.PI / 2] as const; // 右肩と左肩
+export const SLEEVE_ANGLES = [Math.PI / 2, -Math.PI / 2] as const; // 右肩と左肩
 const SLEEVE_DROOP = Math.PI / 5; // 水平から約36度下がる
 const SLEEVE_INSET = 0.75; // 開始リングを内側に引き込み、浮かずに胴体の壁と重なるようにする
 const SLEEVE_TAPER = 0.85; // 開始リングに対する終了リングの半径の割合
+
+export interface SleeveTubeFrame {
+  origin: THREE.Vector3;
+  axis: THREE.Vector3;
+  tangent: THREE.Vector3;
+  binormal: THREE.Vector3;
+}
+
+/** 肩の originAngle(SLEEVE_ANGLES のいずれか)における、チューブのローカルフレームを計算する。
+ * テスト側(巻き順の外向き判定)からも同じ式を再利用できるよう、独立した関数として切り出している。 */
+export function sleeveTubeFrame(originAngle: number, attachRadius: number): SleeveTubeFrame {
+  const outward = new THREE.Vector3(Math.sin(originAngle), 0, Math.cos(originAngle));
+  const tangent = new THREE.Vector3(Math.cos(originAngle), 0, -Math.sin(originAngle));
+  const axis = outward
+    .clone()
+    .multiplyScalar(Math.cos(SLEEVE_DROOP))
+    .add(new THREE.Vector3(0, -Math.sin(SLEEVE_DROOP), 0))
+    .normalize();
+  const binormal = new THREE.Vector3().crossVectors(axis, tangent).normalize();
+  const origin = outward.clone().multiplyScalar(attachRadius * SLEEVE_INSET);
+  return { origin, axis, tangent, binormal };
+}
 
 /** テーパー状の短いチューブ(左右)を1つのジオメトリとして構築する。body.ts の腕の円柱が
  * 胴体のカプセルと重なるのと同じ方法で、肩の位置で top の胴体の壁と重なることを意図している —
@@ -41,15 +63,7 @@ function appendSleeveTube(
   sleeveLength: number,
   segments: number,
 ): void {
-  const outward = new THREE.Vector3(Math.sin(originAngle), 0, Math.cos(originAngle));
-  const tangent = new THREE.Vector3(Math.cos(originAngle), 0, -Math.sin(originAngle));
-  const axis = outward
-    .clone()
-    .multiplyScalar(Math.cos(SLEEVE_DROOP))
-    .add(new THREE.Vector3(0, -Math.sin(SLEEVE_DROOP), 0))
-    .normalize();
-  const binormal = new THREE.Vector3().crossVectors(axis, tangent).normalize();
-  const origin = outward.clone().multiplyScalar(attachRadius * SLEEVE_INSET);
+  const { origin, axis, tangent, binormal } = sleeveTubeFrame(originAngle, attachRadius);
 
   const baseIndex = positions.length / 3;
   const rows = 2; // 開始リング(胴体側) + 終了リング(袖先) — まっすぐなテーパーチューブ

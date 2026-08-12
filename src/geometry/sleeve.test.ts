@@ -1,7 +1,19 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { buildSleeveGeometry } from './sleeve';
+import { buildSleeveGeometry, sleeveTubeFrame, SLEEVE_ANGLES } from './sleeve';
+import { expectOutwardWinding } from './windingTestHelpers';
 
 const BASE = { attachRadius: 0.3, sleeveRadius: 0.085, segments: 12 } as const;
+
+// sleeve のチューブは Y軸ではなく、肩ごとに斜めに伸びるローカルな軸を持つ。build 順
+// (SLEEVE_ANGLES の順)に position/index が連結されるため、index 配列の前半/後半でどちらの
+// 肩の originAngle を使うかを判定し、sleeveTubeFrame と同じ式で軸上の最近点を求める。
+function sleeveAxisPoint(centroid: THREE.Vector3, i: number, totalIndexCount: number): THREE.Vector3 {
+  const originAngle = i < totalIndexCount / 2 ? SLEEVE_ANGLES[0] : SLEEVE_ANGLES[1];
+  const { origin, axis } = sleeveTubeFrame(originAngle, BASE.attachRadius);
+  const t = centroid.clone().sub(origin).dot(axis);
+  return origin.clone().add(axis.clone().multiplyScalar(t));
+}
 
 describe('buildSleeveGeometry', () => {
   it('NaN 頂点のない、妥当で退化していないジオメトリを生成する', () => {
@@ -49,5 +61,9 @@ describe('buildSleeveGeometry', () => {
     const vertexCount = geometry.getAttribute('position').count;
     // 2チューブ * 2行 * (segments + 1) 列
     expect(vertexCount).toBe(2 * 2 * (BASE.segments + 1));
+  });
+
+  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+    expectOutwardWinding(buildSleeveGeometry({ ...BASE, sleeveLength: 0.22 }), sleeveAxisPoint);
   });
 });
