@@ -1,6 +1,5 @@
 import * as THREE from 'three';
-
-export type NecklineType = 'round' | 'v' | 'square';
+import { necklineWeight, type NecklineType } from './neckline';
 
 export interface TopParams {
   torsoRadius: number;
@@ -9,26 +8,6 @@ export interface TopParams {
   necklineDepth: number;
   angleSegments: number;
   heightSegments: number;
-}
-
-const NECKLINE_HALF_WIDTH = Math.PI / 3; // 落ち込みは正面から左右60度でゼロまでテーパーする
-
-/** 0(正面、angle=0)が落ち込みの最深点で、NECKLINE_HALF_WIDTH で0までテーパーする。 */
-function necklineWeight(type: NecklineType, angle: number): number {
-  let a = angle;
-  if (a > Math.PI) a -= Math.PI * 2;
-  if (Math.abs(a) > NECKLINE_HALF_WIDTH) return 0;
-  const t = Math.abs(a) / NECKLINE_HALF_WIDTH;
-
-  switch (type) {
-    case 'square':
-      return 1;
-    case 'v':
-      return 1 - t;
-    case 'round':
-    default:
-      return 1 - t * t;
-  }
 }
 
 /** ノースリーブのトップスをリンググリッドのチューブとして構築する(Lathe/Extrude では

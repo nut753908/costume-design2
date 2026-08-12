@@ -127,6 +127,17 @@ export const initialNodes: Node[] = [
   { id: 'socksColor', type: 'colorInput', position: { x: 900, y: 2110 }, data: { hex: '#d4a83a', label: 'Socks Color' } },
   { id: 'socksMaterial', type: 'toonMaterial', position: { x: 900, y: 2210 }, data: {} },
   { id: 'socksOutput', type: 'garmentOutput', position: { x: 620, y: 4490 }, data: { anchor: 'feet', offsetY: 0, fallbackColor: '#d4a83a' } },
+
+  { id: 'dressTorsoRadius', type: 'numberInput', position: { x: 40, y: 4820 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
+  { id: 'dressHemRadius', type: 'numberInput', position: { x: 40, y: 4930 }, data: { value: 0.55, min: 0.3, max: 1.0, step: 0.01, label: 'Hem Radius' } },
+  { id: 'dressLength', type: 'numberInput', position: { x: 40, y: 5040 }, data: { value: 0.9, min: 0.4, max: 1.3, step: 0.01, label: 'Length' } },
+  { id: 'dressNeckline', type: 'enumInput', position: { x: 40, y: 5150 }, data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
+  { id: 'dressNecklineDepth', type: 'numberInput', position: { x: 40, y: 5260 }, data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
+  { id: 'dressTorsoRadiusScale', type: 'numberMultiply', position: { x: 190, y: 4820 }, data: {} },
+  { id: 'dressGen', type: 'dressGenerator', position: { x: 340, y: 5040 }, data: {} },
+  { id: 'dressColor', type: 'colorInput', position: { x: 900, y: 2310 }, data: { hex: '#3d7a72', label: 'Dress Color' } },
+  { id: 'dressMaterial', type: 'toonMaterial', position: { x: 900, y: 2410 }, data: {} },
+  { id: 'dressOutput', type: 'garmentOutput', position: { x: 620, y: 5040 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#3d7a72' } },
 ];
 
 export const initialEdges: Edge[] = [
@@ -242,6 +253,17 @@ export const initialEdges: Edge[] = [
   { id: 'e-socks-geometry', source: 'socksGen', sourceHandle: 'geometry', target: 'socksOutput', targetHandle: 'geometry' },
   { id: 'e-socks-color', source: 'socksColor', sourceHandle: 'color', target: 'socksMaterial', targetHandle: 'color' },
   { id: 'e-socks-material', source: 'socksMaterial', sourceHandle: 'material', target: 'socksOutput', targetHandle: 'material' },
+
+  { id: 'e-dress-torso-radius', source: 'dressTorsoRadius', sourceHandle: 'value', target: 'dressTorsoRadiusScale', targetHandle: 'value' },
+  { id: 'e-dress-torso-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'dressTorsoRadiusScale', targetHandle: 'factor' },
+  { id: 'e-dress-torso-radius-scaled', source: 'dressTorsoRadiusScale', sourceHandle: 'value', target: 'dressGen', targetHandle: 'torsoRadius' },
+  { id: 'e-dress-hem-radius', source: 'dressHemRadius', sourceHandle: 'value', target: 'dressGen', targetHandle: 'hemRadius' },
+  { id: 'e-dress-length', source: 'dressLength', sourceHandle: 'value', target: 'dressGen', targetHandle: 'length' },
+  { id: 'e-dress-neckline', source: 'dressNeckline', sourceHandle: 'value', target: 'dressGen', targetHandle: 'necklineType' },
+  { id: 'e-dress-neckline-depth', source: 'dressNecklineDepth', sourceHandle: 'value', target: 'dressGen', targetHandle: 'necklineDepth' },
+  { id: 'e-dress-geometry', source: 'dressGen', sourceHandle: 'geometry', target: 'dressOutput', targetHandle: 'geometry' },
+  { id: 'e-dress-color', source: 'dressColor', sourceHandle: 'color', target: 'dressMaterial', targetHandle: 'color' },
+  { id: 'e-dress-material', source: 'dressMaterial', sourceHandle: 'material', target: 'dressOutput', targetHandle: 'material' },
 ];
 
 interface HistorySnapshot {

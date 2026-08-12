@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildTopGeometry, type NecklineType } from './top';
+import { buildTopGeometry } from './top';
+import type { NecklineType } from './neckline';
 import { expectOutwardWinding } from './windingTestHelpers';
 
 const BASE = {

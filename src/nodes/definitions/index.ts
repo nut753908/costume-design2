@@ -7,6 +7,7 @@ import './colorInput';
 import './toonMaterial';
 import './skirtGenerator';
 import './topGenerator';
+import './dressGenerator';
 import './sleeveGenerator';
 import './pantsGenerator';
 import './shoesGenerator';

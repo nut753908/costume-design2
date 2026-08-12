@@ -1,6 +1,7 @@
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
-import { buildTopGeometry, type NecklineType } from '../../geometry/top';
+import { buildTopGeometry } from '../../geometry/top';
+import type { NecklineType } from '../../geometry/neckline';
 
 export interface TopGeneratorData extends Record<string, unknown> {
   torsoRadius?: number;
