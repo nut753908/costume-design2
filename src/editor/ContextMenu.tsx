@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { groupNodeTypesByCategory } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
 import { CATEGORY_LABELS } from './paletteShared';
+import { useDismissMenu } from './useDismissMenu';
 
 export interface ContextMenuState {
   x: number;
@@ -21,25 +22,7 @@ export function ContextMenu({ state, onClose }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const groups = useMemo(() => groupNodeTypesByCategory(), []);
 
-  useEffect(() => {
-    if (!state) return;
-
-    const handlePointerDown = (event: PointerEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [state, onClose]);
+  useDismissMenu(!!state, menuRef, onClose);
 
   if (!state) return null;
 

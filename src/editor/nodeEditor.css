@@ -211,6 +211,12 @@
   background: #eee6d8;
 }
 
+.context-menu__item--danger:hover {
+  background: #f3d4d4;
+  border-color: #b0413e;
+  color: #b0413e;
+}
+
 .rf-edge__delete {
   position: absolute;
   pointer-events: all;
