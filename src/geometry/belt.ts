@@ -19,10 +19,14 @@ export function buildBeltGeometry(params: BeltParams): THREE.BufferGeometry {
   const bulgeRadius = radius * bulge;
   const half = thickness / 2;
 
+  // lower: y=-thickness(radius, 下端) 〜 y=-half(bulgeRadius, 中間)。buildEasedLatheProfile は
+  // 常に y=0 起点で返すため、下半分として使うには半分の高さぶん下にシフトする必要がある。
   const lower = buildEasedLatheProfile(bulgeRadius, radius, half, 'down', PROFILE_STEPS);
   const upper = buildEasedLatheProfile(radius, bulgeRadius, half, 'down', PROFILE_STEPS);
   for (const p of lower) p.y -= half;
 
+  // 継ぎ目(y=-half)は lower の最後の点と upper の最初の点が両方 bulgeRadius になり一致する
+  // (どちらも eased 区間の bulgeRadius 側の端点であるため)。重複頂点を避けるため lower 側を除く。
   const points = [...lower.slice(0, -1), ...upper];
   return new THREE.LatheGeometry(points, segments);
 }
