@@ -14,6 +14,10 @@ import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 import { getNodeType } from '../nodes/registry';
 import { computeAutoLayout } from '../nodes/autoLayout';
 
+/** localStorage の永続化キー。persist の name とErrorBoundaryのリセット処理(main.tsx)の
+ * 両方から参照するため、値のドリフトを避けて1箇所にまとめる。 */
+export const GRAPH_STORAGE_KEY = 'costume-design-graph';
+
 export const initialNodes: Node[] = [
   // state/useBodyScale.ts で id により直接読み取られる — ボディスケールはガーメントの
   // geometry/material 出力ではなくシーン全体のパラメータであるため、エッジで何にも配線されていない。
@@ -547,7 +551,7 @@ export const useGraphStore = create<GraphState>()(
       };
     },
     {
-      name: 'costume-design-graph',
+      name: GRAPH_STORAGE_KEY,
       partialize: (state) => ({ nodes: state.nodes, edges: state.edges }),
     },
   ),
