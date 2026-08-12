@@ -15,6 +15,7 @@ import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
 import { useGraphStore } from '../state/graphStore';
 import { getNodeType } from '../nodes/registry';
+import { hasCycle } from '../nodes/evaluateGraph';
 import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
 import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
@@ -124,10 +125,17 @@ function NodeEditorInner() {
         (s) => s.id === connection.targetHandle,
       );
       if (!sourceSocket || !targetSocket) return false;
+      if (sourceSocket.type !== targetSocket.type) return false;
 
-      return sourceSocket.type === targetSocket.type;
+      // この接続を加えた結果グラフが循環してしまうなら拒否する。循環したまま
+      // onConnect が走ると次の描画で evaluateGraph() が GraphCycleError を投げ、
+      // どこにも try/catch が無いため白画面クラッシュに直結する — 事前に弾く。
+      return !hasCycle(nodes, [
+        ...edges,
+        { source: connection.source, target: connection.target },
+      ]);
     },
-    [nodes],
+    [nodes, edges],
   );
 
   const onDragOver = useCallback((event: DragEvent) => {

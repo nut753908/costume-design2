@@ -65,13 +65,17 @@ function literalSocketValue(type: SocketValue['type'], raw: unknown): SocketValu
   return { type, value: raw } as SocketValue;
 }
 
-function topologicalSort(nodes: GraphNode[], edges: GraphEdge[]): string[] {
+/** Kahn のアルゴリズム本体。循環に含まれるノードは結果に現れないため、
+ * `order.length !== nodeIds.length` で循環の有無を判定できる。 topologicalSort()
+ * (例外を投げて呼び出し元に知らせる)と hasCycle()(真偽値で知らせる)の両方が
+ * この同一実装を共有することで、「何が循環とみなされるか」の定義がずれないようにしている。 */
+function topologicalOrder(nodeIds: string[], edges: { source: string; target: string }[]): string[] {
   const inDegree = new Map<string, number>();
   const dependents = new Map<string, string[]>();
 
-  for (const node of nodes) {
-    inDegree.set(node.id, 0);
-    dependents.set(node.id, []);
+  for (const id of nodeIds) {
+    inDegree.set(id, 0);
+    dependents.set(id, []);
   }
   for (const edge of edges) {
     if (!inDegree.has(edge.source) || !inDegree.has(edge.target)) continue;
@@ -79,7 +83,7 @@ function topologicalSort(nodes: GraphNode[], edges: GraphEdge[]): string[] {
     dependents.get(edge.source)!.push(edge.target);
   }
 
-  const queue = nodes.filter((n) => inDegree.get(n.id) === 0).map((n) => n.id);
+  const queue = nodeIds.filter((id) => inDegree.get(id) === 0);
   const order: string[] = [];
 
   while (queue.length > 0) {
@@ -92,10 +96,33 @@ function topologicalSort(nodes: GraphNode[], edges: GraphEdge[]): string[] {
     }
   }
 
+  return order;
+}
+
+function topologicalSort(nodes: GraphNode[], edges: GraphEdge[]): string[] {
+  const order = topologicalOrder(
+    nodes.map((n) => n.id),
+    edges,
+  );
   if (order.length !== nodes.length) {
     const remaining = nodes.map((n) => n.id).filter((id) => !order.includes(id));
     throw new GraphCycleError(remaining);
   }
-
   return order;
+}
+
+/** 与えられたノード/エッジの組が循環を含むかどうかを判定する。
+ * ノード接続時の事前チェック(NodeEditor.tsx の isValidConnection)や、Import JSON・
+ * プリセット読み込みの事前検証(state/validateGraph.ts)から使う — どちらも
+ * evaluateGraph() を実際に呼んで GraphCycleError を踏んでからでは手遅れ(例外が
+ * 未捕捉のままレンダー中に投げられる)なため、投げる前に判定できる形で公開する。 */
+export function hasCycle(
+  nodes: { id: string }[],
+  edges: { source: string; target: string }[],
+): boolean {
+  const order = topologicalOrder(
+    nodes.map((n) => n.id),
+    edges,
+  );
+  return order.length !== nodes.length;
 }

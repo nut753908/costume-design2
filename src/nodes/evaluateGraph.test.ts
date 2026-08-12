@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { evaluateGraph, GraphCycleError } from './evaluateGraph';
+import { evaluateGraph, GraphCycleError, hasCycle } from './evaluateGraph';
 import { registerNodeType, nodeTypeRegistry } from './registry';
 import type { GraphEdge, GraphNode, SocketValue } from './types';
 
@@ -88,5 +88,34 @@ describe('evaluateGraph', () => {
     ];
 
     expect(() => evaluateGraph(nodes, edges)).toThrow(GraphCycleError);
+  });
+});
+
+describe('hasCycle', () => {
+  it('循環が無ければ false を返す', () => {
+    const nodes = [{ id: 'a' }, { id: 'b' }];
+    const edges = [{ source: 'a', target: 'b' }];
+    expect(hasCycle(nodes, edges)).toBe(false);
+  });
+
+  it('循環があれば true を返す(evaluateGraph が GraphCycleError を投げるのと同じ定義)', () => {
+    const nodes = [{ id: 'a' }, { id: 'b' }];
+    const edges = [
+      { source: 'a', target: 'b' },
+      { source: 'b', target: 'a' },
+    ];
+    expect(hasCycle(nodes, edges)).toBe(true);
+  });
+
+  it('新しいエッジを1本加えるだけで循環になるケースを検出できる(接続時の事前チェック用途)', () => {
+    const nodes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+    const existingEdges = [
+      { source: 'a', target: 'b' },
+      { source: 'b', target: 'c' },
+    ];
+    expect(hasCycle(nodes, existingEdges)).toBe(false);
+
+    const candidateEdges = [...existingEdges, { source: 'c', target: 'a' }];
+    expect(hasCycle(nodes, candidateEdges)).toBe(true);
   });
 });
