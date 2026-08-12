@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { computeBodyAnchors, computeBodyDimensions, computeBodyLayout } from './body';
 
-describe('body scale params', () => {
-  it('scales vertical dimensions with heightScale, leaving radii untouched', () => {
+describe('ボディのスケールパラメータ', () => {
+  it('heightScale に応じて縦方向の寸法をスケールし、半径は変えない', () => {
     const base = computeBodyDimensions({ heightScale: 1, buildScale: 1 });
     const taller = computeBodyDimensions({ heightScale: 1.2, buildScale: 1 });
     expect(taller.legHeight).toBeCloseTo(base.legHeight * 1.2);
@@ -12,7 +12,7 @@ describe('body scale params', () => {
     expect(taller.legRadius).toBeCloseTo(base.legRadius);
   });
 
-  it('scales radii/spacing with buildScale, leaving vertical lengths untouched', () => {
+  it('buildScale に応じて半径・間隔をスケールし、縦方向の長さは変えない', () => {
     const base = computeBodyDimensions({ heightScale: 1, buildScale: 1 });
     const broader = computeBodyDimensions({ heightScale: 1, buildScale: 1.3 });
     expect(broader.torsoRadius).toBeCloseTo(base.torsoRadius * 1.3);
@@ -20,7 +20,7 @@ describe('body scale params', () => {
     expect(broader.legHeight).toBeCloseTo(base.legHeight);
   });
 
-  it('raises the waist/shoulder anchors as height increases', () => {
+  it('身長が高くなるほど waist/shoulder のアンカーが上がる', () => {
     const shortLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 0.85, buildScale: 1 }));
     const tallLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 1.2, buildScale: 1 }));
     const shortAnchors = computeBodyAnchors(shortLayout);

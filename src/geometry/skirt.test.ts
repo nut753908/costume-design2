@@ -7,7 +7,7 @@ function positions(geometry: THREE.BufferGeometry): Float32Array {
 }
 
 describe('buildSkirtGeometry', () => {
-  it('produces a valid, non-degenerate geometry', () => {
+  it('妥当で退化していないジオメトリを生成する', () => {
     const geometry = buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 0.5, segments: 16 });
     const index = geometry.getIndex();
     expect(index).not.toBeNull();
@@ -21,7 +21,7 @@ describe('buildSkirtGeometry', () => {
     }
   });
 
-  it('grows the hem radius as flare increases', () => {
+  it('flare が大きくなるほど裾の半径が広がる', () => {
     const narrow = buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 0.1, segments: 16 });
     const wide = buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 1.5, segments: 16 });
 
@@ -34,7 +34,7 @@ describe('buildSkirtGeometry', () => {
     expect(wideRadius).toBeGreaterThan(narrowRadius);
   });
 
-  it('extends further down as length increases', () => {
+  it('length が長くなるほど下方向に伸びる', () => {
     const short = buildSkirtGeometry({ waistRadius: 0.3, length: 0.3, flare: 0.5, segments: 16 });
     const long = buildSkirtGeometry({ waistRadius: 0.3, length: 1.0, flare: 0.5, segments: 16 });
 
@@ -44,7 +44,7 @@ describe('buildSkirtGeometry', () => {
     expect(long.boundingBox!.min.y).toBeLessThan(short.boundingBox!.min.y);
   });
 
-  it('increases vertex count with more segments', () => {
+  it('segments が増えるほど頂点数が増える', () => {
     const coarse = buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 0.5, segments: 8 });
     const fine = buildSkirtGeometry({ waistRadius: 0.3, length: 0.5, flare: 0.5, segments: 32 });
 

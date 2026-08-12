@@ -13,7 +13,7 @@ function build(necklineType: NecklineType, necklineDepth: number) {
 }
 
 describe('buildTopGeometry', () => {
-  it('produces a valid, non-degenerate geometry with no NaN vertices', () => {
+  it('NaN 頂点のない、妥当で退化していないジオメトリを生成する', () => {
     const geometry = build('round', 0.15);
     const index = geometry.getIndex();
     expect(index).not.toBeNull();
@@ -27,7 +27,7 @@ describe('buildTopGeometry', () => {
     }
   });
 
-  it('has the expected vertex count for the ring-grid dimensions', () => {
+  it('リンググリッドの寸法に対して期待通りの頂点数になる', () => {
     const geometry = build('round', 0.15);
     const vertexCount = geometry.getAttribute('position').count;
     expect(vertexCount).toBe((BASE.angleSegments + 1) * (BASE.heightSegments + 1));
@@ -43,7 +43,7 @@ describe('buildTopGeometry', () => {
     return min;
   }
 
-  it('lowers the front of the top ring as necklineDepth increases, for every neckline type', () => {
+  it('どのネックラインタイプでも necklineDepth が深くなるほど最上段リングの前面が下がる', () => {
     for (const type of ['round', 'v', 'square'] as const) {
       const shallow = build(type, 0.02);
       const deep = build(type, 0.3);
@@ -51,7 +51,7 @@ describe('buildTopGeometry', () => {
     }
   });
 
-  it('leaves the hem (bottom row) unaffected by necklineDepth', () => {
+  it('裾(最下段の行)は necklineDepth の影響を受けない', () => {
     const shallow = build('v', 0.02);
     const deep = build('v', 0.3);
     const shallowPos = shallow.getAttribute('position').array as Float32Array;

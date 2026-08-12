@@ -43,7 +43,7 @@ beforeAll(() => {
 });
 
 describe('evaluateGraph', () => {
-  it('propagates values through connected edges in topological order', () => {
+  it('接続されたエッジを通じてトポロジカル順に値を伝播する', () => {
     const nodes: GraphNode[] = [
       { id: 'src1', type: 'testSource', data: { value: 3 } },
       { id: 'src2', type: 'testSource', data: { value: 4 } },
@@ -58,13 +58,13 @@ describe('evaluateGraph', () => {
     expect(result.get('add')?.value).toEqual({ type: 'number', value: 7 });
   });
 
-  it('falls back to the node literal data value for unconnected sockets', () => {
+  it('未接続のソケットはノード自身のリテラルな data 値にフォールバックする', () => {
     const nodes: GraphNode[] = [{ id: 'add', type: 'testAdd', data: { a: 10, b: 5 } }];
     const result = evaluateGraph(nodes, []);
     expect(result.get('add')?.value).toEqual({ type: 'number', value: 15 });
   });
 
-  it('mixes a connected input with an unconnected literal fallback', () => {
+  it('接続された入力と未接続のリテラルフォールバックが混在しても動作する', () => {
     const nodes: GraphNode[] = [
       { id: 'src1', type: 'testSource', data: { value: 3 } },
       { id: 'add', type: 'testAdd', data: { b: 100 } },
@@ -77,7 +77,7 @@ describe('evaluateGraph', () => {
     expect(result.get('add')?.value).toEqual({ type: 'number', value: 103 });
   });
 
-  it('throws GraphCycleError when the graph contains a cycle', () => {
+  it('グラフに循環がある場合は GraphCycleError を投げる', () => {
     const nodes: GraphNode[] = [
       { id: 'a', type: 'testAdd', data: {} },
       { id: 'b', type: 'testAdd', data: {} },

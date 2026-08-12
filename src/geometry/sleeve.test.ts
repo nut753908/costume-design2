@@ -4,7 +4,7 @@ import { buildSleeveGeometry } from './sleeve';
 const BASE = { attachRadius: 0.3, sleeveRadius: 0.085, segments: 12 } as const;
 
 describe('buildSleeveGeometry', () => {
-  it('produces a valid, non-degenerate geometry with no NaN vertices', () => {
+  it('NaN 頂点のない、妥当で退化していないジオメトリを生成する', () => {
     const geometry = buildSleeveGeometry({ ...BASE, sleeveLength: 0.22 });
     const index = geometry.getIndex();
     expect(index).not.toBeNull();
@@ -18,7 +18,7 @@ describe('buildSleeveGeometry', () => {
     }
   });
 
-  it('produces two tubes (right + left) with mirrored X extents', () => {
+  it('X方向に鏡像となる2本のチューブ(右+左)を生成する', () => {
     const geometry = buildSleeveGeometry({ ...BASE, sleeveLength: 0.22 });
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
@@ -28,7 +28,7 @@ describe('buildSleeveGeometry', () => {
     expect(box.max.x).toBeCloseTo(-box.min.x, 1);
   });
 
-  it('extends further outward as sleeveLength increases', () => {
+  it('sleeveLength が長くなるほど外側に伸びる', () => {
     const short = buildSleeveGeometry({ ...BASE, sleeveLength: 0.05 });
     const long = buildSleeveGeometry({ ...BASE, sleeveLength: 0.4 });
     short.computeBoundingBox();
@@ -36,7 +36,7 @@ describe('buildSleeveGeometry', () => {
     expect(long.boundingBox!.max.x).toBeGreaterThan(short.boundingBox!.max.x);
   });
 
-  it('sits lower (drooping) as sleeveLength increases', () => {
+  it('sleeveLength が長くなるほど(垂れ下がって)低い位置になる', () => {
     const short = buildSleeveGeometry({ ...BASE, sleeveLength: 0.05 });
     const long = buildSleeveGeometry({ ...BASE, sleeveLength: 0.4 });
     short.computeBoundingBox();
@@ -44,7 +44,7 @@ describe('buildSleeveGeometry', () => {
     expect(long.boundingBox!.min.y).toBeLessThan(short.boundingBox!.min.y);
   });
 
-  it('has the expected vertex count for the given segment count', () => {
+  it('指定した segments に対して期待通りの頂点数になる', () => {
     const geometry = buildSleeveGeometry({ ...BASE, sleeveLength: 0.22 });
     const vertexCount = geometry.getAttribute('position').count;
     // 2チューブ * 2行 * (segments + 1) 列
