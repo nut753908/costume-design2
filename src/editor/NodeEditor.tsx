@@ -22,6 +22,7 @@ import { NodePalette } from './NodePalette';
 import { DeletableEdge } from './DeletableEdge';
 import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
+import { HistoryControls } from './HistoryControls';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NODE_TYPE_DND_MIME } from './paletteShared';
 
@@ -120,6 +121,7 @@ function NodeEditorInner() {
       <Background />
       <Controls />
       <NodePalette />
+      <HistoryControls />
       <GraphIO />
       <PresetPanel />
       <ContextMenu state={menuState} onClose={() => setMenuState(null)} />

@@ -176,10 +176,28 @@ const initialEdges: Edge[] = [
   { id: 'e-scarf-material', source: 'scarfMaterial', sourceHandle: 'material', target: 'scarfOutput', targetHandle: 'material' },
 ];
 
+interface HistorySnapshot {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+const HISTORY_LIMIT = 100;
+/** スライダー/カラーピッカーのドラッグ中に連続発火する updateNodeData 呼び出しを
+ * 1回のUndo単位にまとめるための猶予時間。この時間内に同じキーで再度呼ばれた場合は
+ * 新しい履歴エントリを積まず、直前のジェスチャーの続きとみなす。 */
+const COALESCE_MS = 500;
+
 interface GraphState {
   nodes: Node[];
   edges: Edge[];
   evaluatedResults: EvaluatedGraph | null;
+  past: HistorySnapshot[];
+  future: HistorySnapshot[];
+  /** 直近の履歴プッシュを識別するキーとタイムスタンプ(コアレッシング用の内部状態)。 */
+  _historyKey: string | null;
+  _historyAt: number;
+  /** ノードのドラッグ中かどうか(ドラッグ開始時にのみ履歴を1件積むため)。 */
+  _dragging: boolean;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -187,30 +205,104 @@ interface GraphState {
   setEvaluatedResults: (results: EvaluatedGraph) => void;
   addNode: (type: string, position: { x: number; y: number }) => void;
   loadGraph: (nodes: Node[], edges: Edge[]) => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 export const useGraphStore = create<GraphState>()(
   persist(
-    (set, get) => ({
-      nodes: initialNodes,
-      edges: initialEdges,
-      evaluatedResults: null,
-      onNodesChange: (changes) => set({ nodes: applyNodeChanges(changes, get().nodes) }),
-      onEdgesChange: (changes) => set({ edges: applyEdgeChanges(changes, get().edges) }),
-      onConnect: (connection) => set({ edges: addEdge(connection, get().edges) }),
-      updateNodeData: (id, data) =>
+    (set, get) => {
+      /** 現在の nodes/edges を過去スタックに積み、redo スタックをクリアする。
+       * key を指定すると、同じ key で `coalesceMs` 以内に再度呼ばれた場合は
+       * 新しいエントリを積まず直前の呼び出しの続きとして扱う(1ジェスチャー=1エントリ)。 */
+      const pushHistory = (key?: string, coalesceMs = 0) => {
+        const state = get();
+        const now = Date.now();
+        if (key && state._historyKey === key && now - state._historyAt < coalesceMs) {
+          set({ _historyAt: now });
+          return;
+        }
         set({
-          nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n)),
-        }),
-      setEvaluatedResults: (results) => set({ evaluatedResults: results }),
-      addNode: (type, position) => {
-        const def = getNodeType(type);
-        const id = `${type}-${Math.random().toString(36).slice(2, 9)}`;
-        const newNode: Node = { id, type, position, data: def.createDefaultData() };
-        set({ nodes: [...get().nodes, newNode] });
-      },
-      loadGraph: (nodes, edges) => set({ nodes, edges, evaluatedResults: null }),
-    }),
+          past: [...state.past, { nodes: state.nodes, edges: state.edges }].slice(-HISTORY_LIMIT),
+          future: [],
+          _historyKey: key ?? null,
+          _historyAt: now,
+        });
+      };
+
+      return {
+        nodes: initialNodes,
+        edges: initialEdges,
+        evaluatedResults: null,
+        past: [],
+        future: [],
+        _historyKey: null,
+        _historyAt: 0,
+        _dragging: false,
+        onNodesChange: (changes) => {
+          if (changes.some((c) => c.type === 'remove')) {
+            pushHistory();
+          } else if (changes.some((c) => c.type === 'position' && c.dragging) && !get()._dragging) {
+            pushHistory();
+            set({ _dragging: true });
+          }
+          if (changes.some((c) => c.type === 'position' && c.dragging === false)) {
+            set({ _dragging: false });
+          }
+          set({ nodes: applyNodeChanges(changes, get().nodes) });
+        },
+        onEdgesChange: (changes) => {
+          if (changes.some((c) => c.type === 'remove')) pushHistory();
+          set({ edges: applyEdgeChanges(changes, get().edges) });
+        },
+        onConnect: (connection) => {
+          pushHistory();
+          set({ edges: addEdge(connection, get().edges) });
+        },
+        updateNodeData: (id, data) => {
+          pushHistory(`data:${id}`, COALESCE_MS);
+          set({
+            nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n)),
+          });
+        },
+        setEvaluatedResults: (results) => set({ evaluatedResults: results }),
+        addNode: (type, position) => {
+          pushHistory();
+          const def = getNodeType(type);
+          const id = `${type}-${Math.random().toString(36).slice(2, 9)}`;
+          const newNode: Node = { id, type, position, data: def.createDefaultData() };
+          set({ nodes: [...get().nodes, newNode] });
+        },
+        loadGraph: (nodes, edges) =>
+          set({ nodes, edges, evaluatedResults: null, past: [], future: [], _historyKey: null }),
+        undo: () => {
+          const { past, nodes, edges, future } = get();
+          if (past.length === 0) return;
+          const previous = past[past.length - 1];
+          set({
+            nodes: previous.nodes,
+            edges: previous.edges,
+            past: past.slice(0, -1),
+            future: [{ nodes, edges }, ...future],
+            _historyKey: null,
+            _dragging: false,
+          });
+        },
+        redo: () => {
+          const { future, nodes, edges, past } = get();
+          if (future.length === 0) return;
+          const next = future[0];
+          set({
+            nodes: next.nodes,
+            edges: next.edges,
+            future: future.slice(1),
+            past: [...past, { nodes, edges }],
+            _historyKey: null,
+            _dragging: false,
+          });
+        },
+      };
+    },
     {
       name: 'costume-design-graph',
       partialize: (state) => ({ nodes: state.nodes, edges: state.edges }),

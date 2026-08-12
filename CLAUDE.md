@@ -63,6 +63,12 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 
 `state/useBodyScale.ts` は、慣例的な ID を持つ2つのシードノード(`bodyHeight`、`bodyBuild` — 新しいノードタイプではなく、普通の `numberInput` ノード)を、`evaluateGraph` を完全に迂回して zustand ストアから **id で直接**読み取ります。これは「すべてはソケットを介して流れる」というパターンに対する意図的な例外です。ボディスケールはガーメントの `{geometry, material}` 出力ではなく、`Body.tsx` と `Garments.tsx`(アンカー位置のため)の両方が合意する必要のあるシーン全体のパラメータであり、「シーン全体に影響する」構造的な値を表すソケットタイプは存在しないためです。これら2つのノードが削除された場合は `DEFAULT_BODY_SCALE` (1, 1) にフォールバックします。ガーメント自身の半径/長さのスライダーはボディの build に自動同期**されません** — ボディをリサイズすると、既存のガーメントはユーザーが調整するまでゆるい/きつい見た目になることがあります。
 
+### Undo/Redo
+
+`state/graphStore.ts` は `past`/`future` の2つのスナップショットスタック(`{nodes, edges}`)を持ち、Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)と `HistoryControls.tsx` のボタンで操作できます。すべての変更操作(`onNodesChange` の remove、`onEdgesChange` の remove、`onConnect`、`addNode`、`updateNodeData`)は、実際に `set()` する前に内部ヘルパー `pushHistory(key?, coalesceMs?)` を呼びます。
+
+スライダー/カラーピッカーのドラッグは `updateNodeData` を1ジェスチャーあたり何十回も連続発火させるため、`key`(`data:${id}` など)と `coalesceMs` を指定すると、直前のプッシュから `coalesceMs` 以内・同じ `key` での呼び出しはスタックに新規エントリを積まず「同じジェスチャーの続き」として吸収されます(タイムスタンプだけ更新)。ノードのドラッグ移動は `dragging` フラグの立ち上がりエッジ(`_dragging` 内部状態)で1ドラッグ=1エントリに区切っており、こちらは時間ベースのコアレッシングを使っていません。`past`/`future` は localStorage に永続化されず(`partialize` は `nodes`/`edges` のみ)、`loadGraph`(JSON インポート/プリセット読み込み)は履歴をクリアします。
+
 ### 既知の MVP の制約(意図的なもので、バグではありません)
 
 - ノードの追加方法は3通りあります: (1) パレット(`NodePalette.tsx`)の項目をクリックするとカスケード状のオフセットで追加、(2) パレットの項目をキャンバスへドラッグ&ドロップすると、ドロップした座標に追加、(3) キャンバスを右クリックするとその場に `ContextMenu.tsx` が開き、選んだノードタイプがクリック位置に追加されます。いずれも最終的には `useGraphStore().addNode(type, position)` を呼び出しており、位置の変換には React Flow の `screenToFlowPosition` を使っています(そのため `NodeEditor.tsx` は `ReactFlowProvider` で自身をラップし、内側のコンポーネントで `useReactFlow()` を呼ぶ構成になっています)。カテゴリ別のノードタイプ一覧は `nodes/registry.ts` の `groupNodeTypesByCategory()` に共通化されており、パレットとコンテキストメニューの両方がこれを参照します。
