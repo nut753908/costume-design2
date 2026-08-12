@@ -3,7 +3,9 @@ import type { Node } from '@xyflow/react';
 import { useGraphStore } from './graphStore';
 import { DEFAULT_BODY_SCALE, type BodyScaleParams } from '../geometry/body';
 
-function readSeedNumber(nodes: Node[], id: string, fallback: number): number {
+// テスト用に export している。useBodyScale 自体は React フックだが、ノード削除時の
+// フォールバックというロジックの核心はここに集約されているため、直接検証できるようにする。
+export function readSeedNumber(nodes: Node[], id: string, fallback: number): number {
   const node = nodes.find((n) => n.id === id);
   return typeof node?.data.value === 'number' ? node.data.value : fallback;
 }
