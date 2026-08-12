@@ -1,12 +1,19 @@
+import { memo, useEffect, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useGraphStore } from '../../state/graphStore';
 import type { ColorInputData } from '../../nodes/definitions/colorInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
-export function ColorInputNodeView({ id, data }: NodeProps) {
+function ColorInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as ColorInputData;
-  const updateNodeData = useGraphStore((s) => s.updateNodeData);
+  const throttledUpdate = useThrottledNodeDataUpdate(id);
+
+  // ドラッグ中の表示はローカル state で即座に更新し、store への反映(=ジオメトリ再構築+
+  // localStorage 書き込み)は間引く。外部要因(undo/redo・プリセット読み込みなど)で
+  // nodeData.hex が変わった場合は同期する。
+  const [localHex, setLocalHex] = useState(nodeData.hex);
+  useEffect(() => setLocalHex(nodeData.hex), [nodeData.hex]);
 
   return (
     <div className="rf-node">
@@ -14,10 +21,16 @@ export function ColorInputNodeView({ id, data }: NodeProps) {
       <input
         className="rf-node__color"
         type="color"
-        value={nodeData.hex}
-        onChange={(e) => updateNodeData(id, { hex: e.target.value })}
+        value={localHex}
+        onChange={(e) => {
+          const hex = e.target.value;
+          setLocalHex(hex);
+          throttledUpdate({ hex });
+        }}
       />
       <Handle type="source" position={Position.Right} id="color" style={{ background: SOCKET_COLORS.color }} />
     </div>
   );
 }
+
+export const ColorInputNodeView = memo(ColorInputNodeViewImpl);
