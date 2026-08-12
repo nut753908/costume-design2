@@ -78,6 +78,15 @@ const initialNodes: Node[] = [
   { id: 'hatColor', type: 'colorInput', position: { x: 900, y: 1310 }, data: { hex: '#4a3b6b', label: 'Hat Color' } },
   { id: 'hatMaterial', type: 'toonMaterial', position: { x: 900, y: 1410 }, data: {} },
   { id: 'hatOutput', type: 'garmentOutput', position: { x: 620, y: 2710 }, data: { anchor: 'head', offsetY: 0.1, fallbackColor: '#4a3b6b' } },
+
+  { id: 'beltRadius', type: 'numberInput', position: { x: 40, y: 2930 }, data: { value: 0.32, min: 0.2, max: 0.45, step: 0.01, label: 'Radius' } },
+  { id: 'beltThickness', type: 'numberInput', position: { x: 40, y: 3040 }, data: { value: 0.05, min: 0.02, max: 0.12, step: 0.005, label: 'Thickness' } },
+  { id: 'beltBulge', type: 'numberInput', position: { x: 40, y: 3150 }, data: { value: 1.15, min: 1.0, max: 1.5, step: 0.01, label: 'Bulge' } },
+  { id: 'beltSegments', type: 'numberInput', position: { x: 40, y: 3260 }, data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
+  { id: 'beltGen', type: 'beltGenerator', position: { x: 340, y: 3040 }, data: {} },
+  { id: 'beltColor', type: 'colorInput', position: { x: 900, y: 1510 }, data: { hex: '#3a2e26', label: 'Belt Color' } },
+  { id: 'beltMaterial', type: 'toonMaterial', position: { x: 900, y: 1610 }, data: {} },
+  { id: 'beltOutput', type: 'garmentOutput', position: { x: 620, y: 3040 }, data: { anchor: 'waist', offsetY: 0, fallbackColor: '#3a2e26' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -138,6 +147,14 @@ const initialEdges: Edge[] = [
   { id: 'e-hat-geometry', source: 'hatGen', sourceHandle: 'geometry', target: 'hatOutput', targetHandle: 'geometry' },
   { id: 'e-hat-color', source: 'hatColor', sourceHandle: 'color', target: 'hatMaterial', targetHandle: 'color' },
   { id: 'e-hat-material', source: 'hatMaterial', sourceHandle: 'material', target: 'hatOutput', targetHandle: 'material' },
+
+  { id: 'e-belt-radius', source: 'beltRadius', sourceHandle: 'value', target: 'beltGen', targetHandle: 'radius' },
+  { id: 'e-belt-thickness', source: 'beltThickness', sourceHandle: 'value', target: 'beltGen', targetHandle: 'thickness' },
+  { id: 'e-belt-bulge', source: 'beltBulge', sourceHandle: 'value', target: 'beltGen', targetHandle: 'bulge' },
+  { id: 'e-belt-segments', source: 'beltSegments', sourceHandle: 'value', target: 'beltGen', targetHandle: 'segments' },
+  { id: 'e-belt-geometry', source: 'beltGen', sourceHandle: 'geometry', target: 'beltOutput', targetHandle: 'geometry' },
+  { id: 'e-belt-color', source: 'beltColor', sourceHandle: 'color', target: 'beltMaterial', targetHandle: 'color' },
+  { id: 'e-belt-material', source: 'beltMaterial', sourceHandle: 'material', target: 'beltOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {
