@@ -105,6 +105,24 @@
   background: #eee6d8;
 }
 
+.graph-io {
+  display: flex;
+  gap: 8px;
+}
+
+.graph-io__button {
+  padding: 6px 10px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #fdfaf4;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.graph-io__button:hover {
+  background: #eee6d8;
+}
+
 .rf-edge__delete {
   position: absolute;
   pointer-events: all;

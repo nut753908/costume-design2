@@ -149,6 +149,7 @@ interface GraphState {
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
   setEvaluatedResults: (results: EvaluatedGraph) => void;
   addNode: (type: string, position: { x: number; y: number }) => void;
+  loadGraph: (nodes: Node[], edges: Edge[]) => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -171,6 +172,7 @@ export const useGraphStore = create<GraphState>()(
         const newNode: Node = { id, type, position, data: def.createDefaultData() };
         set({ nodes: [...get().nodes, newNode] });
       },
+      loadGraph: (nodes, edges) => set({ nodes, edges, evaluatedResults: null }),
     }),
     {
       name: 'costume-design-graph',

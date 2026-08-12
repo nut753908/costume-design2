@@ -10,6 +10,7 @@ import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
 import { NodePalette } from './NodePalette';
 import { DeletableEdge } from './DeletableEdge';
+import { GraphIO } from './GraphIO';
 
 const nodeTypes: NodeTypes = {
   numberInput: NumberInputNodeView,
@@ -77,6 +78,7 @@ export function NodeEditor() {
       <Background />
       <Controls />
       <NodePalette />
+      <GraphIO />
     </ReactFlow>
   );
 }
