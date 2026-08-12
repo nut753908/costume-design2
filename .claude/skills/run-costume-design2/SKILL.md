@@ -1,0 +1,113 @@
+---
+name: run-costume-design2
+description: costume-design2(ノードグラフで3Dコスチュームをデザインするブラウザアプリ)を起動し、ヘッドレスChromiumで実際に操作してスクリーンショットを撮る。UI/3Dの変更を確認したい、コンソールエラーが無いか確認したい、スライダー/カラーピッカー操作やシーン描画を検証したいときに使う。「アプリを起動して」「動作確認して」「スクリーンショット撮って」のような依頼で使用する。
+---
+
+# costume-design2 を実行・操作する
+
+このアプリはブラウザで動く純クライアントサイドの Vite + React アプリ(バックエンド無し)。
+実行には `.claude/skills/run-costume-design2/driver.mjs` を使う — dev サーバーの起動から
+ヘッドレスChromiumでの操作・スクリーンショット撮影まで一括で行う。
+
+以下のパスはすべてプロジェクトルート(`costume-design2/`)からの相対パス。
+
+## 前提条件
+
+- Node.js / npm(プロジェクト本体のビルドに必要、`npm run build` 等で既に使用)
+- Chromium 実行ファイルが `~/.cache/ms-playwright/chromium-*/chrome-linux64/chrome` に存在すること。
+  無い場合は取得する(ドライバ用の依存を先にインストールしてから):
+  ```bash
+  cd .claude/skills/run-costume-design2 && npm install
+  npx playwright-core install chromium
+  ```
+  (`npx playwright-core install chromium` がサブコマンドとして存在することは確認済み。実際の
+  ダウンロードは今回未検証 — このコンテナには既にキャッシュ済みだったため。)
+
+## セットアップ(初回のみ)
+
+ドライバは `playwright-core` に依存するが、これはこのスキル専用であり、プロジェクト本体の
+`package.json` には追加しない。
+
+```bash
+cd .claude/skills/run-costume-design2
+npm install
+```
+
+## 実行(エージェント向けの本経路)
+
+```bash
+node .claude/skills/run-costume-design2/driver.mjs
+```
+
+やること:
+1. `localhost:5173` が応答していなければ `npm run dev` をプロジェクトルートで自動起動し、
+   準備完了までポーリングで待つ(既に起動済みなら何もしない)。
+2. ヘッドレスChromiumで開き、`.react-flow__node[data-id="skirtWaist"]` と `canvas` の描画を待つ。
+3. 初期状態のスクリーンショットを撮る。
+4. `OrbitControls` でカメラをドラッグ操作し、再描画されることを確認するスクリーンショットを撮る
+   (`frameloop="demand"` でもカメラ操作時に再描画されるかの検証を兼ねる)。
+5. `skirtWaist`(numberInputノード)のスライダーに高頻度のinputイベントを連続発火させ
+   (実際のドラッグ操作の再現)、ジオメトリが追従して変化した後のスクリーンショットを撮る。
+6. `skirtColor`(colorInputノード)の色を変更し、ガーメントの色が変わった後のスクリーンショットを撮る。
+7. コンソールエラー/ページエラーを収集し、1件でもあれば非ゼロ終了。
+8. このスクリプト自身が起動した dev サーバーのみ停止する(元から起動していたものは触らない)。
+
+スクリーンショットは `.claude/skills/run-costume-design2/screenshots/` に出力される
+(`01_initial.png` 〜 `04_after_color_change.png`)。**撮影して終わりではなく、実際に画像を見て
+判断すること** — キャラクターとガーメントが表示されているか、スライダー操作後にガーメント形状が
+変化しているか、色変更後に色が変わっているかを目視確認する。
+
+終了コード0かつ「OK: コンソールエラーなし」であれば成功。それ以外(NG行が出力される、または
+非ゼロ終了)は失敗として扱う。
+
+## 実行(人間向け)
+
+```bash
+npm run dev
+```
+ブラウザで `http://localhost:5173` を開く。ヘッドレス環境では画面を見られないため無意味 —
+エージェントは上記ドライバ経由の経路を使うこと。
+
+## 個別のUI要素を操作したい場合
+
+`driver.mjs` の各ステップは Playwright の `page` オブジェクトに対する通常の操作。他のノードを
+操作したい場合は、ノードの `data-id`(React Flow がノードのDOMラッパー `.react-flow__node` に
+付与する属性、値はグラフ内のノードID)でセレクタを組み立てる:
+
+```js
+page.locator('.react-flow__node[data-id="<ノードID>"] input[type="range"]')  // numberInput
+page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  // colorInput
+page.locator('.react-flow__node[data-id="<ノードID>"] select')               // enumInput
+```
+
+ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(例:
+`skirtWaist`/`skirtColor`/`topRadius`/`topColor` など、ラベルではなく `id` フィールドを使う)。
+
+range/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
+onChangeが発火しない。ネイティブの value setter 経由で値をセットしてから `input` イベントを
+`dispatchEvent` する必要がある(`driver.mjs` 内の該当箇所を参照)。
+
+## Gotchas
+
+- **`chromium-cli` はこの環境に存在しない。** `/run` スキルが第一に案内するツールだが `which
+  chromium-cli` が失敗する。代わりに `playwright-core` を直接使っている。将来 `chromium-cli` が
+  使えるようになったら乗り換えを検討してよいが、その場合もこの `driver.mjs` の操作シーケンス
+  (待機セレクタ・間引き検証手順)はそのまま参考にできる。
+- **`fill()` は使わない。** Playwright の `locator.fill()` は range/color input には正式対応
+  しておらず、意図通りに動かないことがある。ネイティブ value setter + `dispatchEvent(new
+  Event('input', { bubbles: true }))` の組み合わせが確実。
+- **プロジェクト本体に依存を追加していない。** `playwright-core` はこのスキルディレクトリの
+  `package.json`/`node_modules` にのみ存在する(ルートの `.gitignore` の `node_modules` パターン
+  が非アンカーのため、ここも自動的に無視される)。プロジェクト本体の `npm run build`/`npm test`
+  には一切影響しない。
+- **`evaluations` カウンタ(画面右下)は間引きの効き目を確認する手がかりになる。** 例えば
+  スライダーに6回連続でinputイベントを送っても、間引きロジックが効いていれば `evaluations` は
+  1〜2回分しか増えない(6回分ではない)。大きく増えていたら間引きが壊れている疑い。
+
+## Troubleshooting
+
+| 症状 | 原因 / 対処 |
+|---|---|
+| `Chromium 実行ファイルが見つかりません` | `~/.cache/ms-playwright` にキャッシュが無い。`cd .claude/skills/run-costume-design2 && npm install && npx playwright-core install chromium` |
+| `dev server が30秒以内に応答しませんでした` | ポート5173が塞がっている可能性。`lsof -ti:5173 -sTCP:LISTEN \| xargs -r kill` してから再実行 |
+| `.react-flow__node[data-id="skirtWaist"]` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された)。`src/state/graphStore.ts` の `initialNodes` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |

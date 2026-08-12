@@ -1,0 +1,8 @@
+{
+  "name": "run-costume-design2-driver",
+  "private": true,
+  "description": "run-costume-design2 スキル用のブラウザ操作ドライバ(このプロジェクト本体の依存関係には含まれない)",
+  "dependencies": {
+    "playwright-core": "1.62.1"
+  }
+}
