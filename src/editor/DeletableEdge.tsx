@@ -21,6 +21,7 @@ export function DeletableEdge({ id, sourceX, sourceY, targetX, targetY, sourcePo
           type="button"
           className="rf-edge__delete nodrag nopan"
           title="エッジを削除"
+          aria-label="エッジを削除"
           style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
           onClick={() => deleteElements({ edges: [{ id }] })}
         >

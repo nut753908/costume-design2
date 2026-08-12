@@ -8,11 +8,12 @@ export function NodeTitleBar({ id, label }: { id: string; label: string }) {
 
   return (
     <div className="rf-node__title">
-      <span>{label}</span>
+      <span id={`${id}-label`}>{label}</span>
       <button
         type="button"
         className="rf-node__delete nodrag"
         title="ノードを削除"
+        aria-label="ノードを削除"
         onClick={() => deleteElements({ nodes: [{ id }] })}
       >
         ×

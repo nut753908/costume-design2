@@ -12,7 +12,11 @@ function EnumInputNodeViewImpl({ id, data }: NodeProps) {
   return (
     <div className="rf-node">
       <NodeTitleBar id={id} label={nodeData.label ?? 'Enum'} />
-      <select value={nodeData.value} onChange={(e) => updateNodeData(id, { value: e.target.value })}>
+      <select
+        aria-labelledby={`${id}-label`}
+        value={nodeData.value}
+        onChange={(e) => updateNodeData(id, { value: e.target.value })}
+      >
         {nodeData.options.map((opt) => (
           <option key={opt} value={opt}>
             {opt}

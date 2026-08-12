@@ -21,6 +21,7 @@ function ColorInputNodeViewImpl({ id, data }: NodeProps) {
       <input
         className="rf-node__color"
         type="color"
+        aria-labelledby={`${id}-label`}
         value={localHex}
         onChange={(e) => {
           const hex = e.target.value;

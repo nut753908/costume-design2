@@ -27,6 +27,7 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
         min={min}
         max={max}
         step={step}
+        aria-labelledby={`${id}-label`}
         value={localValue}
         onChange={(e) => {
           const value = Number(e.target.value);
