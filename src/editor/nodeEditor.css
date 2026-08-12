@@ -98,7 +98,7 @@
   border-radius: 4px;
   background: #fff;
   font-size: 12px;
-  cursor: pointer;
+  cursor: grab;
 }
 
 .node-palette__item:hover {

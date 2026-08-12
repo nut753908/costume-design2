@@ -1,5 +1,15 @@
-import { useCallback, useState } from 'react';
-import { ReactFlow, Background, Controls, type NodeTypes, type EdgeTypes, type Connection, type Edge } from '@xyflow/react';
+import { useCallback, useState, type DragEvent } from 'react';
+import {
+  ReactFlow,
+  ReactFlowProvider,
+  useReactFlow,
+  Background,
+  Controls,
+  type NodeTypes,
+  type EdgeTypes,
+  type Connection,
+  type Edge,
+} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
 import { useGraphStore } from '../state/graphStore';
@@ -13,6 +23,7 @@ import { DeletableEdge } from './DeletableEdge';
 import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
+import { NODE_TYPE_DND_MIME } from './paletteShared';
 
 const nodeTypes: NodeTypes = {
   numberInput: NumberInputNodeView,
@@ -37,12 +48,14 @@ const edgeTypes: EdgeTypes = {
   default: DeletableEdge,
 };
 
-export function NodeEditor() {
+function NodeEditorInner() {
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
   const onNodesChange = useGraphStore((s) => s.onNodesChange);
   const onEdgesChange = useGraphStore((s) => s.onEdgesChange);
   const onConnect = useGraphStore((s) => s.onConnect);
+  const addNode = useGraphStore((s) => s.addNode);
+  const { screenToFlowPosition } = useReactFlow();
   const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
 
   // 宣言された型(number/color/enum/geometry/material)が同じソケット同士の接続のみを許可する。
@@ -68,6 +81,22 @@ export function NodeEditor() {
     [nodes],
   );
 
+  const onDragOver = useCallback((event: DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback(
+    (event: DragEvent) => {
+      event.preventDefault();
+      const type = event.dataTransfer.getData(NODE_TYPE_DND_MIME);
+      if (!type) return;
+      const position = screenToFlowPosition({ x: event.clientX, y: event.clientY });
+      addNode(type, position);
+    },
+    [addNode, screenToFlowPosition],
+  );
+
   return (
     <ReactFlow
       nodes={nodes}
@@ -84,6 +113,8 @@ export function NodeEditor() {
       }}
       onPaneClick={() => setMenuState(null)}
       onMoveStart={() => setMenuState(null)}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
       fitView
     >
       <Background />
@@ -93,5 +124,13 @@ export function NodeEditor() {
       <PresetPanel />
       <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
     </ReactFlow>
+  );
+}
+
+export function NodeEditor() {
+  return (
+    <ReactFlowProvider>
+      <NodeEditorInner />
+    </ReactFlowProvider>
   );
 }

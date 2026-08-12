@@ -7,3 +7,6 @@ export const CATEGORY_LABELS: Record<NodeCategory, string> = {
   material: 'Materials',
   output: 'Outputs',
 };
+
+/** パレットからキャンバスへのドラッグ&ドロップで、ノードタイプを運ぶための dataTransfer MIME タイプ。 */
+export const NODE_TYPE_DND_MIME = 'application/costume-design-node-type';

@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef, type DragEvent } from 'react';
 import { Panel, useReactFlow } from '@xyflow/react';
 import { groupNodeTypesByCategory } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
-import { CATEGORY_LABELS } from './nodeCategoryLabels';
+import { CATEGORY_LABELS, NODE_TYPE_DND_MIME } from './paletteShared';
 
 export function NodePalette() {
   const addNode = useGraphStore((s) => s.addNode);
@@ -21,6 +21,11 @@ export function NodePalette() {
     [addNode, screenToFlowPosition],
   );
 
+  const handleDragStart = useCallback((event: DragEvent, type: string) => {
+    event.dataTransfer.setData(NODE_TYPE_DND_MIME, type);
+    event.dataTransfer.effectAllowed = 'move';
+  }, []);
+
   return (
     <Panel position="top-left" className="node-palette">
       {groups.map(({ category, items }) => (
@@ -31,6 +36,8 @@ export function NodePalette() {
               key={item.type}
               type="button"
               className="node-palette__item"
+              draggable
+              onDragStart={(event) => handleDragStart(event, item.type)}
               onClick={() => handleAdd(item.type)}
             >
               + {item.label}

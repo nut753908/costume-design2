@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { groupNodeTypesByCategory } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
-import { CATEGORY_LABELS } from './nodeCategoryLabels';
+import { CATEGORY_LABELS } from './paletteShared';
 
 export interface ContextMenuState {
   x: number;
