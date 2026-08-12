@@ -107,6 +107,15 @@ const initialNodes: Node[] = [
   { id: 'jacketColor', type: 'colorInput', position: { x: 900, y: 1910 }, data: { hex: '#4a5c3e', label: 'Jacket Color' } },
   { id: 'jacketMaterial', type: 'toonMaterial', position: { x: 900, y: 2010 }, data: {} },
   { id: 'jacketOutput', type: 'garmentOutput', position: { x: 620, y: 4040 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#4a5c3e' } },
+
+  { id: 'socksAnkleRadius', type: 'numberInput', position: { x: 40, y: 4380 }, data: { value: 0.09, min: 0.05, max: 0.15, step: 0.005, label: 'Ankle Radius' } },
+  { id: 'socksCalfRadius', type: 'numberInput', position: { x: 40, y: 4490 }, data: { value: 0.105, min: 0.05, max: 0.2, step: 0.005, label: 'Calf Radius' } },
+  { id: 'socksHeight', type: 'numberInput', position: { x: 40, y: 4600 }, data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01, label: 'Height' } },
+  { id: 'socksSegments', type: 'numberInput', position: { x: 40, y: 4710 }, data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+  { id: 'socksGen', type: 'socksGenerator', position: { x: 340, y: 4490 }, data: {} },
+  { id: 'socksColor', type: 'colorInput', position: { x: 900, y: 2110 }, data: { hex: '#d4a83a', label: 'Socks Color' } },
+  { id: 'socksMaterial', type: 'toonMaterial', position: { x: 900, y: 2210 }, data: {} },
+  { id: 'socksOutput', type: 'garmentOutput', position: { x: 620, y: 4490 }, data: { anchor: 'feet', offsetY: 0, fallbackColor: '#d4a83a' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -192,6 +201,16 @@ const initialEdges: Edge[] = [
   { id: 'e-jacket-geometry', source: 'jacketGen', sourceHandle: 'geometry', target: 'jacketOutput', targetHandle: 'geometry' },
   { id: 'e-jacket-color', source: 'jacketColor', sourceHandle: 'color', target: 'jacketMaterial', targetHandle: 'color' },
   { id: 'e-jacket-material', source: 'jacketMaterial', sourceHandle: 'material', target: 'jacketOutput', targetHandle: 'material' },
+
+  // Socks は Pants の Leg Spacing を再利用する — shoes と同じく、脚の間隔を変えると靴下の間隔も追従する。
+  { id: 'e-socks-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'socksGen', targetHandle: 'legSpacing' },
+  { id: 'e-socks-ankle-radius', source: 'socksAnkleRadius', sourceHandle: 'value', target: 'socksGen', targetHandle: 'ankleRadius' },
+  { id: 'e-socks-calf-radius', source: 'socksCalfRadius', sourceHandle: 'value', target: 'socksGen', targetHandle: 'calfRadius' },
+  { id: 'e-socks-height', source: 'socksHeight', sourceHandle: 'value', target: 'socksGen', targetHandle: 'height' },
+  { id: 'e-socks-segments', source: 'socksSegments', sourceHandle: 'value', target: 'socksGen', targetHandle: 'segments' },
+  { id: 'e-socks-geometry', source: 'socksGen', sourceHandle: 'geometry', target: 'socksOutput', targetHandle: 'geometry' },
+  { id: 'e-socks-color', source: 'socksColor', sourceHandle: 'color', target: 'socksMaterial', targetHandle: 'color' },
+  { id: 'e-socks-material', source: 'socksMaterial', sourceHandle: 'material', target: 'socksOutput', targetHandle: 'material' },
 ];
 
 interface HistorySnapshot {

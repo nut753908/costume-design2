@@ -45,6 +45,7 @@ const nodeTypes: NodeTypes = {
   beltGenerator: GenericNodeView,
   scarfGenerator: GenericNodeView,
   jacketGenerator: GenericNodeView,
+  socksGenerator: GenericNodeView,
   toonMaterial: GenericNodeView,
   garmentOutput: GenericNodeView,
 };

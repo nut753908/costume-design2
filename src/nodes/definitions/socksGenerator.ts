@@ -1,0 +1,46 @@
+import { registerNodeType } from '../registry';
+import type { SocketValue } from '../types';
+import { buildSocksGeometry } from '../../geometry/socks';
+
+export interface SocksGeneratorData extends Record<string, unknown> {
+  ankleRadius?: number;
+  calfRadius?: number;
+  height?: number;
+  legSpacing?: number;
+  segments?: number;
+}
+
+function asNumber(v: SocketValue | undefined, fallback: number): number {
+  return v?.type === 'number' ? v.value : fallback;
+}
+
+registerNodeType<SocksGeneratorData>({
+  type: 'socksGenerator',
+  label: 'Socks',
+  category: 'generator',
+  inputs: [
+    { id: 'ankleRadius', label: 'Ankle Radius', type: 'number' },
+    { id: 'calfRadius', label: 'Calf Radius', type: 'number' },
+    { id: 'height', label: 'Height', type: 'number' },
+    { id: 'legSpacing', label: 'Leg Spacing', type: 'number' },
+    { id: 'segments', label: 'Segments', type: 'number' },
+  ],
+  outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
+  createDefaultData: () => ({
+    ankleRadius: 0.09,
+    calfRadius: 0.105,
+    height: 0.22,
+    legSpacing: 0.14,
+    segments: 16,
+  }),
+  evaluate: (inputs, data): Record<string, SocketValue> => {
+    const geometry = buildSocksGeometry({
+      ankleRadius: asNumber(inputs.ankleRadius, data.ankleRadius ?? 0.09),
+      calfRadius: asNumber(inputs.calfRadius, data.calfRadius ?? 0.105),
+      height: asNumber(inputs.height, data.height ?? 0.22),
+      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? 0.14),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 16))),
+    });
+    return { geometry: { type: 'geometry', value: geometry } };
+  },
+});
