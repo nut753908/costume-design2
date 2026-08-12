@@ -20,6 +20,7 @@ const nodeTypes: NodeTypes = {
   topGenerator: GenericNodeView,
   sleeveGenerator: GenericNodeView,
   pantsGenerator: GenericNodeView,
+  shoesGenerator: GenericNodeView,
   toonMaterial: GenericNodeView,
   garmentOutput: GenericNodeView,
 };

@@ -51,6 +51,15 @@ const initialNodes: Node[] = [
   { id: 'pantsColor', type: 'colorInput', position: { x: 900, y: 710 }, data: { hex: '#9c7b4f', label: 'Pants Color' } },
   { id: 'pantsMaterial', type: 'toonMaterial', position: { x: 900, y: 810 }, data: {} },
   { id: 'pantsOutput', type: 'garmentOutput', position: { x: 620, y: 1380 }, data: { anchor: 'waist', offsetY: 0, fallbackColor: '#9c7b4f' } },
+
+  { id: 'shoesSole', type: 'numberInput', position: { x: 40, y: 1710 }, data: { value: 0.13, min: 0.1, max: 0.2, step: 0.005, label: 'Sole Radius' } },
+  { id: 'shoesCuff', type: 'numberInput', position: { x: 40, y: 1820 }, data: { value: 0.1, min: 0.08, max: 0.16, step: 0.005, label: 'Cuff Radius' } },
+  { id: 'shoesHeight', type: 'numberInput', position: { x: 40, y: 1930 }, data: { value: 0.12, min: 0.05, max: 0.25, step: 0.005, label: 'Height' } },
+  { id: 'shoesToeLength', type: 'numberInput', position: { x: 40, y: 2040 }, data: { value: 1.5, min: 1, max: 2.5, step: 0.05, label: 'Toe Length' } },
+  { id: 'shoesGen', type: 'shoesGenerator', position: { x: 340, y: 1930 }, data: {} },
+  { id: 'shoesColor', type: 'colorInput', position: { x: 900, y: 910 }, data: { hex: '#3d3630', label: 'Shoes Color' } },
+  { id: 'shoesMaterial', type: 'toonMaterial', position: { x: 900, y: 1010 }, data: {} },
+  { id: 'shoesOutput', type: 'garmentOutput', position: { x: 620, y: 1930 }, data: { anchor: 'feet', offsetY: 0, fallbackColor: '#3d3630' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -86,6 +95,16 @@ const initialEdges: Edge[] = [
   { id: 'e-pants-geometry', source: 'pantsGen', sourceHandle: 'geometry', target: 'pantsOutput', targetHandle: 'geometry' },
   { id: 'e-pants-color', source: 'pantsColor', sourceHandle: 'color', target: 'pantsMaterial', targetHandle: 'color' },
   { id: 'e-pants-material', source: 'pantsMaterial', sourceHandle: 'material', target: 'pantsOutput', targetHandle: 'material' },
+
+  // Shoes は Pants の Leg Spacing を再利用する — 脚の間隔を変えると靴の間隔も一緒に追従する。
+  { id: 'e-shoes-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'legSpacing' },
+  { id: 'e-shoes-sole', source: 'shoesSole', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'soleRadius' },
+  { id: 'e-shoes-cuff', source: 'shoesCuff', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'cuffRadius' },
+  { id: 'e-shoes-height', source: 'shoesHeight', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'height' },
+  { id: 'e-shoes-toe-length', source: 'shoesToeLength', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'toeLength' },
+  { id: 'e-shoes-geometry', source: 'shoesGen', sourceHandle: 'geometry', target: 'shoesOutput', targetHandle: 'geometry' },
+  { id: 'e-shoes-color', source: 'shoesColor', sourceHandle: 'color', target: 'shoesMaterial', targetHandle: 'color' },
+  { id: 'e-shoes-material', source: 'shoesMaterial', sourceHandle: 'material', target: 'shoesOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {

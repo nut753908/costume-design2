@@ -9,4 +9,5 @@ import './skirtGenerator';
 import './topGenerator';
 import './sleeveGenerator';
 import './pantsGenerator';
+import './shoesGenerator';
 import './garmentOutput';

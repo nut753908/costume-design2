@@ -70,9 +70,10 @@ export function computeBodyLayout(d: BodyDimensions): BodyLayout {
   return { feetY, legCenterY, waistY, torsoCenterY, shoulderY, headCenterY, armCenterY };
 }
 
-export function computeBodyAnchors(layout: BodyLayout): Record<'waist' | 'shoulder', THREE.Vector3> {
+export function computeBodyAnchors(layout: BodyLayout): Record<'waist' | 'shoulder' | 'feet', THREE.Vector3> {
   return {
     waist: new THREE.Vector3(0, layout.waistY, 0),
     shoulder: new THREE.Vector3(0, layout.shoulderY, 0),
+    feet: new THREE.Vector3(0, layout.feetY, 0),
   };
 }

@@ -3,7 +3,7 @@ import type { SocketValue } from '../types';
 import { createToonMaterial } from '../../rendering/ToonMaterialFactory';
 
 export interface GarmentOutputData extends Record<string, unknown> {
-  anchor: 'waist' | 'shoulder';
+  anchor: 'waist' | 'shoulder' | 'feet';
   offsetY?: number;
   label?: string;
   fallbackColor?: string;

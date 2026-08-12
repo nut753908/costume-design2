@@ -28,4 +28,9 @@ describe('ボディのスケールパラメータ', () => {
     expect(tallAnchors.waist.y).toBeGreaterThan(shortAnchors.waist.y);
     expect(tallAnchors.shoulder.y).toBeGreaterThan(shortAnchors.shoulder.y);
   });
+
+  it('feet アンカーは常に地面(y=0)にある', () => {
+    const layout = computeBodyLayout(computeBodyDimensions({ heightScale: 1.2, buildScale: 1.1 }));
+    expect(computeBodyAnchors(layout).feet.y).toBe(0);
+  });
 });
