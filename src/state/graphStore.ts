@@ -138,6 +138,19 @@ export const initialNodes: Node[] = [
   { id: 'dressColor', type: 'colorInput', position: { x: 900, y: 2310 }, data: { hex: '#3d7a72', label: 'Dress Color' } },
   { id: 'dressMaterial', type: 'toonMaterial', position: { x: 900, y: 2410 }, data: {} },
   { id: 'dressOutput', type: 'garmentOutput', position: { x: 620, y: 5040 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#3d7a72' } },
+
+  { id: 'bagStrapWidth', type: 'numberInput', position: { x: 40, y: 5390 }, data: { value: 0.04, min: 0.02, max: 0.08, step: 0.005, label: 'Strap Width' } },
+  { id: 'bagStrapThickness', type: 'numberInput', position: { x: 40, y: 5500 }, data: { value: 0.015, min: 0.005, max: 0.03, step: 0.005, label: 'Strap Thickness' } },
+  { id: 'bagShoulderOffset', type: 'numberInput', position: { x: 40, y: 5610 }, data: { value: 0.08, min: 0, max: 0.2, step: 0.01, label: 'Shoulder Offset' } },
+  { id: 'bagHipOffset', type: 'numberInput', position: { x: 40, y: 5720 }, data: { value: 0.26, min: 0, max: 0.4, step: 0.01, label: 'Hip Offset' } },
+  { id: 'bagDrop', type: 'numberInput', position: { x: 40, y: 5830 }, data: { value: 0.55, min: 0.2, max: 0.9, step: 0.01, label: 'Drop' } },
+  { id: 'bagWidth', type: 'numberInput', position: { x: 40, y: 5940 }, data: { value: 0.16, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Width' } },
+  { id: 'bagHeight', type: 'numberInput', position: { x: 40, y: 6050 }, data: { value: 0.14, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Height' } },
+  { id: 'bagDepth', type: 'numberInput', position: { x: 40, y: 6160 }, data: { value: 0.08, min: 0.02, max: 0.2, step: 0.01, label: 'Bag Depth' } },
+  { id: 'bagGen', type: 'bagGenerator', position: { x: 340, y: 5830 }, data: {} },
+  { id: 'bagColor', type: 'colorInput', position: { x: 900, y: 2510 }, data: { hex: '#8a4a2e', label: 'Bag Color' } },
+  { id: 'bagMaterial', type: 'toonMaterial', position: { x: 900, y: 2610 }, data: {} },
+  { id: 'bagOutput', type: 'garmentOutput', position: { x: 620, y: 5830 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#8a4a2e' } },
 ];
 
 export const initialEdges: Edge[] = [
@@ -264,6 +277,18 @@ export const initialEdges: Edge[] = [
   { id: 'e-dress-geometry', source: 'dressGen', sourceHandle: 'geometry', target: 'dressOutput', targetHandle: 'geometry' },
   { id: 'e-dress-color', source: 'dressColor', sourceHandle: 'color', target: 'dressMaterial', targetHandle: 'color' },
   { id: 'e-dress-material', source: 'dressMaterial', sourceHandle: 'material', target: 'dressOutput', targetHandle: 'material' },
+
+  { id: 'e-bag-strap-width', source: 'bagStrapWidth', sourceHandle: 'value', target: 'bagGen', targetHandle: 'strapWidth' },
+  { id: 'e-bag-strap-thickness', source: 'bagStrapThickness', sourceHandle: 'value', target: 'bagGen', targetHandle: 'strapThickness' },
+  { id: 'e-bag-shoulder-offset', source: 'bagShoulderOffset', sourceHandle: 'value', target: 'bagGen', targetHandle: 'shoulderOffset' },
+  { id: 'e-bag-hip-offset', source: 'bagHipOffset', sourceHandle: 'value', target: 'bagGen', targetHandle: 'hipOffset' },
+  { id: 'e-bag-drop', source: 'bagDrop', sourceHandle: 'value', target: 'bagGen', targetHandle: 'drop' },
+  { id: 'e-bag-width', source: 'bagWidth', sourceHandle: 'value', target: 'bagGen', targetHandle: 'bagWidth' },
+  { id: 'e-bag-height', source: 'bagHeight', sourceHandle: 'value', target: 'bagGen', targetHandle: 'bagHeight' },
+  { id: 'e-bag-depth', source: 'bagDepth', sourceHandle: 'value', target: 'bagGen', targetHandle: 'bagDepth' },
+  { id: 'e-bag-geometry', source: 'bagGen', sourceHandle: 'geometry', target: 'bagOutput', targetHandle: 'geometry' },
+  { id: 'e-bag-color', source: 'bagColor', sourceHandle: 'color', target: 'bagMaterial', targetHandle: 'color' },
+  { id: 'e-bag-material', source: 'bagMaterial', sourceHandle: 'material', target: 'bagOutput', targetHandle: 'material' },
 ];
 
 interface HistorySnapshot {

@@ -8,6 +8,7 @@ import './toonMaterial';
 import './skirtGenerator';
 import './topGenerator';
 import './dressGenerator';
+import './bagGenerator';
 import './sleeveGenerator';
 import './pantsGenerator';
 import './shoesGenerator';
