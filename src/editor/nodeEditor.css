@@ -79,6 +79,23 @@
   overflow-y: auto;
 }
 
+.node-palette__search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #fdfaf4;
+  font-size: 12px;
+}
+
+.node-palette__empty {
+  opacity: 0.6;
+  font-size: 12px;
+}
+
 .node-palette__group-title {
   font-weight: 600;
   opacity: 0.6;

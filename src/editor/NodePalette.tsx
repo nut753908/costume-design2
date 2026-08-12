@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, type DragEvent } from 'react';
+import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
 import { Panel, useReactFlow } from '@xyflow/react';
 import { groupNodeTypesByCategory } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
@@ -8,8 +8,20 @@ export function NodePalette() {
   const addNode = useGraphStore((s) => s.addNode);
   const { screenToFlowPosition } = useReactFlow();
   const cascadeRef = useRef(0);
+  const [filter, setFilter] = useState('');
 
   const groups = useMemo(() => groupNodeTypesByCategory(), []);
+
+  const normalizedFilter = filter.trim().toLowerCase();
+  const filteredGroups = useMemo(() => {
+    if (!normalizedFilter) return groups;
+    return groups
+      .map(({ category, items }) => ({
+        category,
+        items: items.filter((item) => item.label.toLowerCase().includes(normalizedFilter)),
+      }))
+      .filter(({ items }) => items.length > 0);
+  }, [groups, normalizedFilter]);
 
   const handleAdd = useCallback(
     (type: string) => {
@@ -28,7 +40,15 @@ export function NodePalette() {
 
   return (
     <Panel position="top-left" className="node-palette">
-      {groups.map(({ category, items }) => (
+      <input
+        className="node-palette__search"
+        type="text"
+        placeholder="ノードを検索..."
+        value={filter}
+        onChange={(e) => setFilter(e.target.value)}
+      />
+      {filteredGroups.length === 0 && <div className="node-palette__empty">見つかりません</div>}
+      {filteredGroups.map(({ category, items }) => (
         <div key={category} className="node-palette__group">
           <div className="node-palette__group-title">{CATEGORY_LABELS[category]}</div>
           {items.map((item) => (
