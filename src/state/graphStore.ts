@@ -14,7 +14,7 @@ import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 import { getNodeType } from '../nodes/registry';
 import { computeAutoLayout } from '../nodes/autoLayout';
 
-const initialNodes: Node[] = [
+export const initialNodes: Node[] = [
   // state/useBodyScale.ts で id により直接読み取られる — ボディスケールはガーメントの
   // geometry/material 出力ではなくシーン全体のパラメータであるため、エッジで何にも配線されていない。
   { id: 'bodyHeight', type: 'numberInput', position: { x: 1160, y: 20 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
@@ -129,7 +129,7 @@ const initialNodes: Node[] = [
   { id: 'socksOutput', type: 'garmentOutput', position: { x: 620, y: 4490 }, data: { anchor: 'feet', offsetY: 0, fallbackColor: '#d4a83a' } },
 ];
 
-const initialEdges: Edge[] = [
+export const initialEdges: Edge[] = [
   { id: 'e-waist', source: 'skirtWaist', sourceHandle: 'value', target: 'skirtWaistScale', targetHandle: 'value' },
   { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtWaistScale', targetHandle: 'factor' },
   { id: 'e-waist-scaled', source: 'skirtWaistScale', sourceHandle: 'value', target: 'skirtGen', targetHandle: 'waistRadius' },
