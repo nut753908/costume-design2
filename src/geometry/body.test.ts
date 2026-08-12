@@ -33,4 +33,10 @@ describe('ボディのスケールパラメータ', () => {
     const layout = computeBodyLayout(computeBodyDimensions({ heightScale: 1.2, buildScale: 1.1 }));
     expect(computeBodyAnchors(layout).feet.y).toBe(0);
   });
+
+  it('身長が高くなるほど wrist アンカーが上がる(腕も一緒に伸びるため)', () => {
+    const shortLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 0.85, buildScale: 1 }));
+    const tallLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 1.2, buildScale: 1 }));
+    expect(computeBodyAnchors(tallLayout).wrist.y).toBeGreaterThan(computeBodyAnchors(shortLayout).wrist.y);
+  });
 });

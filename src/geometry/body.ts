@@ -55,6 +55,7 @@ export interface BodyLayout {
   shoulderY: number;
   headCenterY: number;
   armCenterY: number;
+  wristY: number;
 }
 
 export function computeBodyLayout(d: BodyDimensions): BodyLayout {
@@ -66,14 +67,16 @@ export function computeBodyLayout(d: BodyDimensions): BodyLayout {
   const shoulderY = waistY + torsoCapsuleHeight;
   const headCenterY = shoulderY + d.headRadius;
   const armCenterY = shoulderY - d.armLength / 2 - d.torsoRadius * 0.4;
+  const wristY = armCenterY - d.armLength / 2;
 
-  return { feetY, legCenterY, waistY, torsoCenterY, shoulderY, headCenterY, armCenterY };
+  return { feetY, legCenterY, waistY, torsoCenterY, shoulderY, headCenterY, armCenterY, wristY };
 }
 
-export function computeBodyAnchors(layout: BodyLayout): Record<'waist' | 'shoulder' | 'feet', THREE.Vector3> {
+export function computeBodyAnchors(layout: BodyLayout): Record<'waist' | 'shoulder' | 'feet' | 'wrist', THREE.Vector3> {
   return {
     waist: new THREE.Vector3(0, layout.waistY, 0),
     shoulder: new THREE.Vector3(0, layout.shoulderY, 0),
     feet: new THREE.Vector3(0, layout.feetY, 0),
+    wrist: new THREE.Vector3(0, layout.wristY, 0),
   };
 }

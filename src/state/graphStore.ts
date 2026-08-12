@@ -60,6 +60,15 @@ const initialNodes: Node[] = [
   { id: 'shoesColor', type: 'colorInput', position: { x: 900, y: 910 }, data: { hex: '#3d3630', label: 'Shoes Color' } },
   { id: 'shoesMaterial', type: 'toonMaterial', position: { x: 900, y: 1010 }, data: {} },
   { id: 'shoesOutput', type: 'garmentOutput', position: { x: 620, y: 1930 }, data: { anchor: 'feet', offsetY: 0, fallbackColor: '#3d3630' } },
+
+  { id: 'glovesWrist', type: 'numberInput', position: { x: 40, y: 2150 }, data: { value: 0.08, min: 0.05, max: 0.12, step: 0.005, label: 'Wrist Radius' } },
+  { id: 'glovesHand', type: 'numberInput', position: { x: 40, y: 2260 }, data: { value: 0.09, min: 0.05, max: 0.16, step: 0.005, label: 'Hand Radius' } },
+  { id: 'glovesLength', type: 'numberInput', position: { x: 40, y: 2370 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Length' } },
+  { id: 'glovesArmSpacing', type: 'numberInput', position: { x: 40, y: 2480 }, data: { value: 0.34, min: 0.2, max: 0.5, step: 0.01, label: 'Arm Spacing' } },
+  { id: 'glovesGen', type: 'glovesGenerator', position: { x: 340, y: 2370 }, data: {} },
+  { id: 'glovesColor', type: 'colorInput', position: { x: 900, y: 1110 }, data: { hex: '#b0413e', label: 'Gloves Color' } },
+  { id: 'glovesMaterial', type: 'toonMaterial', position: { x: 900, y: 1210 }, data: {} },
+  { id: 'glovesOutput', type: 'garmentOutput', position: { x: 620, y: 2370 }, data: { anchor: 'wrist', offsetY: 0, fallbackColor: '#b0413e' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -105,6 +114,14 @@ const initialEdges: Edge[] = [
   { id: 'e-shoes-geometry', source: 'shoesGen', sourceHandle: 'geometry', target: 'shoesOutput', targetHandle: 'geometry' },
   { id: 'e-shoes-color', source: 'shoesColor', sourceHandle: 'color', target: 'shoesMaterial', targetHandle: 'color' },
   { id: 'e-shoes-material', source: 'shoesMaterial', sourceHandle: 'material', target: 'shoesOutput', targetHandle: 'material' },
+
+  { id: 'e-gloves-wrist', source: 'glovesWrist', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'wristRadius' },
+  { id: 'e-gloves-hand', source: 'glovesHand', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'handRadius' },
+  { id: 'e-gloves-length', source: 'glovesLength', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'length' },
+  { id: 'e-gloves-arm-spacing', source: 'glovesArmSpacing', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'armSpacing' },
+  { id: 'e-gloves-geometry', source: 'glovesGen', sourceHandle: 'geometry', target: 'glovesOutput', targetHandle: 'geometry' },
+  { id: 'e-gloves-color', source: 'glovesColor', sourceHandle: 'color', target: 'glovesMaterial', targetHandle: 'color' },
+  { id: 'e-gloves-material', source: 'glovesMaterial', sourceHandle: 'material', target: 'glovesOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {
