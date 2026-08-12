@@ -72,11 +72,14 @@ export function computeBodyLayout(d: BodyDimensions): BodyLayout {
   return { feetY, legCenterY, waistY, torsoCenterY, shoulderY, headCenterY, armCenterY, wristY };
 }
 
-export function computeBodyAnchors(layout: BodyLayout): Record<'waist' | 'shoulder' | 'feet' | 'wrist', THREE.Vector3> {
+export function computeBodyAnchors(
+  layout: BodyLayout,
+): Record<'waist' | 'shoulder' | 'feet' | 'wrist' | 'head', THREE.Vector3> {
   return {
     waist: new THREE.Vector3(0, layout.waistY, 0),
     shoulder: new THREE.Vector3(0, layout.shoulderY, 0),
     feet: new THREE.Vector3(0, layout.feetY, 0),
     wrist: new THREE.Vector3(0, layout.wristY, 0),
+    head: new THREE.Vector3(0, layout.headCenterY, 0),
   };
 }

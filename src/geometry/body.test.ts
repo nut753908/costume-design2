@@ -39,4 +39,10 @@ describe('ボディのスケールパラメータ', () => {
     const tallLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 1.2, buildScale: 1 }));
     expect(computeBodyAnchors(tallLayout).wrist.y).toBeGreaterThan(computeBodyAnchors(shortLayout).wrist.y);
   });
+
+  it('身長が高くなるほど head アンカーが上がる', () => {
+    const shortLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 0.85, buildScale: 1 }));
+    const tallLayout = computeBodyLayout(computeBodyDimensions({ heightScale: 1.2, buildScale: 1 }));
+    expect(computeBodyAnchors(tallLayout).head.y).toBeGreaterThan(computeBodyAnchors(shortLayout).head.y);
+  });
 });

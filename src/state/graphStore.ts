@@ -69,6 +69,14 @@ const initialNodes: Node[] = [
   { id: 'glovesColor', type: 'colorInput', position: { x: 900, y: 1110 }, data: { hex: '#b0413e', label: 'Gloves Color' } },
   { id: 'glovesMaterial', type: 'toonMaterial', position: { x: 900, y: 1210 }, data: {} },
   { id: 'glovesOutput', type: 'garmentOutput', position: { x: 620, y: 2370 }, data: { anchor: 'wrist', offsetY: 0, fallbackColor: '#b0413e' } },
+
+  { id: 'hatBrim', type: 'numberInput', position: { x: 40, y: 2600 }, data: { value: 0.2, min: 0.15, max: 0.3, step: 0.01, label: 'Brim Radius' } },
+  { id: 'hatCrownRadius', type: 'numberInput', position: { x: 40, y: 2710 }, data: { value: 0.02, min: 0, max: 0.15, step: 0.005, label: 'Crown Radius' } },
+  { id: 'hatHeight', type: 'numberInput', position: { x: 40, y: 2820 }, data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01, label: 'Height' } },
+  { id: 'hatGen', type: 'hatGenerator', position: { x: 340, y: 2710 }, data: {} },
+  { id: 'hatColor', type: 'colorInput', position: { x: 900, y: 1310 }, data: { hex: '#4a3b6b', label: 'Hat Color' } },
+  { id: 'hatMaterial', type: 'toonMaterial', position: { x: 900, y: 1410 }, data: {} },
+  { id: 'hatOutput', type: 'garmentOutput', position: { x: 620, y: 2710 }, data: { anchor: 'head', offsetY: 0.1, fallbackColor: '#4a3b6b' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -122,6 +130,13 @@ const initialEdges: Edge[] = [
   { id: 'e-gloves-geometry', source: 'glovesGen', sourceHandle: 'geometry', target: 'glovesOutput', targetHandle: 'geometry' },
   { id: 'e-gloves-color', source: 'glovesColor', sourceHandle: 'color', target: 'glovesMaterial', targetHandle: 'color' },
   { id: 'e-gloves-material', source: 'glovesMaterial', sourceHandle: 'material', target: 'glovesOutput', targetHandle: 'material' },
+
+  { id: 'e-hat-brim', source: 'hatBrim', sourceHandle: 'value', target: 'hatGen', targetHandle: 'brimRadius' },
+  { id: 'e-hat-crown', source: 'hatCrownRadius', sourceHandle: 'value', target: 'hatGen', targetHandle: 'crownRadius' },
+  { id: 'e-hat-height', source: 'hatHeight', sourceHandle: 'value', target: 'hatGen', targetHandle: 'height' },
+  { id: 'e-hat-geometry', source: 'hatGen', sourceHandle: 'geometry', target: 'hatOutput', targetHandle: 'geometry' },
+  { id: 'e-hat-color', source: 'hatColor', sourceHandle: 'color', target: 'hatMaterial', targetHandle: 'color' },
+  { id: 'e-hat-material', source: 'hatMaterial', sourceHandle: 'material', target: 'hatOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {
