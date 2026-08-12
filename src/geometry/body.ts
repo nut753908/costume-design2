@@ -5,9 +5,12 @@ export interface BodyScaleParams {
   heightScale: number;
   /** 半径/間隔(胴体、四肢、肩幅)をスケールする — 全体の体格/横幅。 */
   buildScale: number;
+  /** 肩幅(shoulderSpacing)のみを buildScale とは独立に追加でスケールする — なで肩〜いかり肩の
+   * シルエットのバリエーション用。buildScale の後に掛かるため、デフォルト値 1 では既存の挙動を変えない。 */
+  shoulderScale: number;
 }
 
-export const DEFAULT_BODY_SCALE: BodyScaleParams = { heightScale: 1, buildScale: 1 };
+export const DEFAULT_BODY_SCALE: BodyScaleParams = { heightScale: 1, buildScale: 1, shoulderScale: 1 };
 
 export interface BodyDimensions {
   legHeight: number;
@@ -33,7 +36,7 @@ const BASE_DIMENSIONS: BodyDimensions = {
   shoulderSpacing: 0.34,
 };
 
-export function computeBodyDimensions({ heightScale, buildScale }: BodyScaleParams): BodyDimensions {
+export function computeBodyDimensions({ heightScale, buildScale, shoulderScale }: BodyScaleParams): BodyDimensions {
   return {
     legHeight: BASE_DIMENSIONS.legHeight * heightScale,
     legRadius: BASE_DIMENSIONS.legRadius * buildScale,
@@ -43,7 +46,7 @@ export function computeBodyDimensions({ heightScale, buildScale }: BodyScalePara
     headRadius: BASE_DIMENSIONS.headRadius,
     armLength: BASE_DIMENSIONS.armLength * heightScale,
     armRadius: BASE_DIMENSIONS.armRadius * buildScale,
-    shoulderSpacing: BASE_DIMENSIONS.shoulderSpacing * buildScale,
+    shoulderSpacing: BASE_DIMENSIONS.shoulderSpacing * buildScale * shoulderScale,
   };
 }
 
