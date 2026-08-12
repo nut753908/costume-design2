@@ -25,6 +25,9 @@ const initialNodes: Node[] = [
   { id: 'skirtLength', type: 'numberInput', position: { x: 40, y: 130 }, data: { value: 0.55, min: 0.2, max: 1.0, step: 0.01, label: 'Length' } },
   { id: 'skirtFlare', type: 'numberInput', position: { x: 40, y: 240 }, data: { value: 0.7, min: 0, max: 2.5, step: 0.05, label: 'Flare' } },
   { id: 'skirtSegments', type: 'numberInput', position: { x: 40, y: 350 }, data: { value: 28, min: 8, max: 48, step: 1, label: 'Segments' } },
+  // ウエスト半径に Body Build を乗算し、ボディをリサイズしても既存のガーメントが
+  // ゆるい/きつい見た目にならないようにする(CLAUDE.md の既知のMVP制約を解消)。
+  { id: 'skirtWaistScale', type: 'numberMultiply', position: { x: 190, y: 20 }, data: {} },
   { id: 'skirtGen', type: 'skirtGenerator', position: { x: 340, y: 180 }, data: {} },
   { id: 'skirtColor', type: 'colorInput', position: { x: 900, y: 20 }, data: { hex: '#d9738c', label: 'Skirt Color' } },
   { id: 'skirtMaterial', type: 'toonMaterial', position: { x: 900, y: 120 }, data: {} },
@@ -34,6 +37,7 @@ const initialNodes: Node[] = [
   { id: 'topLength', type: 'numberInput', position: { x: 40, y: 610 }, data: { value: 0.5, min: 0.2, max: 0.9, step: 0.01, label: 'Length' } },
   { id: 'topNeckline', type: 'enumInput', position: { x: 40, y: 720 }, data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
   { id: 'topNecklineDepth', type: 'numberInput', position: { x: 40, y: 830 }, data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
+  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 190, y: 500 }, data: {} },
   { id: 'topGen', type: 'topGenerator', position: { x: 340, y: 650 }, data: {} },
   { id: 'topColor', type: 'colorInput', position: { x: 900, y: 500 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
   { id: 'topMaterial', type: 'toonMaterial', position: { x: 900, y: 600 }, data: {} },
@@ -49,6 +53,7 @@ const initialNodes: Node[] = [
   { id: 'pantsInseam', type: 'numberInput', position: { x: 40, y: 1380 }, data: { value: 0.75, min: 0.3, max: 1.0, step: 0.01, label: 'Inseam' } },
   { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 40, y: 1490 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
   { id: 'pantsSegments', type: 'numberInput', position: { x: 40, y: 1600 }, data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+  { id: 'pantsWaistScale', type: 'numberMultiply', position: { x: 190, y: 1160 }, data: {} },
   { id: 'pantsGen', type: 'pantsGenerator', position: { x: 340, y: 1380 }, data: {} },
   { id: 'pantsColor', type: 'colorInput', position: { x: 900, y: 710 }, data: { hex: '#9c7b4f', label: 'Pants Color' } },
   { id: 'pantsMaterial', type: 'toonMaterial', position: { x: 900, y: 810 }, data: {} },
@@ -58,6 +63,7 @@ const initialNodes: Node[] = [
   { id: 'shoesCuff', type: 'numberInput', position: { x: 40, y: 1820 }, data: { value: 0.1, min: 0.08, max: 0.16, step: 0.005, label: 'Cuff Radius' } },
   { id: 'shoesHeight', type: 'numberInput', position: { x: 40, y: 1930 }, data: { value: 0.12, min: 0.05, max: 0.25, step: 0.005, label: 'Height' } },
   { id: 'shoesToeLength', type: 'numberInput', position: { x: 40, y: 2040 }, data: { value: 1.5, min: 1, max: 2.5, step: 0.05, label: 'Toe Length' } },
+  { id: 'shoesSoleScale', type: 'numberMultiply', position: { x: 190, y: 1710 }, data: {} },
   { id: 'shoesGen', type: 'shoesGenerator', position: { x: 340, y: 1930 }, data: {} },
   { id: 'shoesColor', type: 'colorInput', position: { x: 900, y: 910 }, data: { hex: '#3d3630', label: 'Shoes Color' } },
   { id: 'shoesMaterial', type: 'toonMaterial', position: { x: 900, y: 1010 }, data: {} },
@@ -67,6 +73,7 @@ const initialNodes: Node[] = [
   { id: 'glovesHand', type: 'numberInput', position: { x: 40, y: 2260 }, data: { value: 0.09, min: 0.05, max: 0.16, step: 0.005, label: 'Hand Radius' } },
   { id: 'glovesLength', type: 'numberInput', position: { x: 40, y: 2370 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Length' } },
   { id: 'glovesArmSpacing', type: 'numberInput', position: { x: 40, y: 2480 }, data: { value: 0.34, min: 0.2, max: 0.5, step: 0.01, label: 'Arm Spacing' } },
+  { id: 'glovesWristScale', type: 'numberMultiply', position: { x: 190, y: 2150 }, data: {} },
   { id: 'glovesGen', type: 'glovesGenerator', position: { x: 340, y: 2370 }, data: {} },
   { id: 'glovesColor', type: 'colorInput', position: { x: 900, y: 1110 }, data: { hex: '#b0413e', label: 'Gloves Color' } },
   { id: 'glovesMaterial', type: 'toonMaterial', position: { x: 900, y: 1210 }, data: {} },
@@ -84,6 +91,7 @@ const initialNodes: Node[] = [
   { id: 'beltThickness', type: 'numberInput', position: { x: 40, y: 3040 }, data: { value: 0.05, min: 0.02, max: 0.12, step: 0.005, label: 'Thickness' } },
   { id: 'beltBulge', type: 'numberInput', position: { x: 40, y: 3150 }, data: { value: 1.15, min: 1.0, max: 1.5, step: 0.01, label: 'Bulge' } },
   { id: 'beltSegments', type: 'numberInput', position: { x: 40, y: 3260 }, data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
+  { id: 'beltRadiusScale', type: 'numberMultiply', position: { x: 190, y: 2930 }, data: {} },
   { id: 'beltGen', type: 'beltGenerator', position: { x: 340, y: 3040 }, data: {} },
   { id: 'beltColor', type: 'colorInput', position: { x: 900, y: 1510 }, data: { hex: '#3a2e26', label: 'Belt Color' } },
   { id: 'beltMaterial', type: 'toonMaterial', position: { x: 900, y: 1610 }, data: {} },
@@ -94,6 +102,7 @@ const initialNodes: Node[] = [
   { id: 'scarfTailWidth', type: 'numberInput', position: { x: 40, y: 3600 }, data: { value: 0.09, min: 0.04, max: 0.16, step: 0.005, label: 'Tail Width' } },
   { id: 'scarfTailLength', type: 'numberInput', position: { x: 40, y: 3710 }, data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01, label: 'Tail Length' } },
   { id: 'scarfSegments', type: 'numberInput', position: { x: 40, y: 3820 }, data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
+  { id: 'scarfNeckScale', type: 'numberMultiply', position: { x: 190, y: 3380 }, data: {} },
   { id: 'scarfGen', type: 'scarfGenerator', position: { x: 340, y: 3600 }, data: {} },
   { id: 'scarfColor', type: 'colorInput', position: { x: 900, y: 1710 }, data: { hex: '#8a2e3a', label: 'Scarf Color' } },
   { id: 'scarfMaterial', type: 'toonMaterial', position: { x: 900, y: 1810 }, data: {} },
@@ -103,6 +112,7 @@ const initialNodes: Node[] = [
   { id: 'jacketLength', type: 'numberInput', position: { x: 40, y: 4040 }, data: { value: 0.42, min: 0.2, max: 0.8, step: 0.01, label: 'Length' } },
   { id: 'jacketHemFlare', type: 'numberInput', position: { x: 40, y: 4150 }, data: { value: 0.15, min: 0, max: 1.5, step: 0.05, label: 'Hem Flare' } },
   { id: 'jacketSegments', type: 'numberInput', position: { x: 40, y: 4260 }, data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
+  { id: 'jacketShoulderScale', type: 'numberMultiply', position: { x: 190, y: 3930 }, data: {} },
   { id: 'jacketGen', type: 'jacketGenerator', position: { x: 340, y: 4040 }, data: {} },
   { id: 'jacketColor', type: 'colorInput', position: { x: 900, y: 1910 }, data: { hex: '#4a5c3e', label: 'Jacket Color' } },
   { id: 'jacketMaterial', type: 'toonMaterial', position: { x: 900, y: 2010 }, data: {} },
@@ -112,6 +122,7 @@ const initialNodes: Node[] = [
   { id: 'socksCalfRadius', type: 'numberInput', position: { x: 40, y: 4490 }, data: { value: 0.105, min: 0.05, max: 0.2, step: 0.005, label: 'Calf Radius' } },
   { id: 'socksHeight', type: 'numberInput', position: { x: 40, y: 4600 }, data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01, label: 'Height' } },
   { id: 'socksSegments', type: 'numberInput', position: { x: 40, y: 4710 }, data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+  { id: 'socksAnkleScale', type: 'numberMultiply', position: { x: 190, y: 4380 }, data: {} },
   { id: 'socksGen', type: 'socksGenerator', position: { x: 340, y: 4490 }, data: {} },
   { id: 'socksColor', type: 'colorInput', position: { x: 900, y: 2110 }, data: { hex: '#d4a83a', label: 'Socks Color' } },
   { id: 'socksMaterial', type: 'toonMaterial', position: { x: 900, y: 2210 }, data: {} },
@@ -119,7 +130,9 @@ const initialNodes: Node[] = [
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e-waist', source: 'skirtWaist', sourceHandle: 'value', target: 'skirtGen', targetHandle: 'waistRadius' },
+  { id: 'e-waist', source: 'skirtWaist', sourceHandle: 'value', target: 'skirtWaistScale', targetHandle: 'value' },
+  { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtWaistScale', targetHandle: 'factor' },
+  { id: 'e-waist-scaled', source: 'skirtWaistScale', sourceHandle: 'value', target: 'skirtGen', targetHandle: 'waistRadius' },
   { id: 'e-length', source: 'skirtLength', sourceHandle: 'value', target: 'skirtGen', targetHandle: 'length' },
   { id: 'e-flare', source: 'skirtFlare', sourceHandle: 'value', target: 'skirtGen', targetHandle: 'flare' },
   { id: 'e-segments', source: 'skirtSegments', sourceHandle: 'value', target: 'skirtGen', targetHandle: 'segments' },
@@ -127,7 +140,9 @@ const initialEdges: Edge[] = [
   { id: 'e-skirt-color', source: 'skirtColor', sourceHandle: 'color', target: 'skirtMaterial', targetHandle: 'color' },
   { id: 'e-skirt-material', source: 'skirtMaterial', sourceHandle: 'material', target: 'skirtOutput', targetHandle: 'material' },
 
-  { id: 'e-top-radius', source: 'topRadius', sourceHandle: 'value', target: 'topGen', targetHandle: 'torsoRadius' },
+  { id: 'e-top-radius', source: 'topRadius', sourceHandle: 'value', target: 'topRadiusScale', targetHandle: 'value' },
+  { id: 'e-top-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'topRadiusScale', targetHandle: 'factor' },
+  { id: 'e-top-radius-scaled', source: 'topRadiusScale', sourceHandle: 'value', target: 'topGen', targetHandle: 'torsoRadius' },
   { id: 'e-top-length', source: 'topLength', sourceHandle: 'value', target: 'topGen', targetHandle: 'length' },
   { id: 'e-top-neckline', source: 'topNeckline', sourceHandle: 'value', target: 'topGen', targetHandle: 'necklineType' },
   { id: 'e-top-neckline-depth', source: 'topNecklineDepth', sourceHandle: 'value', target: 'topGen', targetHandle: 'necklineDepth' },
@@ -135,15 +150,19 @@ const initialEdges: Edge[] = [
   { id: 'e-top-color', source: 'topColor', sourceHandle: 'color', target: 'topMaterial', targetHandle: 'color' },
   { id: 'e-top-material', source: 'topMaterial', sourceHandle: 'material', target: 'topOutput', targetHandle: 'material' },
 
-  // Sleeve は Top の胴体半径とマテリアルを再利用する — 1つの Color/Material ノードが
-  // 2つの Garment Output に供給しているため、Top を再着色すると Sleeve も一緒に再着色される。
-  { id: 'e-sleeve-attach-radius', source: 'topRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
+  // Sleeve は Top の胴体半径(Body Build 適用後の値)とマテリアルを再利用する — 1つの
+  // Color/Material ノードが2つの Garment Output に供給しているため、Top を再着色すると
+  // Sleeve も一緒に再着色される。半径も topRadiusScale の出力を共有しているため、
+  // ボディをリサイズしても Top と Sleeve の付け根の太さがずれない。
+  { id: 'e-sleeve-attach-radius', source: 'topRadiusScale', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
   { id: 'e-sleeve-length', source: 'sleeveLength', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveLength' },
   { id: 'e-sleeve-radius', source: 'sleeveRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },
   { id: 'e-sleeve-geometry', source: 'sleeveGen', sourceHandle: 'geometry', target: 'sleeveOutput', targetHandle: 'geometry' },
   { id: 'e-sleeve-material', source: 'topMaterial', sourceHandle: 'material', target: 'sleeveOutput', targetHandle: 'material' },
 
-  { id: 'e-pants-waist', source: 'pantsWaist', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'waistRadius' },
+  { id: 'e-pants-waist', source: 'pantsWaist', sourceHandle: 'value', target: 'pantsWaistScale', targetHandle: 'value' },
+  { id: 'e-pants-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'pantsWaistScale', targetHandle: 'factor' },
+  { id: 'e-pants-waist-scaled', source: 'pantsWaistScale', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'waistRadius' },
   { id: 'e-pants-hem', source: 'pantsHem', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'hemRadius' },
   { id: 'e-pants-inseam', source: 'pantsInseam', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'inseam' },
   { id: 'e-pants-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'legSpacing' },
@@ -154,7 +173,9 @@ const initialEdges: Edge[] = [
 
   // Shoes は Pants の Leg Spacing を再利用する — 脚の間隔を変えると靴の間隔も一緒に追従する。
   { id: 'e-shoes-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'legSpacing' },
-  { id: 'e-shoes-sole', source: 'shoesSole', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'soleRadius' },
+  { id: 'e-shoes-sole', source: 'shoesSole', sourceHandle: 'value', target: 'shoesSoleScale', targetHandle: 'value' },
+  { id: 'e-shoes-sole-build', source: 'bodyBuild', sourceHandle: 'value', target: 'shoesSoleScale', targetHandle: 'factor' },
+  { id: 'e-shoes-sole-scaled', source: 'shoesSoleScale', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'soleRadius' },
   { id: 'e-shoes-cuff', source: 'shoesCuff', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'cuffRadius' },
   { id: 'e-shoes-height', source: 'shoesHeight', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'height' },
   { id: 'e-shoes-toe-length', source: 'shoesToeLength', sourceHandle: 'value', target: 'shoesGen', targetHandle: 'toeLength' },
@@ -162,7 +183,9 @@ const initialEdges: Edge[] = [
   { id: 'e-shoes-color', source: 'shoesColor', sourceHandle: 'color', target: 'shoesMaterial', targetHandle: 'color' },
   { id: 'e-shoes-material', source: 'shoesMaterial', sourceHandle: 'material', target: 'shoesOutput', targetHandle: 'material' },
 
-  { id: 'e-gloves-wrist', source: 'glovesWrist', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'wristRadius' },
+  { id: 'e-gloves-wrist', source: 'glovesWrist', sourceHandle: 'value', target: 'glovesWristScale', targetHandle: 'value' },
+  { id: 'e-gloves-wrist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'glovesWristScale', targetHandle: 'factor' },
+  { id: 'e-gloves-wrist-scaled', source: 'glovesWristScale', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'wristRadius' },
   { id: 'e-gloves-hand', source: 'glovesHand', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'handRadius' },
   { id: 'e-gloves-length', source: 'glovesLength', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'length' },
   { id: 'e-gloves-arm-spacing', source: 'glovesArmSpacing', sourceHandle: 'value', target: 'glovesGen', targetHandle: 'armSpacing' },
@@ -177,7 +200,9 @@ const initialEdges: Edge[] = [
   { id: 'e-hat-color', source: 'hatColor', sourceHandle: 'color', target: 'hatMaterial', targetHandle: 'color' },
   { id: 'e-hat-material', source: 'hatMaterial', sourceHandle: 'material', target: 'hatOutput', targetHandle: 'material' },
 
-  { id: 'e-belt-radius', source: 'beltRadius', sourceHandle: 'value', target: 'beltGen', targetHandle: 'radius' },
+  { id: 'e-belt-radius', source: 'beltRadius', sourceHandle: 'value', target: 'beltRadiusScale', targetHandle: 'value' },
+  { id: 'e-belt-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'beltRadiusScale', targetHandle: 'factor' },
+  { id: 'e-belt-radius-scaled', source: 'beltRadiusScale', sourceHandle: 'value', target: 'beltGen', targetHandle: 'radius' },
   { id: 'e-belt-thickness', source: 'beltThickness', sourceHandle: 'value', target: 'beltGen', targetHandle: 'thickness' },
   { id: 'e-belt-bulge', source: 'beltBulge', sourceHandle: 'value', target: 'beltGen', targetHandle: 'bulge' },
   { id: 'e-belt-segments', source: 'beltSegments', sourceHandle: 'value', target: 'beltGen', targetHandle: 'segments' },
@@ -185,7 +210,9 @@ const initialEdges: Edge[] = [
   { id: 'e-belt-color', source: 'beltColor', sourceHandle: 'color', target: 'beltMaterial', targetHandle: 'color' },
   { id: 'e-belt-material', source: 'beltMaterial', sourceHandle: 'material', target: 'beltOutput', targetHandle: 'material' },
 
-  { id: 'e-scarf-neck-radius', source: 'scarfNeckRadius', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'neckRadius' },
+  { id: 'e-scarf-neck-radius', source: 'scarfNeckRadius', sourceHandle: 'value', target: 'scarfNeckScale', targetHandle: 'value' },
+  { id: 'e-scarf-neck-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'scarfNeckScale', targetHandle: 'factor' },
+  { id: 'e-scarf-neck-radius-scaled', source: 'scarfNeckScale', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'neckRadius' },
   { id: 'e-scarf-band-thickness', source: 'scarfBandThickness', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'bandThickness' },
   { id: 'e-scarf-tail-width', source: 'scarfTailWidth', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'tailWidth' },
   { id: 'e-scarf-tail-length', source: 'scarfTailLength', sourceHandle: 'value', target: 'scarfGen', targetHandle: 'tailLength' },
@@ -194,7 +221,9 @@ const initialEdges: Edge[] = [
   { id: 'e-scarf-color', source: 'scarfColor', sourceHandle: 'color', target: 'scarfMaterial', targetHandle: 'color' },
   { id: 'e-scarf-material', source: 'scarfMaterial', sourceHandle: 'material', target: 'scarfOutput', targetHandle: 'material' },
 
-  { id: 'e-jacket-shoulder-radius', source: 'jacketShoulderRadius', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'shoulderRadius' },
+  { id: 'e-jacket-shoulder-radius', source: 'jacketShoulderRadius', sourceHandle: 'value', target: 'jacketShoulderScale', targetHandle: 'value' },
+  { id: 'e-jacket-shoulder-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'jacketShoulderScale', targetHandle: 'factor' },
+  { id: 'e-jacket-shoulder-radius-scaled', source: 'jacketShoulderScale', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'shoulderRadius' },
   { id: 'e-jacket-length', source: 'jacketLength', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'length' },
   { id: 'e-jacket-hem-flare', source: 'jacketHemFlare', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'hemFlare' },
   { id: 'e-jacket-segments', source: 'jacketSegments', sourceHandle: 'value', target: 'jacketGen', targetHandle: 'segments' },
@@ -204,7 +233,9 @@ const initialEdges: Edge[] = [
 
   // Socks は Pants の Leg Spacing を再利用する — shoes と同じく、脚の間隔を変えると靴下の間隔も追従する。
   { id: 'e-socks-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'socksGen', targetHandle: 'legSpacing' },
-  { id: 'e-socks-ankle-radius', source: 'socksAnkleRadius', sourceHandle: 'value', target: 'socksGen', targetHandle: 'ankleRadius' },
+  { id: 'e-socks-ankle-radius', source: 'socksAnkleRadius', sourceHandle: 'value', target: 'socksAnkleScale', targetHandle: 'value' },
+  { id: 'e-socks-ankle-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'socksAnkleScale', targetHandle: 'factor' },
+  { id: 'e-socks-ankle-radius-scaled', source: 'socksAnkleScale', sourceHandle: 'value', target: 'socksGen', targetHandle: 'ankleRadius' },
   { id: 'e-socks-calf-radius', source: 'socksCalfRadius', sourceHandle: 'value', target: 'socksGen', targetHandle: 'calfRadius' },
   { id: 'e-socks-height', source: 'socksHeight', sourceHandle: 'value', target: 'socksGen', targetHandle: 'height' },
   { id: 'e-socks-segments', source: 'socksSegments', sourceHandle: 'value', target: 'socksGen', targetHandle: 'segments' },

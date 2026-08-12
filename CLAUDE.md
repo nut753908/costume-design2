@@ -61,7 +61,9 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 
 ### ボディスケールはソケットグラフを迂回して直接読み取られる
 
-`state/useBodyScale.ts` は、慣例的な ID を持つ2つのシードノード(`bodyHeight`、`bodyBuild` — 新しいノードタイプではなく、普通の `numberInput` ノード)を、`evaluateGraph` を完全に迂回して zustand ストアから **id で直接**読み取ります。これは「すべてはソケットを介して流れる」というパターンに対する意図的な例外です。ボディスケールはガーメントの `{geometry, material}` 出力ではなく、`Body.tsx` と `Garments.tsx`(アンカー位置のため)の両方が合意する必要のあるシーン全体のパラメータであり、「シーン全体に影響する」構造的な値を表すソケットタイプは存在しないためです。これら2つのノードが削除された場合は `DEFAULT_BODY_SCALE` (1, 1) にフォールバックします。ガーメント自身の半径/長さのスライダーはボディの build に自動同期**されません** — ボディをリサイズすると、既存のガーメントはユーザーが調整するまでゆるい/きつい見た目になることがあります。
+`state/useBodyScale.ts` は、慣例的な ID を持つ3つのシードノード(`bodyHeight`/`bodyBuild`/`bodyShoulder` — 新しいノードタイプではなく、普通の `numberInput` ノード)を、`evaluateGraph` を完全に迂回して zustand ストアから **id で直接**読み取ります。これは「すべてはソケットを介して流れる」というパターンに対する意図的な例外です。ボディスケールはガーメントの `{geometry, material}` 出力ではなく、`Body.tsx` と `Garments.tsx`(アンカー位置のため)の両方が合意する必要のあるシーン全体のパラメータであり、「シーン全体に影響する」構造的な値を表すソケットタイプは存在しないためです。これら3つのノードが削除された場合は `DEFAULT_BODY_SCALE` (1, 1, 1) にフォールバックします。
+
+ガーメント自身の半径スライダーは、ソケットグラフを迂回する `useBodyScale.ts` とは違い、**通常のソケット配線**を使って `bodyBuild` に追従させています。各ガーメントの「体に触れる半径」(skirt/pants/belt の waist 半径、top/jacket/scarf の shoulder 側半径、gloves の wrist 半径、shoes の sole 半径、socks の ankle 半径)は、既存の汎用 `numberMultiply` ノードを間に挟んで `bodyBuild.value` を掛けてから生成ノードに渡しており(例: `skirtWaist → skirtWaistScale(×bodyBuild) → skirtGen.waistRadius`)、ボディをリサイズすると自動で追従します。裾の広がりやバックルの膨らみなど「体に触れる半径」から式で導出される二次的な半径(skirt の hemRadius、belt の bulgeRadius など)は、その導出元がスケールされることで自動的に一緒にスケールされます。一方、hand/cuff/calf/brim/crown 半径のような独立したスタイル寄りの半径や、`hat`(`headRadius` はそもそも `computeBodyDimensions` で `buildScale` の影響を受けない)は意図的にスケール対象外です。長さ系のスライダー(skirt の length、sleeve の length など)は引き続きユーザー調整に委ねています。
 
 ### Undo/Redo
 
