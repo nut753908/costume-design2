@@ -123,6 +123,30 @@
   background: #eee6d8;
 }
 
+.graph-io__button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.preset-panel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.preset-panel__input,
+.preset-panel__select {
+  padding: 5px 8px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #fdfaf4;
+  font-size: 12px;
+}
+
+.preset-panel__input {
+  width: 120px;
+}
+
 .rf-edge__delete {
   position: absolute;
   pointer-events: all;

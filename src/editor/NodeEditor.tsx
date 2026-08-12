@@ -11,6 +11,7 @@ import { GenericNodeView } from './nodeComponents/GenericNode';
 import { NodePalette } from './NodePalette';
 import { DeletableEdge } from './DeletableEdge';
 import { GraphIO } from './GraphIO';
+import { PresetPanel } from './PresetPanel';
 
 const nodeTypes: NodeTypes = {
   numberInput: NumberInputNodeView,
@@ -79,6 +80,7 @@ export function NodeEditor() {
       <Controls />
       <NodePalette />
       <GraphIO />
+      <PresetPanel />
     </ReactFlow>
   );
 }
