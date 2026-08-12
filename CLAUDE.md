@@ -17,6 +17,10 @@
 
 このリポジトリにはブラウザ用のテストランナーはありません。UI/3D の変更を確認するには `run` スキル(開発サーバーに対する Playwright)を使ってください — このプロジェクト専用の run スキルはまだないため、汎用のブラウザ駆動パターンにフォールバックします。コンソールエラーとスクリーンショットが、変更が実際にレンダリングされたことを確認する手段です。
 
+### pre-commit フック
+
+`.githooks/pre-commit`(リポジトリにコミット済み)が `npm run build && npm test && npm run lint` をコミット前に実行し、失敗時はコミットを中断します。有効化には(`.git/hooks/` はコミットされないため)ローカルで1回 `git config core.hooksPath .githooks` を実行する必要があります。リモートが無い個人開発のリポジトリのため CI の代わりとして機能します。
+
 ## アーキテクチャ
 
 これはノードグラフ(Blender の Geometry Nodes 風)で 3D コスチュームをデザインする Web アプリで、フォトリアルな 3D ではなく、フラットなトゥーンシェーディングのイラスト調でレンダリングされます。スタック: React + react-three-fiber (Three.js) + React Flow (`@xyflow/react`)、状態管理に zustand、バックエンドなし — 完全にクライアントサイドで、グラフの状態は localStorage に永続化されます。
