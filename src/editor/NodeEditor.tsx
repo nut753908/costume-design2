@@ -24,6 +24,7 @@ import { DeletableEdge } from './DeletableEdge';
 import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
 import { HistoryControls } from './HistoryControls';
+import { NodeClipboard } from './NodeClipboard';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NODE_TYPE_DND_MIME } from './paletteShared';
 
@@ -135,6 +136,7 @@ function NodeEditorInner() {
       <GraphIO />
       <PresetPanel />
       <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
+      <NodeClipboard />
     </ReactFlow>
   );
 }

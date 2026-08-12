@@ -1,18 +1,7 @@
 import { useEffect } from 'react';
 import { Panel } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
-
-/** テキスト入力中の Ctrl+Z はブラウザのネイティブなテキスト編集Undoに譲る。
- * range/color/select などはネイティブUndoを持たないため、グラフのUndoを素通しする。 */
-function isEditableTextTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false;
-  if (target.tagName === 'TEXTAREA') return true;
-  if (target.tagName === 'INPUT') {
-    const type = (target as HTMLInputElement).type;
-    return type === 'text' || type === 'search';
-  }
-  return false;
-}
+import { isEditableTextTarget } from './keyboardGuards';
 
 /** グラフ編集の Undo/Redo。Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)のショートカットも提供する。 */
 export function HistoryControls() {

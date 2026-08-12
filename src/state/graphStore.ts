@@ -187,6 +187,11 @@ const HISTORY_LIMIT = 100;
  * 新しい履歴エントリを積まず、直前のジェスチャーの続きとみなす。 */
 const COALESCE_MS = 500;
 
+interface Clipboard {
+  nodes: Node[];
+  edges: Edge[];
+}
+
 interface GraphState {
   nodes: Node[];
   edges: Edge[];
@@ -198,6 +203,11 @@ interface GraphState {
   _historyAt: number;
   /** ノードのドラッグ中かどうか(ドラッグ開始時にのみ履歴を1件積むため)。 */
   _dragging: boolean;
+  /** コピーしたノード/エッジ(選択範囲の内部エッジのみ)。 */
+  clipboard: Clipboard | null;
+  /** 同じクリップボードから連続でペーストした回数。ペースト位置をカスケード
+   * オフセットするために使い、コピーのたびに 0 にリセットされる。 */
+  _pasteCount: number;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
@@ -207,6 +217,9 @@ interface GraphState {
   loadGraph: (nodes: Node[], edges: Edge[]) => void;
   undo: () => void;
   redo: () => void;
+  copySelected: () => void;
+  pasteClipboard: () => void;
+  duplicateSelected: () => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -239,6 +252,8 @@ export const useGraphStore = create<GraphState>()(
         _historyKey: null,
         _historyAt: 0,
         _dragging: false,
+        clipboard: null,
+        _pasteCount: 0,
         onNodesChange: (changes) => {
           if (changes.some((c) => c.type === 'remove')) {
             pushHistory();
@@ -300,6 +315,55 @@ export const useGraphStore = create<GraphState>()(
             _historyKey: null,
             _dragging: false,
           });
+        },
+        copySelected: () => {
+          const state = get();
+          const selectedNodes = state.nodes.filter((n) => n.selected);
+          if (selectedNodes.length === 0) return;
+          const selectedIds = new Set(selectedNodes.map((n) => n.id));
+          const internalEdges = state.edges.filter(
+            (e) => selectedIds.has(e.source) && selectedIds.has(e.target),
+          );
+          set({
+            clipboard: { nodes: structuredClone(selectedNodes), edges: structuredClone(internalEdges) },
+            _pasteCount: 0,
+          });
+        },
+        pasteClipboard: () => {
+          const state = get();
+          const clip = state.clipboard;
+          if (!clip || clip.nodes.length === 0) return;
+
+          pushHistory();
+
+          const offset = (state._pasteCount + 1) * 32;
+          const idMap = new Map<string, string>();
+          const newNodes: Node[] = clip.nodes.map((n) => {
+            const newId = `${n.type ?? 'node'}-${Math.random().toString(36).slice(2, 9)}`;
+            idMap.set(n.id, newId);
+            return {
+              ...structuredClone(n),
+              id: newId,
+              selected: true,
+              position: { x: n.position.x + offset, y: n.position.y + offset },
+            };
+          });
+          const newEdges: Edge[] = clip.edges.map((e) => ({
+            ...structuredClone(e),
+            id: `e-${Math.random().toString(36).slice(2, 9)}`,
+            source: idMap.get(e.source)!,
+            target: idMap.get(e.target)!,
+          }));
+
+          set({
+            nodes: [...state.nodes.map((n) => (n.selected ? { ...n, selected: false } : n)), ...newNodes],
+            edges: [...state.edges, ...newEdges],
+            _pasteCount: state._pasteCount + 1,
+          });
+        },
+        duplicateSelected: () => {
+          get().copySelected();
+          get().pasteClipboard();
         },
       };
     },
