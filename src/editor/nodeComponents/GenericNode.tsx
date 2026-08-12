@@ -3,6 +3,7 @@ import { useGraphStore } from '../../state/graphStore';
 import { getNodeType } from '../../nodes/registry';
 import type { SocketValue } from '../../nodes/types';
 import { SOCKET_COLORS } from '../socketColors';
+import { NodeTitleBar } from './NodeTitleBar';
 
 function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type: 'number' | 'enum' }> {
   return value.type === 'number' || value.type === 'enum';
@@ -18,7 +19,7 @@ export function GenericNodeView({ id, type, data }: NodeProps) {
 
   return (
     <div className="rf-node">
-      <div className="rf-node__title">{label}</div>
+      <NodeTitleBar id={id} label={label} />
       {def.inputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row">
           <Handle

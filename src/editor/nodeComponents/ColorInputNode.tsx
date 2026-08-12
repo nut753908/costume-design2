@@ -2,6 +2,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { ColorInputData } from '../../nodes/definitions/colorInput';
 import { SOCKET_COLORS } from '../socketColors';
+import { NodeTitleBar } from './NodeTitleBar';
 
 export function ColorInputNodeView({ id, data }: NodeProps) {
   const nodeData = data as ColorInputData;
@@ -9,7 +10,7 @@ export function ColorInputNodeView({ id, data }: NodeProps) {
 
   return (
     <div className="rf-node">
-      <div className="rf-node__title">{nodeData.label ?? 'Color'}</div>
+      <NodeTitleBar id={id} label={nodeData.label ?? 'Color'} />
       <input
         className="rf-node__color"
         type="color"

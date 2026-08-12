@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ReactFlow, Background, Controls, type NodeTypes, type Connection, type Edge } from '@xyflow/react';
+import { ReactFlow, Background, Controls, type NodeTypes, type EdgeTypes, type Connection, type Edge } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
 import { useGraphStore } from '../state/graphStore';
@@ -9,6 +9,7 @@ import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
 import { NodePalette } from './NodePalette';
+import { DeletableEdge } from './DeletableEdge';
 
 const nodeTypes: NodeTypes = {
   numberInput: NumberInputNodeView,
@@ -25,6 +26,10 @@ const nodeTypes: NodeTypes = {
   hatGenerator: GenericNodeView,
   toonMaterial: GenericNodeView,
   garmentOutput: GenericNodeView,
+};
+
+const edgeTypes: EdgeTypes = {
+  default: DeletableEdge,
 };
 
 export function NodeEditor() {
@@ -65,6 +70,7 @@ export function NodeEditor() {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
       isValidConnection={isValidConnection}
       fitView
     >

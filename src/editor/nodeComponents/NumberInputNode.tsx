@@ -2,6 +2,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { NumberInputData } from '../../nodes/definitions/numberInput';
 import { SOCKET_COLORS } from '../socketColors';
+import { NodeTitleBar } from './NodeTitleBar';
 
 export function NumberInputNodeView({ id, data }: NodeProps) {
   const nodeData = data as NumberInputData;
@@ -12,7 +13,7 @@ export function NumberInputNodeView({ id, data }: NodeProps) {
 
   return (
     <div className="rf-node">
-      <div className="rf-node__title">{nodeData.label ?? 'Number'}</div>
+      <NodeTitleBar id={id} label={nodeData.label ?? 'Number'} />
       <input
         className="rf-node__slider"
         type="range"

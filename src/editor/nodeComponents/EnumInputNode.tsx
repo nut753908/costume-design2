@@ -2,6 +2,7 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { EnumInputData } from '../../nodes/definitions/enumInput';
 import { SOCKET_COLORS } from '../socketColors';
+import { NodeTitleBar } from './NodeTitleBar';
 
 export function EnumInputNodeView({ id, data }: NodeProps) {
   const nodeData = data as EnumInputData;
@@ -9,7 +10,7 @@ export function EnumInputNodeView({ id, data }: NodeProps) {
 
   return (
     <div className="rf-node">
-      <div className="rf-node__title">{nodeData.label ?? 'Enum'}</div>
+      <NodeTitleBar id={id} label={nodeData.label ?? 'Enum'} />
       <select value={nodeData.value} onChange={(e) => updateNodeData(id, { value: e.target.value })}>
         {nodeData.options.map((opt) => (
           <option key={opt} value={opt}>

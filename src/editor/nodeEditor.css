@@ -9,8 +9,32 @@
 }
 
 .rf-node__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   font-weight: 600;
   margin-bottom: 6px;
+}
+
+.rf-node__delete {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  line-height: 1;
+  border: 1px solid #999;
+  border-radius: 3px;
+  background: #fff;
+  color: #666;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.rf-node__delete:hover {
+  background: #f3d4d4;
+  border-color: #b0413e;
+  color: #b0413e;
 }
 
 .rf-node__slider {
@@ -79,4 +103,25 @@
 
 .node-palette__item:hover {
   background: #eee6d8;
+}
+
+.rf-edge__delete {
+  position: absolute;
+  pointer-events: all;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  line-height: 1;
+  border: 1px solid #999;
+  border-radius: 50%;
+  background: #fdfaf4;
+  color: #666;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.rf-edge__delete:hover {
+  background: #f3d4d4;
+  border-color: #b0413e;
+  color: #b0413e;
 }
