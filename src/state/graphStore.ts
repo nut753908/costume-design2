@@ -41,6 +41,16 @@ const initialNodes: Node[] = [
   { id: 'sleeveRadius', type: 'numberInput', position: { x: 40, y: 1050 }, data: { value: 0.085, min: 0.05, max: 0.14, step: 0.005, label: 'Sleeve Radius' } },
   { id: 'sleeveGen', type: 'sleeveGenerator', position: { x: 340, y: 990 }, data: {} },
   { id: 'sleeveOutput', type: 'garmentOutput', position: { x: 620, y: 990 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#5b8fa8' } },
+
+  { id: 'pantsWaist', type: 'numberInput', position: { x: 40, y: 1160 }, data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005, label: 'Waist Radius' } },
+  { id: 'pantsHem', type: 'numberInput', position: { x: 40, y: 1270 }, data: { value: 0.1, min: 0.05, max: 0.2, step: 0.005, label: 'Hem Radius' } },
+  { id: 'pantsInseam', type: 'numberInput', position: { x: 40, y: 1380 }, data: { value: 0.75, min: 0.3, max: 1.0, step: 0.01, label: 'Inseam' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 40, y: 1490 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsSegments', type: 'numberInput', position: { x: 40, y: 1600 }, data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+  { id: 'pantsGen', type: 'pantsGenerator', position: { x: 340, y: 1380 }, data: {} },
+  { id: 'pantsColor', type: 'colorInput', position: { x: 900, y: 710 }, data: { hex: '#9c7b4f', label: 'Pants Color' } },
+  { id: 'pantsMaterial', type: 'toonMaterial', position: { x: 900, y: 810 }, data: {} },
+  { id: 'pantsOutput', type: 'garmentOutput', position: { x: 620, y: 1380 }, data: { anchor: 'waist', offsetY: 0, fallbackColor: '#9c7b4f' } },
 ];
 
 const initialEdges: Edge[] = [
@@ -67,6 +77,15 @@ const initialEdges: Edge[] = [
   { id: 'e-sleeve-radius', source: 'sleeveRadius', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },
   { id: 'e-sleeve-geometry', source: 'sleeveGen', sourceHandle: 'geometry', target: 'sleeveOutput', targetHandle: 'geometry' },
   { id: 'e-sleeve-material', source: 'topMaterial', sourceHandle: 'material', target: 'sleeveOutput', targetHandle: 'material' },
+
+  { id: 'e-pants-waist', source: 'pantsWaist', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'waistRadius' },
+  { id: 'e-pants-hem', source: 'pantsHem', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'hemRadius' },
+  { id: 'e-pants-inseam', source: 'pantsInseam', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'inseam' },
+  { id: 'e-pants-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'legSpacing' },
+  { id: 'e-pants-segments', source: 'pantsSegments', sourceHandle: 'value', target: 'pantsGen', targetHandle: 'segments' },
+  { id: 'e-pants-geometry', source: 'pantsGen', sourceHandle: 'geometry', target: 'pantsOutput', targetHandle: 'geometry' },
+  { id: 'e-pants-color', source: 'pantsColor', sourceHandle: 'color', target: 'pantsMaterial', targetHandle: 'color' },
+  { id: 'e-pants-material', source: 'pantsMaterial', sourceHandle: 'material', target: 'pantsOutput', targetHandle: 'material' },
 ];
 
 interface GraphState {
