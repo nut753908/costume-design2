@@ -1,25 +1,22 @@
 import { useRef, type ChangeEvent } from 'react';
 import { Panel, useReactFlow, type Node, type Edge } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
-import { nodeTypeRegistry } from '../nodes/registry';
+import { validateGraph, GRAPH_VALIDATION_MESSAGES } from '../state/validateGraph';
 
 interface GraphFile {
   nodes: Node[];
   edges: Edge[];
 }
 
-function isGraphFile(value: unknown): value is GraphFile {
+function hasGraphShape(value: unknown): value is GraphFile {
   if (typeof value !== 'object' || value === null) return false;
   const { nodes, edges } = value as Record<string, unknown>;
-  if (!Array.isArray(nodes) || !Array.isArray(edges)) return false;
-  return nodes.every(
-    (n) => typeof n === 'object' && n !== null && typeof (n as Node).type === 'string' && nodeTypeRegistry.has((n as Node).type!),
-  );
+  return Array.isArray(nodes) && Array.isArray(edges);
 }
 
-/** グラフ全体を JSON ファイルとして書き出し/読み込みする。読み込んだノードの type は
- * すべて登録済みのノードタイプでなければならない — さもないと getNodeType() が例外を
- * 投げてグラフが評価不能になるため、読み込み前にここで弾く。 */
+/** グラフ全体を JSON ファイルとして書き出し/読み込みする。読み込んだ内容は
+ * validateGraph()(未知のノードタイプ・循環の有無)を通してから loadGraph() に渡す —
+ * さもないと次の描画で evaluateGraph() が例外を投げてグラフが評価不能になるため。 */
 export function GraphIO() {
   const nodes = useGraphStore((s) => s.nodes);
   const edges = useGraphStore((s) => s.edges);
@@ -54,8 +51,13 @@ export function GraphIO() {
 
     try {
       const parsed: unknown = JSON.parse(await file.text());
-      if (!isGraphFile(parsed)) {
-        alert('無効なグラフファイルです(未知のノードタイプ、または nodes/edges の形式が不正です)。');
+      if (!hasGraphShape(parsed)) {
+        alert('無効なグラフファイルです(nodes/edges の形式が不正です)。');
+        return;
+      }
+      const error = validateGraph(parsed.nodes, parsed.edges);
+      if (error) {
+        alert(`無効なグラフファイルです(${GRAPH_VALIDATION_MESSAGES[error]})。`);
         return;
       }
       loadGraph(parsed.nodes, parsed.edges);

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Panel } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { usePresetStore } from '../state/presetStore';
+import { validateGraph, GRAPH_VALIDATION_MESSAGES } from '../state/validateGraph';
 
 /** 現在のグラフをブラウザ内に名前付きで保存し、あとで読み込み/削除できるパネル。
  * 同名で保存すると上書きになる。 */
@@ -25,7 +26,15 @@ export function PresetPanel() {
 
   const handleLoad = () => {
     const preset = presets.find((p) => p.id === selectedId);
-    if (preset) loadGraph(preset.nodes, preset.edges);
+    if (!preset) return;
+    // 保存時点では有効だったグラフでも、その後のアプリ更新でノードタイプが削除された場合
+    // などにここで無効化されうる。GraphIO の Import JSON と同じ検証ゲートを通す。
+    const error = validateGraph(preset.nodes, preset.edges);
+    if (error) {
+      alert(`このプリセットは読み込めません(${GRAPH_VALIDATION_MESSAGES[error]})。`);
+      return;
+    }
+    loadGraph(preset.nodes, preset.edges);
   };
 
   const handleDelete = () => {
