@@ -10,6 +10,7 @@ export function Scene() {
     <Canvas
       camera={{ position: [0, 1.3, 4.8], fov: 40 }}
       gl={{ toneMapping: THREE.NoToneMapping }}
+      frameloop="demand"
     >
       <color attach="background" args={['#f5f0e8']} />
       <Lighting />
