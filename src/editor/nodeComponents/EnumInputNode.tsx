@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { EnumInputData } from '../../nodes/definitions/enumInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 
-export function EnumInputNodeView({ id, data }: NodeProps) {
+function EnumInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as EnumInputData;
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
 
@@ -22,3 +23,5 @@ export function EnumInputNodeView({ id, data }: NodeProps) {
     </div>
   );
 }
+
+export const EnumInputNodeView = memo(EnumInputNodeViewImpl);

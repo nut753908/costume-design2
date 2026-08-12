@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import { getNodeType } from '../../nodes/registry';
@@ -10,8 +11,14 @@ function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type
 }
 
 /** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
- * 入出力ソケットの行、(終端ノードの場合は)リアルタイムの評価値を表示する。 */
-export function GenericNodeView({ id, type, data }: NodeProps) {
+ * 入出力ソケットの行、(終端ノードの場合は)リアルタイムの評価値を表示する。
+ *
+ * 注意: evaluatedResults(store 全体の Map)を購読しているため、evaluateGraph は
+ * 変更があったノードだけでなく全ノードの出力を毎回作り直す実装上、グラフ内のどこか
+ * 1箇所が変化するとこのコンポーネントは(memo化していても)再レンダーされる。React.memo は
+ * React Flow 側の無関係な再レンダー(パン/ズーム/他ノード選択など、props が変わらない
+ * ケース)を防ぐためのもので、evaluatedResults 変化による再レンダーまでは防げない。 */
+function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const def = getNodeType(type ?? '');
   const evaluated = useGraphStore((s) => s.evaluatedResults);
   const outputValues = evaluated?.get(id);
@@ -55,3 +62,5 @@ export function GenericNodeView({ id, type, data }: NodeProps) {
     </div>
   );
 }
+
+export const GenericNodeView = memo(GenericNodeViewImpl);
