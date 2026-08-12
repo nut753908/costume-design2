@@ -10,6 +10,7 @@ import './topGenerator';
 import './dressGenerator';
 import './bagGenerator';
 import './necktieGenerator';
+import './glassesGenerator';
 import './sleeveGenerator';
 import './pantsGenerator';
 import './shoesGenerator';

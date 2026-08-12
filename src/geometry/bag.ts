@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { buildAlignedBox } from './alignedBox';
 
 export interface BagParams {
   strapWidth: number;
@@ -40,27 +41,4 @@ export function buildBagGeometry(params: BagParams): THREE.BufferGeometry {
   const merged = mergeGeometries([strap, bag])!;
   merged.computeVertexNormals();
   return merged;
-}
-
-/** start から end まで(その方向を「高さ」として)伸びる、幅 width・厚み thickness の箱を作る。
- * BoxGeometry を中点に平行移動し、+Y 軸が start→end 方向を向くよう回転させるだけなので、
- * 反転(負のスケール)を伴わない剛体変換であり、元の巻き順が壊れない。 */
-function buildAlignedBox(
-  width: number,
-  thickness: number,
-  start: THREE.Vector3,
-  end: THREE.Vector3,
-): THREE.BufferGeometry {
-  const direction = end.clone().sub(start);
-  const length = direction.length();
-  const midpoint = start.clone().add(end).multiplyScalar(0.5);
-  const rotation = new THREE.Quaternion().setFromUnitVectors(
-    new THREE.Vector3(0, 1, 0),
-    direction.clone().normalize(),
-  );
-
-  const box = new THREE.BoxGeometry(width, length, thickness);
-  box.applyQuaternion(rotation);
-  box.translate(midpoint.x, midpoint.y, midpoint.z);
-  return box;
 }

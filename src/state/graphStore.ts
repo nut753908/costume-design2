@@ -163,6 +163,17 @@ export const initialNodes: Node[] = [
   { id: 'necktieColor', type: 'colorInput', position: { x: 900, y: 2710 }, data: { hex: '#7a1f2b', label: 'Necktie Color' } },
   { id: 'necktieMaterial', type: 'toonMaterial', position: { x: 900, y: 2810 }, data: {} },
   { id: 'necktieOutput', type: 'garmentOutput', position: { x: 620, y: 6600 }, data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#7a1f2b' } },
+
+  { id: 'glassesLensRadius', type: 'numberInput', position: { x: 40, y: 7050 }, data: { value: 0.045, min: 0.02, max: 0.07, step: 0.005, label: 'Lens Radius' } },
+  { id: 'glassesFrameThickness', type: 'numberInput', position: { x: 40, y: 7160 }, data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001, label: 'Frame Thickness' } },
+  { id: 'glassesLensSpacing', type: 'numberInput', position: { x: 40, y: 7270 }, data: { value: 0.055, min: 0.03, max: 0.09, step: 0.005, label: 'Lens Spacing' } },
+  { id: 'glassesBridgeThickness', type: 'numberInput', position: { x: 40, y: 7380 }, data: { value: 0.01, min: 0.005, max: 0.02, step: 0.001, label: 'Bridge Thickness' } },
+  { id: 'glassesTempleLength', type: 'numberInput', position: { x: 40, y: 7490 }, data: { value: 0.12, min: 0.05, max: 0.2, step: 0.01, label: 'Temple Length' } },
+  { id: 'glassesTempleThickness', type: 'numberInput', position: { x: 40, y: 7600 }, data: { value: 0.006, min: 0.003, max: 0.015, step: 0.001, label: 'Temple Thickness' } },
+  { id: 'glassesGen', type: 'glassesGenerator', position: { x: 340, y: 7380 }, data: {} },
+  { id: 'glassesColor', type: 'colorInput', position: { x: 900, y: 2910 }, data: { hex: '#2a2a2a', label: 'Glasses Color' } },
+  { id: 'glassesMaterial', type: 'toonMaterial', position: { x: 900, y: 3010 }, data: {} },
+  { id: 'glassesOutput', type: 'garmentOutput', position: { x: 620, y: 7380 }, data: { anchor: 'head', offsetY: -0.02, fallbackColor: '#2a2a2a' } },
 ];
 
 export const initialEdges: Edge[] = [
@@ -312,6 +323,16 @@ export const initialEdges: Edge[] = [
   { id: 'e-necktie-geometry', source: 'necktieGen', sourceHandle: 'geometry', target: 'necktieOutput', targetHandle: 'geometry' },
   { id: 'e-necktie-color', source: 'necktieColor', sourceHandle: 'color', target: 'necktieMaterial', targetHandle: 'color' },
   { id: 'e-necktie-material', source: 'necktieMaterial', sourceHandle: 'material', target: 'necktieOutput', targetHandle: 'material' },
+
+  { id: 'e-glasses-lens-radius', source: 'glassesLensRadius', sourceHandle: 'value', target: 'glassesGen', targetHandle: 'lensRadius' },
+  { id: 'e-glasses-frame-thickness', source: 'glassesFrameThickness', sourceHandle: 'value', target: 'glassesGen', targetHandle: 'frameThickness' },
+  { id: 'e-glasses-lens-spacing', source: 'glassesLensSpacing', sourceHandle: 'value', target: 'glassesGen', targetHandle: 'lensSpacing' },
+  { id: 'e-glasses-bridge-thickness', source: 'glassesBridgeThickness', sourceHandle: 'value', target: 'glassesGen', targetHandle: 'bridgeThickness' },
+  { id: 'e-glasses-temple-length', source: 'glassesTempleLength', sourceHandle: 'value', target: 'glassesGen', targetHandle: 'templeLength' },
+  { id: 'e-glasses-temple-thickness', source: 'glassesTempleThickness', sourceHandle: 'value', target: 'glassesGen', targetHandle: 'templeThickness' },
+  { id: 'e-glasses-geometry', source: 'glassesGen', sourceHandle: 'geometry', target: 'glassesOutput', targetHandle: 'geometry' },
+  { id: 'e-glasses-color', source: 'glassesColor', sourceHandle: 'color', target: 'glassesMaterial', targetHandle: 'color' },
+  { id: 'e-glasses-material', source: 'glassesMaterial', sourceHandle: 'material', target: 'glassesOutput', targetHandle: 'material' },
 ];
 
 interface HistorySnapshot {
