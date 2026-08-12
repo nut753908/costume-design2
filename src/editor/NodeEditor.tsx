@@ -1,4 +1,4 @@
-import { useCallback, useState, type DragEvent } from 'react';
+import { useCallback, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -68,6 +68,44 @@ function NodeEditorInner() {
   const { screenToFlowPosition } = useReactFlow();
   const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
   const [nodeMenuState, setNodeMenuState] = useState<NodeContextMenuState | null>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  // 右クリックしたノードが既存の複数選択に含まれていればその選択全体を対象にし、
+  // 含まれていなければそのノード単体だけを選択し直す(Blender などと同じ挙動)。
+  // onNodeContextMenu(右クリック)と handleKeyDown(Shift+F10 等でのキーボード起動)の両方から使う。
+  const openNodeMenu = useCallback(
+    (nodeId: string, x: number, y: number) => {
+      const isPartOfSelection =
+        (nodes.find((n) => n.id === nodeId)?.selected ?? false) && nodes.some((n) => n.selected);
+      if (!isPartOfSelection) {
+        onNodesChange(nodes.map((n) => ({ id: n.id, type: 'select', selected: n.id === nodeId })));
+      }
+      setMenuState(null);
+      setNodeMenuState({ x, y });
+    },
+    [nodes, onNodesChange],
+  );
+
+  // マウスなしでもノードの右クリックメニュー(複製/コピー/削除)を開けるようにする。
+  // フォーカスがノード上にある状態で ContextMenu キー(または Shift+F10)を押すと、
+  // ブラウザが本来ネイティブの contextmenu イベントを合成する場合もあるが、確実性のため
+  // ここで明示的にハンドリングする。ペイン背景自体は React Flow の既定では Tab で
+  // フォーカスできないため、パレット等の既存の代替経路があるペイン用メニューは対象外。
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      const isMenuKey = event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10');
+      if (!isMenuKey) return;
+
+      const nodeEl = (event.target as HTMLElement).closest<HTMLElement>('.react-flow__node');
+      const nodeId = nodeEl?.dataset.id;
+      if (!nodeEl || !nodeId) return;
+
+      event.preventDefault();
+      const rect = nodeEl.getBoundingClientRect();
+      openNodeMenu(nodeId, rect.left + rect.width / 2, rect.top + rect.height / 2);
+    },
+    [openNodeMenu],
+  );
 
   // 宣言された型(number/color/enum/geometry/material)が同じソケット同士の接続のみを許可する。
   // Geometry Nodes が型の合わないソケット接続を拒否するのと同じ挙動。
@@ -109,63 +147,57 @@ function NodeEditorInner() {
   );
 
   return (
-    <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
-      nodeTypes={nodeTypes}
-      edgeTypes={edgeTypes}
-      isValidConnection={isValidConnection}
-      onPaneContextMenu={(event) => {
-        event.preventDefault();
-        setNodeMenuState(null);
-        setMenuState({ x: event.clientX, y: event.clientY });
-      }}
-      onNodeContextMenu={(event, node) => {
-        event.preventDefault();
-        // 右クリックしたノードが既存の複数選択に含まれていればその選択全体を対象にし、
-        // 含まれていなければそのノード単体だけを選択し直す(Blender などと同じ挙動)。
-        const isPartOfSelection = (nodes.find((n) => n.id === node.id)?.selected ?? false) &&
-          nodes.some((n) => n.selected);
-        if (!isPartOfSelection) {
-          onNodesChange(nodes.map((n) => ({ id: n.id, type: 'select', selected: n.id === node.id })));
-        }
-        setMenuState(null);
-        setNodeMenuState({ x: event.clientX, y: event.clientY });
-      }}
-      onPaneClick={() => {
-        setMenuState(null);
-        setNodeMenuState(null);
-      }}
-      onMoveStart={() => {
-        setMenuState(null);
-        setNodeMenuState(null);
-      }}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      fitView
-    >
-      <Background />
-      <Controls />
-      <MiniMap
-        position="bottom-right"
-        pannable
-        zoomable
-        nodeColor="#fdfaf4"
-        nodeStrokeColor="#333"
-        maskColor="#fdfaf4b3"
-        style={{ width: 150, height: 110 }}
-      />
-      <NodePalette />
-      <HistoryControls />
-      <GraphIO />
-      <PresetPanel />
-      <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
-      <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} />
-      <NodeClipboard />
-    </ReactFlow>
+    <div ref={wrapperRef} style={{ width: '100%', height: '100%' }} onKeyDown={handleKeyDown}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        isValidConnection={isValidConnection}
+        onPaneContextMenu={(event) => {
+          event.preventDefault();
+          setNodeMenuState(null);
+          setMenuState({ x: event.clientX, y: event.clientY });
+        }}
+        onNodeContextMenu={(event, node) => {
+          event.preventDefault();
+          openNodeMenu(node.id, event.clientX, event.clientY);
+        }}
+        onPaneClick={() => {
+          setMenuState(null);
+          setNodeMenuState(null);
+        }}
+        onMoveStart={() => {
+          setMenuState(null);
+          setNodeMenuState(null);
+        }}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        fitView
+      >
+        <Background />
+        <Controls />
+        <MiniMap
+          position="bottom-right"
+          pannable
+          zoomable
+          nodeColor="#fdfaf4"
+          nodeStrokeColor="#333"
+          maskColor="#fdfaf4b3"
+          style={{ width: 150, height: 110 }}
+        />
+        <NodePalette />
+        <HistoryControls />
+        <GraphIO />
+        <PresetPanel />
+        <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
+        <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} />
+        <NodeClipboard />
+      </ReactFlow>
+    </div>
   );
 }
 
