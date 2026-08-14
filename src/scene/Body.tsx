@@ -30,26 +30,22 @@ export function Body() {
     <group>
       <ToonMesh geometry={torsoGeometry} material={skinMaterial} position={[0, L.torsoCenterY, 0]} />
       <ToonMesh geometry={headGeometry} material={skinMaterial} position={[0, L.headCenterY, 0]} />
-      <ToonMesh
-        geometry={armGeometry}
-        material={skinMaterial}
-        position={[-D.shoulderSpacing, L.armCenterY, 0]}
-      />
-      <ToonMesh
-        geometry={armGeometry}
-        material={skinMaterial}
-        position={[D.shoulderSpacing, L.armCenterY, 0]}
-      />
-      <ToonMesh
-        geometry={legGeometry}
-        material={skinMaterial}
-        position={[-D.legSpacing, L.legCenterY, 0]}
-      />
-      <ToonMesh
-        geometry={legGeometry}
-        material={skinMaterial}
-        position={[D.legSpacing, L.legCenterY, 0]}
-      />
+      {[-1, 1].map((side) => (
+        <ToonMesh
+          key={`arm-${side}`}
+          geometry={armGeometry}
+          material={skinMaterial}
+          position={[side * D.shoulderSpacing, L.armCenterY, 0]}
+        />
+      ))}
+      {[-1, 1].map((side) => (
+        <ToonMesh
+          key={`leg-${side}`}
+          geometry={legGeometry}
+          material={skinMaterial}
+          position={[side * D.legSpacing, L.legCenterY, 0]}
+        />
+      ))}
     </group>
   );
 }
