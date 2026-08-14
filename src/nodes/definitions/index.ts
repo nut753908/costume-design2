@@ -1,23 +1,5 @@
-// 副作用インポート: 各 definition が自身をノードタイプレジストリに登録する。
-import './numberInput';
-import './numberMultiply';
-import './numberDisplay';
-import './enumInput';
-import './colorInput';
-import './toonMaterial';
-import './skirtGenerator';
-import './topGenerator';
-import './dressGenerator';
-import './bagGenerator';
-import './necktieGenerator';
-import './glassesGenerator';
-import './sleeveGenerator';
-import './pantsGenerator';
-import './shoesGenerator';
-import './glovesGenerator';
-import './hatGenerator';
-import './beltGenerator';
-import './scarfGenerator';
-import './jacketGenerator';
-import './socksGenerator';
-import './garmentOutput';
+// このディレクトリの *.ts (テストファイル/testHelpers/このファイル自身を除く)を
+// 副作用インポートとしてすべて読み込む。各 definition は import されるだけで
+// 自身をノードタイプレジストリに登録するため、新しいノードタイプを追加しても
+// ここへの追記は不要 — ファイルを置くだけで自動的に登録される。
+import.meta.glob(['./*.ts', '!./*.test.ts', '!./testHelpers.ts', '!./index.ts'], { eager: true });

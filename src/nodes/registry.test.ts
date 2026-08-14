@@ -58,4 +58,14 @@ describe('groupNodeTypesByCategory', () => {
     const group = groupNodeTypesByCategory().find((g) => g.category === 'generator')!;
     expect(group.items.map((i) => i.type).sort()).toEqual(['rt-gen-1', 'rt-gen-2']);
   });
+
+  it('同じカテゴリ内は登録順ではなくラベルの昇順で並ぶ(definitions/index.ts の import.meta.glob 解決順に依存させないため)', () => {
+    nodeTypeRegistry.clear();
+    registerNodeType(def('rt-z', 'generator', 'Zebra'));
+    registerNodeType(def('rt-a', 'generator', 'Apple'));
+    registerNodeType(def('rt-m', 'generator', 'Mango'));
+
+    const group = groupNodeTypesByCategory().find((g) => g.category === 'generator')!;
+    expect(group.items.map((i) => i.label)).toEqual(['Apple', 'Mango', 'Zebra']);
+  });
 });

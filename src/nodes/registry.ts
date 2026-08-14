@@ -17,7 +17,9 @@ export function groupNodeTypesByCategory(): {
   }
   return CATEGORY_ORDER.filter((c) => byCategory.has(c)).map((c) => ({
     category: c,
-    items: byCategory.get(c)!,
+    // ラベルで安定ソートする。登録順(= definitions/index.ts の import.meta.glob が
+    // 解決するファイルシステム順)に依存させないため。
+    items: byCategory.get(c)!.sort((a, b) => a.label.localeCompare(b.label)),
   }));
 }
 
