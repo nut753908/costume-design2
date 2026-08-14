@@ -11,6 +11,8 @@ export interface GlovesGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { wristRadius: 0.08, handRadius: 0.09, length: 0.14, armSpacing: 0.34, segments: 12 };
+
 registerNodeType<GlovesGeneratorData>({
   type: 'glovesGenerator',
   label: 'Gloves',
@@ -23,14 +25,14 @@ registerNodeType<GlovesGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ wristRadius: 0.08, handRadius: 0.09, length: 0.14, armSpacing: 0.34, segments: 12 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildGlovesGeometry({
-      wristRadius: asNumber(inputs.wristRadius, data.wristRadius ?? 0.08),
-      handRadius: asNumber(inputs.handRadius, data.handRadius ?? 0.09),
-      length: asNumber(inputs.length, data.length ?? 0.14),
-      armSpacing: asNumber(inputs.armSpacing, data.armSpacing ?? 0.34),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 12))),
+      wristRadius: asNumber(inputs.wristRadius, data.wristRadius ?? DEFAULTS.wristRadius),
+      handRadius: asNumber(inputs.handRadius, data.handRadius ?? DEFAULTS.handRadius),
+      length: asNumber(inputs.length, data.length ?? DEFAULTS.length),
+      armSpacing: asNumber(inputs.armSpacing, data.armSpacing ?? DEFAULTS.armSpacing),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

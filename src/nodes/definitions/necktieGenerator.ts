@@ -13,6 +13,16 @@ export interface NecktieGeneratorData extends Record<string, unknown> {
   bladeLength?: number;
 }
 
+const DEFAULTS = {
+  knotWidth: 0.05,
+  knotHeight: 0.04,
+  knotThickness: 0.025,
+  bladeTopWidth: 0.035,
+  bladeBottomWidth: 0.06,
+  bladeThickness: 0.008,
+  bladeLength: 0.4,
+};
+
 registerNodeType<NecktieGeneratorData>({
   type: 'necktieGenerator',
   label: 'Necktie',
@@ -27,24 +37,16 @@ registerNodeType<NecktieGeneratorData>({
     { id: 'bladeLength', label: 'Blade Length', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({
-    knotWidth: 0.05,
-    knotHeight: 0.04,
-    knotThickness: 0.025,
-    bladeTopWidth: 0.035,
-    bladeBottomWidth: 0.06,
-    bladeThickness: 0.008,
-    bladeLength: 0.4,
-  }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildNecktieGeometry({
-      knotWidth: asNumber(inputs.knotWidth, data.knotWidth ?? 0.05),
-      knotHeight: asNumber(inputs.knotHeight, data.knotHeight ?? 0.04),
-      knotThickness: asNumber(inputs.knotThickness, data.knotThickness ?? 0.025),
-      bladeTopWidth: asNumber(inputs.bladeTopWidth, data.bladeTopWidth ?? 0.035),
-      bladeBottomWidth: asNumber(inputs.bladeBottomWidth, data.bladeBottomWidth ?? 0.06),
-      bladeThickness: asNumber(inputs.bladeThickness, data.bladeThickness ?? 0.008),
-      bladeLength: asNumber(inputs.bladeLength, data.bladeLength ?? 0.4),
+      knotWidth: asNumber(inputs.knotWidth, data.knotWidth ?? DEFAULTS.knotWidth),
+      knotHeight: asNumber(inputs.knotHeight, data.knotHeight ?? DEFAULTS.knotHeight),
+      knotThickness: asNumber(inputs.knotThickness, data.knotThickness ?? DEFAULTS.knotThickness),
+      bladeTopWidth: asNumber(inputs.bladeTopWidth, data.bladeTopWidth ?? DEFAULTS.bladeTopWidth),
+      bladeBottomWidth: asNumber(inputs.bladeBottomWidth, data.bladeBottomWidth ?? DEFAULTS.bladeBottomWidth),
+      bladeThickness: asNumber(inputs.bladeThickness, data.bladeThickness ?? DEFAULTS.bladeThickness),
+      bladeLength: asNumber(inputs.bladeLength, data.bladeLength ?? DEFAULTS.bladeLength),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

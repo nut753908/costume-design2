@@ -7,6 +7,8 @@ export interface NumberMultiplyData extends Record<string, unknown> {
   factor: number;
 }
 
+const DEFAULTS = { value: 1, factor: 2 };
+
 registerNodeType<NumberMultiplyData>({
   type: 'numberMultiply',
   label: 'Multiply',
@@ -16,10 +18,10 @@ registerNodeType<NumberMultiplyData>({
     { id: 'factor', label: 'Factor', type: 'number' },
   ],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],
-  createDefaultData: () => ({ value: 1, factor: 2 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
-    const value = asNumber(inputs.value, data.value ?? 0);
-    const factor = asNumber(inputs.factor, data.factor);
+    const value = asNumber(inputs.value, data.value ?? DEFAULTS.value);
+    const factor = asNumber(inputs.factor, data.factor ?? DEFAULTS.factor);
     return { value: { type: 'number', value: value * factor } };
   },
 });

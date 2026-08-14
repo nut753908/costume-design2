@@ -11,6 +11,8 @@ export interface SocksGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { ankleRadius: 0.09, calfRadius: 0.105, height: 0.22, legSpacing: 0.14, segments: 16 };
+
 registerNodeType<SocksGeneratorData>({
   type: 'socksGenerator',
   label: 'Socks',
@@ -23,20 +25,14 @@ registerNodeType<SocksGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({
-    ankleRadius: 0.09,
-    calfRadius: 0.105,
-    height: 0.22,
-    legSpacing: 0.14,
-    segments: 16,
-  }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildSocksGeometry({
-      ankleRadius: asNumber(inputs.ankleRadius, data.ankleRadius ?? 0.09),
-      calfRadius: asNumber(inputs.calfRadius, data.calfRadius ?? 0.105),
-      height: asNumber(inputs.height, data.height ?? 0.22),
-      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? 0.14),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 16))),
+      ankleRadius: asNumber(inputs.ankleRadius, data.ankleRadius ?? DEFAULTS.ankleRadius),
+      calfRadius: asNumber(inputs.calfRadius, data.calfRadius ?? DEFAULTS.calfRadius),
+      height: asNumber(inputs.height, data.height ?? DEFAULTS.height),
+      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? DEFAULTS.legSpacing),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

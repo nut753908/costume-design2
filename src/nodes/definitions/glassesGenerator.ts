@@ -12,6 +12,15 @@ export interface GlassesGeneratorData extends Record<string, unknown> {
   templeThickness?: number;
 }
 
+const DEFAULTS = {
+  lensRadius: 0.045,
+  frameThickness: 0.008,
+  lensSpacing: 0.055,
+  bridgeThickness: 0.01,
+  templeLength: 0.12,
+  templeThickness: 0.006,
+};
+
 registerNodeType<GlassesGeneratorData>({
   type: 'glassesGenerator',
   label: 'Glasses',
@@ -25,22 +34,15 @@ registerNodeType<GlassesGeneratorData>({
     { id: 'templeThickness', label: 'Temple Thickness', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({
-    lensRadius: 0.045,
-    frameThickness: 0.008,
-    lensSpacing: 0.055,
-    bridgeThickness: 0.01,
-    templeLength: 0.12,
-    templeThickness: 0.006,
-  }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildGlassesGeometry({
-      lensRadius: asNumber(inputs.lensRadius, data.lensRadius ?? 0.045),
-      frameThickness: asNumber(inputs.frameThickness, data.frameThickness ?? 0.008),
-      lensSpacing: asNumber(inputs.lensSpacing, data.lensSpacing ?? 0.055),
-      bridgeThickness: asNumber(inputs.bridgeThickness, data.bridgeThickness ?? 0.01),
-      templeLength: asNumber(inputs.templeLength, data.templeLength ?? 0.12),
-      templeThickness: asNumber(inputs.templeThickness, data.templeThickness ?? 0.006),
+      lensRadius: asNumber(inputs.lensRadius, data.lensRadius ?? DEFAULTS.lensRadius),
+      frameThickness: asNumber(inputs.frameThickness, data.frameThickness ?? DEFAULTS.frameThickness),
+      lensSpacing: asNumber(inputs.lensSpacing, data.lensSpacing ?? DEFAULTS.lensSpacing),
+      bridgeThickness: asNumber(inputs.bridgeThickness, data.bridgeThickness ?? DEFAULTS.bridgeThickness),
+      templeLength: asNumber(inputs.templeLength, data.templeLength ?? DEFAULTS.templeLength),
+      templeThickness: asNumber(inputs.templeThickness, data.templeThickness ?? DEFAULTS.templeThickness),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

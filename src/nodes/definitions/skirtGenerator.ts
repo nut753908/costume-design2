@@ -10,6 +10,8 @@ export interface SkirtGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { waistRadius: 0.34, length: 0.5, flare: 0.6, segments: 24 };
+
 registerNodeType<SkirtGeneratorData>({
   type: 'skirtGenerator',
   label: 'Skirt',
@@ -21,13 +23,13 @@ registerNodeType<SkirtGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ waistRadius: 0.34, length: 0.5, flare: 0.6, segments: 24 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildSkirtGeometry({
-      waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? 0.34),
-      length: asNumber(inputs.length, data.length ?? 0.5),
-      flare: asNumber(inputs.flare, data.flare ?? 0.6),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 24))),
+      waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? DEFAULTS.waistRadius),
+      length: asNumber(inputs.length, data.length ?? DEFAULTS.length),
+      flare: asNumber(inputs.flare, data.flare ?? DEFAULTS.flare),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

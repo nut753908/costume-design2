@@ -11,6 +11,8 @@ export interface PantsGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { waistRadius: 0.16, hemRadius: 0.1, inseam: 0.75, legSpacing: 0.14, segments: 16 };
+
 registerNodeType<PantsGeneratorData>({
   type: 'pantsGenerator',
   label: 'Pants',
@@ -23,14 +25,14 @@ registerNodeType<PantsGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ waistRadius: 0.16, hemRadius: 0.1, inseam: 0.75, legSpacing: 0.14, segments: 16 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildPantsGeometry({
-      waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? 0.16),
-      hemRadius: asNumber(inputs.hemRadius, data.hemRadius ?? 0.1),
-      inseam: asNumber(inputs.inseam, data.inseam ?? 0.75),
-      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? 0.14),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 16))),
+      waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? DEFAULTS.waistRadius),
+      hemRadius: asNumber(inputs.hemRadius, data.hemRadius ?? DEFAULTS.hemRadius),
+      inseam: asNumber(inputs.inseam, data.inseam ?? DEFAULTS.inseam),
+      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? DEFAULTS.legSpacing),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

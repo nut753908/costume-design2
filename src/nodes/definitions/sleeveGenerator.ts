@@ -9,6 +9,8 @@ export interface SleeveGeneratorData extends Record<string, unknown> {
   sleeveLength?: number;
 }
 
+const DEFAULTS = { attachRadius: 0.29, sleeveRadius: 0.085, sleeveLength: 0.22 };
+
 registerNodeType<SleeveGeneratorData>({
   type: 'sleeveGenerator',
   label: 'Sleeves',
@@ -19,12 +21,12 @@ registerNodeType<SleeveGeneratorData>({
     { id: 'sleeveLength', label: 'Sleeve Length', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ attachRadius: 0.29, sleeveRadius: 0.085, sleeveLength: 0.22 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildSleeveGeometry({
-      attachRadius: asNumber(inputs.attachRadius, data.attachRadius ?? 0.29),
-      sleeveRadius: asNumber(inputs.sleeveRadius, data.sleeveRadius ?? 0.085),
-      sleeveLength: asNumber(inputs.sleeveLength, data.sleeveLength ?? 0.22),
+      attachRadius: asNumber(inputs.attachRadius, data.attachRadius ?? DEFAULTS.attachRadius),
+      sleeveRadius: asNumber(inputs.sleeveRadius, data.sleeveRadius ?? DEFAULTS.sleeveRadius),
+      sleeveLength: asNumber(inputs.sleeveLength, data.sleeveLength ?? DEFAULTS.sleeveLength),
       segments: 12,
     });
     return { geometry: { type: 'geometry', value: geometry } };

@@ -10,6 +10,8 @@ export interface BeltGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { radius: 0.32, thickness: 0.05, bulge: 1.15, segments: 24 };
+
 registerNodeType<BeltGeneratorData>({
   type: 'beltGenerator',
   label: 'Belt',
@@ -21,13 +23,13 @@ registerNodeType<BeltGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ radius: 0.32, thickness: 0.05, bulge: 1.15, segments: 24 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildBeltGeometry({
-      radius: asNumber(inputs.radius, data.radius ?? 0.32),
-      thickness: asNumber(inputs.thickness, data.thickness ?? 0.05),
-      bulge: asNumber(inputs.bulge, data.bulge ?? 1.15),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 24))),
+      radius: asNumber(inputs.radius, data.radius ?? DEFAULTS.radius),
+      thickness: asNumber(inputs.thickness, data.thickness ?? DEFAULTS.thickness),
+      bulge: asNumber(inputs.bulge, data.bulge ?? DEFAULTS.bulge),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

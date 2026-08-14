@@ -12,6 +12,8 @@ export interface ShoesGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { soleRadius: 0.13, cuffRadius: 0.1, height: 0.12, toeLength: 1.5, legSpacing: 0.14, segments: 16 };
+
 registerNodeType<ShoesGeneratorData>({
   type: 'shoesGenerator',
   label: 'Shoes',
@@ -25,22 +27,15 @@ registerNodeType<ShoesGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({
-    soleRadius: 0.13,
-    cuffRadius: 0.1,
-    height: 0.12,
-    toeLength: 1.5,
-    legSpacing: 0.14,
-    segments: 16,
-  }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildShoesGeometry({
-      soleRadius: asNumber(inputs.soleRadius, data.soleRadius ?? 0.13),
-      cuffRadius: asNumber(inputs.cuffRadius, data.cuffRadius ?? 0.1),
-      height: asNumber(inputs.height, data.height ?? 0.12),
-      toeLength: asNumber(inputs.toeLength, data.toeLength ?? 1.5),
-      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? 0.14),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 16))),
+      soleRadius: asNumber(inputs.soleRadius, data.soleRadius ?? DEFAULTS.soleRadius),
+      cuffRadius: asNumber(inputs.cuffRadius, data.cuffRadius ?? DEFAULTS.cuffRadius),
+      height: asNumber(inputs.height, data.height ?? DEFAULTS.height),
+      toeLength: asNumber(inputs.toeLength, data.toeLength ?? DEFAULTS.toeLength),
+      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? DEFAULTS.legSpacing),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

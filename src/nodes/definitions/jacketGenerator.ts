@@ -10,6 +10,8 @@ export interface JacketGeneratorData extends Record<string, unknown> {
   segments?: number;
 }
 
+const DEFAULTS = { shoulderRadius: 0.34, length: 0.42, hemFlare: 0.15, segments: 20 };
+
 registerNodeType<JacketGeneratorData>({
   type: 'jacketGenerator',
   label: 'Jacket',
@@ -21,13 +23,13 @@ registerNodeType<JacketGeneratorData>({
     { id: 'segments', label: 'Segments', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ shoulderRadius: 0.34, length: 0.42, hemFlare: 0.15, segments: 20 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildJacketGeometry({
-      shoulderRadius: asNumber(inputs.shoulderRadius, data.shoulderRadius ?? 0.34),
-      length: asNumber(inputs.length, data.length ?? 0.42),
-      hemFlare: asNumber(inputs.hemFlare, data.hemFlare ?? 0.15),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 20))),
+      shoulderRadius: asNumber(inputs.shoulderRadius, data.shoulderRadius ?? DEFAULTS.shoulderRadius),
+      length: asNumber(inputs.length, data.length ?? DEFAULTS.length),
+      hemFlare: asNumber(inputs.hemFlare, data.hemFlare ?? DEFAULTS.hemFlare),
+      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
     });
     return { geometry: { type: 'geometry', value: geometry } };
   },

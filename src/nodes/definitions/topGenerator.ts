@@ -11,6 +11,8 @@ export interface TopGeneratorData extends Record<string, unknown> {
   necklineDepth?: number;
 }
 
+const DEFAULTS = { torsoRadius: 0.29, length: 0.5, necklineType: 'round' as NecklineType, necklineDepth: 0.12 };
+
 registerNodeType<TopGeneratorData>({
   type: 'topGenerator',
   label: 'Top',
@@ -22,13 +24,13 @@ registerNodeType<TopGeneratorData>({
     { id: 'necklineDepth', label: 'Neckline Depth', type: 'number' },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ torsoRadius: 0.29, length: 0.5, necklineType: 'round', necklineDepth: 0.12 }),
+  createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const geometry = buildTopGeometry({
-      torsoRadius: asNumber(inputs.torsoRadius, data.torsoRadius ?? 0.29),
-      length: asNumber(inputs.length, data.length ?? 0.5),
-      necklineType: asEnum<NecklineType>(inputs.necklineType, data.necklineType ?? 'round'),
-      necklineDepth: asNumber(inputs.necklineDepth, data.necklineDepth ?? 0.12),
+      torsoRadius: asNumber(inputs.torsoRadius, data.torsoRadius ?? DEFAULTS.torsoRadius),
+      length: asNumber(inputs.length, data.length ?? DEFAULTS.length),
+      necklineType: asEnum<NecklineType>(inputs.necklineType, data.necklineType ?? DEFAULTS.necklineType),
+      necklineDepth: asNumber(inputs.necklineDepth, data.necklineDepth ?? DEFAULTS.necklineDepth),
       angleSegments: 24,
       heightSegments: 10,
     });
