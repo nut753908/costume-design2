@@ -13,8 +13,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
+import '../nodes/definitions'; // 下の nodeTypes 導出がレジストリに依存するため、副作用インポートで登録を確実に済ませておく
 import { useGraphStore } from '../state/graphStore';
-import { getNodeType } from '../nodes/registry';
+import { getNodeType, nodeTypeRegistry } from '../nodes/registry';
 import { hasCycle } from '../nodes/evaluateGraph';
 import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
 import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
@@ -30,30 +31,18 @@ import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
 import { NODE_TYPE_DND_MIME } from './paletteShared';
 
-const nodeTypes: NodeTypes = {
+// 専用UIを持つ3種(number/enum/color)以外は、レジストリに登録済みの全ノードタイプへ
+// GenericNodeView を自動で割り当てる。新しいノードタイプを追加してもここへの追記が
+// 不要になり、登録漏れ(=ノードが描画されない不具合)を構造的に防ぐ。
+const NODE_VIEW_OVERRIDES: Partial<Record<string, NodeTypes[string]>> = {
   numberInput: NumberInputNodeView,
   enumInput: EnumInputNodeView,
   colorInput: ColorInputNodeView,
-  numberMultiply: GenericNodeView,
-  numberDisplay: GenericNodeView,
-  skirtGenerator: GenericNodeView,
-  topGenerator: GenericNodeView,
-  dressGenerator: GenericNodeView,
-  bagGenerator: GenericNodeView,
-  necktieGenerator: GenericNodeView,
-  glassesGenerator: GenericNodeView,
-  sleeveGenerator: GenericNodeView,
-  pantsGenerator: GenericNodeView,
-  shoesGenerator: GenericNodeView,
-  glovesGenerator: GenericNodeView,
-  hatGenerator: GenericNodeView,
-  beltGenerator: GenericNodeView,
-  scarfGenerator: GenericNodeView,
-  jacketGenerator: GenericNodeView,
-  socksGenerator: GenericNodeView,
-  toonMaterial: GenericNodeView,
-  garmentOutput: GenericNodeView,
 };
+
+const nodeTypes: NodeTypes = Object.fromEntries(
+  Array.from(nodeTypeRegistry.keys(), (type) => [type, NODE_VIEW_OVERRIDES[type] ?? GenericNodeView]),
+);
 
 const edgeTypes: EdgeTypes = {
   default: DeletableEdge,

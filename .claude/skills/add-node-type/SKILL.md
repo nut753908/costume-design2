@@ -11,4 +11,5 @@ description: ノードグラフに新しい NodeTypeDefinition(ノードタイ�
 
 1. `nodes/definitions/*.ts` に `evaluate()` と `createDefaultData()` を持つ `NodeTypeDefinition` を実装する。
 2. モジュールを `nodes/definitions/index.ts` に登録する(副作用インポート)。
-3. そのタイプを `editor/NodeEditor.tsx` の `nodeTypes` マップに追加する。`NumberInputNode`/`ColorInputNode`/`EnumInputNode` のような専用UIが必要な場合を除き、`GenericNodeView` を再利用する。
+
+`editor/NodeEditor.tsx` の `nodeTypes` はレジストリ(`nodes/registry.ts` の `nodeTypeRegistry`)から自動導出されるため、新しいタイプへの追記は不要。専用UIが要る場合(`NumberInputNode`/`ColorInputNode`/`EnumInputNode` のような)だけ `NodeEditor.tsx` の `NODE_VIEW_OVERRIDES` に追加し、それ以外は自動的に `GenericNodeView` になる。
