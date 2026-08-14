@@ -12,6 +12,13 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
+  it('useBodyScale.ts が id で直接読み取る bodyHeight/bodyBuild/bodyShoulder ノードが存在する', () => {
+    // これらはエッジで何にも配線されておらず、上記の整合性テスト群では検知できない
+    // (存在しなくても評価は例外を投げない)。無くなると useBodyScale.ts が静かに
+    // DEFAULT_BODY_SCALE にフォールバックしてしまうため、id の存在自体をここで保証する。
+    expect(['bodyHeight', 'bodyBuild', 'bodyShoulder'].every((id) => nodesById.has(id))).toBe(true);
+  });
+
   it('ノードidに重複が無い', () => {
     const counts = new Map<string, number>();
     for (const n of initialNodes) counts.set(n.id, (counts.get(n.id) ?? 0) + 1);
