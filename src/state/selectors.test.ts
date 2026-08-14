@@ -1,11 +1,18 @@
-import { describe, expect, it } from 'vitest';
+// @vitest-environment jsdom
+//
+// sameNodes/sameEdges/toGraphNode/toGraphEdge はピュア関数なので既定の 'node' 環境で
+// 十分だが、useNodesLite/useEdgesLite 自体(useMemo/useRef + useGraphStore の購読)は
+// React フックなので、実際に React のレンダーツリー内で呼ぶ必要がある。renderHook には
+// DOM が要るため、このファイルだけ jsdom に切り替える(keyboardGuards.test.ts と同じ方針)。
+import { afterEach, describe, expect, it } from 'vitest';
+import { act, renderHook } from '@testing-library/react';
 import type { Node, Edge } from '@xyflow/react';
-import { sameEdges, sameNodes, toGraphEdge, toGraphNode } from './selectors';
+import { sameEdges, sameNodes, toGraphEdge, toGraphNode, useEdgesLite, useNodesLite } from './selectors';
+import { useGraphStore } from './graphStore';
 
-// useNodesLite/useEdgesLite 自体は React フックなので(useMemo/useRef が render 外では
-// 呼べない)、このプロジェクトの方針(ブラウザ用テストランナーは持たず、フックの外に
-// 出せる純粋ロジックは vitest でテストする)に沿って、実際にリアクティビティを支えている
-// sameNodes/sameEdges/toGraphNode/toGraphEdge を直接テストする。
+// sameNodes/sameEdges/toGraphNode/toGraphEdge は、実際にリアクティビティを支えている
+// 参照等価性の比較ロジックを直接テストする。useNodesLite/useEdgesLite 自体は下の
+// 「(フック)」の describe ブロックで renderHook 経由で検証する。
 
 describe('toGraphNode', () => {
   it('id/type/data を写し取る', () => {
@@ -86,5 +93,84 @@ describe('sameEdges', () => {
 
   it('空配列同士は true になる', () => {
     expect(sameEdges([], [])).toBe(true);
+  });
+});
+
+describe('useNodesLite (フック)', () => {
+  afterEach(() => {
+    useGraphStore.setState({ nodes: [] });
+  });
+
+  it('position のみが変わっても同じ配列参照を返す(ドラッグ中に再評価させないための仕組み)', () => {
+    const sharedData = { value: 1 };
+    useGraphStore.setState({
+      nodes: [{ id: 'a', type: 'numberInput', position: { x: 0, y: 0 }, data: sharedData, selected: false }],
+    });
+    const { result } = renderHook(() => useNodesLite());
+    const first = result.current;
+
+    act(() => {
+      useGraphStore.setState({
+        nodes: [{ id: 'a', type: 'numberInput', position: { x: 50, y: 50 }, data: sharedData, selected: false }],
+      });
+    });
+
+    expect(result.current).toBe(first);
+  });
+
+  it('ノードの data が変われば新しい配列参照を返す', () => {
+    useGraphStore.setState({
+      nodes: [{ id: 'a', type: 'numberInput', position: { x: 0, y: 0 }, data: { value: 1 } }],
+    });
+    const { result } = renderHook(() => useNodesLite());
+    const first = result.current;
+
+    act(() => {
+      useGraphStore.setState({
+        nodes: [{ id: 'a', type: 'numberInput', position: { x: 0, y: 0 }, data: { value: 2 } }],
+      });
+    });
+
+    expect(result.current).not.toBe(first);
+    expect(result.current[0].data).toEqual({ value: 2 });
+  });
+});
+
+describe('useEdgesLite (フック)', () => {
+  afterEach(() => {
+    useGraphStore.setState({ edges: [] });
+  });
+
+  it('内容が同一なら再構築後も同じ配列参照を返す', () => {
+    useGraphStore.setState({
+      edges: [{ id: 'e1', source: 'a', sourceHandle: 'out', target: 'b', targetHandle: 'in' }],
+    });
+    const { result } = renderHook(() => useEdgesLite());
+    const first = result.current;
+
+    act(() => {
+      useGraphStore.setState({
+        edges: [{ id: 'e1', source: 'a', sourceHandle: 'out', target: 'b', targetHandle: 'in', selected: true }],
+      });
+    });
+
+    expect(result.current).toBe(first);
+  });
+
+  it('接続先が変われば新しい配列参照を返す', () => {
+    useGraphStore.setState({
+      edges: [{ id: 'e1', source: 'a', sourceHandle: 'out', target: 'b', targetHandle: 'in' }],
+    });
+    const { result } = renderHook(() => useEdgesLite());
+    const first = result.current;
+
+    act(() => {
+      useGraphStore.setState({
+        edges: [{ id: 'e1', source: 'a', sourceHandle: 'out', target: 'c', targetHandle: 'in' }],
+      });
+    });
+
+    expect(result.current).not.toBe(first);
+    expect(result.current[0].target).toBe('c');
   });
 });
