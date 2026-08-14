@@ -197,6 +197,18 @@ describe('graphStore の Undo/Redo', () => {
   });
 });
 
+describe('graphStore の setEvaluatedResults', () => {
+  it('evaluatedResults をそのままストアへ反映する(履歴は積まない)', () => {
+    resetStore([makeNode('a')]);
+    const results = new Map([['a', { value: { type: 'number' as const, value: 1 } }]]);
+
+    useGraphStore.getState().setEvaluatedResults(results);
+
+    expect(useGraphStore.getState().evaluatedResults).toBe(results);
+    expect(useGraphStore.getState().past).toHaveLength(0);
+  });
+});
+
 describe('graphStore のコピー&ペースト/複製', () => {
   it('選択が無い状態で copySelected を呼んでもクリップボードは空のまま', () => {
     resetStore([makeNode('a')]);
