@@ -1,34 +1,14 @@
-import { registerNodeType } from '../registry';
-import type { SocketValue } from '../types';
 import { buildSleeveGeometry } from '../../geometry/sleeve';
-import { asNumber } from '../socketHelpers';
+import { defineGeneratorNode } from './generatorNodeFactory';
 
-export interface SleeveGeneratorData extends Record<string, unknown> {
-  attachRadius?: number;
-  sleeveRadius?: number;
-  sleeveLength?: number;
-}
-
-const DEFAULTS = { attachRadius: 0.29, sleeveRadius: 0.085, sleeveLength: 0.22 };
-
-registerNodeType<SleeveGeneratorData>({
+defineGeneratorNode({
   type: 'sleeveGenerator',
   label: 'Sleeves',
-  category: 'generator',
-  inputs: [
-    { id: 'attachRadius', label: 'Attach Radius', type: 'number' },
-    { id: 'sleeveRadius', label: 'Sleeve Radius', type: 'number' },
-    { id: 'sleeveLength', label: 'Sleeve Length', type: 'number' },
+  build: (params) => buildSleeveGeometry(params),
+  fields: [
+    { id: 'attachRadius', label: 'Attach Radius', default: 0.29 },
+    { id: 'sleeveRadius', label: 'Sleeve Radius', default: 0.085 },
+    { id: 'sleeveLength', label: 'Sleeve Length', default: 0.22 },
   ],
-  outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ ...DEFAULTS }),
-  evaluate: (inputs, data): Record<string, SocketValue> => {
-    const geometry = buildSleeveGeometry({
-      attachRadius: asNumber(inputs.attachRadius, data.attachRadius ?? DEFAULTS.attachRadius),
-      sleeveRadius: asNumber(inputs.sleeveRadius, data.sleeveRadius ?? DEFAULTS.sleeveRadius),
-      sleeveLength: asNumber(inputs.sleeveLength, data.sleeveLength ?? DEFAULTS.sleeveLength),
-      segments: 12,
-    });
-    return { geometry: { type: 'geometry', value: geometry } };
-  },
+  extra: { segments: 12 },
 });

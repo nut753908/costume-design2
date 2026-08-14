@@ -1,36 +1,14 @@
-import { registerNodeType } from '../registry';
-import type { SocketValue } from '../types';
 import { buildSkirtGeometry } from '../../geometry/skirt';
-import { asNumber } from '../socketHelpers';
+import { defineGeneratorNode } from './generatorNodeFactory';
 
-export interface SkirtGeneratorData extends Record<string, unknown> {
-  waistRadius?: number;
-  length?: number;
-  flare?: number;
-  segments?: number;
-}
-
-const DEFAULTS = { waistRadius: 0.34, length: 0.5, flare: 0.6, segments: 24 };
-
-registerNodeType<SkirtGeneratorData>({
+defineGeneratorNode({
   type: 'skirtGenerator',
   label: 'Skirt',
-  category: 'generator',
-  inputs: [
-    { id: 'waistRadius', label: 'Waist Radius', type: 'number' },
-    { id: 'length', label: 'Length', type: 'number' },
-    { id: 'flare', label: 'Flare', type: 'number' },
-    { id: 'segments', label: 'Segments', type: 'number' },
+  build: (params) => buildSkirtGeometry(params),
+  fields: [
+    { id: 'waistRadius', label: 'Waist Radius', default: 0.34 },
+    { id: 'length', label: 'Length', default: 0.5 },
+    { id: 'flare', label: 'Flare', default: 0.6 },
+    { id: 'segments', label: 'Segments', default: 24, round: true },
   ],
-  outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ ...DEFAULTS }),
-  evaluate: (inputs, data): Record<string, SocketValue> => {
-    const geometry = buildSkirtGeometry({
-      waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? DEFAULTS.waistRadius),
-      length: asNumber(inputs.length, data.length ?? DEFAULTS.length),
-      flare: asNumber(inputs.flare, data.flare ?? DEFAULTS.flare),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
-    });
-    return { geometry: { type: 'geometry', value: geometry } };
-  },
 });

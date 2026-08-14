@@ -1,39 +1,15 @@
-import { registerNodeType } from '../registry';
-import type { SocketValue } from '../types';
 import { buildPantsGeometry } from '../../geometry/pants';
-import { asNumber } from '../socketHelpers';
+import { defineGeneratorNode } from './generatorNodeFactory';
 
-export interface PantsGeneratorData extends Record<string, unknown> {
-  waistRadius?: number;
-  hemRadius?: number;
-  inseam?: number;
-  legSpacing?: number;
-  segments?: number;
-}
-
-const DEFAULTS = { waistRadius: 0.16, hemRadius: 0.1, inseam: 0.75, legSpacing: 0.14, segments: 16 };
-
-registerNodeType<PantsGeneratorData>({
+defineGeneratorNode({
   type: 'pantsGenerator',
   label: 'Pants',
-  category: 'generator',
-  inputs: [
-    { id: 'waistRadius', label: 'Waist Radius', type: 'number' },
-    { id: 'hemRadius', label: 'Hem Radius', type: 'number' },
-    { id: 'inseam', label: 'Inseam', type: 'number' },
-    { id: 'legSpacing', label: 'Leg Spacing', type: 'number' },
-    { id: 'segments', label: 'Segments', type: 'number' },
+  build: (params) => buildPantsGeometry(params),
+  fields: [
+    { id: 'waistRadius', label: 'Waist Radius', default: 0.16 },
+    { id: 'hemRadius', label: 'Hem Radius', default: 0.1 },
+    { id: 'inseam', label: 'Inseam', default: 0.75 },
+    { id: 'legSpacing', label: 'Leg Spacing', default: 0.14 },
+    { id: 'segments', label: 'Segments', default: 16, round: true },
   ],
-  outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-  createDefaultData: () => ({ ...DEFAULTS }),
-  evaluate: (inputs, data): Record<string, SocketValue> => {
-    const geometry = buildPantsGeometry({
-      waistRadius: asNumber(inputs.waistRadius, data.waistRadius ?? DEFAULTS.waistRadius),
-      hemRadius: asNumber(inputs.hemRadius, data.hemRadius ?? DEFAULTS.hemRadius),
-      inseam: asNumber(inputs.inseam, data.inseam ?? DEFAULTS.inseam),
-      legSpacing: asNumber(inputs.legSpacing, data.legSpacing ?? DEFAULTS.legSpacing),
-      segments: Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? DEFAULTS.segments))),
-    });
-    return { geometry: { type: 'geometry', value: geometry } };
-  },
 });
