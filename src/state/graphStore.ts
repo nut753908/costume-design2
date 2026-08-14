@@ -436,7 +436,15 @@ export const useGraphStore = create<GraphState>()(
         },
         onConnect: (connection) => {
           pushHistory();
-          set({ edges: addEdge(connection, get().edges) });
+          // 1つの入力ソケットに複数の接続が同時に生きていると、evaluateGraph() は
+          // 配列中で最初に見つかったエッジしか採用しない(他の接続は静かに無視され、
+          // 後でそのエッジが消えた瞬間に見た目の値が突然変わる)。それを避けるため、
+          // 新しい接続を追加する前に、同じ target/targetHandle への既存の接続を
+          // 置き換える(繋ぎ直す一般的なノードエディタの挙動)。
+          const edges = get().edges.filter(
+            (e) => !(e.target === connection.target && (e.targetHandle ?? null) === (connection.targetHandle ?? null)),
+          );
+          set({ edges: addEdge(connection, edges) });
         },
         updateNodeData: (id, data) => {
           pushHistory(`data:${id}`, COALESCE_MS);

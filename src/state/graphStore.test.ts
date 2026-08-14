@@ -126,6 +126,24 @@ describe('graphStore の Undo/Redo', () => {
     expect(useGraphStore.getState().edges).toHaveLength(0);
   });
 
+  it('onConnect は同じ入力ソケットへの既存の接続を新しい接続に置き換える(evaluateGraph が最初の接続しか見ないため、放置すると新しい方が黙って無視される)', () => {
+    resetStore([makeNode('a'), makeNode('b'), makeNode('c')]);
+    useGraphStore.getState().onConnect({ source: 'a', sourceHandle: 'value', target: 'c', targetHandle: 'value' });
+    useGraphStore.getState().onConnect({ source: 'b', sourceHandle: 'value', target: 'c', targetHandle: 'value' });
+
+    const { edges } = useGraphStore.getState();
+    expect(edges).toHaveLength(1);
+    expect(edges[0].source).toBe('b');
+  });
+
+  it('異なる入力ソケットへの接続は置き換えられず両方残る', () => {
+    resetStore([makeNode('a'), makeNode('b'), makeNode('c')]);
+    useGraphStore.getState().onConnect({ source: 'a', sourceHandle: 'value', target: 'c', targetHandle: 'x' });
+    useGraphStore.getState().onConnect({ source: 'b', sourceHandle: 'value', target: 'c', targetHandle: 'y' });
+
+    expect(useGraphStore.getState().edges).toHaveLength(2);
+  });
+
   it('updateNodeData の連続呼び出しは coalesceMs(500ms) 以内なら1件の履歴エントリにまとまる', () => {
     vi.useFakeTimers();
     resetStore([makeNode('a', { data: { value: 0 } })]);
