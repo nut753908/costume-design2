@@ -59,6 +59,10 @@ export function defineGeneratorNode<
     outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
     createDefaultData: () => ({ ...defaults }),
     evaluate: (inputs, data): Record<string, SocketValue> => {
+      // ParamsFromFields<F> の精密な型が効くのは呼び出し側(fields/build の宣言)の境界だけ。
+      // フィールドを汎用ループで回すこの内部では id が動的な文字列なので、以下は意図的に
+      // 緩い型(Record<string, number | string>)で扱い、最後に build() へ渡す箇所でのみ
+      // ParamsFromFields<F> & Extra へキャストし直す。
       const resolved = {} as Record<string, number | string>;
       for (const field of config.fields) {
         const fallback = (data[field.id] as number | string | undefined) ?? field.default;
