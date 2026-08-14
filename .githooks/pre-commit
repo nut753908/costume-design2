@@ -9,3 +9,45 @@ npm test
 
 echo "pre-commit: lint"
 npm run lint
+
+echo "pre-commit: CLAUDE.md sync reminder"
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+
+declare -A staged_set=()
+while IFS= read -r sf; do
+  [ -n "$sf" ] && staged_set["$sf"]=1
+done <<< "$staged_files"
+
+declare -A missing_docs=()
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  case "$f" in
+    CLAUDE.md|*/CLAUDE.md) continue ;;
+  esac
+  dir=$(dirname "$f")
+  while :; do
+    if [ "$dir" = "." ]; then
+      doc="CLAUDE.md"
+    else
+      doc="$dir/CLAUDE.md"
+    fi
+    if [ -f "$doc" ]; then
+      if [ -z "${staged_set[$doc]:-}" ]; then
+        missing_docs["$doc"]="$f"
+      fi
+      break
+    fi
+    [ "$dir" = "." ] && break
+    dir=$(dirname "$dir")
+  done
+done <<< "$staged_files"
+
+if [ ${#missing_docs[@]} -gt 0 ]; then
+  echo ""
+  echo "  reminder: 以下の CLAUDE.md は今回の変更と関連する可能性があります(コミットには含まれていません)。"
+  echo "  内容が古くなっていないか確認してください(不要なら無視して構いません):"
+  for doc in "${!missing_docs[@]}"; do
+    echo "    - $doc (例: ${missing_docs[$doc]})"
+  done
+  echo ""
+fi
