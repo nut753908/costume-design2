@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import '../nodes/definitions';
 import { getNodeType } from '../nodes/registry';
 import { evaluateGraph } from '../nodes/evaluateGraph';
-import { initialEdges, initialNodes } from './graphStore';
+import { initialEdges, initialNodes } from './initialGraph';
 
-// graphStore.ts の initialNodes/initialEdges は、ノードID・ソケットIDを文字列リテラルで
+// initialGraph.ts の initialNodes/initialEdges は、ノードID・ソケットIDを文字列リテラルで
 // 何百箇所も手で組み上げた巨大なデータであり、型システムでは「そのノードタイプに実在する
 // ソケットか」「参照先ノードが実在するか」までは検証できない。ガーメントを追加/配線し直す
 // たびにタイポで壊れていないかをこのテストで自動検知する。
