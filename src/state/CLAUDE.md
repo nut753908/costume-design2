@@ -8,6 +8,10 @@
 
 この参照安定化ロジックの核である `sameNodes`/`sameEdges`/`toGraphNode`/`toGraphEdge` は純粋関数として `selectors.test.ts` で直接テストしているが、`useNodesLite`/`useEdgesLite` フック自体(useMemo/useRef + ストア購読の配線)も vitest + jsdom + `@testing-library/react` の `renderHook` で end-to-end に検証している(同ファイル内の「(フック)」describe ブロック)。`useBodyScale` も同様に `useBodyScale.test.ts` でフックごとテストしている。ルートの CLAUDE.md 参照。
 
+## onConnect: 1つの入力ソケットには常に最大1本
+
+`state/graphStore.ts` の `onConnect` は、新しいエッジを追加する前に同じ `target`/`targetHandle` への既存のエッジを取り除く。`isValidConnection`(`editor/NodeEditor.tsx`)は型の一致と循環の有無しかチェックしないため、これを onConnect 側でやらないと、既に接続済みの入力ソケットへ別のノードから繋いでも(`@xyflow/react` の `addEdge()` は source/target/両handle が完全一致する場合しか重複除去しないため)両方のエッジが共存してしまう。`nodes/evaluateGraph.ts` の `incomingEdges.find(...)` は配列中で最初に見つかったエッジ(=古い方)しか採用しないため、後から繋いだ方は静かに無視され、古い方のエッジを消した瞬間に見た目の値が突然切り替わるという分かりにくいバグになる(修正前に実際に発生していた)。新しいノードタイプ/接続経路を追加する際、エッジを直接 `set({ edges: ... })` する箇所を増やすなら、この置き換えロジックも一緒に通すこと。
+
 ## Undo/Redo
 
 `state/graphStore.ts` は `past`/`future` の2つのスナップショットスタック(`{nodes, edges}`)を持ち、Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)と `HistoryControls.tsx` のボタンで操作できます。すべての変更操作(`onNodesChange` の remove、`onEdgesChange` の remove、`onConnect`、`addNode`、`updateNodeData`)は、実際に `set()` する前に内部ヘルパー `pushHistory(key?, coalesceMs?)` を呼びます。
