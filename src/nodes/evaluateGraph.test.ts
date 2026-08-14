@@ -109,6 +109,20 @@ describe('evaluateGraph', () => {
 
     expect(() => evaluateGraph(nodes, edges)).toThrow(GraphCycleError);
   });
+
+  it('存在しないノードを参照するエッジ(削除済みノードの残骸など)は無視して評価を続ける', () => {
+    const nodes: GraphNode[] = [
+      { id: 'src1', type: 'testSource', data: { value: 3 } },
+      { id: 'add', type: 'testAdd', data: { b: 100 } },
+    ];
+    const edges: GraphEdge[] = [
+      { source: 'src1', sourceHandle: 'value', target: 'add', targetHandle: 'a' },
+      { source: 'ghost', sourceHandle: 'value', target: 'add', targetHandle: 'b' },
+    ];
+
+    const result = evaluateGraph(nodes, edges);
+    expect(result.get('add')?.value).toEqual({ type: 'number', value: 103 });
+  });
 });
 
 describe('hasCycle', () => {

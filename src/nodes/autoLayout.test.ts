@@ -71,4 +71,25 @@ describe('computeAutoLayout', () => {
     expect(xs.size).toBeGreaterThan(1); // 折り返して複数列になっている
     expect(maxY).toBeLessThan(20 * 110); // 20行ぶんの高さには積み上がっていない
   });
+
+  it('存在しないノードを参照するエッジ(削除済みノードの残骸など)は無視される', () => {
+    const nodes = [node('a'), node('b')];
+    const edges = [edge('a', 'b'), edge('ghost', 'b'), edge('a', 'ghost')];
+
+    expect(() => computeAutoLayout(nodes, edges)).not.toThrow();
+    const positions = computeAutoLayout(nodes, edges);
+    expect(positions.get('a')!.x).toBeLessThan(positions.get('b')!.x);
+  });
+
+  it('後続層の複数ノードは、接続元ノードの行位置(バリセンター)の順に並ぶ', () => {
+    // a1 は行0、a2 は行1。b1 は a2(行1)から、b2 は a1(行0)からのみ接続されているため、
+    // バリセンターに従うと行順は b2 → b1 に入れ替わるはず。
+    const nodes = [node('a1'), node('a2'), node('b1'), node('b2')];
+    const edges = [edge('a2', 'b1'), edge('a1', 'b2')];
+
+    const positions = computeAutoLayout(nodes, edges);
+
+    expect(positions.get('a1')!.y).toBeLessThan(positions.get('a2')!.y);
+    expect(positions.get('b2')!.y).toBeLessThan(positions.get('b1')!.y);
+  });
 });
