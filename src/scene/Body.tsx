@@ -4,10 +4,12 @@ import { computeBodyDimensions, computeBodyLayout } from '../geometry/body';
 import { createToonMaterial } from '../rendering/ToonMaterialFactory';
 import { ToonMesh } from '../rendering/ToonMesh';
 import { useBodyScale } from '../state/useBodyScale';
+import { useBodySkinColor } from '../state/useBodySkinColor';
 
 export function Body() {
   const bodyScale = useBodyScale();
-  const skinMaterial = useMemo(() => createToonMaterial('#f2c9a0'), []);
+  const skinColor = useBodySkinColor();
+  const skinMaterial = useMemo(() => createToonMaterial(skinColor), [skinColor]);
 
   const D = useMemo(() => computeBodyDimensions(bodyScale), [bodyScale]);
   const L = useMemo(() => computeBodyLayout(D), [D]);
