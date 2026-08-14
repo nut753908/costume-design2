@@ -61,6 +61,10 @@ export interface BodyLayout {
   wristY: number;
 }
 
+/** 腕を胴体にわずかに食い込ませるための、torsoRadius に対する割合。ブーリアン演算等は
+ * 行わず、意図的な交差をそのまま許容するアプローチ(geometry/CLAUDE.md 参照)。 */
+const ARM_TORSO_OVERLAP_RATIO = 0.4;
+
 export function computeBodyLayout(d: BodyDimensions): BodyLayout {
   const feetY = 0;
   const legCenterY = feetY + d.legHeight / 2;
@@ -69,7 +73,7 @@ export function computeBodyLayout(d: BodyDimensions): BodyLayout {
   const torsoCenterY = waistY + torsoCapsuleHeight / 2;
   const shoulderY = waistY + torsoCapsuleHeight;
   const headCenterY = shoulderY + d.headRadius;
-  const armCenterY = shoulderY - d.armLength / 2 - d.torsoRadius * 0.4;
+  const armCenterY = shoulderY - d.armLength / 2 - d.torsoRadius * ARM_TORSO_OVERLAP_RATIO;
   const wristY = armCenterY - d.armLength / 2;
 
   return { feetY, legCenterY, waistY, torsoCenterY, shoulderY, headCenterY, armCenterY, wristY };
