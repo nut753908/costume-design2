@@ -28,8 +28,8 @@ describe('garmentOutput', () => {
 
   it('material が未接続なら fallbackColor から createToonMaterial を呼ぶ', () => {
     const spy = vi.spyOn(toonMaterialFactory, 'createToonMaterial');
-    getNodeType('garmentOutput').evaluate({}, { anchor: 'waist', fallbackColor: '#d98c8c' });
-    expect(spy).toHaveBeenCalledWith('#d98c8c');
+    getNodeType('garmentOutput').evaluate({}, { anchor: 'waist', fallbackColor: '#cccccc' });
+    expect(spy).toHaveBeenCalledWith('#cccccc');
     spy.mockRestore();
   });
 

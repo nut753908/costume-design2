@@ -27,7 +27,7 @@ registerNodeType<GarmentOutputData>({
       offsetY: { type: 'number', value: data.offsetY ?? 0 },
       material: inputs.material ?? {
         type: 'material',
-        value: createToonMaterial(data.fallbackColor ?? '#d98c8c'),
+        value: createToonMaterial(data.fallbackColor ?? '#cccccc'),
       },
     };
     if (inputs.geometry) result.geometry = inputs.geometry;
