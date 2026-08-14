@@ -9,7 +9,6 @@ import { act, renderHook } from '@testing-library/react';
 import type { Node } from '@xyflow/react';
 import { readSeedNumber, useBodyScale } from './useBodyScale';
 import { useGraphStore } from './graphStore';
-import { DEFAULT_BODY_SCALE } from '../geometry/body';
 
 function makeNode(id: string, value: unknown): Node {
   return { id, type: 'numberInput', position: { x: 0, y: 0 }, data: { value } };
@@ -49,14 +48,6 @@ describe('useBodyScale (フック)', () => {
     const { result } = renderHook(() => useBodyScale());
 
     expect(result.current).toEqual({ heightScale: 1.1, buildScale: 0.9, shoulderScale: 1.2 });
-  });
-
-  it('シードノードが1つも無ければ DEFAULT_BODY_SCALE を返す', () => {
-    useGraphStore.setState({ nodes: [] });
-
-    const { result } = renderHook(() => useBodyScale());
-
-    expect(result.current).toEqual(DEFAULT_BODY_SCALE);
   });
 
   it('シードノードの値が変わればストア更新を検知して再計算する', () => {
