@@ -1,5 +1,6 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as skirtGeometry from '../../geometry/skirt';
+import { getNodeType } from '../registry';
 import './skirtGenerator';
 import { expectGeneratorForwardsData } from './testHelpers';
 
@@ -10,6 +11,15 @@ describe('skirtGenerator', () => {
       length: 0.62,
       flare: 0.93,
       segments: 20,
+    });
+  });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('skirtGenerator').createDefaultData()).toEqual({
+      waistRadius: 0.34,
+      length: 0.5,
+      flare: 0.6,
+      segments: 24,
     });
   });
 });

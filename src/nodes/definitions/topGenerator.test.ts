@@ -1,5 +1,6 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as topGeometry from '../../geometry/top';
+import { getNodeType } from '../registry';
 import './topGenerator';
 import { expectGeneratorForwardsData } from './testHelpers';
 
@@ -12,6 +13,15 @@ describe('topGenerator', () => {
       necklineDepth: 0.15,
       angleSegments: 24,
       heightSegments: 10,
+    });
+  });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('topGenerator').createDefaultData()).toEqual({
+      torsoRadius: 0.29,
+      length: 0.5,
+      necklineType: 'round',
+      necklineDepth: 0.12,
     });
   });
 });

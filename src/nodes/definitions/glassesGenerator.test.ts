@@ -1,5 +1,6 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as glassesGeometry from '../../geometry/glasses';
+import { getNodeType } from '../registry';
 import './glassesGenerator';
 import { expectGeneratorForwardsData } from './testHelpers';
 
@@ -12,6 +13,17 @@ describe('glassesGenerator', () => {
       bridgeThickness: 0.011,
       templeLength: 0.13,
       templeThickness: 0.007,
+    });
+  });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('glassesGenerator').createDefaultData()).toEqual({
+      lensRadius: 0.045,
+      frameThickness: 0.008,
+      lensSpacing: 0.055,
+      bridgeThickness: 0.01,
+      templeLength: 0.12,
+      templeThickness: 0.006,
     });
   });
 });

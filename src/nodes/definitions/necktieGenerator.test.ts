@@ -1,5 +1,6 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as necktieGeometry from '../../geometry/necktie';
+import { getNodeType } from '../registry';
 import './necktieGenerator';
 import { expectGeneratorForwardsData } from './testHelpers';
 
@@ -13,6 +14,18 @@ describe('necktieGenerator', () => {
       bladeBottomWidth: 0.063,
       bladeThickness: 0.009,
       bladeLength: 0.44,
+    });
+  });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('necktieGenerator').createDefaultData()).toEqual({
+      knotWidth: 0.05,
+      knotHeight: 0.04,
+      knotThickness: 0.025,
+      bladeTopWidth: 0.035,
+      bladeBottomWidth: 0.06,
+      bladeThickness: 0.008,
+      bladeLength: 0.4,
     });
   });
 });

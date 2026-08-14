@@ -7,4 +7,12 @@ describe('enumInput', () => {
     const result = getNodeType('enumInput').evaluate({}, { value: 'square', options: ['round', 'v', 'square'] });
     expect(result.value).toEqual({ type: 'enum', value: 'square' });
   });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('enumInput').createDefaultData()).toEqual({
+      value: 'round',
+      options: ['round', 'v', 'square'],
+      label: 'Neckline',
+    });
+  });
 });

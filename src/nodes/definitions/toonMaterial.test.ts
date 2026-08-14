@@ -22,4 +22,15 @@ describe('toonMaterial', () => {
     expect(spy).toHaveBeenCalledWith(new THREE.Color('#abcdef'));
     spy.mockRestore();
   });
+
+  it('color ソケット未接続かつ data.color も無ければ #cccccc にフォールバックする', () => {
+    const spy = vi.spyOn(toonMaterialFactory, 'createToonMaterial');
+    getNodeType('toonMaterial').evaluate({}, {});
+    expect(spy).toHaveBeenCalledWith(new THREE.Color('#cccccc'));
+    spy.mockRestore();
+  });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('toonMaterial').createDefaultData()).toEqual({ color: '#cccccc' });
+  });
 });

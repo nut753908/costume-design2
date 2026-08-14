@@ -12,4 +12,8 @@ describe('numberDisplay', () => {
     const result = getNodeType('numberDisplay').evaluate({}, {});
     expect(result.value).toEqual({ type: 'number', value: 0 });
   });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('numberDisplay').createDefaultData()).toEqual({ label: 'Display' });
+  });
 });

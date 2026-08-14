@@ -43,4 +43,12 @@ describe('garmentOutput', () => {
     const withoutGeometry = getNodeType('garmentOutput').evaluate({}, { anchor: 'waist' });
     expect(withoutGeometry.geometry).toBeUndefined();
   });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('garmentOutput').createDefaultData()).toEqual({
+      anchor: 'waist',
+      offsetY: 0,
+      fallbackColor: '#cccccc',
+    });
+  });
 });

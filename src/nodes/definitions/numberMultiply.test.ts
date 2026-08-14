@@ -15,4 +15,8 @@ describe('numberMultiply', () => {
     );
     expect(result.value).toEqual({ type: 'number', value: 10 });
   });
+
+  it('createDefaultData は既定値一式を返す', () => {
+    expect(getNodeType('numberMultiply').createDefaultData()).toEqual({ value: 1, factor: 2 });
+  });
 });
