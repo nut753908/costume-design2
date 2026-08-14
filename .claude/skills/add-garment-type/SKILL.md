@@ -10,7 +10,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 1. `src/geometry/<name>.ts` — `build<Name>Geometry(params) -> THREE.BufferGeometry` という純粋関数。
 2. `src/nodes/definitions/<name>Generator.ts` — 1のジオメトリ関数をノードグラフに配線するノードタイプ。ノードタイプ自体の登録は `import.meta.glob` により自動化されているので、これ以外にレジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
 
-## 1. ジオメトリ実装(src/geometry/）
+## 1. ジオメトリ実装(src/geometry/)
 
 放射対称な回転体なら `latheProfile.ts` の `buildEasedLatheProfile()` を `THREE.LatheGeometry` に渡すだけで大半は足りる(skirt/pants/shoes/gloves/hat/belt/jacket/socks が実例)。それ以外の形状(左右対称パーツ、ネックラインのような非対称の落ち込み、剛体プリミティブの組み合わせなど)は既存の共有ヘルパー(`mirrorPair.ts`/`neckline.ts`/`alignedBox.ts`)や手組み `BufferGeometry` の実例を参照。詳細な技法一覧・共有ヘルパーの使い分けは [`src/geometry/CLAUDE.md`](../../../src/geometry/CLAUDE.md) の「カスタムガーメントジオメトリ」節にまとまっているので、実装前に必ず読むこと。
 
@@ -20,7 +20,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 - `mergeGeometries()` は結合する全ジオメトリが同じ頂点属性(名前・itemSize)を持つことを要求する。標準プリミティブ(position/normal/uv)と手組み `BufferGeometry`(position のみ)を混ぜると `null` を返して後段が `Cannot read properties of null` で落ちる。手組み側にダミー属性を足すか、混ぜないこと。
 - アンカーは体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`*_DEPTH` 定数のパターンを参照)。また複数の出力ノードが同じアンカーを共有すると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
 
-## 2. ノード登録(src/nodes/definitions/）
+## 2. ノード登録(src/nodes/definitions/)
 
 「フィールドの値を解決して `build*Geometry` にそのまま渡すだけ」という形(既存15種すべてがこれ)なら、`registerNodeType()` を直接書かず `generatorNodeFactory.ts` の `defineGeneratorNode()` を使う。
 
