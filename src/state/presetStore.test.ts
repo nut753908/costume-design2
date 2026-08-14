@@ -36,6 +36,19 @@ describe('presetStore', () => {
     expect(presets[0].nodes).toEqual(nodesB);
   });
 
+  it('複数プリセットが存在する状態で1件だけ上書きしても、他のプリセットは変化しない', () => {
+    usePresetStore.getState().savePreset('foo', nodesA, edges);
+    usePresetStore.getState().savePreset('bar', nodesB, edges);
+    const barBefore = usePresetStore.getState().presets.find((p) => p.name === 'bar');
+
+    usePresetStore.getState().savePreset('foo', nodesB, edges);
+
+    const { presets } = usePresetStore.getState();
+    expect(presets).toHaveLength(2);
+    expect(presets.find((p) => p.name === 'bar')).toEqual(barBefore);
+    expect(presets.find((p) => p.name === 'foo')?.nodes).toEqual(nodesB);
+  });
+
   it('異なる名前で保存すると、別のプリセットとして追加される', () => {
     usePresetStore.getState().savePreset('foo', nodesA, edges);
     usePresetStore.getState().savePreset('bar', nodesB, edges);
