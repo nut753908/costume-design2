@@ -8,12 +8,13 @@
 
 - `latheProfile.ts` — `buildEasedLatheProfile()`。アンカー側から反対側の端まで、半径を smoothstep でイージングしながら結ぶプロファイル点列を生成する。大半のガーメント(skirt/pants/shoes/gloves/hat/belt/jacket/socks など)はこれを `THREE.LatheGeometry` に渡すだけの単純な回転体。
 - `mirrorPair.ts` — `buildMirroredPairGeometry()`。左右対称なパーツ(脚・靴・手袋・靴下)を build() でそれぞれ独立に構築し、±offset だけ X方向に平行移動して1つの BufferGeometry にまとめる。
-- `neckline.ts` — `necklineWeight()`。角度ごとのネックライン落ち込み量(round/v/square)を計算する、top.ts と dress.ts で共有するフォールオフ関数。
+- `neckline.ts` — `necklineWeight()`。角度ごとのネックライン落ち込み量(round/v/square)を計算する、`ringGrid.ts` が使うフォールオフ関数。
+- `ringGrid.ts` — `buildRingGridGeometry()`。角度×高さのリングからなる手組みの `BufferGeometry` を、行ごとの半径/Y座標のリストから組み立て、最上段のリングの頂点のみを角度ごとに(`neckline.ts` のフォールオフ関数で重み付けして)引き下げてネックラインを彫り込む。`top.ts`/`dress.ts` が共有する。
 - `alignedBox.ts` — `buildAlignedBox()`。2点間を結ぶよう回転+平行移動した `THREE.BoxGeometry` を作る(bag.ts のストラップ、glasses.ts のブリッジ/テンプルが使用)。回転+平行移動のみの剛体変換なので、標準プリミティブが元々持つ正しい巻き順がそのまま保たれる。
 
 放射対称な Lathe では表現できない形状は、それぞれ別の技術で構築しています:
 
-- `top.ts`/`dress.ts` — Lathe/Extrude では**ない**。ネックラインの落ち込みは放射対称ではないため。角度×高さのリングからなる手組みの `BufferGeometry` で、最上段のリングの頂点のみを角度ごとに(`neckline.ts` のフォールオフ関数で重み付けして)引き下げてネックラインを彫り込みます。`dress.ts` はこれに `latheProfile.ts` のイージング済み半径プロファイルを組み合わせ、肩(torsoRadius)から裾(hemRadius)まで半径が変化する1続きの形状にしています。
+- `top.ts`/`dress.ts` — Lathe/Extrude では**ない**。ネックラインの落ち込みは放射対称ではないため。どちらも `ringGrid.ts` の `buildRingGridGeometry()` に「行ごとの半径/Y座標」のリストを渡すだけで、リング構築・インデックス組み立て・法線計算はそちらに任せている。`top.ts` は全行が torsoRadius で一定の半径リストを渡すだけ、`dress.ts` は `latheProfile.ts` のイージング済み半径プロファイルから半径リストを作ることで、肩(torsoRadius)から裾(hemRadius)まで半径が変化する1続きの形状にしている。
 - `sleeve.ts` — 肩の各角度ごとにローカルな(外向き、接線、従法線)フレーム内で構築された、テーパー状の短い2本のチューブで、トルソーの壁面に食い込ませて重ねたままにしています(`body.ts` が腕に対して使っているのと同じ、意図的な交差を許容するアプローチで、ブーリアン演算や穴あけは行いません)。top と同じ `shoulder` アンカーに取り付けられ、通常は top の `toonMaterial` ノードを共有するように配線されます(1つの Color/Material ノードから2つの Garment Output へのファンアウト)。これにより top の色を変えると sleeve も一緒に再着色されます。
 - `necktie.ts` — sleeve.ts と同じ「行=長さ方向、列=断面の周」という手組みチューブの考え方を、円形断面ではなく矩形の4隅に置き換えたもの。
 - `bag.ts`/`glasses.ts` — `body.ts` と同じく THREE.js 標準プリミティブ(BoxGeometry/TorusGeometry)を使い、頂点を手組みせず `alignedBox.ts` で整列・配置するだけで組み立てる。
