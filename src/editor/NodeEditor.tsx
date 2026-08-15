@@ -174,6 +174,7 @@ function NodeEditorInner() {
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
+        minZoom={0.1}
       >
         <Background />
         <Controls />
