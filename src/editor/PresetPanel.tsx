@@ -3,6 +3,12 @@ import { Panel } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { usePresetStore } from '../state/presetStore';
 import { validateGraph, GRAPH_VALIDATION_MESSAGES } from '../state/validateGraph';
+import { initialNodes, initialEdges } from '../state/initialGraph';
+
+/** ユーザーが保存したプリセットとは別に、常にドロップダウンの先頭に固定表示する
+ * 「初期状態(デフォルト)」の擬似プリセットID。usePresetStore には保存せず、
+ * initialGraph.ts の initialNodes/initialEdges をその場で参照する。 */
+const INITIAL_PRESET_ID = '__initial__';
 
 /** 現在のグラフをブラウザ内に名前付きで保存し、あとで読み込み/削除できるパネル。
  * 同名で保存すると上書きになる。 */
@@ -25,6 +31,16 @@ export function PresetPanel() {
   };
 
   const handleLoad = () => {
+    if (selectedId === INITIAL_PRESET_ID) {
+      // initialNodes/initialEdges は initialGraph.test.ts で常に検証済みのため、
+      // ここで改めて validateGraph は通さない。
+      if (!confirm('現在のグラフを破棄して初期状態を読み込みます。この操作は元に戻せません。よろしいですか?')) {
+        return;
+      }
+      loadGraph(initialNodes, initialEdges);
+      return;
+    }
+
     const preset = presets.find((p) => p.id === selectedId);
     if (!preset) return;
     // 保存時点では有効だったグラフでも、その後のアプリ更新でノードタイプが削除された場合
@@ -43,7 +59,7 @@ export function PresetPanel() {
   };
 
   const handleDelete = () => {
-    if (!selectedId) return;
+    if (!selectedId || selectedId === INITIAL_PRESET_ID) return;
     const preset = presets.find((p) => p.id === selectedId);
     if (!confirm(`プリセット「${preset?.name ?? ''}」を削除します。この操作は元に戻せません。よろしいですか?`)) {
       return;
@@ -70,6 +86,7 @@ export function PresetPanel() {
         onChange={(e) => setSelectedId(e.target.value)}
       >
         <option value="">プリセットを選択...</option>
+        <option value={INITIAL_PRESET_ID}>初期状態(デフォルト)</option>
         {presets.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
