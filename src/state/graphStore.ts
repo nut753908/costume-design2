@@ -140,8 +140,7 @@ export const useGraphStore = create<GraphState>()(
           const newNode: Node = { id, type, position, data: def.createDefaultData() };
           set({ nodes: [...get().nodes, newNode] });
         },
-        loadGraph: (nodes, edges) =>
-          set({ nodes, edges, evaluatedResults: null, past: [], future: [], _historyKey: null }),
+        loadGraph: (nodes, edges) => set({ nodes, edges, past: [], future: [], _historyKey: null }),
         undo: () => {
           const { past, nodes, edges, future } = get();
           if (past.length === 0) return;

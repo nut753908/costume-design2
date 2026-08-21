@@ -8,6 +8,8 @@
 
 この参照安定化ロジックの核である `sameNodes`/`sameEdges`/`toGraphNode`/`toGraphEdge` は純粋関数として `selectors.test.ts` で直接テストしているが、`useNodesLite`/`useEdgesLite` フック自体(useMemo/useRef + ストア購読の配線)も vitest + jsdom + `@testing-library/react` の `renderHook` で end-to-end に検証している(同ファイル内の「(フック)」describe ブロック)。`useBodyScale` も同様に `useBodyScale.test.ts` でフックごとテストしている。ルートの CLAUDE.md 参照。
 
+**落とし穴**: `Garments.tsx` は evaluator の結果を `useEvaluatedGraph()` の戻り値からではなく、`useGraphStore((s) => s.evaluatedResults)` でストアから直接読む。この値を埋め戻すのは `useEvaluatedGraph.ts` の `useEffect(() => setEvaluatedResults(evaluated), [evaluated])` だけであり、その `evaluated` は上記の参照安定化を経た `nodesLite`/`edgesLite` が実際に変化したときにしか再計算されない。かつて `graphStore.ts` の `loadGraph` は呼ばれるたびに `evaluatedResults: null` を無条件にセットしていたが、渡された `nodes`/`edges` が現在の state と**同一参照**の場合(例: `initialNodes`/`initialEdges` のような module-level singleton を保持する「初期状態」プリセットを2回連続で Load する)、ストアの `nodes`/`edges` が変化しないため `nodesLite`/`edgesLite` も再計算されず、`evaluatedResults` が null のまま固まってガーメントが消える、という分かりにくいバグになっていた(修正前に実際に発生していた)。`loadGraph` は現在この null リセットを行わず、`nodes`/`edges` が実際に変化した場合にのみ上記の通常のリアクティブな経路で `evaluatedResults` が再計算されるのに任せている。`evaluatedResults` を書き込む箇所を増やす場合、この「未変化なら再計算されない」制約を踏まえること。
+
 ## onConnect: 1つの入力ソケットには常に最大1本
 
 `state/graphStore.ts` の `onConnect` は、新しいエッジを追加する前に同じ `target`/`targetHandle` への既存のエッジを取り除く。`isValidConnection`(`editor/NodeEditor.tsx`)は型の一致と循環の有無しかチェックしないため、これを onConnect 側でやらないと、既に接続済みの入力ソケットへ別のノードから繋いでも(`@xyflow/react` の `addEdge()` は source/target/両handle が完全一致する場合しか重複除去しないため)両方のエッジが共存してしまう。`nodes/evaluateGraph.ts` の `incomingEdges.find(...)` は配列中で最初に見つかったエッジ(=古い方)しか採用しないため、後から繋いだ方は静かに無視され、古い方のエッジを消した瞬間に見た目の値が突然切り替わるという分かりにくいバグになる(修正前に実際に発生していた)。新しいノードタイプ/接続経路を追加する際、エッジを直接 `set({ edges: ... })` する箇所を増やすなら、この置き換えロジックも一緒に通すこと。

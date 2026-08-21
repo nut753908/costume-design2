@@ -339,4 +339,21 @@ describe('graphStore の loadGraph', () => {
     expect(state.past).toHaveLength(0);
     expect(state.future).toHaveLength(0);
   });
+
+  // loadGraph が evaluatedResults を無条件に null へリセットしていた頃のバグの回帰テスト。
+  // Garments.tsx は state.evaluatedResults を直接読むが、それを埋め戻すのは
+  // useEvaluatedGraph.ts の useEffect(nodesLite/edgesLite の参照が実際に変化した時にしか
+  // 発火しない)のみ。loadGraph に渡す nodes/edges が現在の state と同一参照(例:
+  // PresetPanel.tsx の「初期状態」プリセットを2回連続でLoadする)だと、その useEffect が
+  // 発火する保証がなく、evaluatedResults が null のまま固まってガーメントが消えていた。
+  it('渡された nodes/edges が現在の state と同一参照でも evaluatedResults を null にリセットしない', () => {
+    const nodes = [makeNode('a')];
+    const edges: Edge[] = [];
+    resetStore(nodes, edges);
+    useGraphStore.setState({ evaluatedResults: new Map() });
+
+    useGraphStore.getState().loadGraph(nodes, edges);
+
+    expect(useGraphStore.getState().evaluatedResults).not.toBeNull();
+  });
 });
