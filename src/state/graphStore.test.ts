@@ -456,3 +456,48 @@ describe('graphStore の enterGroup/exitGroup/exitToLevel', () => {
     expect(state.nodes.map((n) => n.id)).toEqual(['outer']);
   });
 });
+
+describe('graphStore の patchParentGroupNode', () => {
+  it('トップレベルにいる(scopeStack が空の)場合は何もしない', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [{ id: 'x' }] });
+    expect(useGraphStore.getState().scopeStack).toHaveLength(0);
+  });
+
+  it('直近の scopeStack フレーム内の親ノードの data にパッチを当てる(現在の nodes ではなく)', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().enterGroup('g');
+
+    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [{ id: 'newInput' }] });
+
+    const frame = useGraphStore.getState().scopeStack.at(-1)!;
+    const parent = frame.nodes.find((n) => n.id === 'g');
+    expect(parent).toBeDefined();
+    expect((parent!.data as { exposedInputs?: unknown[] }).exposedInputs).toEqual([{ id: 'newInput' }]);
+    // 現在の(内部の)nodes には影響しない。
+    expect(useGraphStore.getState().nodes.map((n) => n.id).sort()).toEqual(['inner-a', 'inner-b']);
+  });
+
+  it('removeEdgeIds を渡すと、そのフレームの edges から該当エッジも取り除く', () => {
+    resetStore([makeGroupNode('g'), makeNode('other')]);
+    useGraphStore.setState({ edges: [makeEdge('e-to-g', 'other', 'g')] });
+    useGraphStore.getState().enterGroup('g');
+
+    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [] }, ['e-to-g']);
+
+    const frame = useGraphStore.getState().scopeStack.at(-1)!;
+    expect(frame.edges).toEqual([]);
+  });
+
+  it('exitGroup で書き戻される data には patchParentGroupNode の変更が保持されている', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().enterGroup('g');
+    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [{ id: 'newInput' }] });
+
+    useGraphStore.getState().exitGroup();
+
+    const g = useGraphStore.getState().nodes.find((n) => n.id === 'g');
+    expect(g).toBeDefined();
+    expect((g!.data as { exposedInputs?: unknown[] }).exposedInputs).toEqual([{ id: 'newInput' }]);
+  });
+});

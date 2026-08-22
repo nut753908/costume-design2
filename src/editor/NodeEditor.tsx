@@ -31,6 +31,7 @@ import { NodeClipboard } from './NodeClipboard';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
+import { GroupIOPanel } from './GroupIOPanel';
 import { NODE_TYPE_DND_MIME } from './paletteShared';
 
 // 専用UIを持つ3種(number/enum/color)以外は、レジストリに登録済みの全ノードタイプへ
@@ -201,6 +202,7 @@ function NodeEditorInner() {
         <BreadcrumbPanel />
         <GraphIO />
         <PresetPanel />
+        <GroupIOPanel />
         <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
         <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} />
         <NodeClipboard />

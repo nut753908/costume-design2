@@ -89,6 +89,13 @@ interface GraphState {
   exitGroup: () => void;
   /** パンくずから任意の階層へジャンプする。`-1` でトップレベル。 */
   exitToLevel: (index: number) => void;
+  /** 今開いている階層の親グループノード自身の `data` にパッチを当てる(`editor/GroupIOPanel.tsx`
+   * が `exposedInputs`/`exposedOutputs` の増減に使う)。親ノードは現在の `nodes`(内部グラフ)
+   * ではなく直近の `scopeStack` フレームに退避されているため、`updateNodeData` では届かない。
+   * `removeEdgeIds` を渡すと、そのフレームの `edges`(親ノードから見た外部接続)から
+   * 該当idのエッジも同時に取り除く(ソケット非公開化時の孤立エッジ対策)。トップレベルに
+   * いる(`scopeStack` が空)場合は何もしない。 */
+  patchParentGroupNode: (patch: Record<string, unknown>, removeEdgeIds?: string[]) => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -314,6 +321,18 @@ export const useGraphStore = create<GraphState>()(
         exitToLevel: (index) => {
           const steps = get().scopeStack.length - (index + 1);
           for (let i = 0; i < steps; i++) get().exitGroup();
+        },
+        patchParentGroupNode: (patch, removeEdgeIds) => {
+          const state = get();
+          const frame = state.scopeStack.at(-1);
+          if (!frame) return;
+
+          const newFrame: ScopeFrame = {
+            ...frame,
+            nodes: frame.nodes.map((n) => (n.id === frame.parentId ? { ...n, data: { ...n.data, ...patch } } : n)),
+            edges: removeEdgeIds && removeEdgeIds.length > 0 ? frame.edges.filter((e) => !removeEdgeIds.includes(e.id)) : frame.edges,
+          };
+          set({ scopeStack: [...state.scopeStack.slice(0, -1), newFrame] });
         },
       };
     },
