@@ -44,3 +44,16 @@ export interface GraphEdge {
   target: string;
   targetHandle: string | null | undefined;
 }
+
+/** グループノード(nodes/definitions/groupNodeFactory.ts)の埋め込みサブグラフをキャンバス上に
+ * 描画・編集できるようにするための、position を持つ GraphNode/GraphEdge の拡張。
+ * `@xyflow/react` の Node/Edge はこれらのスーパーセットなので、editor/state レイヤー側は
+ * 追加のキャスト無しにこれらを Node[]/Edge[] として扱える(nodes/ レイヤーは
+ * `@xyflow/react` に依存しない、という既存原則を保つため、ここでは import しない)。 */
+export interface GroupInternalNode extends GraphNode {
+  position: { x: number; y: number };
+}
+
+export interface GroupInternalEdge extends GraphEdge {
+  id: string;
+}

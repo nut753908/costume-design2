@@ -75,8 +75,41 @@ describe('defineGroupNode', () => {
     }
   });
 
-  it('createDefaultData は常に空オブジェクトを返す', () => {
-    expect(getNodeType('groupFactoryTestGroup').createDefaultData()).toEqual({});
+  it('createDefaultData は internalNodes/internalEdges/inputs/outputs のクローンを返す', () => {
+    const data = getNodeType('groupFactoryTestGroup').createDefaultData() as {
+      nodes: { id: string }[];
+      edges: { id: string }[];
+      exposedInputs: { id: string }[];
+      exposedOutputs: { id: string }[];
+    };
+    expect(data.nodes.map((n) => n.id).sort()).toEqual(
+      ['radiusIn', 'colorIn', 'modeIn', 'double', 'terminal'].sort(),
+    );
+    expect(data.edges).toHaveLength(4);
+    expect(data.exposedInputs.map((s) => s.id)).toEqual(['radius', 'color', 'mode']);
+    expect(data.exposedOutputs.map((s) => s.id)).toEqual(['doubledOnly']);
+  });
+
+  it('createDefaultData は呼ぶたびに独立した参照を返す(インスタンス間で共有されない)', () => {
+    const def = getNodeType('groupFactoryTestGroup');
+    const a = def.createDefaultData() as { nodes: unknown[] };
+    const b = def.createDefaultData() as { nodes: unknown[] };
+    expect(a.nodes).not.toBe(b.nodes);
+    expect(a.nodes[0]).not.toBe(b.nodes[0]);
+  });
+
+  it('data.nodes/data.exposedInputs があればそちらを優先する(インスタンスごとの編集内容)', () => {
+    const data = getNodeType('groupFactoryTestGroup').createDefaultData() as {
+      nodes: { id: string; data: Record<string, unknown> }[];
+      edges: unknown[];
+      exposedInputs: unknown[];
+      exposedOutputs: unknown[];
+    };
+    // このインスタンスだけ radiusIn のデフォルト値を書き換える(中に入って編集した想定)。
+    data.nodes = data.nodes.map((n) => (n.id === 'radiusIn' ? { ...n, data: { value: 100 } } : n));
+
+    const result = getNodeType('groupFactoryTestGroup').evaluate({}, data);
+    expect(result.doubledRadius).toEqual({ type: 'number', value: 200 }); // 100 * factor(2)
   });
 
   it('未接続なら埋め込みサブグラフ自身のデフォルト値が使われる', () => {

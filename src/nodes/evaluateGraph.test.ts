@@ -41,6 +41,20 @@ beforeAll(() => {
       }),
     });
   }
+  if (!nodeTypeRegistry.has('testDynamicProbe')) {
+    registerNodeType({
+      type: 'testDynamicProbe',
+      label: 'Test Dynamic Probe',
+      category: 'generator',
+      // 静的な inputs は意図的に空にする。もし evaluateGraph が def.inputs を直接見て
+      // いたら(resolveNodeSockets 経由でなければ)、data.exposedInputs で 'c' を
+      // 追加してもこのノードは絶対に 'c' を解決できない。
+      inputs: [],
+      outputs: [{ id: 'cPresent', label: 'C Present', type: 'number' }],
+      createDefaultData: () => ({}),
+      evaluate: (inputs) => ({ cPresent: { type: 'number', value: inputs.c ? 1 : 0 } }),
+    });
+  }
   if (!nodeTypeRegistry.has('testColorSink')) {
     registerNodeType({
       type: 'testColorSink',
@@ -108,6 +122,25 @@ describe('evaluateGraph', () => {
     ];
 
     expect(() => evaluateGraph(nodes, edges)).toThrow(GraphCycleError);
+  });
+
+  it('data.exposedInputs があれば型の静的な inputs ではなくそちらでソケットを解決する(グループノードの動的ソケット用)', () => {
+    // testDynamicProbe の静的な inputs は空だが、この特定のノードインスタンスは
+    // data.exposedInputs で 'c' という新しいソケットを動的に公開している。
+    const nodesConnected: GraphNode[] = [
+      { id: 'src1', type: 'testSource', data: { value: 9 } },
+      { id: 'probe', type: 'testDynamicProbe', data: { exposedInputs: [{ id: 'c', label: 'C', type: 'number' }] } },
+    ];
+    const edges: GraphEdge[] = [{ source: 'src1', sourceHandle: 'value', target: 'probe', targetHandle: 'c' }];
+    expect(evaluateGraph(nodesConnected, edges).get('probe')?.cPresent).toEqual({ type: 'number', value: 1 });
+
+    // exposedInputs が無ければ(型の静的 inputs が空のままなので)同じエッジがあっても
+    // 'c' は解決されない ― 上のケースが「無条件でtrueになる」だけのテストになっていないことの確認。
+    const nodesWithoutExposed: GraphNode[] = [
+      { id: 'src1', type: 'testSource', data: { value: 9 } },
+      { id: 'probe', type: 'testDynamicProbe', data: {} },
+    ];
+    expect(evaluateGraph(nodesWithoutExposed, edges).get('probe')?.cPresent).toEqual({ type: 'number', value: 0 });
   });
 
   it('存在しないノードを参照するエッジ(削除済みノードの残骸など)は無視して評価を続ける', () => {

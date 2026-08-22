@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '../nodes/definitions';
 import { getNodeType } from '../nodes/registry';
+import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
 import { evaluateGraph } from '../nodes/evaluateGraph';
 import { initialEdges, initialNodes } from './initialGraph';
 
@@ -52,13 +53,13 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
       const source = nodesById.get(e.source);
       const target = nodesById.get(e.target);
       if (source?.type) {
-        const outputs = getNodeType(source.type).outputs;
+        const outputs = resolveNodeSockets(source.type, source.data).outputs;
         if (!outputs.some((s) => s.id === e.sourceHandle)) {
           problems.push(`${e.id}: ${source.type} has no output '${e.sourceHandle}'`);
         }
       }
       if (target?.type) {
-        const inputs = getNodeType(target.type).inputs;
+        const inputs = resolveNodeSockets(target.type, target.data).inputs;
         if (!inputs.some((s) => s.id === e.targetHandle)) {
           problems.push(`${e.id}: ${target.type} has no input '${e.targetHandle}'`);
         }

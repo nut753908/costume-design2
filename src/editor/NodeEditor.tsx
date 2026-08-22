@@ -15,8 +15,9 @@ import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
 import '../nodes/definitions'; // 下の nodeTypes 導出がレジストリに依存するため、副作用インポートで登録を確実に済ませておく
 import { useGraphStore } from '../state/graphStore';
-import { getNodeType, nodeTypeRegistry } from '../nodes/registry';
+import { nodeTypeRegistry } from '../nodes/registry';
 import { hasCycle } from '../nodes/evaluateGraph';
+import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
 import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
 import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
@@ -107,10 +108,10 @@ function NodeEditorInner() {
       const targetNode = nodes.find((n) => n.id === connection.target);
       if (!sourceNode || !targetNode) return false;
 
-      const sourceSocket = getNodeType(sourceNode.type ?? '').outputs.find(
+      const sourceSocket = resolveNodeSockets(sourceNode.type ?? '', sourceNode.data).outputs.find(
         (s) => s.id === connection.sourceHandle,
       );
-      const targetSocket = getNodeType(targetNode.type ?? '').inputs.find(
+      const targetSocket = resolveNodeSockets(targetNode.type ?? '', targetNode.data).inputs.find(
         (s) => s.id === connection.targetHandle,
       );
       if (!sourceSocket || !targetSocket) return false;

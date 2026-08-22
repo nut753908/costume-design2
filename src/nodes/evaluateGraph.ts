@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { GraphEdge, GraphNode, SocketValue } from './types';
 import { getNodeType } from './registry';
+import { resolveNodeSockets } from './resolveNodeSockets';
 
 export class GraphCycleError extends Error {
   constructor(remainingNodeIds: string[]) {
@@ -29,7 +30,10 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
     const incomingEdges = edgesByTarget.get(node.id) ?? [];
     const inputs: Record<string, SocketValue> = {};
 
-    for (const socket of def.inputs) {
+    // グループノードインスタンスは data.exposedInputs でソケット構成を上書きできる
+    // (nodes/resolveNodeSockets.ts 参照)ため、型の静的な def.inputs ではなくこちら経由で
+    // 未接続ソケットのフォールバック解決を行う。
+    for (const socket of resolveNodeSockets(node.type, node.data).inputs) {
       const incoming = incomingEdges.find((e) => (e.targetHandle ?? undefined) === socket.id);
       const upstreamValue = incoming
         ? results.get(incoming.source)?.[incoming.sourceHandle ?? '']

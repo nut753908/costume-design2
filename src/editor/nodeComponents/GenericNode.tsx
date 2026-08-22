@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import { getNodeType } from '../../nodes/registry';
+import { resolveNodeSockets } from '../../nodes/resolveNodeSockets';
 import type { SocketValue } from '../../nodes/types';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
@@ -20,6 +21,7 @@ function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type
  * ケース)を防ぐためのもので、evaluatedResults 変化による再レンダーまでは防げない。 */
 function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const def = getNodeType(type ?? '');
+  const { inputs, outputs } = resolveNodeSockets(type ?? '', data as Record<string, unknown>);
   const evaluated = useGraphStore((s) => s.evaluatedResults);
   const outputValues = evaluated?.get(id);
   const label = (data as { label?: string }).label ?? def.label;
@@ -27,7 +29,7 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   return (
     <div className="rf-node">
       <NodeTitleBar id={id} label={label} />
-      {def.inputs.map((socket) => (
+      {inputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row">
           <Handle
             type="target"
@@ -38,7 +40,7 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
           {socket.label}
         </div>
       ))}
-      {def.outputs.map((socket) => (
+      {outputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row rf-node__socket-row--out">
           {socket.label}
           <Handle
