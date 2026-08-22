@@ -62,7 +62,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 440
+        "y": 510
       },
       "data": {
         "value": 0.3,
@@ -77,7 +77,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 550
+        "y": 620
       },
       "data": {
         "value": 0.55,
@@ -92,7 +92,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 660
+        "y": 730
       },
       "data": {
         "value": 0.7,
@@ -107,7 +107,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 770
+        "y": 840
       },
       "data": {
         "value": 28,
@@ -121,8 +121,8 @@
       "id": "skirtWaistScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 0
+        "x": 260,
+        "y": 510
       },
       "data": {}
     },
@@ -130,8 +130,8 @@
       "id": "skirtGen",
       "type": "skirtGenerator",
       "position": {
-        "x": 3060,
-        "y": 0
+        "x": 520,
+        "y": 510
       },
       "data": {}
     },
@@ -139,8 +139,8 @@
       "id": "skirtColor",
       "type": "colorInput",
       "position": {
-        "x": 0,
-        "y": 880
+        "x": 520,
+        "y": 950
       },
       "data": {
         "hex": "#d9738c",
@@ -151,8 +151,8 @@
       "id": "skirtMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2380,
-        "y": 220
+        "x": 780,
+        "y": 950
       },
       "data": {}
     },
@@ -160,8 +160,8 @@
       "id": "skirtOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 0
+        "x": 1040,
+        "y": 510
       },
       "data": {
         "anchor": "waist",
@@ -174,7 +174,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 990
+        "y": 1130
       },
       "data": {
         "value": 0.29,
@@ -189,7 +189,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 1100
+        "y": 1240
       },
       "data": {
         "value": 0.5,
@@ -204,7 +204,7 @@
       "type": "enumInput",
       "position": {
         "x": 0,
-        "y": 1210
+        "y": 1350
       },
       "data": {
         "value": "round",
@@ -221,7 +221,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 1320
+        "y": 1460
       },
       "data": {
         "value": 0.12,
@@ -235,8 +235,8 @@
       "id": "topRadiusScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 110
+        "x": 260,
+        "y": 1130
       },
       "data": {}
     },
@@ -244,8 +244,8 @@
       "id": "topGen",
       "type": "topGenerator",
       "position": {
-        "x": 3060,
-        "y": 110
+        "x": 520,
+        "y": 1130
       },
       "data": {}
     },
@@ -253,8 +253,8 @@
       "id": "topColor",
       "type": "colorInput",
       "position": {
-        "x": 0,
-        "y": 1430
+        "x": 520,
+        "y": 1570
       },
       "data": {
         "hex": "#5b8fa8",
@@ -265,8 +265,8 @@
       "id": "topMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2380,
-        "y": 550
+        "x": 780,
+        "y": 1570
       },
       "data": {}
     },
@@ -274,8 +274,8 @@
       "id": "topOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 110
+        "x": 1040,
+        "y": 1130
       },
       "data": {
         "anchor": "shoulder",
@@ -287,8 +287,8 @@
       "id": "sleeveLength",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 0
+        "x": 0,
+        "y": 1720
       },
       "data": {
         "value": 0.22,
@@ -302,8 +302,8 @@
       "id": "sleeveRadius",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 110
+        "x": 0,
+        "y": 1830
       },
       "data": {
         "value": 0.085,
@@ -317,8 +317,8 @@
       "id": "sleeveGen",
       "type": "sleeveGenerator",
       "position": {
-        "x": 3060,
-        "y": 220
+        "x": 520,
+        "y": 1720
       },
       "data": {}
     },
@@ -326,8 +326,8 @@
       "id": "sleeveOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 220
+        "x": 1040,
+        "y": 1720
       },
       "data": {
         "anchor": "shoulder",
@@ -339,8 +339,8 @@
       "id": "pantsWaist",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 220
+        "x": 0,
+        "y": 2010
       },
       "data": {
         "value": 0.16,
@@ -354,8 +354,8 @@
       "id": "pantsHem",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 330
+        "x": 0,
+        "y": 2120
       },
       "data": {
         "value": 0.1,
@@ -369,8 +369,8 @@
       "id": "pantsInseam",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 440
+        "x": 0,
+        "y": 2230
       },
       "data": {
         "value": 0.75,
@@ -384,8 +384,8 @@
       "id": "pantsLegSpacing",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 550
+        "x": 0,
+        "y": 2340
       },
       "data": {
         "value": 0.14,
@@ -399,8 +399,8 @@
       "id": "pantsSegments",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 660
+        "x": 0,
+        "y": 2450
       },
       "data": {
         "value": 16,
@@ -414,8 +414,8 @@
       "id": "pantsWaistScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 330
+        "x": 260,
+        "y": 2010
       },
       "data": {}
     },
@@ -423,8 +423,8 @@
       "id": "pantsGen",
       "type": "pantsGenerator",
       "position": {
-        "x": 3060,
-        "y": 330
+        "x": 520,
+        "y": 2010
       },
       "data": {}
     },
@@ -432,8 +432,8 @@
       "id": "pantsColor",
       "type": "colorInput",
       "position": {
-        "x": 340,
-        "y": 770
+        "x": 520,
+        "y": 2560
       },
       "data": {
         "hex": "#9c7b4f",
@@ -444,8 +444,8 @@
       "id": "pantsMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2380,
-        "y": 880
+        "x": 780,
+        "y": 2560
       },
       "data": {}
     },
@@ -453,8 +453,8 @@
       "id": "pantsOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 330
+        "x": 1040,
+        "y": 2010
       },
       "data": {
         "anchor": "waist",
@@ -466,8 +466,8 @@
       "id": "shoesSole",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 880
+        "x": 0,
+        "y": 2710
       },
       "data": {
         "value": 0.13,
@@ -481,8 +481,8 @@
       "id": "shoesCuff",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 990
+        "x": 0,
+        "y": 2820
       },
       "data": {
         "value": 0.1,
@@ -496,8 +496,8 @@
       "id": "shoesHeight",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 1100
+        "x": 0,
+        "y": 2930
       },
       "data": {
         "value": 0.12,
@@ -511,8 +511,8 @@
       "id": "shoesToeLength",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 1210
+        "x": 0,
+        "y": 3040
       },
       "data": {
         "value": 1.5,
@@ -526,8 +526,8 @@
       "id": "shoesSoleScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 440
+        "x": 260,
+        "y": 2710
       },
       "data": {}
     },
@@ -535,8 +535,8 @@
       "id": "shoesGen",
       "type": "shoesGenerator",
       "position": {
-        "x": 3060,
-        "y": 550
+        "x": 520,
+        "y": 2710
       },
       "data": {}
     },
@@ -544,8 +544,8 @@
       "id": "shoesColor",
       "type": "colorInput",
       "position": {
-        "x": 340,
-        "y": 1320
+        "x": 520,
+        "y": 3150
       },
       "data": {
         "hex": "#3d3630",
@@ -556,8 +556,8 @@
       "id": "shoesMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2380,
-        "y": 1210
+        "x": 780,
+        "y": 3150
       },
       "data": {}
     },
@@ -565,8 +565,8 @@
       "id": "shoesOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 440
+        "x": 1040,
+        "y": 2710
       },
       "data": {
         "anchor": "feet",
@@ -578,8 +578,8 @@
       "id": "glovesWrist",
       "type": "numberInput",
       "position": {
-        "x": 340,
-        "y": 1430
+        "x": 0,
+        "y": 3920
       },
       "data": {
         "value": 0.08,
@@ -593,8 +593,8 @@
       "id": "glovesHand",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 0
+        "x": 0,
+        "y": 4030
       },
       "data": {
         "value": 0.09,
@@ -608,8 +608,8 @@
       "id": "glovesLength",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 110
+        "x": 0,
+        "y": 4140
       },
       "data": {
         "value": 0.14,
@@ -623,8 +623,8 @@
       "id": "glovesArmSpacing",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 220
+        "x": 0,
+        "y": 4250
       },
       "data": {
         "value": 0.34,
@@ -638,8 +638,8 @@
       "id": "glovesWristScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 660
+        "x": 260,
+        "y": 3920
       },
       "data": {}
     },
@@ -647,8 +647,8 @@
       "id": "glovesGen",
       "type": "glovesGenerator",
       "position": {
-        "x": 3060,
-        "y": 770
+        "x": 520,
+        "y": 3920
       },
       "data": {}
     },
@@ -656,8 +656,8 @@
       "id": "glovesColor",
       "type": "colorInput",
       "position": {
-        "x": 680,
-        "y": 330
+        "x": 520,
+        "y": 4360
       },
       "data": {
         "hex": "#b0413e",
@@ -668,8 +668,8 @@
       "id": "glovesMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 0
+        "x": 780,
+        "y": 4360
       },
       "data": {}
     },
@@ -677,8 +677,8 @@
       "id": "glovesOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 550
+        "x": 1040,
+        "y": 3920
       },
       "data": {
         "anchor": "wrist",
@@ -690,8 +690,8 @@
       "id": "hatBrim",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 440
+        "x": 0,
+        "y": 4540
       },
       "data": {
         "value": 0.2,
@@ -705,8 +705,8 @@
       "id": "hatCrownRadius",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 550
+        "x": 0,
+        "y": 4650
       },
       "data": {
         "value": 0.02,
@@ -720,8 +720,8 @@
       "id": "hatHeight",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 660
+        "x": 0,
+        "y": 4760
       },
       "data": {
         "value": 0.35,
@@ -735,8 +735,8 @@
       "id": "hatGen",
       "type": "hatGenerator",
       "position": {
-        "x": 2720,
-        "y": 110
+        "x": 520,
+        "y": 4540
       },
       "data": {}
     },
@@ -744,8 +744,8 @@
       "id": "hatColor",
       "type": "colorInput",
       "position": {
-        "x": 680,
-        "y": 770
+        "x": 520,
+        "y": 4870
       },
       "data": {
         "hex": "#4a3b6b",
@@ -756,8 +756,8 @@
       "id": "hatMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 220
+        "x": 780,
+        "y": 4870
       },
       "data": {}
     },
@@ -765,8 +765,8 @@
       "id": "hatOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3060,
-        "y": 440
+        "x": 1040,
+        "y": 4540
       },
       "data": {
         "anchor": "head",
@@ -778,8 +778,8 @@
       "id": "beltRadius",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 880
+        "x": 0,
+        "y": 5050
       },
       "data": {
         "value": 0.32,
@@ -793,8 +793,8 @@
       "id": "beltThickness",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 990
+        "x": 0,
+        "y": 5160
       },
       "data": {
         "value": 0.05,
@@ -808,8 +808,8 @@
       "id": "beltBulge",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 1100
+        "x": 0,
+        "y": 5270
       },
       "data": {
         "value": 1.15,
@@ -823,8 +823,8 @@
       "id": "beltSegments",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 1210
+        "x": 0,
+        "y": 5380
       },
       "data": {
         "value": 24,
@@ -838,8 +838,8 @@
       "id": "beltRadiusScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 770
+        "x": 260,
+        "y": 5050
       },
       "data": {}
     },
@@ -847,8 +847,8 @@
       "id": "beltGen",
       "type": "beltGenerator",
       "position": {
-        "x": 3060,
-        "y": 1100
+        "x": 520,
+        "y": 5050
       },
       "data": {}
     },
@@ -856,8 +856,8 @@
       "id": "beltColor",
       "type": "colorInput",
       "position": {
-        "x": 680,
-        "y": 1320
+        "x": 520,
+        "y": 5490
       },
       "data": {
         "hex": "#3a2e26",
@@ -868,8 +868,8 @@
       "id": "beltMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 330
+        "x": 780,
+        "y": 5490
       },
       "data": {}
     },
@@ -877,8 +877,8 @@
       "id": "beltOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 660
+        "x": 1040,
+        "y": 5050
       },
       "data": {
         "anchor": "waist",
@@ -890,8 +890,8 @@
       "id": "scarfNeckRadius",
       "type": "numberInput",
       "position": {
-        "x": 680,
-        "y": 1430
+        "x": 0,
+        "y": 5670
       },
       "data": {
         "value": 0.19,
@@ -905,8 +905,8 @@
       "id": "scarfBandThickness",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 0
+        "x": 0,
+        "y": 5780
       },
       "data": {
         "value": 0.05,
@@ -920,8 +920,8 @@
       "id": "scarfTailWidth",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 110
+        "x": 0,
+        "y": 5890
       },
       "data": {
         "value": 0.09,
@@ -935,8 +935,8 @@
       "id": "scarfTailLength",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 220
+        "x": 0,
+        "y": 6000
       },
       "data": {
         "value": 0.35,
@@ -950,8 +950,8 @@
       "id": "scarfSegments",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 330
+        "x": 0,
+        "y": 6110
       },
       "data": {
         "value": 20,
@@ -965,8 +965,8 @@
       "id": "scarfNeckScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 990
+        "x": 260,
+        "y": 5670
       },
       "data": {}
     },
@@ -974,8 +974,8 @@
       "id": "scarfGen",
       "type": "scarfGenerator",
       "position": {
-        "x": 3060,
-        "y": 1210
+        "x": 520,
+        "y": 5670
       },
       "data": {}
     },
@@ -983,8 +983,8 @@
       "id": "scarfColor",
       "type": "colorInput",
       "position": {
-        "x": 1020,
-        "y": 440
+        "x": 520,
+        "y": 6220
       },
       "data": {
         "hex": "#8a2e3a",
@@ -995,8 +995,8 @@
       "id": "scarfMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 440
+        "x": 780,
+        "y": 6220
       },
       "data": {}
     },
@@ -1004,8 +1004,8 @@
       "id": "scarfOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 770
+        "x": 1040,
+        "y": 5670
       },
       "data": {
         "anchor": "shoulder",
@@ -1017,8 +1017,8 @@
       "id": "jacketShoulderRadius",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 550
+        "x": 0,
+        "y": 6400
       },
       "data": {
         "value": 0.34,
@@ -1032,8 +1032,8 @@
       "id": "jacketLength",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 660
+        "x": 0,
+        "y": 6510
       },
       "data": {
         "value": 0.42,
@@ -1047,8 +1047,8 @@
       "id": "jacketHemFlare",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 770
+        "x": 0,
+        "y": 6620
       },
       "data": {
         "value": 0.15,
@@ -1062,8 +1062,8 @@
       "id": "jacketSegments",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 880
+        "x": 0,
+        "y": 6730
       },
       "data": {
         "value": 20,
@@ -1077,8 +1077,8 @@
       "id": "jacketShoulderScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 1100
+        "x": 260,
+        "y": 6400
       },
       "data": {}
     },
@@ -1086,8 +1086,8 @@
       "id": "jacketGen",
       "type": "jacketGenerator",
       "position": {
-        "x": 3060,
-        "y": 1430
+        "x": 520,
+        "y": 6400
       },
       "data": {}
     },
@@ -1095,8 +1095,8 @@
       "id": "jacketColor",
       "type": "colorInput",
       "position": {
-        "x": 1020,
-        "y": 990
+        "x": 520,
+        "y": 6840
       },
       "data": {
         "hex": "#4a5c3e",
@@ -1107,8 +1107,8 @@
       "id": "jacketMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 550
+        "x": 780,
+        "y": 6840
       },
       "data": {}
     },
@@ -1116,8 +1116,8 @@
       "id": "jacketOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 880
+        "x": 1040,
+        "y": 6400
       },
       "data": {
         "anchor": "shoulder",
@@ -1129,8 +1129,8 @@
       "id": "socksAnkleRadius",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 1100
+        "x": 0,
+        "y": 3300
       },
       "data": {
         "value": 0.09,
@@ -1144,8 +1144,8 @@
       "id": "socksCalfRadius",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 1210
+        "x": 0,
+        "y": 3410
       },
       "data": {
         "value": 0.105,
@@ -1159,8 +1159,8 @@
       "id": "socksHeight",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 1320
+        "x": 0,
+        "y": 3520
       },
       "data": {
         "value": 0.22,
@@ -1174,8 +1174,8 @@
       "id": "socksSegments",
       "type": "numberInput",
       "position": {
-        "x": 1020,
-        "y": 1430
+        "x": 0,
+        "y": 3630
       },
       "data": {
         "value": 16,
@@ -1189,8 +1189,8 @@
       "id": "socksAnkleScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 1320
+        "x": 260,
+        "y": 3300
       },
       "data": {}
     },
@@ -1198,8 +1198,8 @@
       "id": "socksGen",
       "type": "socksGenerator",
       "position": {
-        "x": 3060,
-        "y": 1320
+        "x": 520,
+        "y": 3300
       },
       "data": {}
     },
@@ -1207,8 +1207,8 @@
       "id": "socksColor",
       "type": "colorInput",
       "position": {
-        "x": 1360,
-        "y": 0
+        "x": 520,
+        "y": 3740
       },
       "data": {
         "hex": "#d4a83a",
@@ -1219,8 +1219,8 @@
       "id": "socksMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 660
+        "x": 780,
+        "y": 3740
       },
       "data": {}
     },
@@ -1228,8 +1228,8 @@
       "id": "socksOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 990
+        "x": 1040,
+        "y": 3300
       },
       "data": {
         "anchor": "feet",
@@ -1241,8 +1241,8 @@
       "id": "dressTorsoRadius",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 110
+        "x": 0,
+        "y": 7020
       },
       "data": {
         "value": 0.29,
@@ -1256,8 +1256,8 @@
       "id": "dressHemRadius",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 220
+        "x": 0,
+        "y": 7130
       },
       "data": {
         "value": 0.55,
@@ -1271,8 +1271,8 @@
       "id": "dressLength",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 330
+        "x": 0,
+        "y": 7240
       },
       "data": {
         "value": 0.9,
@@ -1286,8 +1286,8 @@
       "id": "dressNeckline",
       "type": "enumInput",
       "position": {
-        "x": 1360,
-        "y": 440
+        "x": 0,
+        "y": 7350
       },
       "data": {
         "value": "round",
@@ -1303,8 +1303,8 @@
       "id": "dressNecklineDepth",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 550
+        "x": 0,
+        "y": 7460
       },
       "data": {
         "value": 0.12,
@@ -1318,8 +1318,8 @@
       "id": "dressTorsoRadiusScale",
       "type": "numberMultiply",
       "position": {
-        "x": 2380,
-        "y": 1430
+        "x": 260,
+        "y": 7020
       },
       "data": {}
     },
@@ -1327,8 +1327,8 @@
       "id": "dressGen",
       "type": "dressGenerator",
       "position": {
-        "x": 3400,
-        "y": 0
+        "x": 520,
+        "y": 7020
       },
       "data": {}
     },
@@ -1336,8 +1336,8 @@
       "id": "dressColor",
       "type": "colorInput",
       "position": {
-        "x": 1360,
-        "y": 660
+        "x": 520,
+        "y": 7570
       },
       "data": {
         "hex": "#3d7a72",
@@ -1348,8 +1348,8 @@
       "id": "dressMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 770
+        "x": 780,
+        "y": 7570
       },
       "data": {}
     },
@@ -1357,8 +1357,8 @@
       "id": "dressOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3740,
-        "y": 1100
+        "x": 1040,
+        "y": 7020
       },
       "data": {
         "anchor": "shoulder",
@@ -1370,8 +1370,8 @@
       "id": "bagStrapWidth",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 770
+        "x": 0,
+        "y": 7750
       },
       "data": {
         "value": 0.04,
@@ -1385,8 +1385,8 @@
       "id": "bagStrapThickness",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 880
+        "x": 0,
+        "y": 7860
       },
       "data": {
         "value": 0.015,
@@ -1400,8 +1400,8 @@
       "id": "bagShoulderOffset",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 990
+        "x": 0,
+        "y": 7970
       },
       "data": {
         "value": 0.08,
@@ -1415,8 +1415,8 @@
       "id": "bagHipOffset",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 1100
+        "x": 0,
+        "y": 8080
       },
       "data": {
         "value": 0.26,
@@ -1430,8 +1430,8 @@
       "id": "bagDrop",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 1210
+        "x": 0,
+        "y": 8190
       },
       "data": {
         "value": 0.55,
@@ -1445,8 +1445,8 @@
       "id": "bagWidth",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 1320
+        "x": 0,
+        "y": 8300
       },
       "data": {
         "value": 0.16,
@@ -1460,8 +1460,8 @@
       "id": "bagHeight",
       "type": "numberInput",
       "position": {
-        "x": 1360,
-        "y": 1430
+        "x": 0,
+        "y": 8410
       },
       "data": {
         "value": 0.14,
@@ -1475,8 +1475,8 @@
       "id": "bagDepth",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 0
+        "x": 0,
+        "y": 8520
       },
       "data": {
         "value": 0.08,
@@ -1490,8 +1490,8 @@
       "id": "bagGen",
       "type": "bagGenerator",
       "position": {
-        "x": 2720,
-        "y": 880
+        "x": 520,
+        "y": 7750
       },
       "data": {}
     },
@@ -1499,8 +1499,8 @@
       "id": "bagColor",
       "type": "colorInput",
       "position": {
-        "x": 1700,
-        "y": 110
+        "x": 520,
+        "y": 8630
       },
       "data": {
         "hex": "#8a4a2e",
@@ -1511,8 +1511,8 @@
       "id": "bagMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 990
+        "x": 780,
+        "y": 8630
       },
       "data": {}
     },
@@ -1520,8 +1520,8 @@
       "id": "bagOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3060,
-        "y": 660
+        "x": 1040,
+        "y": 7750
       },
       "data": {
         "anchor": "shoulder",
@@ -1533,8 +1533,8 @@
       "id": "necktieKnotWidth",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 220
+        "x": 0,
+        "y": 8810
       },
       "data": {
         "value": 0.05,
@@ -1548,8 +1548,8 @@
       "id": "necktieKnotHeight",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 330
+        "x": 0,
+        "y": 8920
       },
       "data": {
         "value": 0.04,
@@ -1563,8 +1563,8 @@
       "id": "necktieKnotThickness",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 440
+        "x": 0,
+        "y": 9030
       },
       "data": {
         "value": 0.025,
@@ -1578,8 +1578,8 @@
       "id": "necktieBladeTopWidth",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 550
+        "x": 0,
+        "y": 9140
       },
       "data": {
         "value": 0.035,
@@ -1593,8 +1593,8 @@
       "id": "necktieBladeBottomWidth",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 660
+        "x": 0,
+        "y": 9250
       },
       "data": {
         "value": 0.06,
@@ -1608,8 +1608,8 @@
       "id": "necktieBladeThickness",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 770
+        "x": 0,
+        "y": 9360
       },
       "data": {
         "value": 0.008,
@@ -1623,8 +1623,8 @@
       "id": "necktieBladeLength",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 880
+        "x": 0,
+        "y": 9470
       },
       "data": {
         "value": 0.4,
@@ -1638,8 +1638,8 @@
       "id": "necktieGen",
       "type": "necktieGenerator",
       "position": {
-        "x": 2720,
-        "y": 1100
+        "x": 520,
+        "y": 8810
       },
       "data": {}
     },
@@ -1647,8 +1647,8 @@
       "id": "necktieColor",
       "type": "colorInput",
       "position": {
-        "x": 1700,
-        "y": 990
+        "x": 520,
+        "y": 9580
       },
       "data": {
         "hex": "#7a1f2b",
@@ -1659,8 +1659,8 @@
       "id": "necktieMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 1210
+        "x": 780,
+        "y": 9580
       },
       "data": {}
     },
@@ -1668,8 +1668,8 @@
       "id": "necktieOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3060,
-        "y": 880
+        "x": 1040,
+        "y": 8810
       },
       "data": {
         "anchor": "shoulder",
@@ -1681,8 +1681,8 @@
       "id": "glassesLensRadius",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 1100
+        "x": 0,
+        "y": 9760
       },
       "data": {
         "value": 0.045,
@@ -1696,8 +1696,8 @@
       "id": "glassesFrameThickness",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 1210
+        "x": 0,
+        "y": 9870
       },
       "data": {
         "value": 0.008,
@@ -1711,8 +1711,8 @@
       "id": "glassesLensSpacing",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 1320
+        "x": 0,
+        "y": 9980
       },
       "data": {
         "value": 0.055,
@@ -1726,8 +1726,8 @@
       "id": "glassesBridgeThickness",
       "type": "numberInput",
       "position": {
-        "x": 1700,
-        "y": 1430
+        "x": 0,
+        "y": 10090
       },
       "data": {
         "value": 0.01,
@@ -1741,8 +1741,8 @@
       "id": "glassesTempleLength",
       "type": "numberInput",
       "position": {
-        "x": 2040,
-        "y": 0
+        "x": 0,
+        "y": 10200
       },
       "data": {
         "value": 0.12,
@@ -1756,8 +1756,8 @@
       "id": "glassesTempleThickness",
       "type": "numberInput",
       "position": {
-        "x": 2040,
-        "y": 110
+        "x": 0,
+        "y": 10310
       },
       "data": {
         "value": 0.006,
@@ -1771,8 +1771,8 @@
       "id": "glassesGen",
       "type": "glassesGenerator",
       "position": {
-        "x": 2720,
-        "y": 1320
+        "x": 520,
+        "y": 9760
       },
       "data": {}
     },
@@ -1780,8 +1780,8 @@
       "id": "glassesColor",
       "type": "colorInput",
       "position": {
-        "x": 2040,
-        "y": 220
+        "x": 520,
+        "y": 10420
       },
       "data": {
         "hex": "#2a2a2a",
@@ -1792,8 +1792,8 @@
       "id": "glassesMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 2720,
-        "y": 1430
+        "x": 780,
+        "y": 10420
       },
       "data": {}
     },
@@ -1801,8 +1801,8 @@
       "id": "glassesOutput",
       "type": "garmentOutput",
       "position": {
-        "x": 3060,
-        "y": 990
+        "x": 1040,
+        "y": 9760
       },
       "data": {
         "anchor": "head",

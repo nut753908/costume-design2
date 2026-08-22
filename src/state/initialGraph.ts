@@ -19,6 +19,16 @@ import initialGraphData from './initialGraph.json';
 // - shoesGen/socksGen は pantsLegSpacing を再引きしている。脚の間隔を変えると靴/靴下の
 //   間隔も一緒に追従する。
 //
+// ノードの position はガーメントごとに手作業で「読みやすいエッジになる」列テンプレートに
+// 沿って配置している(nodes/autoLayout.ts の computeAutoLayout() を機械的に適用すると、
+// 全ガーメントの入力ノードが1つの巨大な層にまとまり、バリセンター順の並び替えだけでは
+// エッジがノード上を大量に横切ってしまうため、これは使っていない)。1ガーメント分の列は
+// 左から x=0(param) → x=260(numberMultiply、体に触れる半径があれば) → x=520(generator、
+// param の先頭行と同じ y) → x=520(colorInput、param の最終行の1つ下の y。generator と列は
+// 同じだが行が離れているため重ならない) → x=780(toonMaterial、colorInput と同じ y) →
+// x=1040(garmentOutput、generator と同じ y)。関連するガーメント同士(top+sleeve、
+// pants+shoes+socks)は縦に隣接させ、bodyBuild → 各ガーメントの numberMultiply という
+// 縦断的な配線が param 列と numberMultiply 列の間の余白だけを通るようにしている。
 // 新しいガーメント種を追加する際は add-garment-type スキル・上記の慣例に従うこと。
 export const initialNodes: Node[] = initialGraphData.nodes as Node[];
 export const initialEdges: Edge[] = initialGraphData.edges as Edge[];
