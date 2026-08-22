@@ -82,6 +82,32 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     }));
     expect(() => evaluateGraph(graphNodes, graphEdges)).not.toThrow();
   });
+
+  // sleeve/shoes/socks は、グループ化によって内部に埋没した topGroup/pantsGroup の値を
+  // 追加公開ソケット・生パラメータノード経由で再引きしている(state/CLAUDE.md 参照)。
+  // これらのエッジが将来の再改修で静かに外れないよう、接続関係をピンポイントで検証する。
+  it('sleeveOutput.material が topGroup.material に接続されている', () => {
+    const edge = initialEdges.find((e) => e.target === 'sleeveOutput' && e.targetHandle === 'material');
+    expect(edge?.source).toBe('topGroup');
+    expect(edge?.sourceHandle).toBe('material');
+  });
+
+  it('sleeveGen.attachRadius が topGroup.attachRadiusScaled に接続されている', () => {
+    const edge = initialEdges.find((e) => e.target === 'sleeveGen' && e.targetHandle === 'attachRadius');
+    expect(edge?.source).toBe('topGroup');
+    expect(edge?.sourceHandle).toBe('attachRadiusScaled');
+  });
+
+  it('shoesGroup/socksGroup.legSpacing が pantsLegSpacing に接続されている', () => {
+    for (const [target, targetHandle] of [
+      ['shoesGroup', 'legSpacing'],
+      ['socksGroup', 'legSpacing'],
+    ]) {
+      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === targetHandle);
+      expect(edge?.source).toBe('pantsLegSpacing');
+      expect(edge?.sourceHandle).toBe('value');
+    }
+  });
 });
 
 function isRegistered(type: string): boolean {

@@ -192,24 +192,6 @@
       }
     },
     {
-      "id": "topRadiusScale",
-      "type": "numberMultiply",
-      "position": {
-        "x": 260,
-        "y": 1130
-      },
-      "data": {}
-    },
-    {
-      "id": "topGen",
-      "type": "topGenerator",
-      "position": {
-        "x": 520,
-        "y": 1130
-      },
-      "data": {}
-    },
-    {
       "id": "topColor",
       "type": "colorInput",
       "position": {
@@ -219,28 +201,6 @@
       "data": {
         "hex": "#5b8fa8",
         "label": "Top Color"
-      }
-    },
-    {
-      "id": "topMaterial",
-      "type": "toonMaterial",
-      "position": {
-        "x": 780,
-        "y": 1570
-      },
-      "data": {}
-    },
-    {
-      "id": "topOutput",
-      "type": "garmentOutput",
-      "position": {
-        "x": 1040,
-        "y": 1130
-      },
-      "data": {
-        "anchor": "shoulder",
-        "offsetY": 0,
-        "fallbackColor": "#5b8fa8"
       }
     },
     {
@@ -371,24 +331,6 @@
       }
     },
     {
-      "id": "pantsWaistScale",
-      "type": "numberMultiply",
-      "position": {
-        "x": 260,
-        "y": 2010
-      },
-      "data": {}
-    },
-    {
-      "id": "pantsGen",
-      "type": "pantsGenerator",
-      "position": {
-        "x": 520,
-        "y": 2010
-      },
-      "data": {}
-    },
-    {
       "id": "pantsColor",
       "type": "colorInput",
       "position": {
@@ -398,28 +340,6 @@
       "data": {
         "hex": "#9c7b4f",
         "label": "Pants Color"
-      }
-    },
-    {
-      "id": "pantsMaterial",
-      "type": "toonMaterial",
-      "position": {
-        "x": 780,
-        "y": 2560
-      },
-      "data": {}
-    },
-    {
-      "id": "pantsOutput",
-      "type": "garmentOutput",
-      "position": {
-        "x": 1040,
-        "y": 2010
-      },
-      "data": {
-        "anchor": "waist",
-        "offsetY": 0,
-        "fallbackColor": "#9c7b4f"
       }
     },
     {
@@ -483,24 +403,6 @@
       }
     },
     {
-      "id": "shoesSoleScale",
-      "type": "numberMultiply",
-      "position": {
-        "x": 260,
-        "y": 2710
-      },
-      "data": {}
-    },
-    {
-      "id": "shoesGen",
-      "type": "shoesGenerator",
-      "position": {
-        "x": 520,
-        "y": 2710
-      },
-      "data": {}
-    },
-    {
       "id": "shoesColor",
       "type": "colorInput",
       "position": {
@@ -510,28 +412,6 @@
       "data": {
         "hex": "#3d3630",
         "label": "Shoes Color"
-      }
-    },
-    {
-      "id": "shoesMaterial",
-      "type": "toonMaterial",
-      "position": {
-        "x": 780,
-        "y": 3150
-      },
-      "data": {}
-    },
-    {
-      "id": "shoesOutput",
-      "type": "garmentOutput",
-      "position": {
-        "x": 1040,
-        "y": 2710
-      },
-      "data": {
-        "anchor": "feet",
-        "offsetY": 0,
-        "fallbackColor": "#3d3630"
       }
     },
     {
@@ -1146,24 +1026,6 @@
       }
     },
     {
-      "id": "socksAnkleScale",
-      "type": "numberMultiply",
-      "position": {
-        "x": 260,
-        "y": 3300
-      },
-      "data": {}
-    },
-    {
-      "id": "socksGen",
-      "type": "socksGenerator",
-      "position": {
-        "x": 520,
-        "y": 3300
-      },
-      "data": {}
-    },
-    {
       "id": "socksColor",
       "type": "colorInput",
       "position": {
@@ -1173,28 +1035,6 @@
       "data": {
         "hex": "#d4a83a",
         "label": "Socks Color"
-      }
-    },
-    {
-      "id": "socksMaterial",
-      "type": "toonMaterial",
-      "position": {
-        "x": 780,
-        "y": 3740
-      },
-      "data": {}
-    },
-    {
-      "id": "socksOutput",
-      "type": "garmentOutput",
-      "position": {
-        "x": 1040,
-        "y": 3300
-      },
-      "data": {
-        "anchor": "feet",
-        "offsetY": 0,
-        "fallbackColor": "#d4a83a"
       }
     },
     {
@@ -1778,6 +1618,42 @@
         "y": 510
       },
       "data": {}
+    },
+    {
+      "id": "topGroup",
+      "type": "topGroup",
+      "position": {
+        "x": 260,
+        "y": 1130
+      },
+      "data": {}
+    },
+    {
+      "id": "pantsGroup",
+      "type": "pantsGroup",
+      "position": {
+        "x": 260,
+        "y": 2010
+      },
+      "data": {}
+    },
+    {
+      "id": "shoesGroup",
+      "type": "shoesGroup",
+      "position": {
+        "x": 260,
+        "y": 2710
+      },
+      "data": {}
+    },
+    {
+      "id": "socksGroup",
+      "type": "socksGroup",
+      "position": {
+        "x": 260,
+        "y": 3300
+      },
+      "data": {}
     }
   ],
   "edges": [
@@ -1827,69 +1703,48 @@
       "id": "e-top-radius",
       "source": "topRadius",
       "sourceHandle": "value",
-      "target": "topRadiusScale",
-      "targetHandle": "value"
+      "target": "topGroup",
+      "targetHandle": "torsoRadius"
     },
     {
       "id": "e-top-radius-build",
       "source": "bodyBuild",
       "sourceHandle": "value",
-      "target": "topRadiusScale",
-      "targetHandle": "factor"
-    },
-    {
-      "id": "e-top-radius-scaled",
-      "source": "topRadiusScale",
-      "sourceHandle": "value",
-      "target": "topGen",
-      "targetHandle": "torsoRadius"
+      "target": "topGroup",
+      "targetHandle": "bodyBuild"
     },
     {
       "id": "e-top-length",
       "source": "topLength",
       "sourceHandle": "value",
-      "target": "topGen",
+      "target": "topGroup",
       "targetHandle": "length"
     },
     {
       "id": "e-top-neckline",
       "source": "topNeckline",
       "sourceHandle": "value",
-      "target": "topGen",
-      "targetHandle": "necklineType"
+      "target": "topGroup",
+      "targetHandle": "neckline"
     },
     {
       "id": "e-top-neckline-depth",
       "source": "topNecklineDepth",
       "sourceHandle": "value",
-      "target": "topGen",
+      "target": "topGroup",
       "targetHandle": "necklineDepth"
-    },
-    {
-      "id": "e-top-geometry",
-      "source": "topGen",
-      "sourceHandle": "geometry",
-      "target": "topOutput",
-      "targetHandle": "geometry"
     },
     {
       "id": "e-top-color",
       "source": "topColor",
       "sourceHandle": "color",
-      "target": "topMaterial",
+      "target": "topGroup",
       "targetHandle": "color"
     },
     {
-      "id": "e-top-material",
-      "source": "topMaterial",
-      "sourceHandle": "material",
-      "target": "topOutput",
-      "targetHandle": "material"
-    },
-    {
       "id": "e-sleeve-attach-radius",
-      "source": "topRadiusScale",
-      "sourceHandle": "value",
+      "source": "topGroup",
+      "sourceHandle": "attachRadiusScaled",
       "target": "sleeveGen",
       "targetHandle": "attachRadius"
     },
@@ -1916,7 +1771,7 @@
     },
     {
       "id": "e-sleeve-material",
-      "source": "topMaterial",
+      "source": "topGroup",
       "sourceHandle": "material",
       "target": "sleeveOutput",
       "targetHandle": "material"
@@ -1925,141 +1780,99 @@
       "id": "e-pants-waist",
       "source": "pantsWaist",
       "sourceHandle": "value",
-      "target": "pantsWaistScale",
-      "targetHandle": "value"
+      "target": "pantsGroup",
+      "targetHandle": "waistRadius"
     },
     {
       "id": "e-pants-waist-build",
       "source": "bodyBuild",
       "sourceHandle": "value",
-      "target": "pantsWaistScale",
-      "targetHandle": "factor"
-    },
-    {
-      "id": "e-pants-waist-scaled",
-      "source": "pantsWaistScale",
-      "sourceHandle": "value",
-      "target": "pantsGen",
-      "targetHandle": "waistRadius"
+      "target": "pantsGroup",
+      "targetHandle": "bodyBuild"
     },
     {
       "id": "e-pants-hem",
       "source": "pantsHem",
       "sourceHandle": "value",
-      "target": "pantsGen",
+      "target": "pantsGroup",
       "targetHandle": "hemRadius"
     },
     {
       "id": "e-pants-inseam",
       "source": "pantsInseam",
       "sourceHandle": "value",
-      "target": "pantsGen",
+      "target": "pantsGroup",
       "targetHandle": "inseam"
     },
     {
       "id": "e-pants-leg-spacing",
       "source": "pantsLegSpacing",
       "sourceHandle": "value",
-      "target": "pantsGen",
+      "target": "pantsGroup",
       "targetHandle": "legSpacing"
     },
     {
       "id": "e-pants-segments",
       "source": "pantsSegments",
       "sourceHandle": "value",
-      "target": "pantsGen",
+      "target": "pantsGroup",
       "targetHandle": "segments"
-    },
-    {
-      "id": "e-pants-geometry",
-      "source": "pantsGen",
-      "sourceHandle": "geometry",
-      "target": "pantsOutput",
-      "targetHandle": "geometry"
     },
     {
       "id": "e-pants-color",
       "source": "pantsColor",
       "sourceHandle": "color",
-      "target": "pantsMaterial",
+      "target": "pantsGroup",
       "targetHandle": "color"
-    },
-    {
-      "id": "e-pants-material",
-      "source": "pantsMaterial",
-      "sourceHandle": "material",
-      "target": "pantsOutput",
-      "targetHandle": "material"
     },
     {
       "id": "e-shoes-leg-spacing",
       "source": "pantsLegSpacing",
       "sourceHandle": "value",
-      "target": "shoesGen",
+      "target": "shoesGroup",
       "targetHandle": "legSpacing"
     },
     {
       "id": "e-shoes-sole",
       "source": "shoesSole",
       "sourceHandle": "value",
-      "target": "shoesSoleScale",
-      "targetHandle": "value"
+      "target": "shoesGroup",
+      "targetHandle": "soleRadius"
     },
     {
       "id": "e-shoes-sole-build",
       "source": "bodyBuild",
       "sourceHandle": "value",
-      "target": "shoesSoleScale",
-      "targetHandle": "factor"
-    },
-    {
-      "id": "e-shoes-sole-scaled",
-      "source": "shoesSoleScale",
-      "sourceHandle": "value",
-      "target": "shoesGen",
-      "targetHandle": "soleRadius"
+      "target": "shoesGroup",
+      "targetHandle": "bodyBuild"
     },
     {
       "id": "e-shoes-cuff",
       "source": "shoesCuff",
       "sourceHandle": "value",
-      "target": "shoesGen",
+      "target": "shoesGroup",
       "targetHandle": "cuffRadius"
     },
     {
       "id": "e-shoes-height",
       "source": "shoesHeight",
       "sourceHandle": "value",
-      "target": "shoesGen",
+      "target": "shoesGroup",
       "targetHandle": "height"
     },
     {
       "id": "e-shoes-toe-length",
       "source": "shoesToeLength",
       "sourceHandle": "value",
-      "target": "shoesGen",
+      "target": "shoesGroup",
       "targetHandle": "toeLength"
-    },
-    {
-      "id": "e-shoes-geometry",
-      "source": "shoesGen",
-      "sourceHandle": "geometry",
-      "target": "shoesOutput",
-      "targetHandle": "geometry"
     },
     {
       "id": "e-shoes-color",
       "source": "shoesColor",
       "sourceHandle": "color",
-      "target": "shoesMaterial",
+      "target": "shoesGroup",
       "targetHandle": "color"
-    },
-    {
-      "id": "e-shoes-material",
-      "source": "shoesMaterial",
-      "sourceHandle": "material",
-      "target": "shoesOutput",
-      "targetHandle": "material"
     },
     {
       "id": "e-gloves-wrist",
@@ -2366,71 +2179,50 @@
       "id": "e-socks-leg-spacing",
       "source": "pantsLegSpacing",
       "sourceHandle": "value",
-      "target": "socksGen",
+      "target": "socksGroup",
       "targetHandle": "legSpacing"
     },
     {
       "id": "e-socks-ankle-radius",
       "source": "socksAnkleRadius",
       "sourceHandle": "value",
-      "target": "socksAnkleScale",
-      "targetHandle": "value"
+      "target": "socksGroup",
+      "targetHandle": "ankleRadius"
     },
     {
       "id": "e-socks-ankle-radius-build",
       "source": "bodyBuild",
       "sourceHandle": "value",
-      "target": "socksAnkleScale",
-      "targetHandle": "factor"
-    },
-    {
-      "id": "e-socks-ankle-radius-scaled",
-      "source": "socksAnkleScale",
-      "sourceHandle": "value",
-      "target": "socksGen",
-      "targetHandle": "ankleRadius"
+      "target": "socksGroup",
+      "targetHandle": "bodyBuild"
     },
     {
       "id": "e-socks-calf-radius",
       "source": "socksCalfRadius",
       "sourceHandle": "value",
-      "target": "socksGen",
+      "target": "socksGroup",
       "targetHandle": "calfRadius"
     },
     {
       "id": "e-socks-height",
       "source": "socksHeight",
       "sourceHandle": "value",
-      "target": "socksGen",
+      "target": "socksGroup",
       "targetHandle": "height"
     },
     {
       "id": "e-socks-segments",
       "source": "socksSegments",
       "sourceHandle": "value",
-      "target": "socksGen",
+      "target": "socksGroup",
       "targetHandle": "segments"
-    },
-    {
-      "id": "e-socks-geometry",
-      "source": "socksGen",
-      "sourceHandle": "geometry",
-      "target": "socksOutput",
-      "targetHandle": "geometry"
     },
     {
       "id": "e-socks-color",
       "source": "socksColor",
       "sourceHandle": "color",
-      "target": "socksMaterial",
+      "target": "socksGroup",
       "targetHandle": "color"
-    },
-    {
-      "id": "e-socks-material",
-      "source": "socksMaterial",
-      "sourceHandle": "material",
-      "target": "socksOutput",
-      "targetHandle": "material"
     },
     {
       "id": "e-dress-torso-radius",
