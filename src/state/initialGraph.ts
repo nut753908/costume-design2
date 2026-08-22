@@ -9,30 +9,31 @@ import initialGraphData from './initialGraph.json';
 //   state/useBodySkinColor.ts が id で直接読み取る慣例的なシードノード。エッジで
 //   何にも配線されていない(ルート CLAUDE.md の「ボディスケールはソケットグラフを
 //   迂回して直接読み取られる」を参照)。
-// - 各ガーメントの「体に触れる半径」(skirtWaist/topRadius/pantsWaist/shoesSole/
-//   glovesWrist/beltRadius/scarfNeckRadius/jacketShoulderRadius/socksAnkleRadius/
-//   dressTorsoRadius)は、対応する numberMultiply ノード(例: topRadiusScale)を
-//   経由して bodyBuild を掛けてから生成ノードに渡している。ボディをリサイズしても
-//   ガーメントがゆるい/きつい見た目にならないようにするため。
-//   ※ 移行中: skirt は既に「numberMultiply + generator + toonMaterial + garmentOutput」の
-//   4ノードを1枚の skirtGroup(nodes/definitions/groupNodeFactory.ts の defineGroupNode で
-//   定義)に集約済み。bodyBuild は skirtGroup の Body Build 入力ソケットへ直接配線されており、
-//   乗算自体は skirtGroup 内部に隠蔽されている。他のガーメントも順次同じ形に移行する予定。
-// - sleeveGen は topRadiusScale(Body Build 適用後の Top 胴体半径)と topMaterial を
-//   再引きしている。Top を再着色/リサイズすると Sleeve も一緒に追従する。
-// - shoesGen/socksGen は pantsLegSpacing を再引きしている。脚の間隔を変えると靴/靴下の
-//   間隔も一緒に追従する。
+// - sleeve を除く14種のガーメントは、各ガーメントの「numberMultiply(体に触れる半径が
+//   あれば)+ generator + toonMaterial + garmentOutput」という3〜4ノードのパイプラインを
+//   1枚の <name>Group ノード(nodes/definitions/groupNodeFactory.ts の defineGroupNode() で
+//   定義、nodes/definitions/<name>GroupNode.ts)に集約している。生パラメータ
+//   (numberInput/enumInput)と Color(colorInput)は引き続きこのファイルの外側のノードとして
+//   残り、bodyBuild はグループノードの Body Build 入力ソケットへ直接配線される(乗算自体は
+//   グループ内部に隠蔽される)。詳細は src/nodes/CLAUDE.md の「グループノード」節を参照。
+// - sleeve だけはグループ化していない。topGroup の内部に埋没した topRadiusScale/topMaterial
+//   相当の値(Body Build 適用後の Top 胴体半径・Top のマテリアル)を再引きしており、
+//   defineGroupNode() は geometry/material 型の値を外部から注入する仕組みを持たないため
+//   (number/color/enum のみ注入可能)。その代わり topGroup は `attachRadiusScaled`/`material`
+//   という追加の出力ソケットを公開し、sleeve のエッジはそちらから引いている。
+// - shoesGroup/socksGroup は pantsLegSpacing(pants の生パラメータノード、素の numberInput)を
+//   外部入力として再引きしている。脚の間隔を変えると靴/靴下の間隔も一緒に追従する。
 //
 // ノードの position はガーメントごとに手作業で「読みやすいエッジになる」列テンプレートに
 // 沿って配置している(nodes/autoLayout.ts の computeAutoLayout() を機械的に適用すると、
 // 全ガーメントの入力ノードが1つの巨大な層にまとまり、バリセンター順の並び替えだけでは
-// エッジがノード上を大量に横切ってしまうため、これは使っていない)。1ガーメント分の列は
-// 左から x=0(param) → x=260(numberMultiply、体に触れる半径があれば) → x=520(generator、
-// param の先頭行と同じ y) → x=520(colorInput、param の最終行の1つ下の y。generator と列は
-// 同じだが行が離れているため重ならない) → x=780(toonMaterial、colorInput と同じ y) →
-// x=1040(garmentOutput、generator と同じ y)。関連するガーメント同士(top+sleeve、
-// pants+shoes+socks)は縦に隣接させ、bodyBuild → 各ガーメントの numberMultiply という
-// 縦断的な配線が param 列と numberMultiply 列の間の余白だけを通るようにしている。
+// エッジがノード上を大量に横切ってしまうため、これは使っていない)。グループ化された
+// ガーメント1つ分の列は左から x=0(param + colorInput、元の並び順のまま縦に並べる) →
+// x=260(グループノード、param の先頭行と同じ y)の2列のみ。bodyBuild → 各グループの
+// Body Build 入力という縦断的な配線は、この2列の間の余白だけを通るようにしている。
+// sleeve だけは3列(x=520 param、x=780 sleeveGenerator、x=1040 garmentOutput)を持ち、
+// topGroup の右隣(同じ y 範囲)に配置してクロスエッジを短く保っている。関連するガーメント
+// 同士(top+sleeve、pants+shoes+socks)は縦にも隣接させている。
 // 新しいガーメント種を追加する際は add-garment-type スキル・上記の慣例に従うこと。
 export const initialNodes: Node[] = initialGraphData.nodes as Node[];
 export const initialEdges: Edge[] = initialGraphData.edges as Edge[];

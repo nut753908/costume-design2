@@ -5,10 +5,11 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 # 新しいガーメント種の追加
 
-ガーメント1種の追加には最低2ファイルが要る。
+ガーメント1種の追加には最低3ファイルが要る(geometry/material/output を持たない、他ガーメントの内部値を再引きするなどグループ化を見送る場合は3が不要)。
 
 1. `src/geometry/<name>.ts` — `build<Name>Geometry(params) -> THREE.BufferGeometry` という純粋関数。
 2. `src/nodes/definitions/<name>Generator.ts` — 1のジオメトリ関数をノードグラフに配線するノードタイプ。ノードタイプ自体の登録は `import.meta.glob` により自動化されているので、これ以外にレジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
+3. `src/nodes/definitions/<name>GroupNode.ts` — 2のジェネレーターノードを含む数ノードを1枚のグループノードに集約する(下記4節参照)。
 
 ## 1. ジオメトリ実装(src/geometry/)
 
@@ -52,23 +53,57 @@ defineGeneratorNode({
 
 Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を走査し `geometry`+`material` を持つものを自動的にレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
-## 4. initialGraph.ts への配線(慣例)
+## 4. グループノードの定義(src/nodes/definitions/\<name\>GroupNode.ts)
 
-既存15種はすべて `src/state/initialGraph.ts` に「入力(numberInput/enumInput) → (体に触れる半径なら numberMultiply で bodyBuild を掛ける) → ジェネレーター → toonMaterial ← colorInput → garmentOutput」という一連のノード+エッジとして配線済みで、パレットからのドラッグ待ちにしていない。新しいガーメントも同じ形で足す。
+sleeve を除く既存14種は「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
-そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、既存の `numberMultiply` ノードを間に挟んで `bodyBuild.value` を掛けてから生成ノードに渡すこと(例: `skirtWaist → skirtWaistScale(×bodyBuild) → skirtGen.waistRadius`)。これを省くと、ボディをリサイズしたときだけそのガーメントが体を突き抜けたり浮いたりする。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径はスケール対象外でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「ボディスケールはソケットグラフを迂回して直接読み取られる」節を参照。
+```ts
+import { defineGroupNode } from './groupNodeFactory';
 
-ノードの `position` は `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使う汎用アルゴリズム)ではなく、`src/state/initialGraph.ts` 冒頭のコメントに書かれている手作業の列テンプレート(param列→numberMultiply列→generator/output列→colorInput/toonMaterial列)に従って配置すること。汎用アルゴリズムは全ガーメントの入力ノードを1つの巨大な層にまとめてしまい、エッジがノード上を大量に横切る見づらいレイアウトになるため、初期グラフでは採用していない。新しいガーメントは、関連の薄い既存ガーメント2つの間ではなく、末尾(または `top`+`sleeve`・`pants`+`shoes`+`socks` のように依存関係のあるガーメントに隣接させる場合はそのすぐ下)に、同じ列テンプレートで追加する。
+defineGroupNode({
+  type: 'xxxGroup',
+  label: 'Xxx',
+  inputs: [
+    { id: 'radius', label: 'Radius', type: 'number', internalNodeId: 'radiusIn', internalDataKey: 'value' },
+    // ...
+    { id: 'color', label: 'Color', type: 'color', internalNodeId: 'colorIn', internalDataKey: 'hex' },
+    { id: 'bodyBuild', label: 'Body Build', type: 'number', internalNodeId: 'bodyBuildIn', internalDataKey: 'value' }, // 体に触れる半径が無ければ省略
+  ],
+  outputs: [], // 他ガーメントから再引きされる値(sleeve が topGroup を再引きする例)がある場合だけ追加
+  terminalNodeId: 'output', // 内部の garmentOutput 型ノードのID
+  internalNodes: [
+    { id: 'radiusIn', type: 'numberInput', data: { value: 0.3 } }, // 外部の生パラメータの初期値と揃える
+    // ...
+    { id: 'scale', type: 'numberMultiply', data: {} }, // 体に触れる半径が無ければ省略
+    { id: 'gen', type: 'xxxGenerator', data: {} },
+    { id: 'material', type: 'toonMaterial', data: {} },
+    { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#cccccc' } },
+  ],
+  internalEdges: [
+    // ... radiusIn -> scale.value, bodyBuildIn -> scale.factor, scale -> gen.radius, ...
+  ],
+});
+```
 
-## 5. テスト
+**外部から注入できるのは number/color/enum の3型のみ**。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合は、`config.outputs` で該当する内部ノードの出力を追加公開する(sleeve/topGroup の実例を参照)。geometry/material 型を外部から注入する仕組みは無いため、そのような依存を持つガーメントはグループ化を見送って個別ノードのまま残してよい(sleeve がその実例)。
+
+## 5. initialGraph.ts への配線(慣例)
+
+既存15種はすべて `src/state/initialGraph.ts` に「入力(numberInput/enumInput/colorInput) → グループノード」という一連のノード+エッジとして配線済みで、パレットからのドラッグ待ちにしていない。新しいガーメントも同じ形で足す(グループ化しない場合は「入力 → (numberMultiply) → ジェネレーター → toonMaterial ← colorInput → garmentOutput」という個別配線になる)。
+
+そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、グループノードの `Body Build` 入力ソケットへ `bodyBuild` を配線すること(例: `bodyBuild → skirtGroup.bodyBuild`)。これを省くと、ボディをリサイズしたときだけそのガーメントが体を突き抜けたり浮いたりする。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径はスケール対象外でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「ボディスケールはソケットグラフを迂回して直接読み取られる」節を参照。
+
+ノードの `position` は `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使う汎用アルゴリズム)ではなく、`src/state/initialGraph.ts` 冒頭のコメントに書かれている手作業の列テンプレートに従って配置すること。汎用アルゴリズムは全ガーメントの入力ノードを1つの巨大な層にまとめてしまい、エッジがノード上を大量に横切る見づらいレイアウトになるため、初期グラフでは採用していない。グループ化されたガーメント1つ分は x=0(param + colorInput、縦に並べる)→ x=260(グループノード、param 先頭行と同じ y)の2列のみ。新しいガーメントは、関連の薄い既存ガーメント2つの間ではなく、末尾(または `top`+`sleeve`・`pants`+`shoes`+`socks` のように依存関係のあるガーメントに隣接させる場合はそのすぐ下)に、同じ列テンプレートで追加する。
+
+## 6. テスト
 
 - **ジオメトリ**(`src/geometry/<name>.test.ts`): 妥当性(index が3の倍数・NaN無し)、パラメータを変えたときの効果(半径を上げたら bounding box が広がる、など)、`expectOutwardWinding()` による巻き順検証。`belt.test.ts`/`bag.test.ts`/`glasses.test.ts` を実例として参照(後者2つは Y軸以外の `axisPoint` を渡す例)。
 - **ノード**(`src/nodes/definitions/<name>Generator.test.ts`): `testHelpers.ts` の `expectGeneratorForwardsData()` で、フィールド名の取り違え(例: width と height の入れ替わり)が無いか検証する。既存の `*Generator.test.ts` を参照。
 
-## 6. 見た目の確認
+## 7. 見た目の確認
 
 テストと型チェックだけでは「実際に画面でどう見えるか」は分からない。[`run-costume-design2` スキル](../run-costume-design2/SKILL.md)でヘッドレスChromiumから実際にノードを繋いでスクリーンショットを撮り、真っ黒なシルエットになっていないか・アンカー位置がおかしくないかを確認すること。
 
-## 7. ドキュメント更新
+## 8. ドキュメント更新
 
 `src/geometry/CLAUDE.md` の「カスタムガーメントジオメトリ」冒頭にあるガーメント一覧(現在15種)に追加したガーメントを足す。新しい構築技法・共有ヘルパーを導入した場合や、新しい落とし穴を踏んだ場合はその節も追記する。pre-commit フックがステージ内容と対応する `CLAUDE.md` の有無をリマインドするが、機械判定なので実際に更新が必要かは都度判断すること。

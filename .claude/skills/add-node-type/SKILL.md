@@ -14,6 +14,10 @@ skirt/belt/hat/dress/... のようにフィールドの値を解決して `build
 - `build` に渡す関数は `build: buildXxxGeometry` のように値としてそのまま渡さず、必ず `build: (params) => buildXxxGeometry(params)` とアロー関数で包むこと。値として直接渡すと ESM のライブバインディングが切れ、`vi.spyOn(module, 'buildXxxGeometry')` を使うテスト(`testHelpers.ts` の `expectGeneratorForwardsData`)が呼び出しを検出できなくなる。
 - `fields` の `default` は `defineGeneratorNode` 内部で `DEFAULTS`/`inputs`/`createDefaultData` に自動展開されるため、リテラル値を複数箇所に書く必要はない。
 
+## グループノード(category: 'group')の場合
+
+複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`garmentOutput` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せたい場合は、`registerNodeType()` を直接書かず `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` を使う(`nodes/definitions/skirtGroupNode.ts` 等、既存14種のガーメントグループを参照)。詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節、手順は [`add-garment-type` スキル](../add-garment-type/SKILL.md)を参照。外部から注入できるのは number/color/enum の3型のみで、内部配線はグラフ上で編集できない(登録時に固定)。
+
 ## それ以外のノードタイプ(input/material/output)の場合
 
 `registerNodeType()` を直接呼ぶ。
