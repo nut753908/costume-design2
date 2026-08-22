@@ -16,5 +16,9 @@ export function readSeedColor(nodes: Node[], id: string, fallback: string): stri
  * 出力ではなく Body.tsx が直接使うシーン全体のパラメータであるため。ノードが存在しない
  * (ユーザーが削除した等)場合は DEFAULT_BODY_SKIN_COLOR にフォールバックする。 */
 export function useBodySkinColor(): string {
-  return useGraphStore((s) => readSeedColor(s.nodes, 'bodySkinColor', DEFAULT_BODY_SKIN_COLOR));
+  // useBodyScale.ts と同じ理由(シードノードは常にトップレベルにしか存在しない)で、
+  // グループの中に入っている場合は scopeStack[0](真のトップレベル nodes)を読む。
+  return useGraphStore((s) =>
+    readSeedColor(s.scopeStack[0]?.nodes ?? s.nodes, 'bodySkinColor', DEFAULT_BODY_SKIN_COLOR),
+  );
 }

@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import type { Node, Edge } from '@xyflow/react';
 import type { GraphEdge, GraphNode } from '../nodes/types';
 import { useGraphStore } from './graphStore';
+import { composeRootGraph } from './composeRootGraph';
 
 /** React Flow のノードから evaluator が使える形式のノードデータを導出する。位置のみの
  * 変更(ドラッグ)では同じ配列参照を保つことで、下流の useMemo/useEffect フックが
@@ -28,6 +29,30 @@ export function useEdgesLite(): GraphEdge[] {
     cacheRef.current = next;
     return next;
   }, [edges]);
+}
+
+/** `useNodesLite`/`useEdgesLite` のトップレベル版。`scopeStack`(グループの中に入っている
+ * 場合の上位階層スナップショット)と現在の `nodes`/`edges` を `composeRootGraph()` で合成し、
+ * 「今開いている階層」ではなく常にトップレベル視点の完全なグラフを、同じ参照安定化パターンで
+ * 返す。`state/useRootEvaluatedGraph.ts`(3D描画・ボディスケールが読む `rootEvaluatedResults`
+ * を駆動する)から使う。 */
+export function useRootGraphLite(): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  const scopeStack = useGraphStore((s) => s.scopeStack);
+  const nodes = useGraphStore((s) => s.nodes);
+  const edges = useGraphStore((s) => s.edges);
+  const nodesCacheRef = useRef<GraphNode[]>([]);
+  const edgesCacheRef = useRef<GraphEdge[]>([]);
+
+  return useMemo(() => {
+    const composed = composeRootGraph(scopeStack, nodes, edges);
+    const nextNodes = composed.nodes.map(toGraphNode);
+    const nextEdges = composed.edges.map(toGraphEdge);
+    const outNodes = sameNodes(nodesCacheRef.current, nextNodes) ? nodesCacheRef.current : nextNodes;
+    const outEdges = sameEdges(edgesCacheRef.current, nextEdges) ? edgesCacheRef.current : nextEdges;
+    nodesCacheRef.current = outNodes;
+    edgesCacheRef.current = outEdges;
+    return { nodes: outNodes, edges: outEdges };
+  }, [scopeStack, nodes, edges]);
 }
 
 // テスト用に export している。React フックの外からでも、リアクティビティの要である

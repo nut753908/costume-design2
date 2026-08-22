@@ -14,6 +14,7 @@ import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 import { getNodeType } from '../nodes/registry';
 import { computeAutoLayout } from '../nodes/autoLayout';
 import { initialNodes, initialEdges } from './initialGraph';
+import { composeRootGraph, type ScopeFrame } from './composeRootGraph';
 
 /** localStorage の永続化キー。persist の name とErrorBoundaryのリセット処理(main.tsx)の
  * 両方から参照するため、値のドリフトを避けて1箇所にまとめる。 */
@@ -35,10 +36,25 @@ interface Clipboard {
   edges: Edge[];
 }
 
+/** グループノードの `data` に想定する最小限の形。`nodes/definitions/groupNodeFactory.ts`
+ * の `GroupNodeData` のスーパーセットだが、`state/` レイヤーは `nodes/definitions/` の
+ * 特定ファイルには依存しないよう、ここでは構造的な形だけを見る。 */
+interface GroupNodeDataShape extends Record<string, unknown> {
+  nodes?: Node[];
+  edges?: Edge[];
+}
+
 interface GraphState {
   nodes: Node[];
   edges: Edge[];
   evaluatedResults: EvaluatedGraph | null;
+  /** トップレベル視点で合成した完全なグラフの評価結果(`state/useRootEvaluatedGraph.ts` が
+   * 書き込む)。`Garments.tsx` の3D描画はこちらを見るため、グループの中に入っている間も
+   * 他の全ガーメントが描画され続ける。`evaluatedResults` は今開いている階層の評価結果の
+   * ままで(ノードカード上のリアルタイム値表示用)、無改修で残す。 */
+  rootEvaluatedResults: EvaluatedGraph | null;
+  /** グループの中に入るたびに積まれる、上位階層のスナップショット。空ならトップレベル。 */
+  scopeStack: ScopeFrame[];
   past: HistorySnapshot[];
   future: HistorySnapshot[];
   /** 直近の履歴プッシュを識別するキーとタイムスタンプ(コアレッシング用の内部状態)。 */
@@ -56,6 +72,7 @@ interface GraphState {
   onConnect: OnConnect;
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
   setEvaluatedResults: (results: EvaluatedGraph) => void;
+  setRootEvaluatedResults: (results: EvaluatedGraph) => void;
   addNode: (type: string, position: { x: number; y: number }) => void;
   loadGraph: (nodes: Node[], edges: Edge[]) => void;
   undo: () => void;
@@ -64,6 +81,14 @@ interface GraphState {
   pasteClipboard: () => void;
   duplicateSelected: () => void;
   autoLayout: () => void;
+  /** グループノードをダブルクリックした際に呼ぶ。そのノードが `category: 'group'` でなければ
+   * 何もしない。`data.nodes`/`edges` が未実体化(旧データモデルの `data: {}`)なら
+   * `createDefaultData()` でこのインスタンス自身に実体化してから中に入る。 */
+  enterGroup: (nodeId: string) => void;
+  /** 直近の階層から1つ上へ戻る。編集結果を親ノードの `data` へ書き戻す。 */
+  exitGroup: () => void;
+  /** パンくずから任意の階層へジャンプする。`-1` でトップレベル。 */
+  exitToLevel: (index: number) => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -91,6 +116,8 @@ export const useGraphStore = create<GraphState>()(
         nodes: initialNodes,
         edges: initialEdges,
         evaluatedResults: null,
+        rootEvaluatedResults: null,
+        scopeStack: [],
         past: [],
         future: [],
         _historyKey: null,
@@ -133,6 +160,7 @@ export const useGraphStore = create<GraphState>()(
           });
         },
         setEvaluatedResults: (results) => set({ evaluatedResults: results }),
+        setRootEvaluatedResults: (results) => set({ rootEvaluatedResults: results }),
         addNode: (type, position) => {
           pushHistory();
           const def = getNodeType(type);
@@ -235,11 +263,67 @@ export const useGraphStore = create<GraphState>()(
             }),
           });
         },
+        enterGroup: (nodeId) => {
+          const state = get();
+          const node = state.nodes.find((n) => n.id === nodeId);
+          if (!node || !node.type) return;
+          let def;
+          try {
+            def = getNodeType(node.type);
+          } catch {
+            return;
+          }
+          if (def.category !== 'group') return;
+
+          const existing = node.data as GroupNodeDataShape;
+          const materialized: GroupNodeDataShape = existing.nodes
+            ? existing
+            : (def.createDefaultData() as GroupNodeDataShape);
+
+          const nodesAtThisLevel = state.nodes.map((n) => (n.id === nodeId ? { ...n, data: materialized } : n));
+
+          set({
+            scopeStack: [...state.scopeStack, { parentId: nodeId, nodes: nodesAtThisLevel, edges: state.edges }],
+            nodes: materialized.nodes ?? [],
+            edges: materialized.edges ?? [],
+            past: [],
+            future: [],
+            _historyKey: null,
+            _dragging: false,
+          });
+        },
+        exitGroup: () => {
+          const state = get();
+          const frame = state.scopeStack.at(-1);
+          if (!frame) return;
+
+          const restoredNodes = frame.nodes.map((n) =>
+            n.id === frame.parentId ? { ...n, data: { ...n.data, nodes: state.nodes, edges: state.edges } } : n,
+          );
+
+          set({
+            nodes: restoredNodes,
+            edges: frame.edges,
+            scopeStack: state.scopeStack.slice(0, -1),
+            past: [],
+            future: [],
+            _historyKey: null,
+            _dragging: false,
+          });
+        },
+        exitToLevel: (index) => {
+          const steps = get().scopeStack.length - (index + 1);
+          for (let i = 0; i < steps; i++) get().exitGroup();
+        },
       };
     },
     {
       name: GRAPH_STORAGE_KEY,
-      partialize: (state) => ({ nodes: state.nodes, edges: state.edges }),
+      // グループの中に入って編集している最中にリロードしても、トップレベル視点で合成した
+      // 完全なグラフを保存する(state.nodes/edges をそのまま保存すると「今開いている階層」
+      // だけが残り、他の全ガーメントの設計が失われる)。scopeStack 自体(ナビゲーション位置)は
+      // 永続化しない — リロードするとトップレベル表示に戻る、という割り切り。
+      partialize: (state) => composeRootGraph(state.scopeStack, state.nodes, state.edges),
     },
   ),
 );

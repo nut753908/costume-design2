@@ -23,12 +23,15 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const def = getNodeType(type ?? '');
   const { inputs, outputs } = resolveNodeSockets(type ?? '', data as Record<string, unknown>);
   const evaluated = useGraphStore((s) => s.evaluatedResults);
+  const enterGroup = useGraphStore((s) => s.enterGroup);
   const outputValues = evaluated?.get(id);
   const label = (data as { label?: string }).label ?? def.label;
+  const isGroup = def.category === 'group';
 
   return (
-    <div className="rf-node">
+    <div className="rf-node" onDoubleClick={isGroup ? () => enterGroup(id) : undefined}>
       <NodeTitleBar id={id} label={label} />
+      {isGroup && <div className="rf-node__group-hint">ダブルクリックで中に入る</div>}
       {inputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row">
           <Handle

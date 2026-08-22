@@ -18,7 +18,21 @@
 
 `state/graphStore.ts` は `past`/`future` の2つのスナップショットスタック(`{nodes, edges}`)を持ち、Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)と `HistoryControls.tsx` のボタンで操作できます。すべての変更操作(`onNodesChange` の remove、`onEdgesChange` の remove、`onConnect`、`addNode`、`updateNodeData`)は、実際に `set()` する前に内部ヘルパー `pushHistory(key?, coalesceMs?)` を呼びます。
 
-スライダー/カラーピッカーのドラッグは `updateNodeData` を1ジェスチャーあたり何十回も連続発火させるため、`key`(`data:${id}` など)と `coalesceMs` を指定すると、直前のプッシュから `coalesceMs` 以内・同じ `key` での呼び出しはスタックに新規エントリを積まず「同じジェスチャーの続き」として吸収されます(タイムスタンプだけ更新)。ノードのドラッグ移動は `dragging` フラグの立ち上がりエッジ(`_dragging` 内部状態)で1ドラッグ=1エントリに区切っており、こちらは時間ベースのコアレッシングを使っていません。`past`/`future` は localStorage に永続化されず(`partialize` は `nodes`/`edges` のみ)、`loadGraph`(JSON インポート/プリセット読み込み)は履歴をクリアします。**そのため、リロード後は Undo で以前の状態に戻すことはできません。**
+スライダー/カラーピッカーのドラッグは `updateNodeData` を1ジェスチャーあたり何十回も連続発火させるため、`key`(`data:${id}` など)と `coalesceMs` を指定すると、直前のプッシュから `coalesceMs` 以内・同じ `key` での呼び出しはスタックに新規エントリを積まず「同じジェスチャーの続き」として吸収されます(タイムスタンプだけ更新)。ノードのドラッグ移動は `dragging` フラグの立ち上がりエッジ(`_dragging` 内部状態)で1ドラッグ=1エントリに区切っており、こちらは時間ベースのコアレッシングを使っていません。`past`/`future` は localStorage に永続化されず(`partialize` は下記「グループの中に入る」節で説明する合成後の `{nodes, edges}` のみ)、`loadGraph`(JSON インポート/プリセット読み込み)・`enterGroup`/`exitGroup`(グループの中に入る/出る)は履歴をクリアします。**そのため、リロード後や、グループの中に入る/出る操作を跨いでは、Undo で以前の状態に戻すことはできません。**
+
+## グループの中に入る(スコープ切り替え)とトップレベル評価パイプライン
+
+`nodes/definitions/groupNodeFactory.ts` のグループノードをダブルクリックすると `enterGroup(nodeId)` が呼ばれ、`scopeStack`(`state/composeRootGraph.ts` の `ScopeFrame[]`)に現在の `nodes`/`edges` を退避してpushした上で、ストアの `nodes`/`edges` をそのグループインスタンスの内部データ(`data.nodes`/`data.edges`)へ**丸ごと差し替えます**。`exitGroup()` は逆に、編集後の現在の `nodes`/`edges` を退避先の親ノードの `data` へ書き戻してから1つ上の階層を復元します。**この差し替え方式のおかげで、`onNodesChange`/`onConnect`/`addNode`/`updateNodeData`/Undo/Redo/コピペといった既存アクションは一切改修不要**でした(それらは「今ストアが指している `nodes`/`edges` を素直に読み書きする」だけで、今どの階層にいるかを一切意識しないため)。
+
+**落とし穴**: この差し替え方式は、グループの中に入っている間 `state.nodes`/`state.edges` が「今開いている階層」の内部ノードだけになることを意味します。これを知らずに `s.nodes`/`s.edges` を直接読む新しいコードを書くと、`Garments.tsx`(3D描画)・`useBodyScale.ts`/`useBodySkinColor.ts`(ボディスケール/肌色の直接読み取り)・`persist` の `partialize` がそうだったように、グループの中に入った瞬間に他の全ガーメントが3Dビューから消える・ボディスケールがデフォルトにリセットされる・リロードで他の設計が失われる、といった壊れ方をします(実際に設計時に見つかった欠陥)。**トップレベル視点で「完全なグラフ」が必要な箇所は、必ず `composeRootGraph(scopeStack, nodes, edges)` を経由すること**:
+
+- `state/selectors.ts` の `useRootGraphLite()` — `useNodesLite`/`useEdgesLite` と同じ参照安定化パターンで、合成後のグラフを返す。
+- `state/useRootEvaluatedGraph.ts` — 上記を `evaluateGraph()` に渡し、結果をストアの `rootEvaluatedResults`(`evaluatedResults` とは別フィールド)に書き込む。`App.tsx` で `useEvaluatedGraph()` と並行して常時マウントする。
+- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。
+- `useBodyScale.ts`/`useBodySkinColor.ts` は `scopeStack[0]?.nodes ?? s.nodes`(シードノードは常にトップレベルにしか存在しないため、`scopeStack` が積まれていれば先頭フレームの `nodes` で十分)。
+- `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
+
+一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GenericNodeView` のノードカード上のリアルタイム値表示を駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
 
 ## 初期状態への復帰: initialGraph.json と「初期状態(デフォルト)」プリセット
 

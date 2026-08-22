@@ -55,6 +55,12 @@
   opacity: 0.75;
 }
 
+.rf-node__group-hint {
+  margin-bottom: 4px;
+  font-size: 10px;
+  opacity: 0.5;
+}
+
 .rf-node__socket-row {
   position: relative;
   padding: 3px 0 3px 10px;
@@ -150,6 +156,22 @@
 .history-controls {
   display: flex;
   gap: 8px;
+}
+
+.breadcrumb-panel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-panel__crumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumb-panel__separator {
+  opacity: 0.5;
 }
 
 .preset-panel {

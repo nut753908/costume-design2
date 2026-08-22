@@ -16,10 +16,17 @@ export function readSeedNumber(nodes: Node[], id: string, fallback: number): num
  * シーン全体のパラメータであるため。ノードが存在しない(ユーザーが削除した等)場合は
  * DEFAULT_BODY_SCALE にフォールバックする。 */
 export function useBodyScale(): BodyScaleParams {
-  const heightScale = useGraphStore((s) => readSeedNumber(s.nodes, 'bodyHeight', DEFAULT_BODY_SCALE.heightScale));
-  const buildScale = useGraphStore((s) => readSeedNumber(s.nodes, 'bodyBuild', DEFAULT_BODY_SCALE.buildScale));
+  // シードノードは常にトップレベルにしか存在しない(グループの中に入っている間は編集も
+  // 参照もできない)ため、scopeStack が積まれていれば「中に入る前の」真のトップレベル
+  // nodes(scopeStack[0])を、トップレベルにいれば s.nodes をそのまま読む。
+  const heightScale = useGraphStore((s) =>
+    readSeedNumber(s.scopeStack[0]?.nodes ?? s.nodes, 'bodyHeight', DEFAULT_BODY_SCALE.heightScale),
+  );
+  const buildScale = useGraphStore((s) =>
+    readSeedNumber(s.scopeStack[0]?.nodes ?? s.nodes, 'bodyBuild', DEFAULT_BODY_SCALE.buildScale),
+  );
   const shoulderScale = useGraphStore((s) =>
-    readSeedNumber(s.nodes, 'bodyShoulder', DEFAULT_BODY_SCALE.shoulderScale),
+    readSeedNumber(s.scopeStack[0]?.nodes ?? s.nodes, 'bodyShoulder', DEFAULT_BODY_SCALE.shoulderScale),
   );
 
   return useMemo(() => ({ heightScale, buildScale, shoulderScale }), [heightScale, buildScale, shoulderScale]);

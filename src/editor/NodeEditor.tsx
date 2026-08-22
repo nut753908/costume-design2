@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -30,6 +30,7 @@ import { HistoryControls } from './HistoryControls';
 import { NodeClipboard } from './NodeClipboard';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
+import { BreadcrumbPanel } from './BreadcrumbPanel';
 import { NODE_TYPE_DND_MIME } from './paletteShared';
 
 // 専用UIを持つ3種(number/enum/color)以外は、レジストリに登録済みの全ノードタイプへ
@@ -56,7 +57,14 @@ function NodeEditorInner() {
   const onEdgesChange = useGraphStore((s) => s.onEdgesChange);
   const onConnect = useGraphStore((s) => s.onConnect);
   const addNode = useGraphStore((s) => s.addNode);
-  const { screenToFlowPosition } = useReactFlow();
+  const scopeDepth = useGraphStore((s) => s.scopeStack.length);
+  const { screenToFlowPosition, fitView } = useReactFlow();
+
+  // グループの中に入る/出るたびに、新しいスコープのノード群が画面内に収まるよう
+  // fitView し直す(fitView props は初回マウント時にしか効かないため)。
+  useEffect(() => {
+    requestAnimationFrame(() => fitView({ padding: 0.2, duration: 300 }));
+  }, [scopeDepth, fitView]);
   const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
   const [nodeMenuState, setNodeMenuState] = useState<NodeContextMenuState | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -190,6 +198,7 @@ function NodeEditorInner() {
         />
         <NodePalette />
         <HistoryControls />
+        <BreadcrumbPanel />
         <GraphIO />
         <PresetPanel />
         <ContextMenu state={menuState} onClose={() => setMenuState(null)} />

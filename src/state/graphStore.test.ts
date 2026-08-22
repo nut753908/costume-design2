@@ -17,6 +17,24 @@ beforeAll(() => {
       }),
     });
   }
+  // enterGroup/exitGroup のテスト用。createDefaultData() が毎回独立した内部ノード配列を
+  // 返す(defineGroupNode の実際の挙動を模した最小限のスタブ)。
+  if (!nodeTypeRegistry.has('testGroupNode')) {
+    registerNodeType({
+      type: 'testGroupNode',
+      label: 'Test Group',
+      category: 'group',
+      inputs: [],
+      outputs: [],
+      createDefaultData: () => ({
+        nodes: [makeNode('inner-a'), makeNode('inner-b')],
+        edges: [makeEdge('inner-e', 'inner-a', 'inner-b')],
+        exposedInputs: [],
+        exposedOutputs: [],
+      }),
+      evaluate: () => ({}),
+    });
+  }
 });
 
 function makeNode(id: string, overrides: Partial<Node> = {}): Node {
@@ -27,6 +45,10 @@ function makeEdge(id: string, source: string, target: string): Edge {
   return { id, source, sourceHandle: 'value', target, targetHandle: 'value' };
 }
 
+function makeGroupNode(id: string, overrides: Partial<Node> = {}): Node {
+  return { id, type: 'testGroupNode', position: { x: 0, y: 0 }, data: {}, ...overrides };
+}
+
 /** 各テストの前にストアを既知の状態にリセットする(zustand のストアはモジュール単位の
  * シングルトンなので、テスト間で状態が漏れないよう明示的に初期化する)。 */
 function resetStore(nodes: Node[] = [], edges: Edge[] = []) {
@@ -34,6 +56,8 @@ function resetStore(nodes: Node[] = [], edges: Edge[] = []) {
     nodes,
     edges,
     evaluatedResults: null,
+    rootEvaluatedResults: null,
+    scopeStack: [],
     past: [],
     future: [],
     _historyKey: null,
@@ -355,5 +379,80 @@ describe('graphStore の loadGraph', () => {
     useGraphStore.getState().loadGraph(nodes, edges);
 
     expect(useGraphStore.getState().evaluatedResults).not.toBeNull();
+  });
+});
+
+describe('graphStore の enterGroup/exitGroup/exitToLevel', () => {
+  it('category が group でないノードでは何も起きない', () => {
+    resetStore([makeNode('a')]);
+    useGraphStore.getState().enterGroup('a');
+    const state = useGraphStore.getState();
+    expect(state.scopeStack).toHaveLength(0);
+    expect(state.nodes.map((n) => n.id)).toEqual(['a']);
+  });
+
+  it('data.nodes が未実体化(data:{})なら createDefaultData() で実体化してから中に入る', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().enterGroup('g');
+
+    const state = useGraphStore.getState();
+    expect(state.scopeStack).toHaveLength(1);
+    expect(state.scopeStack[0].parentId).toBe('g');
+    expect(state.nodes.map((n) => n.id).sort()).toEqual(['inner-a', 'inner-b']);
+    expect(state.edges.map((e) => e.id)).toEqual(['inner-e']);
+    // 実体化された data が、退避されたトップレベルのノード自身にも書き込まれている。
+    const parentAtTopLevel = state.scopeStack[0].nodes.find((n) => n.id === 'g');
+    expect(parentAtTopLevel).toBeDefined();
+    expect((parentAtTopLevel!.data as { nodes?: Node[] }).nodes).toBeDefined();
+  });
+
+  it('exitGroup で編集結果が親ノードの data へ書き戻され、上位階層の nodes/edges が復元される', () => {
+    resetStore([makeGroupNode('g'), makeNode('sibling')]);
+    useGraphStore.getState().enterGroup('g');
+
+    // 中で1ノード追加する(実際のキャンバス編集を模す)。
+    useGraphStore.getState().addNode('testNode', { x: 10, y: 10 });
+    const insideIds = useGraphStore.getState().nodes.map((n) => n.id);
+    expect(insideIds).toHaveLength(3); // inner-a, inner-b, 追加した1つ
+
+    useGraphStore.getState().exitGroup();
+
+    const state = useGraphStore.getState();
+    expect(state.scopeStack).toHaveLength(0);
+    expect(state.nodes.map((n) => n.id).sort()).toEqual(['g', 'sibling']);
+    const g = state.nodes.find((n) => n.id === 'g');
+    expect(g).toBeDefined();
+    expect((g!.data as { nodes?: Node[] }).nodes?.map((n) => n.id)).toEqual(insideIds);
+  });
+
+  it('enter/exit で past/future(Undo履歴)がクリアされる', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().addNode('testNode', { x: 0, y: 0 });
+    expect(useGraphStore.getState().past.length).toBeGreaterThan(0);
+
+    useGraphStore.getState().enterGroup('g');
+    expect(useGraphStore.getState().past).toHaveLength(0);
+
+    useGraphStore.getState().addNode('testNode', { x: 0, y: 0 });
+    expect(useGraphStore.getState().past.length).toBeGreaterThan(0);
+
+    useGraphStore.getState().exitGroup();
+    expect(useGraphStore.getState().past).toHaveLength(0);
+  });
+
+  it('exitToLevel(-1) は多段ネストでも一気にトップレベルへ戻る', () => {
+    resetStore([makeGroupNode('outer')]);
+    useGraphStore.getState().enterGroup('outer');
+    // 中に入った状態でさらにグループノードを1つ追加し、その中にも入る。
+    useGraphStore.getState().addNode('testGroupNode', { x: 0, y: 0 });
+    const innerGroupId = useGraphStore.getState().nodes.find((n) => n.type === 'testGroupNode')!.id;
+    useGraphStore.getState().enterGroup(innerGroupId);
+    expect(useGraphStore.getState().scopeStack).toHaveLength(2);
+
+    useGraphStore.getState().exitToLevel(-1);
+
+    const state = useGraphStore.getState();
+    expect(state.scopeStack).toHaveLength(0);
+    expect(state.nodes.map((n) => n.id)).toEqual(['outer']);
   });
 });
