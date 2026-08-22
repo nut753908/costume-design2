@@ -4,6 +4,7 @@ import type { NodeCategory } from '../nodes/types';
 export const CATEGORY_LABELS: Record<NodeCategory, string> = {
   input: 'Inputs',
   generator: 'Generators',
+  group: 'Groups',
   material: 'Materials',
   output: 'Outputs',
 };

@@ -15,7 +15,7 @@ export interface SocketDef {
   type: SocketType;
 }
 
-export type NodeCategory = 'input' | 'generator' | 'material' | 'output';
+export type NodeCategory = 'input' | 'generator' | 'material' | 'output' | 'group';
 
 export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   type: string;

@@ -11,9 +11,13 @@ import initialGraphData from './initialGraph.json';
 //   迂回して直接読み取られる」を参照)。
 // - 各ガーメントの「体に触れる半径」(skirtWaist/topRadius/pantsWaist/shoesSole/
 //   glovesWrist/beltRadius/scarfNeckRadius/jacketShoulderRadius/socksAnkleRadius/
-//   dressTorsoRadius)は、対応する numberMultiply ノード(例: skirtWaistScale)を
+//   dressTorsoRadius)は、対応する numberMultiply ノード(例: topRadiusScale)を
 //   経由して bodyBuild を掛けてから生成ノードに渡している。ボディをリサイズしても
 //   ガーメントがゆるい/きつい見た目にならないようにするため。
+//   ※ 移行中: skirt は既に「numberMultiply + generator + toonMaterial + garmentOutput」の
+//   4ノードを1枚の skirtGroup(nodes/definitions/groupNodeFactory.ts の defineGroupNode で
+//   定義)に集約済み。bodyBuild は skirtGroup の Body Build 入力ソケットへ直接配線されており、
+//   乗算自体は skirtGroup 内部に隠蔽されている。他のガーメントも順次同じ形に移行する予定。
 // - sleeveGen は topRadiusScale(Body Build 適用後の Top 胴体半径)と topMaterial を
 //   再引きしている。Top を再着色/リサイズすると Sleeve も一緒に追従する。
 // - shoesGen/socksGen は pantsLegSpacing を再引きしている。脚の間隔を変えると靴/靴下の

@@ -118,24 +118,6 @@
       }
     },
     {
-      "id": "skirtWaistScale",
-      "type": "numberMultiply",
-      "position": {
-        "x": 260,
-        "y": 510
-      },
-      "data": {}
-    },
-    {
-      "id": "skirtGen",
-      "type": "skirtGenerator",
-      "position": {
-        "x": 520,
-        "y": 510
-      },
-      "data": {}
-    },
-    {
       "id": "skirtColor",
       "type": "colorInput",
       "position": {
@@ -145,28 +127,6 @@
       "data": {
         "hex": "#d9738c",
         "label": "Skirt Color"
-      }
-    },
-    {
-      "id": "skirtMaterial",
-      "type": "toonMaterial",
-      "position": {
-        "x": 780,
-        "y": 950
-      },
-      "data": {}
-    },
-    {
-      "id": "skirtOutput",
-      "type": "garmentOutput",
-      "position": {
-        "x": 1040,
-        "y": 510
-      },
-      "data": {
-        "anchor": "waist",
-        "offsetY": 0.03,
-        "fallbackColor": "#d9738c"
       }
     },
     {
@@ -1809,6 +1769,15 @@
         "offsetY": -0.02,
         "fallbackColor": "#2a2a2a"
       }
+    },
+    {
+      "id": "skirtGroup",
+      "type": "skirtGroup",
+      "position": {
+        "x": 260,
+        "y": 510
+      },
+      "data": {}
     }
   ],
   "edges": [
@@ -1816,64 +1785,43 @@
       "id": "e-waist",
       "source": "skirtWaist",
       "sourceHandle": "value",
-      "target": "skirtWaistScale",
-      "targetHandle": "value"
+      "target": "skirtGroup",
+      "targetHandle": "waistRadius"
     },
     {
       "id": "e-waist-build",
       "source": "bodyBuild",
       "sourceHandle": "value",
-      "target": "skirtWaistScale",
-      "targetHandle": "factor"
-    },
-    {
-      "id": "e-waist-scaled",
-      "source": "skirtWaistScale",
-      "sourceHandle": "value",
-      "target": "skirtGen",
-      "targetHandle": "waistRadius"
+      "target": "skirtGroup",
+      "targetHandle": "bodyBuild"
     },
     {
       "id": "e-length",
       "source": "skirtLength",
       "sourceHandle": "value",
-      "target": "skirtGen",
+      "target": "skirtGroup",
       "targetHandle": "length"
     },
     {
       "id": "e-flare",
       "source": "skirtFlare",
       "sourceHandle": "value",
-      "target": "skirtGen",
+      "target": "skirtGroup",
       "targetHandle": "flare"
     },
     {
       "id": "e-segments",
       "source": "skirtSegments",
       "sourceHandle": "value",
-      "target": "skirtGen",
+      "target": "skirtGroup",
       "targetHandle": "segments"
-    },
-    {
-      "id": "e-geometry",
-      "source": "skirtGen",
-      "sourceHandle": "geometry",
-      "target": "skirtOutput",
-      "targetHandle": "geometry"
     },
     {
       "id": "e-skirt-color",
       "source": "skirtColor",
       "sourceHandle": "color",
-      "target": "skirtMaterial",
+      "target": "skirtGroup",
       "targetHandle": "color"
-    },
-    {
-      "id": "e-skirt-material",
-      "source": "skirtMaterial",
-      "sourceHandle": "material",
-      "target": "skirtOutput",
-      "targetHandle": "material"
     },
     {
       "id": "e-top-radius",
