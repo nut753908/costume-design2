@@ -24,7 +24,7 @@ defineGroupNode({
     { id: 'torsoRadiusIn', type: 'numberInput', data: { value: 0.29 } },
     { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.55 } },
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.9 } },
-    { id: 'necklineIn', type: 'enumInput', data: { value: 'round' } },
+    { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'] } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12 } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#3d7a72' } },
     { id: 'bodyBuildIn', type: 'numberInput', data: { value: 1 } },
