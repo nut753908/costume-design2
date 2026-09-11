@@ -89,13 +89,14 @@ interface GraphState {
   exitGroup: () => void;
   /** パンくずから任意の階層へジャンプする。`-1` でトップレベル。 */
   exitToLevel: (index: number) => void;
-  /** 今開いている階層の親グループノード自身の `data` にパッチを当てる(`editor/GroupIOPanel.tsx`
-   * が `exposedInputs`/`exposedOutputs` の増減に使う)。親ノードは現在の `nodes`(内部グラフ)
-   * ではなく直近の `scopeStack` フレームに退避されているため、`updateNodeData` では届かない。
-   * `removeEdgeIds` を渡すと、そのフレームの `edges`(親ノードから見た外部接続)から
-   * 該当idのエッジも同時に取り除く(ソケット非公開化時の孤立エッジ対策)。トップレベルに
-   * いる(`scopeStack` が空)場合は何もしない。 */
-  patchParentGroupNode: (patch: Record<string, unknown>, removeEdgeIds?: string[]) => void;
+  /** `groupInput`/`groupOutput` ノード(`nodes/definitions/groupInput.ts`/`groupOutput.ts`)の
+   * ソケットを1つ削除する。単なる `updateNodeData` と違い、同じ handle id を参照する
+   * 現在の階層の内部エッジ、および(グループの中に入っている場合)1つ上の階層にある
+   * このグループノード自身の外部エッジも一緒に削除する必要がある — 外部エッジが残ったまま
+   * ソケットだけ消すと、`GenericNodeView` 側のハンドルが消えて繋がって見えない孤立エッジに
+   * なる(`editor/nodeComponents/GroupInputNode.tsx`/`GroupOutputNode.tsx` が使う)。
+   * 外部エッジが残っている場合は確認ダイアログを出す。 */
+  removeGroupIOSocket: (nodeId: string, socketId: string) => void;
 }
 
 export const useGraphStore = create<GraphState>()(
@@ -322,17 +323,52 @@ export const useGraphStore = create<GraphState>()(
           const steps = get().scopeStack.length - (index + 1);
           for (let i = 0; i < steps; i++) get().exitGroup();
         },
-        patchParentGroupNode: (patch, removeEdgeIds) => {
+        removeGroupIOSocket: (nodeId, socketId) => {
           const state = get();
-          const frame = state.scopeStack.at(-1);
-          if (!frame) return;
+          const node = state.nodes.find((n) => n.id === nodeId);
+          if (!node) return;
+          const isInput = node.type === 'groupInput';
+          const isOutput = node.type === 'groupOutput';
+          if (!isInput && !isOutput) return;
 
-          const newFrame: ScopeFrame = {
-            ...frame,
-            nodes: frame.nodes.map((n) => (n.id === frame.parentId ? { ...n, data: { ...n.data, ...patch } } : n)),
-            edges: removeEdgeIds && removeEdgeIds.length > 0 ? frame.edges.filter((e) => !removeEdgeIds.includes(e.id)) : frame.edges,
-          };
-          set({ scopeStack: [...state.scopeStack.slice(0, -1), newFrame] });
+          // 現在の階層(埋め込みサブグラフ)の中で、このソケットに繋がっている内部エッジ。
+          const internalOrphans = state.edges.filter((e) =>
+            isInput ? e.source === nodeId && e.sourceHandle === socketId : e.target === nodeId && e.targetHandle === socketId,
+          );
+
+          // このグループノード自身は現在の nodes ではなく直近の scopeStack フレームに
+          // 退避されている(グループの中に入っている場合)。そのフレームの edges の中で、
+          // 親ノードの同名ハンドルに繋がっている外部エッジ。
+          const frame = state.scopeStack.at(-1);
+          const externalOrphans = frame
+            ? frame.edges.filter((e) =>
+                isInput
+                  ? e.target === frame.parentId && e.targetHandle === socketId
+                  : e.source === frame.parentId && e.sourceHandle === socketId,
+              )
+            : [];
+
+          if (externalOrphans.length > 0) {
+            const ok = confirm(
+              `このソケットは外部から${externalOrphans.length}本接続されています。削除すると接続も切れます。よろしいですか?`,
+            );
+            if (!ok) return;
+          }
+
+          pushHistory();
+
+          const sockets = ((node.data as { sockets?: { id: string }[] }).sockets ?? []).filter((s) => s.id !== socketId);
+          const internalOrphanIds = new Set(internalOrphans.map((e) => e.id));
+          const externalOrphanIds = new Set(externalOrphans.map((e) => e.id));
+
+          set({
+            nodes: state.nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, sockets } } : n)),
+            edges: state.edges.filter((e) => !internalOrphanIds.has(e.id)),
+            scopeStack:
+              frame && externalOrphanIds.size > 0
+                ? [...state.scopeStack.slice(0, -1), { ...frame, edges: frame.edges.filter((e) => !externalOrphanIds.has(e.id)) }]
+                : state.scopeStack,
+          });
         },
       };
     },

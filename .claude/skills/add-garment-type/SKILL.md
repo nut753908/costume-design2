@@ -57,35 +57,40 @@ Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を
 
 sleeve を除く既存14種は「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
+外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する:
+
 ```ts
 import { defineGroupNode } from './groupNodeFactory';
 
 defineGroupNode({
   type: 'xxxGroup',
   label: 'Xxx',
-  inputs: [
-    { id: 'radius', label: 'Radius', type: 'number', internalNodeId: 'radiusIn', internalDataKey: 'value' },
-    // ...
-    { id: 'color', label: 'Color', type: 'color', internalNodeId: 'colorIn', internalDataKey: 'hex' },
-    { id: 'bodyBuild', label: 'Body Build', type: 'number', internalNodeId: 'bodyBuildIn', internalDataKey: 'value' }, // 体に触れる半径が無ければ省略
-  ],
-  outputs: [], // 他ガーメントから再引きされる値(sleeve が topGroup を再引きする例)がある場合だけ追加
   terminalNodeId: 'output', // 内部の garmentOutput 型ノードのID
   internalNodes: [
-    { id: 'radiusIn', type: 'numberInput', data: { value: 0.3 } }, // 外部の生パラメータの初期値と揃える
-    // ...
+    {
+      id: 'input',
+      type: 'groupInput',
+      data: {
+        sockets: [
+          { id: 'radius', label: 'Radius', type: 'number', default: 0.3 }, // 外部の生パラメータの初期値と揃える
+          // ...
+          { id: 'color', label: 'Color', type: 'color', default: '#cccccc' },
+          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }, // 体に触れる半径が無ければ省略
+        ],
+      },
+    },
     { id: 'scale', type: 'numberMultiply', data: {} }, // 体に触れる半径が無ければ省略
     { id: 'gen', type: 'xxxGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#cccccc' } },
   ],
   internalEdges: [
-    // ... radiusIn -> scale.value, bodyBuildIn -> scale.factor, scale -> gen.radius, ...
+    // ... input.radius -> scale.value, input.bodyBuild -> scale.factor, scale -> gen.radius, ...
   ],
 });
 ```
 
-**外部から注入できるのは number/color/enum の3型のみ**。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合は、`config.outputs` で該当する内部ノードの出力を追加公開する(sleeve/topGroup の実例を参照)。geometry/material 型を外部から注入する仕組みは無いため、そのような依存を持つガーメントはグループ化を見送って個別ノードのまま残してよい(sleeve がその実例)。
+外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できるが、既存14種はいずれも number/color/enum のみを使っている)。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合は、`internalNodes` に `groupOutput` ノードを追加し、該当する内部ノードの出力をそこへ配線する(sleeve/topGroup の実例を参照)。そのような依存を持つガーメント自身(sleeve)はグループ化を見送って個別ノードのまま残してもよい。
 
 ## 5. initialGraph.ts への配線(慣例)
 

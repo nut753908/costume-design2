@@ -7,29 +7,30 @@ import { defineGroupNode } from './groupNodeFactory';
 defineGroupNode({
   type: 'hatGroup',
   label: 'Hat',
-  inputs: [
-    { id: 'brimRadius', label: 'Brim Radius', type: 'number', internalNodeId: 'brimRadiusIn', internalDataKey: 'value' },
-    { id: 'crownRadius', label: 'Crown Radius', type: 'number', internalNodeId: 'crownRadiusIn', internalDataKey: 'value' },
-    { id: 'height', label: 'Height', type: 'number', internalNodeId: 'heightIn', internalDataKey: 'value' },
-    { id: 'color', label: 'Color', type: 'color', internalNodeId: 'colorIn', internalDataKey: 'hex' },
-  ],
-  outputs: [],
   terminalNodeId: 'output',
   internalNodes: [
-    { id: 'brimRadiusIn', type: 'numberInput', data: { value: 0.2 } },
-    { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02 } },
-    { id: 'heightIn', type: 'numberInput', data: { value: 0.35 } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#4a3b6b' } },
+    {
+      id: 'input',
+      type: 'groupInput',
+      data: {
+        sockets: [
+          { id: 'brimRadius', label: 'Brim Radius', type: 'number', default: 0.2 },
+          { id: 'crownRadius', label: 'Crown Radius', type: 'number', default: 0.02 },
+          { id: 'height', label: 'Height', type: 'number', default: 0.35 },
+          { id: 'color', label: 'Color', type: 'color', default: '#4a3b6b' },
+        ],
+      },
+    },
     { id: 'gen', type: 'hatGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'head', offsetY: 0.1, fallbackColor: '#4a3b6b' } },
   ],
   internalEdges: [
-    { source: 'brimRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'brimRadius' },
-    { source: 'crownRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'crownRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'height' },
+    { source: 'input', sourceHandle: 'brimRadius', target: 'gen', targetHandle: 'brimRadius' },
+    { source: 'input', sourceHandle: 'crownRadius', target: 'gen', targetHandle: 'crownRadius' },
+    { source: 'input', sourceHandle: 'height', target: 'gen', targetHandle: 'height' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });

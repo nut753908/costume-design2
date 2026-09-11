@@ -6,11 +6,17 @@ import { CATEGORY_LABELS, NODE_TYPE_DND_MIME } from './paletteShared';
 
 export function NodePalette() {
   const addNode = useGraphStore((s) => s.addNode);
+  const insideGroup = useGraphStore((s) => s.scopeStack.length > 0);
   const { screenToFlowPosition } = useReactFlow();
   const cascadeRef = useRef(0);
   const [filter, setFilter] = useState('');
 
-  const groups = useMemo(() => groupNodeTypesByCategory(), []);
+  // Group Input/Output(category: 'group-io')はグループの中に入っている間だけ意味を持つ
+  // (グループ本体の外部ソケット構成を定義するノードのため)。トップレベルでは隠す。
+  const groups = useMemo(
+    () => groupNodeTypesByCategory().filter((g) => insideGroup || g.category !== 'group-io'),
+    [insideGroup],
+  );
 
   const normalizedFilter = filter.trim().toLowerCase();
   const filteredGroups = useMemo(() => {

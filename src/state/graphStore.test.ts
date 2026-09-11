@@ -17,6 +17,30 @@ beforeAll(() => {
       }),
     });
   }
+  // removeGroupIOSocket のテスト用(nodes/definitions/groupInput.ts/groupOutput.ts を
+  // 模した最小限のスタブ)。
+  if (!nodeTypeRegistry.has('groupInput')) {
+    registerNodeType({
+      type: 'groupInput',
+      label: 'Group Input',
+      category: 'group-io',
+      inputs: [],
+      outputs: [],
+      createDefaultData: () => ({ sockets: [] }),
+      evaluate: () => ({}),
+    });
+  }
+  if (!nodeTypeRegistry.has('groupOutput')) {
+    registerNodeType({
+      type: 'groupOutput',
+      label: 'Group Output',
+      category: 'group-io',
+      inputs: [],
+      outputs: [],
+      createDefaultData: () => ({ sockets: [] }),
+      evaluate: (inputs) => inputs,
+    });
+  }
   // enterGroup/exitGroup のテスト用。createDefaultData() が毎回独立した内部ノード配列を
   // 返す(defineGroupNode の実際の挙動を模した最小限のスタブ)。
   if (!nodeTypeRegistry.has('testGroupNode')) {
@@ -29,8 +53,6 @@ beforeAll(() => {
       createDefaultData: () => ({
         nodes: [makeNode('inner-a'), makeNode('inner-b')],
         edges: [makeEdge('inner-e', 'inner-a', 'inner-b')],
-        exposedInputs: [],
-        exposedOutputs: [],
       }),
       evaluate: () => ({}),
     });
@@ -47,6 +69,15 @@ function makeEdge(id: string, source: string, target: string): Edge {
 
 function makeGroupNode(id: string, overrides: Partial<Node> = {}): Node {
   return { id, type: 'testGroupNode', position: { x: 0, y: 0 }, data: {}, ...overrides };
+}
+
+function makeGroupIONode(
+  id: string,
+  type: 'groupInput' | 'groupOutput',
+  sockets: { id: string }[],
+  overrides: Partial<Node> = {},
+): Node {
+  return { id, type, position: { x: 0, y: 0 }, data: { sockets }, ...overrides };
 }
 
 /** 各テストの前にストアを既知の状態にリセットする(zustand のストアはモジュール単位の
@@ -74,6 +105,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 describe('graphStore の Undo/Redo', () => {
@@ -457,47 +489,86 @@ describe('graphStore の enterGroup/exitGroup/exitToLevel', () => {
   });
 });
 
-describe('graphStore の patchParentGroupNode', () => {
-  it('トップレベルにいる(scopeStack が空の)場合は何もしない', () => {
-    resetStore([makeGroupNode('g')]);
-    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [{ id: 'x' }] });
-    expect(useGraphStore.getState().scopeStack).toHaveLength(0);
+describe('graphStore の removeGroupIOSocket', () => {
+  it('groupInput/groupOutput 以外のノードには何もしない', () => {
+    resetStore([makeNode('a', { data: { sockets: [{ id: 'x' }] } })]);
+    useGraphStore.getState().removeGroupIOSocket('a', 'x');
+    const node = useGraphStore.getState().nodes.find((n) => n.id === 'a')!;
+    expect((node.data as { sockets?: unknown[] }).sockets).toEqual([{ id: 'x' }]);
   });
 
-  it('直近の scopeStack フレーム内の親ノードの data にパッチを当てる(現在の nodes ではなく)', () => {
-    resetStore([makeGroupNode('g')]);
-    useGraphStore.getState().enterGroup('g');
+  it('外部/内部エッジが無ければ、確認無しでそのままソケットを削除する', () => {
+    const confirmMock = vi.fn();
+    vi.stubGlobal('confirm', confirmMock);
+    resetStore([makeGroupIONode('input', 'groupInput', [{ id: 'a' }, { id: 'b' }])]);
 
-    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [{ id: 'newInput' }] });
+    useGraphStore.getState().removeGroupIOSocket('input', 'a');
 
-    const frame = useGraphStore.getState().scopeStack.at(-1)!;
-    const parent = frame.nodes.find((n) => n.id === 'g');
-    expect(parent).toBeDefined();
-    expect((parent!.data as { exposedInputs?: unknown[] }).exposedInputs).toEqual([{ id: 'newInput' }]);
-    // 現在の(内部の)nodes には影響しない。
-    expect(useGraphStore.getState().nodes.map((n) => n.id).sort()).toEqual(['inner-a', 'inner-b']);
+    const node = useGraphStore.getState().nodes.find((n) => n.id === 'input')!;
+    expect((node.data as { sockets: { id: string }[] }).sockets).toEqual([{ id: 'b' }]);
+    expect(confirmMock).not.toHaveBeenCalled();
   });
 
-  it('removeEdgeIds を渡すと、そのフレームの edges から該当エッジも取り除く', () => {
-    resetStore([makeGroupNode('g'), makeNode('other')]);
-    useGraphStore.setState({ edges: [makeEdge('e-to-g', 'other', 'g')] });
+  it('groupInput の場合、そのソケットを source とする現在階層の内部エッジも削除する', () => {
+    resetStore(
+      [makeGroupIONode('input', 'groupInput', [{ id: 'a' }]), makeNode('consumer')],
+      [{ id: 'e-a', source: 'input', sourceHandle: 'a', target: 'consumer', targetHandle: 'value' }],
+    );
+
+    useGraphStore.getState().removeGroupIOSocket('input', 'a');
+
+    expect(useGraphStore.getState().edges).toEqual([]);
+  });
+
+  it('groupOutput の場合、そのソケットを target とする現在階層の内部エッジも削除する', () => {
+    resetStore(
+      [makeNode('producer'), makeGroupIONode('output', 'groupOutput', [{ id: 'a' }])],
+      [{ id: 'e-a', source: 'producer', sourceHandle: 'value', target: 'output', targetHandle: 'a' }],
+    );
+
+    useGraphStore.getState().removeGroupIOSocket('output', 'a');
+
+    expect(useGraphStore.getState().edges).toEqual([]);
+  });
+
+  it('グループの中に入っている状態で1つ上の階層に外部接続が残っていれば確認ダイアログを出し、承諾すれば外部エッジも削除する', () => {
+    const confirmMock = vi.fn().mockReturnValue(true);
+    vi.stubGlobal('confirm', confirmMock);
+
+    resetStore([makeGroupNode('g'), makeNode('outerSrc')]);
+    useGraphStore.setState({ edges: [makeEdge('e-outer', 'outerSrc', 'g')] });
     useGraphStore.getState().enterGroup('g');
+    useGraphStore.getState().addNode('groupInput', { x: 0, y: 0 });
+    const inputId = useGraphStore.getState().nodes.find((n) => n.type === 'groupInput')!.id;
+    // makeEdge のデフォルト handle 名 'value' に合わせて、'value' という外部ソケットを持たせる。
+    useGraphStore.getState().updateNodeData(inputId, { sockets: [{ id: 'value' }] });
 
-    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [] }, ['e-to-g']);
+    useGraphStore.getState().removeGroupIOSocket(inputId, 'value');
 
+    expect(confirmMock).toHaveBeenCalledTimes(1);
     const frame = useGraphStore.getState().scopeStack.at(-1)!;
     expect(frame.edges).toEqual([]);
+    const inputNode = useGraphStore.getState().nodes.find((n) => n.id === inputId)!;
+    expect((inputNode.data as { sockets: unknown[] }).sockets).toEqual([]);
   });
 
-  it('exitGroup で書き戻される data には patchParentGroupNode の変更が保持されている', () => {
-    resetStore([makeGroupNode('g')]);
+  it('確認ダイアログでキャンセルすると何も変更しない', () => {
+    const confirmMock = vi.fn().mockReturnValue(false);
+    vi.stubGlobal('confirm', confirmMock);
+
+    resetStore([makeGroupNode('g'), makeNode('outerSrc')]);
+    useGraphStore.setState({ edges: [makeEdge('e-outer', 'outerSrc', 'g')] });
     useGraphStore.getState().enterGroup('g');
-    useGraphStore.getState().patchParentGroupNode({ exposedInputs: [{ id: 'newInput' }] });
+    useGraphStore.getState().addNode('groupInput', { x: 0, y: 0 });
+    const inputId = useGraphStore.getState().nodes.find((n) => n.type === 'groupInput')!.id;
+    useGraphStore.getState().updateNodeData(inputId, { sockets: [{ id: 'value' }] });
 
-    useGraphStore.getState().exitGroup();
+    useGraphStore.getState().removeGroupIOSocket(inputId, 'value');
 
-    const g = useGraphStore.getState().nodes.find((n) => n.id === 'g');
-    expect(g).toBeDefined();
-    expect((g!.data as { exposedInputs?: unknown[] }).exposedInputs).toEqual([{ id: 'newInput' }]);
+    expect(confirmMock).toHaveBeenCalledTimes(1);
+    const frame = useGraphStore.getState().scopeStack.at(-1)!;
+    expect(frame.edges).toEqual([makeEdge('e-outer', 'outerSrc', 'g')]);
+    const inputNode = useGraphStore.getState().nodes.find((n) => n.id === inputId)!;
+    expect((inputNode.data as { sockets: unknown[] }).sockets).toEqual([{ id: 'value' }]);
   });
 });

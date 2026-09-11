@@ -18,9 +18,15 @@ interface ContextMenuProps {
 /** キャンバスを右クリックした位置に表示し、選んだノードタイプをその位置に追加するメニュー。 */
 export function ContextMenu({ state, onClose }: ContextMenuProps) {
   const addNode = useGraphStore((s) => s.addNode);
+  const insideGroup = useGraphStore((s) => s.scopeStack.length > 0);
   const { screenToFlowPosition } = useReactFlow();
   const menuRef = useRef<HTMLDivElement>(null);
-  const groups = useMemo(() => groupNodeTypesByCategory(), []);
+  // Group Input/Output(category: 'group-io')はグループの中に入っている間だけ意味を持つ
+  // ため、トップレベルでは隠す(editor/NodePalette.tsx と同じ理由)。
+  const groups = useMemo(
+    () => groupNodeTypesByCategory().filter((g) => insideGroup || g.category !== 'group-io'),
+    [insideGroup],
+  );
 
   useDismissMenu(!!state, menuRef, onClose);
 

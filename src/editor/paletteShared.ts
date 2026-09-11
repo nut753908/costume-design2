@@ -5,6 +5,7 @@ export const CATEGORY_LABELS: Record<NodeCategory, string> = {
   input: 'Inputs',
   generator: 'Generators',
   group: 'Groups',
+  'group-io': 'Group I/O',
   material: 'Materials',
   output: 'Outputs',
 };

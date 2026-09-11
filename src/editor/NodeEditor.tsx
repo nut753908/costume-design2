@@ -21,6 +21,8 @@ import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
 import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
 import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
+import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
+import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
 import { NodePalette } from './NodePalette';
 import { DeletableEdge } from './DeletableEdge';
@@ -31,7 +33,6 @@ import { NodeClipboard } from './NodeClipboard';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
-import { GroupIOPanel } from './GroupIOPanel';
 import { NODE_TYPE_DND_MIME } from './paletteShared';
 
 // 専用UIを持つ3種(number/enum/color)以外は、レジストリに登録済みの全ノードタイプへ
@@ -41,6 +42,8 @@ const NODE_VIEW_OVERRIDES: Partial<Record<string, NodeTypes[string]>> = {
   numberInput: NumberInputNodeView,
   enumInput: EnumInputNodeView,
   colorInput: ColorInputNodeView,
+  groupInput: GroupInputNodeView,
+  groupOutput: GroupOutputNodeView,
 };
 
 const nodeTypes: NodeTypes = Object.fromEntries(
@@ -202,7 +205,6 @@ function NodeEditorInner() {
         <BreadcrumbPanel />
         <GraphIO />
         <PresetPanel />
-        <GroupIOPanel />
         <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
         <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} />
         <NodeClipboard />
