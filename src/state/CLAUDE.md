@@ -34,8 +34,8 @@
 
 一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GenericNodeView` のノードカード上のリアルタイム値表示を駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
 
-## 初期状態への復帰: initialGraph.json と「初期状態(デフォルト)」プリセット
+## 初期状態への復帰: initialGraph.ts と「初期状態(デフォルト)」プリセット
 
-`state/initialGraph.ts` は実データを持たず、`state/initialGraph.json`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を読み込んで型付けして再エクスポートするだけの薄いラッパーです。JSON はコメントを持てないため、データに埋め込まれていた設計意図(シードノードの慣例、bodyBuild 乗算、sleeve/socks の再引きなど)は `initialGraph.ts` 冒頭のコメントに集約しています。`initialGraph.json` を直接編集した場合、この解説コメントが古くならないよう合わせて見直してください。
+`state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、bodyBuild 乗算、sleeve/socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
 
 `editor/PresetPanel.tsx` はこの `initialNodes`/`initialEdges` を、`usePresetStore` に保存されたユーザープリセットとは別に「初期状態(デフォルト)」という擬似プリセット(固定ID `__initial__`、常にドロップダウン先頭に表示、削除不可)としてロード可能にしています。上記の「リロード後は Undo で戻せない」問題への対処として、ユーザーはこのプリセットを選んで Load することでいつでも初期グラフに戻せます。

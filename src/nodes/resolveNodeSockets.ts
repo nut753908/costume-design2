@@ -31,7 +31,7 @@ function toSocketDefs(raw: unknown): SocketDef[] | undefined {
  * - `category === 'group'`(グループノード本体)かつ `data.nodes`(埋め込みサブグラフが
  *   実体化済み)がある場合: その中の `groupInput`/`groupOutput` ノードの `data.sockets` を
  *   そのまま外部から見た入力/出力ソケット一覧として転送する。埋め込みサブグラフが
- *   まだ実体化されていない(`data: {}` の初期状態、または `initialGraph.json` 由来の
+ *   まだ実体化されていない(`data: {}` の初期状態、または `initialGraph.ts` 由来の
  *   旧インスタンス)場合や、該当する内部ノードが無い場合は型の静的な `inputs`/`outputs`
  *   (`defineGroupNode()` が登録時に埋め込みサブグラフのテンプレートから導出したもの)
  *   にフォールバックする。 */

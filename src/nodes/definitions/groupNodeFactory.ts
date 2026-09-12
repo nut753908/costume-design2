@@ -29,10 +29,10 @@ export interface GroupNodeConfig {
  * structuredClone として生成する。パレットから同じ型を複数回追加しても各インスタンスは
  * 互いに影響しない。
  *
- * `initialGraph.json` に含まれる既存インスタンス(このデータモデル導入前に作られた
+ * `initialGraph.ts` に含まれる既存インスタンス(このデータモデル導入前に作られた
  * `data: {}`)は `nodes`/`edges` を持たないため、`evaluate()` は各キーごとに
  * `config.internalNodes`/`internalEdges` へフォールバックする — つまり
- * `initialGraph.json` 側の移行は不要。 */
+ * `initialGraph.ts` 側の移行は不要。 */
 export interface GroupNodeData extends Record<string, unknown> {
   nodes?: GroupInternalNode[];
   edges?: GroupInternalEdge[];
@@ -94,7 +94,7 @@ export function defineGroupNode(config: GroupNodeConfig): void {
     label: config.label,
     category: 'group',
     // インスタンスが data.nodes を持たない場合(まだ中に入って編集されていない、または
-    // initialGraph.json 由来)のベースライン/フォールバック。実効的なソケット一覧は
+    // initialGraph.ts 由来)のベースライン/フォールバック。実効的なソケット一覧は
     // 常に resolveNodeSockets() 経由で解決すること。
     inputs: staticInputs,
     outputs: staticOutputs,
