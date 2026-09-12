@@ -4,17 +4,13 @@ import { defineGroupNode } from './groupNodeFactory';
  * bagGen(bagGenerator)+bagMaterial(toonMaterial)+bagOutput(garmentOutput) の3ノードを
  * 1枚にまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、外側の
  * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する — 共有される
- * 外部ソケットが1つも無いため、この groupInput ノードはソケットを持たない(`sockets: []`)。 */
+ * 外部ソケットが1つも無いため、`groupInput` ノード自体を省略している(`defineGroupNode()` は
+ * groupInput/groupOutput のどちらも省略可)。 */
 defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
   terminalNodeId: 'output',
   internalNodes: [
-    {
-      id: 'input',
-      type: 'groupInput',
-      data: { sockets: [] },
-    },
     { id: 'strapWidthIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.08, step: 0.005, label: 'Strap Width' } },
     { id: 'strapThicknessIn', type: 'numberInput', data: { value: 0.015, min: 0.005, max: 0.03, step: 0.005, label: 'Strap Thickness' } },
     { id: 'shoulderOffsetIn', type: 'numberInput', data: { value: 0.08, min: 0, max: 0.2, step: 0.01, label: 'Shoulder Offset' } },

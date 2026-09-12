@@ -4,18 +4,13 @@ import { defineGroupNode } from './groupNodeFactory';
  * glassesGen(glassesGenerator)+glassesMaterial(toonMaterial)+glassesOutput(garmentOutput)
  * の3ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、
  * 外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する —
- * 共有される外部ソケットが1つも無いため、この groupInput ノードはソケットを持たない
- * (`sockets: []`)。 */
+ * 共有される外部ソケットが1つも無いため、`groupInput` ノード自体を省略している
+ * (`defineGroupNode()` は groupInput/groupOutput のどちらも省略可)。 */
 defineGroupNode({
   type: 'glassesGroup',
   label: 'Glasses',
   terminalNodeId: 'output',
   internalNodes: [
-    {
-      id: 'input',
-      type: 'groupInput',
-      data: { sockets: [] },
-    },
     { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045, min: 0.02, max: 0.07, step: 0.005, label: 'Lens Radius' } },
     { id: 'frameThicknessIn', type: 'numberInput', data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001, label: 'Frame Thickness' } },
     { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.055, min: 0.03, max: 0.09, step: 0.005, label: 'Lens Spacing' } },

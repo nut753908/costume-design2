@@ -5,18 +5,13 @@ import { defineGroupNode } from './groupNodeFactory';
  * hatGen(hatGenerator)+hatMaterial(toonMaterial)+hatOutput(garmentOutput) の3ノードを
  * 1枚にまとめる。Brim Radius/Crown Radius/Height/Color も他のガーメントと共有されない
  * 単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型
- * ノードとして保持する — 共有される外部ソケットが1つも無いため、この groupInput ノードは
- * ソケットを持たない(`sockets: []`)。 */
+ * ノードとして保持する — 共有される外部ソケットが1つも無いため、`groupInput` ノード自体を
+ * 省略している(`defineGroupNode()` は groupInput/groupOutput のどちらも省略可)。 */
 defineGroupNode({
   type: 'hatGroup',
   label: 'Hat',
   terminalNodeId: 'output',
   internalNodes: [
-    {
-      id: 'input',
-      type: 'groupInput',
-      data: { sockets: [] },
-    },
     { id: 'brimRadiusIn', type: 'numberInput', data: { value: 0.2, min: 0.15, max: 0.3, step: 0.01, label: 'Brim Radius' } },
     { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02, min: 0, max: 0.15, step: 0.005, label: 'Crown Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01, label: 'Height' } },

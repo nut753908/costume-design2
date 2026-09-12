@@ -170,17 +170,27 @@ describe('defineGroupNode', () => {
     expect(result.doubledRadius).toEqual({ type: 'number', value: 4 });
   });
 
-  it('groupInput ノードが無いと登録時に例外を投げる', () => {
+  it('groupInput ノードが無くても登録でき、外部入力は0個になる(hat/bag/necktie/glasses の実例)', () => {
     const { internalNodes, internalEdges } = buildInternalGraph();
-    expect(() =>
+    const withoutInput = {
+      internalNodes: internalNodes.filter((n) => n.type !== 'groupInput'),
+      internalEdges: internalEdges.filter((e) => e.source !== 'input'),
+    };
+    if (!nodeTypeRegistry.has('groupFactoryTestGroupNoInput')) {
       defineGroupNode({
-        type: 'groupFactoryTestInvalidNoInput',
-        label: 'Invalid',
+        type: 'groupFactoryTestGroupNoInput',
+        label: 'Test Group (no groupInput)',
         terminalNodeId: 'terminal',
-        internalNodes: internalNodes.filter((n) => n.type !== 'groupInput'),
-        internalEdges,
-      }),
-    ).toThrow(/groupInput/);
+        ...withoutInput,
+      });
+    }
+    const def = getNodeType('groupFactoryTestGroupNoInput');
+    expect(def.inputs).toEqual([]);
+
+    // groupInput 自体が無いので、注入先が無く外部からの値は評価結果に一切影響しない。
+    const withExternalInput = def.evaluate({ radius: { type: 'number', value: 999 } }, {});
+    const withoutExternalInput = def.evaluate({}, {});
+    expect(withExternalInput).toEqual(withoutExternalInput);
   });
 
   it('存在しない terminalNodeId を指定すると登録時に例外を投げる', () => {

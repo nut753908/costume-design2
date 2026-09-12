@@ -73,7 +73,7 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        // 他ガーメントと共有される値だけをここに書く(体に触れる半径が無ければ空でよい)。
+        // 他ガーメントと共有される値だけをここに書く。
         sockets: [{ id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }],
       },
     },
@@ -95,6 +95,8 @@ defineGroupNode({
 ```
 
 外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合は、`internalNodes` に `groupOutput` ノードを追加し、該当する内部ノードの出力をそこへ配線する(sleeve/topGroup の実例を参照)。そのような依存を持つガーメント自身(sleeve)はグループ化を見送って個別ノードのまま残してもよい。
+
+`groupInput`/`groupOutput` はどちらも省略可 — 他ガーメントと共有される値が1つも無いガーメントでは `groupInput` ノード自体を `internalNodes` に含めなくてよい(`hatGroupNode.ts`/`bagGroupNode.ts`/`necktieGroupNode.ts`/`glassesGroupNode.ts` の実例を参照。外部から見た入力ソケットは0個になる)。
 
 ## 5. initialGraph.ts への配線(慣例)
 

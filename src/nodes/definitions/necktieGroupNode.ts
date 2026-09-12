@@ -4,18 +4,13 @@ import { defineGroupNode } from './groupNodeFactory';
  * necktieGen(necktieGenerator)+necktieMaterial(toonMaterial)+necktieOutput(garmentOutput)
  * の3ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、
  * 外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する —
- * 共有される外部ソケットが1つも無いため、この groupInput ノードはソケットを持たない
- * (`sockets: []`)。 */
+ * 共有される外部ソケットが1つも無いため、`groupInput` ノード自体を省略している
+ * (`defineGroupNode()` は groupInput/groupOutput のどちらも省略可)。 */
 defineGroupNode({
   type: 'necktieGroup',
   label: 'Necktie',
   terminalNodeId: 'output',
   internalNodes: [
-    {
-      id: 'input',
-      type: 'groupInput',
-      data: { sockets: [] },
-    },
     { id: 'knotWidthIn', type: 'numberInput', data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005, label: 'Knot Width' } },
     { id: 'knotHeightIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.07, step: 0.005, label: 'Knot Height' } },
     { id: 'knotThicknessIn', type: 'numberInput', data: { value: 0.025, min: 0.01, max: 0.05, step: 0.005, label: 'Knot Thickness' } },

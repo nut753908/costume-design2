@@ -11,10 +11,12 @@ export interface GroupNodeConfig {
    *  宣言されていない anchor/offsetY のようなキーも含む)を最終出力のベースとして
    *  まるごと転送する「終端」ノードのID。通常は内部の garmentOutput 型ノード。 */
   terminalNodeId: string;
-  /** ちょうど1つの `type: 'groupInput'` ノードを含めること(Blender の Group Input
-   *  ノード相当)。その `data.sockets` が、このグループノードが外部に見せる入力
-   *  ソケット一覧になる。`type: 'groupOutput'` ノードは省略可 — 他ガーメントから
-   *  再引きされる値(sleeve が topGroup を再引きする例)を追加公開したい場合だけ含める。 */
+  /** `type: 'groupInput'` ノード(Blender の Group Input ノード相当)を含めると、その
+   *  `data.sockets` がこのグループノードが外部に見せる入力ソケット一覧になる。
+   *  他ガーメントと共有される値(`bodyBuild` など)が無いガーメントでは省略でき、その場合
+   *  外部から見た入力ソケットは0個になる(hat/bag/necktie/glasses の実例を参照)。
+   *  `type: 'groupOutput'` ノードも同じく省略可 — 他ガーメントから再引きされる値
+   *  (sleeve が topGroup を再引きする例)を追加公開したい場合だけ含める。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];
 }
@@ -80,11 +82,8 @@ export function defineGroupNode(config: GroupNodeConfig): void {
 
   const templateInputNode = config.internalNodes.find((n) => n.type === 'groupInput');
   const templateOutputNode = config.internalNodes.find((n) => n.type === 'groupOutput');
-  if (!templateInputNode) {
-    throw new Error(`defineGroupNode("${config.type}"): internalNodes must include exactly one "groupInput" node`);
-  }
 
-  const staticInputs = toSocketDefs((templateInputNode.data as { sockets?: GroupIOSocket[] }).sockets);
+  const staticInputs = toSocketDefs((templateInputNode?.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
   const staticOutputs = toSocketDefs((templateOutputNode?.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
 
   registerNodeType<GroupNodeData>({
