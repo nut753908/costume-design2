@@ -8,13 +8,7 @@
 
 ## コマンド
 
-- `npm run dev` — Vite の開発サーバーを起動
-- `npm run build` — 型チェック (`tsc -b`) の後にプロダクションビルド
-- `npm run test` — vitest のテストスイートを一度だけ実行 (`vitest run`)
-- `npm run test:coverage` — カバレッジ計測付きでテストスイートを実行 (`vitest run --coverage`)
-- `npx vitest run src/geometry/skirt.test.ts` — 単一のテストファイルを実行
-- `npm run lint` — oxlint
-- `npx tsc -b` — 型チェックのみ、ビルド出力なし
+主要なコマンドは `package.json` の `scripts` を参照してください(`dev`/`build`/`lint`/`test`/`test:coverage`)。単一のテストファイルを実行するには `npx vitest run <path>`、型チェックのみ行うには `npx tsc -b` を使います。
 
 このリポジトリには WebGL/3D 描画を実際にレンダリングして確認できるブラウザ用テストランナーはありません。UI/3D の変更を確認するには `run-costume-design2` スキル(`.claude/skills/run-costume-design2/`、ヘッドレスChromiumで実際に操作しスクリーンショットを撮る)を使ってください。コンソールエラーとスクリーンショットが、変更が実際にレンダリングされたことを確認する手段です。
 
