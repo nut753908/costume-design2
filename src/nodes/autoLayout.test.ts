@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeAutoLayout, isotonicRegression, COLUMN_SPACING, ROW_SPACING } from './autoLayout';
+import { computeAutoLayout, isotonicRegression, COLUMN_SPACING, ROW_SPACING, type LayoutPosition } from './autoLayout';
 import type { GraphEdge, GraphNode } from './types';
 
 function node(id: string): GraphNode {
@@ -251,6 +251,30 @@ describe('computeAutoLayout', () => {
 
     expect(positionsWithIsolated.get('c1')).toEqual(positionsWithout.get('c1'));
     expect(positionsWithIsolated.get('c2')).toEqual(positionsWithout.get('c2'));
+  });
+
+  it('複数ノードから成る孤立したまとまり(連結成分)も、本体の位置調整を妨げず独立して詰められる', () => {
+    // 孤立ノードに限らず、他と1本も繋がっていない「まとまり」全般に一般化されている
+    // ことを確認する。クラスタ(clusterA1/clusterA2 → clusterB)は本体(hub → target群)
+    // より小さいので本体側が優先され、クラスタは本体のすぐ下へ独立して積まれるはず。
+    const clusterNodes = [node('clusterA1'), node('clusterA2'), node('clusterB')];
+    const clusterEdges = [edge('clusterA1', 'clusterB'), edge('clusterA2', 'clusterB')];
+    const mainNodes = [node('hub'), node('target1'), node('target2'), node('target3')];
+    const mainEdges = [edge('hub', 'target1'), edge('hub', 'target2'), edge('hub', 'target3')];
+
+    const positions = computeAutoLayout([...mainNodes, ...clusterNodes], [...mainEdges, ...clusterEdges]);
+    const clusterOnly = computeAutoLayout(clusterNodes, clusterEdges);
+    const mainOnly = computeAutoLayout(mainNodes, mainEdges);
+
+    // 本体(hub)の位置は、クラスタの有無で変わらない。
+    expect(positions.get('hub')).toEqual(mainOnly.get('hub'));
+
+    // クラスタ内部の相対配置(clusterA1 を基準にした相対 y)は、クラスタ単体で計算した
+    // 場合と一致する — 本体の存在はクラスタの内部構造に一切影響しない。
+    const relativeY = (pos: Map<string, LayoutPosition>, id: string, baseId: string) =>
+      pos.get(id)!.y - pos.get(baseId)!.y;
+    expect(relativeY(positions, 'clusterA2', 'clusterA1')).toBe(relativeY(clusterOnly, 'clusterA2', 'clusterA1'));
+    expect(relativeY(positions, 'clusterB', 'clusterA1')).toBe(relativeY(clusterOnly, 'clusterB', 'clusterA1'));
   });
 });
 

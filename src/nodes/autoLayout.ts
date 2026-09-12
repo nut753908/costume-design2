@@ -207,19 +207,50 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     sweep(dependents, backwardLayers);
   }
 
-  // 接続が1本も無い孤立ノード(例: ソケットグラフを迂回して直接読まれる bodyHeight、
-  // 外部入力を持たない hat/bag/necktie/glasses グループ)は、他ノードとの位置関係を
-  // 気にする理由が無いので各層の末尾へ寄せる。バリセンターは接続の無いノードを
-  // 「その場で安定」させるだけで先頭に残ることがあり、そのままだと同じ列の中で
-  // 接続のあるノードより手前に来てしまい、後ろのノードが行バランス調整で自分の
-  // 目標値(接続元・接続先の y)へ近づきたくても、この孤立ノードの位置に足止め
-  // される(接続の無いノード自身は動く理由が無く列の先頭に居座るため)。孤立ノード
-  // 同士の相対順序、接続ノード同士の相対順序はどちらも変えない安定した並べ替え。
-  const isIsolated = (id: string) => (predecessors.get(id) ?? []).length === 0 && (dependents.get(id) ?? []).length === 0;
+  // 弱連結成分(辺の向きを無視してノードをグループ分けしたもの)ごとに ID を振る。
+  // 異なる成分の間には辺が1本も無い以上、desiredY(接続元・接続先の y の中央値)は
+  // 常に同じ成分内のノードしか参照しない。孤立ノード(接続が1本も無いノード)は
+  // それ自身が要素数1の成分にすぎない — 一般化すると「他とつながっていない成分は、
+  // 本体の成分の位置調整を妨げないよう分けて並べる」という話になる。
+  const componentId = new Map<string, number>();
+  let nextComponentId = 0;
+  for (const node of nodes) {
+    if (componentId.has(node.id)) continue;
+    const id = nextComponentId++;
+    const stack = [node.id];
+    componentId.set(node.id, id);
+    while (stack.length > 0) {
+      const cur = stack.pop()!;
+      for (const n of [...(predecessors.get(cur) ?? []), ...(dependents.get(cur) ?? [])]) {
+        if (!componentId.has(n)) {
+          componentId.set(n, id);
+          stack.push(n);
+        }
+      }
+    }
+  }
+  const componentSize = new Map<number, number>();
+  for (const c of componentId.values()) componentSize.set(c, (componentSize.get(c) ?? 0) + 1);
+  // 最も大きい成分を「本体」とみなし、各層の中で常に先頭に来るようにする(それ以外の
+  // 成分は登場順のまま本体の後ろへ回る)。孤立ノードのケースだと、バリセンターが接続の
+  // 無いノードを「その場で安定」させるだけで先頭に残ることがあり、そのままだと同じ列の
+  // 中で本体側のノードより手前に来てしまい、後ろのノードが行バランス調整で自分の目標値
+  // (接続元・接続先の y)へ近づきたくても、この位置に足止めされる。成分内部の相対順序は
+  // どの成分についても変えない安定した並べ替え。
+  const [primaryComponentId] = [...componentSize.entries()].sort((a, b) => b[1] - a[1])[0] ?? [0];
   for (let l = 0; l <= maxLayer; l++) {
-    const connected = layerOrder[l].filter((id) => !isIsolated(id));
-    const isolated = layerOrder[l].filter(isIsolated);
-    layerOrder[l] = [...connected, ...isolated];
+    const buckets = new Map<number, string[]>();
+    const order: number[] = [];
+    for (const id of layerOrder[l]) {
+      const c = componentId.get(id)!;
+      if (!buckets.has(c)) {
+        buckets.set(c, []);
+        order.push(c);
+      }
+      buckets.get(c)!.push(id);
+    }
+    const orderedComponents = [primaryComponentId, ...order.filter((c) => c !== primaryComponentId)];
+    layerOrder[l] = orderedComponents.flatMap((c) => buckets.get(c) ?? []);
   }
   refreshRows();
 
@@ -258,32 +289,50 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
   };
   const rowY = new Map<string, number>();
   for (const group of columnGroups) {
-    // 孤立ノードは isotonicRegression の対象から外す。孤立ノードの「目標値」は
-    // 単に自分の(この後の並べ替えで意味を持たない)初期ランクでしかなく、それを
-    // 接続ノードと同じ数列に混ぜて詰めると、たまたま隣り合った接続ノードがこの
-    // 実体の無い目標値に引きずられてしまう(接続ノード自身の目標値から不必要に
-    // 遠ざかる)。孤立ノードは「接続ノード群のすぐ下に、間隔を空けて機械的に積む」
-    // だけにする。
-    const splitIndex = group.findIndex((id) => isIsolated(id));
-    const connected = splitIndex === -1 ? group : group.slice(0, splitIndex);
-    const isolated = splitIndex === -1 ? [] : group.slice(splitIndex);
+    // 成分をまたいで isotonicRegression に混ぜない。異なる成分の間には辺が無いため
+    // 目標値は互いに無関係で、同じ数列に混ぜて詰めると片方の(もう片方とは無関係な)
+    // 目標値にもう片方が引きずられてしまう。並び順は既に成分ごとにひとかたまりに
+    // なっている(上記の並べ替え参照)ので、componentId が変わる箇所で区切るだけで
+    // 連続した区間(ラン)に分けられる。各ランは独立に isotonicRegression で詰め、
+    // 前のランのすぐ下から順に積む(孤立ノードはランの要素数が1になるだけで、
+    // 同じロジックで自然に扱える)。
+    const runs: string[][] = [];
+    for (const id of group) {
+      const last = runs[runs.length - 1];
+      if (last && componentId.get(last[0]) === componentId.get(id)) last.push(id);
+      else runs.push([id]);
+    }
 
-    // 「直前のノードより ROW_SPACING 以上下」という制約は、各ノードの目標値から
-    // i * ROW_SPACING をあらかじめ差し引いておけば「非減少」という制約に帰着できる
-    // (差し引いた分は最後に戻す)。isotonicRegression で目標値に最も近い配置を1回で
-    // 求める(反復・発散の心配が無い)。
-    const adjusted = connected.map((id, i) => desiredY(id) - i * ROW_SPACING);
-    const fitted = isotonicRegression(adjusted);
-    const y = fitted.map((v, i) => Math.round(v) + i * ROW_SPACING);
-    for (let i = 1; i < y.length; i++) y[i] = Math.max(y[i], y[i - 1] + ROW_SPACING); // 丸め誤差の保険
-    if (y.length > 0 && y[0] < 0) {
-      const offset = -y[0];
-      for (let i = 0; i < y.length; i++) y[i] += offset;
-    }
-    for (let i = 0; i < isolated.length; i++) {
-      y.push((y.length > 0 ? y[y.length - 1] : -ROW_SPACING) + ROW_SPACING);
-    }
-    group.forEach((id, i) => rowY.set(id, y[i]));
+    let cursor = 0;
+    runs.forEach((run, runIndex) => {
+      // 「直前のノードより ROW_SPACING 以上下」という制約は、各ノードの目標値から
+      // i * ROW_SPACING をあらかじめ差し引いておけば「非減少」という制約に帰着できる
+      // (差し引いた分は最後に戻す)。isotonicRegression で目標値に最も近い配置を1回で
+      // 求める(反復・発散の心配が無い)。i はラン内でのローカルな順位。
+      const adjusted = run.map((id, i) => desiredY(id) - i * ROW_SPACING);
+      const fitted = isotonicRegression(adjusted);
+      const y = fitted.map((v, i) => Math.round(v) + i * ROW_SPACING);
+      for (let i = 1; i < y.length; i++) y[i] = Math.max(y[i], y[i - 1] + ROW_SPACING); // 丸め誤差の保険
+
+      if (runIndex === 0) {
+        // 先頭のラン(本体の成分)は従来通り、負の値にだけならないようずらす。
+        if (y[0] < 0) {
+          const offset = -y[0];
+          for (let i = 0; i < y.length; i++) y[i] += offset;
+        }
+      } else {
+        // 2番目以降のラン(本体とは無関係な成分)は、前のランと重ならない限り
+        // そのままの位置(自分自身の目標値に基づく配置)を使う。同じ成分が複数の層に
+        // またがる場合、層(=列)ごとに前のランの終端はバラバラなので、毎回無条件に
+        // 「前のランのすぐ下」へ揃えてしまうと、層をまたいだその成分内部での相対的な
+        // 位置関係(例: 層0の接続元と層1の接続先の相対距離)が崩れてしまう。前のランと
+        // 重なるときだけ、重ならなくなる最小限の量だけ下へずらす。
+        const shift = Math.max(0, cursor + ROW_SPACING - y[0]);
+        for (let i = 0; i < y.length; i++) y[i] += shift;
+      }
+      run.forEach((id, i) => rowY.set(id, y[i]));
+      cursor = y[y.length - 1];
+    });
   }
 
   const positions = new Map<string, LayoutPosition>();
