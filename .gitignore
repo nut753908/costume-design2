@@ -13,6 +13,9 @@ dist-ssr
 coverage
 *.local
 
+# Claude Code local settings (per-machine permission rules, scratch paths — not for sharing)
+.claude/settings.local.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
