@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeAutoLayout, COLUMN_SPACING, ROW_SPACING } from './autoLayout';
+import { computeAutoLayout, isotonicRegression, COLUMN_SPACING, ROW_SPACING } from './autoLayout';
 import type { GraphEdge, GraphNode } from './types';
 
 function node(id: string): GraphNode {
@@ -197,5 +197,53 @@ describe('computeAutoLayout', () => {
         expect(sorted[i] - sorted[i - 1]).toBeGreaterThanOrEqual(ROW_SPACING);
       }
     }
+  });
+
+  it('先に並ぶノードの目標値が突出して大きくても、後続ノードは自分の目標値の近くに収まる', () => {
+    // 初期プリセットで実際に踏んだケースの最小再現: 同じ列の先頭付近にいるノードが
+    // (別の接続元に強く引っ張られて)大きな目標値を持っていても、後続ノード自身の
+    // 目標値が小さければ、そちらへ引きずられず自分の目標値の近くに留まるべき。
+    // 単純な「直前ノード+ROW_SPACING」を守るだけの前方詰め(旧実装)だと、後続の
+    // far は 1000 のまま固定され、near1/near2 はそこから ROW_SPACING ずつ機械的に
+    // 押し出されてしまう(1000, 1280, 1560 のような配置になり、near1/near2 自身の
+    // 目標値である 0 から大きく外れる)。isotonicRegression による誤差二乗和の最小化
+    // では、near1/near2 の希望に合わせて far 自身が下がる方向に妥協する。
+    const values = [1000, 0, 0];
+    const adjusted = values.map((v, i) => v - i * ROW_SPACING);
+    const fitted = isotonicRegression(adjusted).map((v, i) => v + i * ROW_SPACING);
+
+    // far(index0) は自分の目標値(1000)よりずっと下がり、near1/near2(index1,2) の
+    // 目標値(0)に引っ張られる。逆に near1/near2 は目標値(0)からそこまで離れない。
+    expect(fitted[0]).toBeLessThan(500);
+    expect(fitted[2]).toBeLessThan(1000);
+  });
+});
+
+describe('isotonicRegression', () => {
+  it('すでに非減少な列はそのまま返す', () => {
+    expect(isotonicRegression([1, 2, 3])).toEqual([1, 2, 3]);
+  });
+
+  it('減少している2値は平均値に均す', () => {
+    expect(isotonicRegression([3, 1])).toEqual([2, 2]);
+  });
+
+  it('一部だけ違反している区間だけをブロックとして併合する', () => {
+    // 1 → 3 → 2 の並びは 3→2 の部分だけが非減少に違反しているため、その2つだけが
+    // 平均値(2.5)に均され、違反していない先頭の 1 はそのまま残る。
+    expect(isotonicRegression([1, 3, 2])).toEqual([1, 2.5, 2.5]);
+  });
+
+  it('併合済みのブロックがさらに前のブロックと違反する場合は連鎖して併合する', () => {
+    // 5,1 は違反しているので併合され平均3のブロックになるが、続く -10 はその
+    // 平均3をも下回って違反するため、既に併合済みのブロックごと巻き込んで
+    // 全体が1つのブロック(全要素の平均)に併合される。
+    const result = isotonicRegression([5, 1, -10]);
+    const avg = (5 + 1 - 10) / 3;
+    expect(result).toEqual([avg, avg, avg]);
+  });
+
+  it('空配列を渡すと空配列を返す', () => {
+    expect(isotonicRegression([])).toEqual([]);
   });
 });

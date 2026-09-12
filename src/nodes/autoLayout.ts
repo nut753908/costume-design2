@@ -34,10 +34,33 @@ const BARYCENTER_ITERATIONS = 4;
  * 属するか」、あちらは「同じ層の中で何番目か」)。 */
 const LAYER_BALANCE_ITERATIONS = 4;
 
-/** 行(y座標)の位置そのものを線の長さが縮む方向へ調整する反復回数。層バランス調整の
- * y版だが、行の並び順自体には(層とは違い)DAGの前後関係のような制約が無く、同じ
- * サブ列内で連続する行の間に `ROW_SPACING` 以上の間隔さえ保てればどの位置でもよい。 */
-const ROW_BALANCE_ITERATIONS = 4;
+/** 目標値(desired)の列を、非減少になるよう詰め直す(Pool Adjacent Violators Algorithm)。
+ * 「非減少」という制約の下で目標値との誤差二乗和を最小にする配置を求める、数学的に
+ * 証明された古典的アルゴリズム。前の値を下回っている(=非減少に違反している)区間を
+ * 1つのブロックとして併合し、その平均値に置き換える処理を繰り返すだけで解が求まり、
+ * 層バランス調整のような反復回数の調整や発散のリスクが無い。行(y座標)バランス調整
+ * (`computeAutoLayout()` 内)で、「同じサブ列内での並び順」を保ったまま各ノードを
+ * 目標値へできるだけ近づけるために使う。テストからも直接検証できるよう export している。 */
+export function isotonicRegression(values: number[]): number[] {
+  const blockSum: number[] = [];
+  const blockCount: number[] = [];
+  for (const v of values) {
+    let sum = v;
+    let count = 1;
+    while (blockSum.length > 0 && blockSum[blockSum.length - 1] / blockCount[blockCount.length - 1] > sum / count) {
+      sum += blockSum.pop()!;
+      count += blockCount.pop()!;
+    }
+    blockSum.push(sum);
+    blockCount.push(count);
+  }
+  const result: number[] = [];
+  for (let i = 0; i < blockSum.length; i++) {
+    const avg = blockSum[i] / blockCount[i];
+    for (let j = 0; j < blockCount[i]; j++) result.push(avg);
+  }
+  return result;
+}
 
 /** ノードグラフを、入力から出力へ向かうトポロジカルな層に沿って整列させた新しい位置を
  * 返す。層の割り当ては、最長経路による最速位置(earliest)と、出力側から遡った最長経路
@@ -48,9 +71,9 @@ const ROW_BALANCE_ITERATIONS = 4;
  * 平均順位(バリセンター)を前→後・後→前と交互に何度か往復して収束させて決め
  * (`BARYCENTER_ITERATIONS` 参照)、`MAX_ROWS_PER_COLUMN` を超える層はサブ列に折り返す。
  * さらにその順序(同じサブ列内での連続した並び)を保ったまま、実際の y 座標も接続元・
- * 接続先ノードの y 座標の中央値に近づけて縦方向の線も短くする(`ROW_BALANCE_ITERATIONS`
- * 参照。バリセンターは「同じ層の中で何番目か」という順位だけを最適化するのに対し、
- * こちらは順位を保ったまま実際の座標値を動かす点が異なる)。
+ * 接続先ノードの y 座標の中央値へできるだけ近づけて縦方向の線も短くする
+ * (`isotonicRegression` 参照。バリセンターは「同じ層の中で何番目か」という順位だけを
+ * 最適化するのに対し、こちらは順位を保ったまま実際の座標値を動かす点が異なる)。
  * circular な接続は評価不能だが(evaluateGraph は例外を投げる)、整列ボタンは
  * グラフの実行可能性を問わずいつでも安全に使えるべきなので、循環に巻き込まれた
  * ノードは layer 0 にフォールバックし(層バランス調整の対象からも除外され)、決して
@@ -204,40 +227,34 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
       columnGroups.push(ids.slice(i, i + MAX_ROWS_PER_COLUMN));
     }
   }
-  // 目標値(desired)は、この後何度も反復して変わっていく rowY 自身ではなく、最初の
-  // ランクに基づく固定値(initialRowY)から常に計算する。もし互いに更新し合う rowY を
-  // 目標値にすると、隣接ノード同士が「相手が動いた分だけさらに動く」を繰り返して値が
-  // 際限なく増えていく(発散する)ことがある(実際に初期プリセットで踏んだ不具合)。
-  // 目標値を固定することで、rowY は常に有限な範囲(initialRowY の最小値〜最大値付近)
-  // に収まることが保証される。
+  // 目標値(desired)は、最初のランクに基づく固定値(initialRowY)から計算する。もし
+  // isotonicRegression の出力(反復して変わりうる値)を目標値にすると、隣接ノード同士が
+  // 「相手が動いた分だけさらに動く」を繰り返して値が際限なく増えていく(発散する)
+  // ことがある(実際に初期プリセットで踏んだ不具合)。目標値を固定することで、この
+  // フィードバックループが起きないことを保証する。
   const initialRowY = new Map<string, number>();
   for (const group of columnGroups) {
     group.forEach((id, i) => initialRowY.set(id, i * ROW_SPACING));
   }
-  const rowY = new Map(initialRowY);
   const desiredY = (id: string): number => {
     const neighbors = [...(predecessors.get(id) ?? []), ...(dependents.get(id) ?? [])];
     return neighbors.length > 0 ? median(neighbors.map((n) => initialRowY.get(n)!)) : initialRowY.get(id)!;
   };
-  for (let iter = 0; iter < ROW_BALANCE_ITERATIONS; iter++) {
-    // 上から下へ: 直前のノードとの間隔(ROW_SPACING 以上)だけを守りながら、目標値に近づける。
-    for (const group of columnGroups) {
-      for (let i = 0; i < group.length; i++) {
-        const id = group[i];
-        const lowerBound = i === 0 ? 0 : rowY.get(group[i - 1])! + ROW_SPACING;
-        rowY.set(id, Math.max(lowerBound, Math.round(desiredY(id))));
-      }
+  const rowY = new Map<string, number>();
+  for (const group of columnGroups) {
+    // 「直前のノードより ROW_SPACING 以上下」という制約は、各ノードの目標値から
+    // i * ROW_SPACING をあらかじめ差し引いておけば「非減少」という制約に帰着できる
+    // (差し引いた分は最後に戻す)。isotonicRegression で目標値に最も近い配置を1回で
+    // 求める(反復・発散の心配が無い)。
+    const adjusted = group.map((id, i) => desiredY(id) - i * ROW_SPACING);
+    const fitted = isotonicRegression(adjusted);
+    const y = fitted.map((v, i) => Math.round(v) + i * ROW_SPACING);
+    for (let i = 1; i < y.length; i++) y[i] = Math.max(y[i], y[i - 1] + ROW_SPACING); // 丸め誤差の保険
+    if (y.length > 0 && y[0] < 0) {
+      const offset = -y[0];
+      for (let i = 0; i < y.length; i++) y[i] += offset;
     }
-    // 下から上へ: 同様に前後のノードとの間隔を守りながら目標値に近づけることで、
-    // 上のパスで必要以上に下へ押し出された分を詰め直す。
-    for (const group of columnGroups) {
-      for (let i = group.length - 1; i >= 0; i--) {
-        const id = group[i];
-        const lowerBound = i === 0 ? 0 : rowY.get(group[i - 1])! + ROW_SPACING;
-        const upperBound = i === group.length - 1 ? Infinity : rowY.get(group[i + 1])! - ROW_SPACING;
-        rowY.set(id, clamp(Math.round(desiredY(id)), lowerBound, upperBound));
-      }
-    }
+    group.forEach((id, i) => rowY.set(id, y[i]));
   }
 
   const positions = new Map<string, LayoutPosition>();
