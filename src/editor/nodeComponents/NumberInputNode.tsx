@@ -12,9 +12,9 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
   const max = nodeData.max ?? 10;
   const step = nodeData.step ?? 0.1;
 
-  // ドラッグ中の表示はローカル state で即座に更新し、store への反映(=ジオメトリ再構築+
-  // localStorage 書き込み)は間引く。外部要因(undo/redo・プリセット読み込みなど)で
-  // nodeData.value が変わった場合は同期する。
+  // 即座に表示するためのローカル state(store への反映は useThrottledNodeDataUpdate 側で
+  // 間引く、詳細はそちらのdocを参照)。外部要因(undo/redo・プリセット読み込みなど)で
+  // nodeData.value が変わった場合はここで同期する。
   const [localValue, setLocalValue] = useState(nodeData.value);
   useEffect(() => setLocalValue(nodeData.value), [nodeData.value]);
 
