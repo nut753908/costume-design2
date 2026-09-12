@@ -34,6 +34,11 @@ const BARYCENTER_ITERATIONS = 4;
  * 属するか」、あちらは「同じ層の中で何番目か」)。 */
 const LAYER_BALANCE_ITERATIONS = 4;
 
+/** 行(y座標)の位置そのものを線の長さが縮む方向へ調整する反復回数。層バランス調整の
+ * y版だが、行の並び順自体には(層とは違い)DAGの前後関係のような制約が無く、同じ
+ * サブ列内で連続する行の間に `ROW_SPACING` 以上の間隔さえ保てればどの位置でもよい。 */
+const ROW_BALANCE_ITERATIONS = 4;
+
 /** ノードグラフを、入力から出力へ向かうトポロジカルな層に沿って整列させた新しい位置を
  * 返す。層の割り当ては、最長経路による最速位置(earliest)と、出力側から遡った最長経路
  * による最遅位置(latest)の両方を求め、その間に余裕(slack)があるノードを接続元・
@@ -42,6 +47,10 @@ const LAYER_BALANCE_ITERATIONS = 4;
  * 作らないシンプルな反復法)。各層内の順序は、隣接層(前層/後層)にある接続先ノードの
  * 平均順位(バリセンター)を前→後・後→前と交互に何度か往復して収束させて決め
  * (`BARYCENTER_ITERATIONS` 参照)、`MAX_ROWS_PER_COLUMN` を超える層はサブ列に折り返す。
+ * さらにその順序(同じサブ列内での連続した並び)を保ったまま、実際の y 座標も接続元・
+ * 接続先ノードの y 座標の中央値に近づけて縦方向の線も短くする(`ROW_BALANCE_ITERATIONS`
+ * 参照。バリセンターは「同じ層の中で何番目か」という順位だけを最適化するのに対し、
+ * こちらは順位を保ったまま実際の座標値を動かす点が異なる)。
  * circular な接続は評価不能だが(evaluateGraph は例外を投げる)、整列ボタンは
  * グラフの実行可能性を問わずいつでも安全に使えるべきなので、循環に巻き込まれた
  * ノードは layer 0 にフォールバックし(層バランス調整の対象からも除外され)、決して
@@ -185,13 +194,54 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     accumulatedX += subColsForLayer[l] * COLUMN_SPACING;
   }
 
+  // columnGroups は「同じサブ列」(MAX_ROWS_PER_COLUMN 行で折り返した1本の縦の列)ごとの
+  // ノード列で、layerOrder を MAX_ROWS_PER_COLUMN 個ずつに区切ったもの。バリセンターで
+  // 決めた並び順(このグループ内でのインデックス)は変えず、実際の y 座標だけを接続元・
+  // 接続先の y に近づけて調整する。
+  const columnGroups: string[][] = [];
+  for (const ids of layerOrder) {
+    for (let i = 0; i < ids.length; i += MAX_ROWS_PER_COLUMN) {
+      columnGroups.push(ids.slice(i, i + MAX_ROWS_PER_COLUMN));
+    }
+  }
+  const rowY = new Map<string, number>();
+  for (const group of columnGroups) {
+    group.forEach((id, i) => rowY.set(id, i * ROW_SPACING));
+  }
+  const allNeighborsOf = (id: string) => [...(predecessors.get(id) ?? []), ...(dependents.get(id) ?? [])];
+  for (let iter = 0; iter < ROW_BALANCE_ITERATIONS; iter++) {
+    // 上から下へ: 直前のノードとの間隔(ROW_SPACING 以上)だけを守りながら、接続元・
+    // 接続先の y の中央値に近づける。上限は無いので、必要ならどこまでも下にずれる。
+    for (const group of columnGroups) {
+      for (let i = 0; i < group.length; i++) {
+        const id = group[i];
+        const neighbors = allNeighborsOf(id);
+        const desired = neighbors.length > 0 ? median(neighbors.map((n) => rowY.get(n)!)) : rowY.get(id)!;
+        const lowerBound = i === 0 ? 0 : rowY.get(group[i - 1])! + ROW_SPACING;
+        rowY.set(id, Math.max(lowerBound, Math.round(desired)));
+      }
+    }
+    // 下から上へ: 同様に前後のノードとの間隔を守りながら中央値に近づけることで、
+    // 上のパスで必要以上に下へ押し出された分を詰め直す。
+    for (const group of columnGroups) {
+      for (let i = group.length - 1; i >= 0; i--) {
+        const id = group[i];
+        const neighbors = allNeighborsOf(id);
+        const desired = neighbors.length > 0 ? median(neighbors.map((n) => rowY.get(n)!)) : rowY.get(id)!;
+        const lowerBound = i === 0 ? 0 : rowY.get(group[i - 1])! + ROW_SPACING;
+        const upperBound = i === group.length - 1 ? Infinity : rowY.get(group[i + 1])! - ROW_SPACING;
+        rowY.set(id, clamp(Math.round(desired), lowerBound, upperBound));
+      }
+    }
+  }
+
   const positions = new Map<string, LayoutPosition>();
   for (const node of nodes) {
     const l = layer.get(node.id)!;
     const rank = row.get(node.id)!;
     positions.set(node.id, {
       x: baseX[l] + Math.floor(rank / MAX_ROWS_PER_COLUMN) * COLUMN_SPACING,
-      y: (rank % MAX_ROWS_PER_COLUMN) * ROW_SPACING,
+      y: rowY.get(node.id)!,
     });
   }
   return positions;

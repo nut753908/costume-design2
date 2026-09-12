@@ -144,4 +144,38 @@ describe('computeAutoLayout', () => {
       expect(positions.get(e.target)!.x).toBeGreaterThan(positions.get(e.source)!.x);
     }
   });
+
+  it('複数の接続元を持つ孤立した行のノードは、それらの中間の y へ寄る', () => {
+    // a1, a2 は同じ層の隣接する行(rank0, rank1)のまま。m はその列に自分1つしか
+    // いないので初期値は rank0(y=0)だが、行バランス調整で接続元2つの中間へ寄るはず。
+    const nodes = [node('a1'), node('a2'), node('m')];
+    const edges = [edge('a1', 'm'), edge('a2', 'm')];
+
+    const positions = computeAutoLayout(nodes, edges);
+    const a1y = positions.get('a1')!.y;
+    const a2y = positions.get('a2')!.y;
+    const my = positions.get('m')!.y;
+
+    expect(a2y - a1y).toBe(ROW_SPACING); // 前提: a1, a2 は隣接する行のまま
+    expect(my).toBeCloseTo((a1y + a2y) / 2, 0);
+  });
+
+  it('行バランス調整後も、同じ列(x)に並ぶノード同士は ROW_SPACING 以上離れる', () => {
+    const nodes = [node('a1'), node('a2'), node('a3'), node('m1'), node('m2')];
+    const edges = [edge('a1', 'm1'), edge('a2', 'm1'), edge('a2', 'm2'), edge('a3', 'm2')];
+
+    const positions = computeAutoLayout(nodes, edges);
+    const ysByX = new Map<number, number[]>();
+    for (const pos of positions.values()) {
+      const ys = ysByX.get(pos.x) ?? [];
+      ys.push(pos.y);
+      ysByX.set(pos.x, ys);
+    }
+    for (const ys of ysByX.values()) {
+      const sorted = [...ys].sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i++) {
+        expect(sorted[i] - sorted[i - 1]).toBeGreaterThanOrEqual(ROW_SPACING);
+      }
+    }
+  });
 });
