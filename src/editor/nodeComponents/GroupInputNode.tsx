@@ -26,8 +26,11 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
 /** Blender の Geometry Nodes における「Group Input」ノード相当のカスタム描画。
  * グループの中に入っている間、このノードにソケットを増減・配線するだけでグループ本体の
  * 外部から見える入力ハンドルが増減する(`nodes/definitions/groupInput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。number/color/enum ソケットは未接続時の
- * デフォルト値をこの場でインライン編集できる(numberInput/colorInput/enumInput ノード相当)。 */
+ * `nodes/resolveNodeSockets.ts` 参照)。未接続時のデフォルト値(`socket.default`)は
+ * `defineGroupNode()` の登録時テンプレート(または `addSocket()` 時の `defaultForType()`)
+ * 由来の値が使われるのみで、この場での編集はできない(number の数値・color の色そのものは
+ * UI から直接いじれない — 変えたい場合はソケットを繋いで値を供給する)。enum ソケットの
+ * 選択肢一覧(`options`)は引き続きここでカンマ区切りテキストとして編集できる。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
   const sockets = nodeData.sockets ?? [];
@@ -66,23 +69,6 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
             value={socket.label}
             onChange={(e) => patchSocket(socket.id, { label: e.target.value })}
           />
-          {socket.type === 'number' && (
-            <input
-              className="rf-node__io-default nodrag"
-              type="number"
-              step="any"
-              value={typeof socket.default === 'number' ? socket.default : 0}
-              onChange={(e) => patchSocket(socket.id, { default: Number(e.target.value) })}
-            />
-          )}
-          {socket.type === 'color' && (
-            <input
-              className="rf-node__io-color nodrag"
-              type="color"
-              value={typeof socket.default === 'string' ? socket.default : '#cccccc'}
-              onChange={(e) => patchSocket(socket.id, { default: e.target.value })}
-            />
-          )}
           {socket.type === 'enum' && (
             <input
               className="rf-node__io-options nodrag"
