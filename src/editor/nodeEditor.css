@@ -200,15 +200,6 @@
   font-size: 11px;
 }
 
-.rf-node__io-options {
-  width: 72px;
-  padding: 2px 4px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background: #fff;
-  font-size: 11px;
-}
-
 .rf-node__io-remove {
   flex-shrink: 0;
   width: 16px;

@@ -26,11 +26,11 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
 /** Blender の Geometry Nodes における「Group Input」ノード相当のカスタム描画。
  * グループの中に入っている間、このノードにソケットを増減・配線するだけでグループ本体の
  * 外部から見える入力ハンドルが増減する(`nodes/definitions/groupInput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。未接続時のデフォルト値(`socket.default`)は
- * `defineGroupNode()` の登録時テンプレート(または `addSocket()` 時の `defaultForType()`)
- * 由来の値が使われるのみで、この場での編集はできない(number の数値・color の色そのものは
- * UI から直接いじれない — 変えたい場合はソケットを繋いで値を供給する)。enum ソケットの
- * 選択肢一覧(`options`)は引き続きここでカンマ区切りテキストとして編集できる。 */
+ * `nodes/resolveNodeSockets.ts` 参照)。未接続時のデフォルト値(`socket.default`、enum の
+ * 選択肢一覧 `socket.options` を含む)は `defineGroupNode()` の登録時テンプレート、または
+ * `addSocket()` 時の `defaultForType()` 由来の値が使われるのみで、この場での編集は一切
+ * できない(型を問わず値そのものを UI から直接いじる手段は無い — 変えたい場合はソケットへ
+ * 配線して値を供給する)。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
   const sockets = nodeData.sockets ?? [];
@@ -69,18 +69,6 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
             value={socket.label}
             onChange={(e) => patchSocket(socket.id, { label: e.target.value })}
           />
-          {socket.type === 'enum' && (
-            <input
-              className="rf-node__io-options nodrag"
-              type="text"
-              title="カンマ区切りの選択肢"
-              value={(socket.options ?? []).join(',')}
-              onChange={(e) => {
-                const options = e.target.value.split(',').map((s) => s.trim());
-                patchSocket(socket.id, { options, default: options[0] ?? socket.default });
-              }}
-            />
-          )}
           <Handle type="source" position={Position.Right} id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
         </div>
       ))}
