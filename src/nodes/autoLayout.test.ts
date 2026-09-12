@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeAutoLayout, ROW_SPACING } from './autoLayout';
+import { computeAutoLayout, COLUMN_SPACING, ROW_SPACING } from './autoLayout';
 import type { GraphEdge, GraphNode } from './types';
 
 function node(id: string): GraphNode {
@@ -91,5 +91,57 @@ describe('computeAutoLayout', () => {
 
     expect(positions.get('a1')!.y).toBeLessThan(positions.get('a2')!.y);
     expect(positions.get('b2')!.y).toBeLessThan(positions.get('b1')!.y);
+  });
+
+  it('接続先が接続元よりずっと遠いノードは、層の余裕(slack)を使って間に寄る', () => {
+    // m は p のすぐ後ろ(layer1)にしか置けないが、唯一の接続先 q は並行する長い経路
+    // (p→d1→d2→d3→d4→q)によって layer5 まで押し出される。最長経路だけなら m は
+    // layer1 に固定され p-q 間で著しく偏った(短い辺+長い辺の)配置になるが、層バランス
+    // 調整は m を p と q の間に寄せて、より均等な配置にするはず。
+    const nodes = [node('p'), node('m'), node('d1'), node('d2'), node('d3'), node('d4'), node('q')];
+    const edges = [
+      edge('p', 'm'),
+      edge('m', 'q'),
+      edge('p', 'd1'),
+      edge('d1', 'd2'),
+      edge('d2', 'd3'),
+      edge('d3', 'd4'),
+      edge('d4', 'q'),
+    ];
+
+    const positions = computeAutoLayout(nodes, edges);
+    const layerOf = (id: string) => positions.get(id)!.x / COLUMN_SPACING;
+
+    expect(layerOf('p')).toBe(0);
+    expect(layerOf('q')).toBe(5); // 並行する長い経路により固定される
+    expect(layerOf('m')).toBeGreaterThan(1); // 最長経路だけの場合の位置(layer1)より後ろへ寄る
+    expect(layerOf('m')).toBeLessThan(5); // それでも接続先の手前
+  });
+
+  it('層バランス調整で余裕のあるノードを動かしても、循環を含まない辺は必ず接続元より接続先が後ろになる', () => {
+    // 複数の「余裕のあるノード」(m1/m2/x1/x2)を同時に動かしても、DAG として不正な
+    // (接続先が接続元より前になる)配置を作らないことを確認する回帰テスト。
+    const ids = ['p', 'm1', 'm2', 'd1', 'd2', 'd3', 'd4', 'q', 'x1', 'x2'];
+    const nodes = ids.map(node);
+    const edges = [
+      edge('p', 'm1'),
+      edge('m1', 'q'),
+      edge('p', 'm2'),
+      edge('m2', 'q'),
+      edge('p', 'd1'),
+      edge('d1', 'd2'),
+      edge('d2', 'd3'),
+      edge('d3', 'd4'),
+      edge('d4', 'q'),
+      edge('p', 'x1'),
+      edge('x1', 'x2'),
+      edge('x2', 'q'),
+    ];
+
+    const positions = computeAutoLayout(nodes, edges);
+
+    for (const e of edges) {
+      expect(positions.get(e.target)!.x).toBeGreaterThan(positions.get(e.source)!.x);
+    }
   });
 });

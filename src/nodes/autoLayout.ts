@@ -5,7 +5,8 @@ export interface LayoutPosition {
   y: number;
 }
 
-const COLUMN_SPACING = 340;
+/** 隣接する層(x)の中心間隔。テストからも参照するため export している。 */
+export const COLUMN_SPACING = 340;
 /** 同じ列内で連続する行の中心間隔。ノードカードの実際の高さは種類によって様々で
  * (例: `numberInput` は約84px、フィールド数の多いジェネレーターノード — 実測した中で
  * 最大の bagGenerator は8フィールド+出力で約246px)、`computeAutoLayout()` は DOM を
@@ -27,13 +28,24 @@ const MAX_ROWS_PER_COLUMN = 14;
  * このアプリの規模(数十〜百ノード程度)では4往復で十分。 */
 const BARYCENTER_ITERATIONS = 4;
 
-/** ノードグラフを、入力から出力へ向かうトポロジカルな層(最長経路)に沿って整列させた
- * 新しい位置を返す。各層内の順序は、隣接層(前層/後層)にある接続先ノードの平均順位
- * (バリセンター)を前→後・後→前と交互に何度か往復して収束させて決め(`BARYCENTER_ITERATIONS`
- * 参照)、`MAX_ROWS_PER_COLUMN` を超える層はサブ列に折り返す。
+/** 層(x座標)の位置そのものを線の長さが縮む方向へ調整する反復回数。詳細は
+ * `computeAutoLayout()` 内の layer バランス調整のコメントを参照。層内の順序を
+ * 決める `BARYCENTER_ITERATIONS` とは最適化の軸が異なる(こちらは「どの層に
+ * 属するか」、あちらは「同じ層の中で何番目か」)。 */
+const LAYER_BALANCE_ITERATIONS = 4;
+
+/** ノードグラフを、入力から出力へ向かうトポロジカルな層に沿って整列させた新しい位置を
+ * 返す。層の割り当ては、最長経路による最速位置(earliest)と、出力側から遡った最長経路
+ * による最遅位置(latest)の両方を求め、その間に余裕(slack)があるノードを接続元・
+ * 接続先の層の中央値に近づけて線を短くする(`LAYER_BALANCE_ITERATIONS` 参照、厳密な
+ * ネットワークシンプレックス法ほど最適ではないが、循環を含むグラフでも逆向きの辺を
+ * 作らないシンプルな反復法)。各層内の順序は、隣接層(前層/後層)にある接続先ノードの
+ * 平均順位(バリセンター)を前→後・後→前と交互に何度か往復して収束させて決め
+ * (`BARYCENTER_ITERATIONS` 参照)、`MAX_ROWS_PER_COLUMN` を超える層はサブ列に折り返す。
  * circular な接続は評価不能だが(evaluateGraph は例外を投げる)、整列ボタンは
  * グラフの実行可能性を問わずいつでも安全に使えるべきなので、循環に巻き込まれた
- * ノードは layer 0 にフォールバックし、決して例外を投げない。 */
+ * ノードは layer 0 にフォールバックし(層バランス調整の対象からも除外され)、決して
+ * 例外を投げない。 */
 export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<string, LayoutPosition> {
   const nodeIds = new Set(nodes.map((n) => n.id));
   const inDegree = new Map<string, number>();
@@ -52,26 +64,77 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     predecessors.get(edge.target)!.push(edge.source);
   }
 
-  const layer = new Map<string, number>();
+  const earliestLayer = new Map<string, number>();
+  const topoOrder: string[] = [];
   const queue: string[] = nodes.filter((n) => inDegree.get(n.id) === 0).map((n) => n.id);
-  for (const id of queue) layer.set(id, 0);
+  for (const id of queue) earliestLayer.set(id, 0);
 
   while (queue.length > 0) {
     const id = queue.shift()!;
-    const currentLayer = layer.get(id) ?? 0;
+    topoOrder.push(id);
+    const currentLayer = earliestLayer.get(id) ?? 0;
     for (const dep of dependents.get(id) ?? []) {
-      if (currentLayer + 1 > (layer.get(dep) ?? 0)) layer.set(dep, currentLayer + 1);
+      if (currentLayer + 1 > (earliestLayer.get(dep) ?? 0)) earliestLayer.set(dep, currentLayer + 1);
       const remaining = (inDegree.get(dep) ?? 0) - 1;
       inDegree.set(dep, remaining);
       if (remaining === 0) queue.push(dep);
     }
   }
-  // 循環に巻き込まれて一度もキューに乗らなかったノードは layer 0 として扱う。
+  // 循環に巻き込まれて一度もキューに乗らなかったノードは layer 0 として扱う(トポロジカル
+  // 順序が定義できないため、以降の層バランス調整の対象からも外す)。
   for (const node of nodes) {
-    if (!layer.has(node.id)) layer.set(node.id, 0);
+    if (!earliestLayer.has(node.id)) earliestLayer.set(node.id, 0);
   }
 
-  const maxLayer = nodes.length === 0 ? 0 : Math.max(...Array.from(layer.values()));
+  const maxLayer = nodes.length === 0 ? 0 : Math.max(...Array.from(earliestLayer.values()));
+
+  // 出力側から遡った最長経路で、各ノードを線を伸ばさずに右へずらせる限界(latestLayer)を
+  // 求める。トポロジカル順序の逆向きに、後続ノード(dependents)の latestLayer の最小値-1
+  // として決める。後続の無いノードは maxLayer までずらせる。
+  const inTopoOrder = new Set(topoOrder);
+  const latestLayer = new Map<string, number>();
+  for (let i = topoOrder.length - 1; i >= 0; i--) {
+    const id = topoOrder[i];
+    const succs = (dependents.get(id) ?? []).filter((s) => inTopoOrder.has(s));
+    latestLayer.set(id, succs.length > 0 ? Math.min(...succs.map((s) => latestLayer.get(s)!)) - 1 : maxLayer);
+  }
+  for (const node of nodes) {
+    if (!latestLayer.has(node.id)) latestLayer.set(node.id, earliestLayer.get(node.id)!); // 循環ノードは余裕無し
+  }
+
+  // layer が最終的な層。earliestLayer(最速位置)を初期値とし、[現在の接続元より後,
+  // latestLayer(現在の接続先より前)] の範囲内で、接続元・接続先の層の中央値に近づける。
+  // 前→後・後→前と往復するたびに調整結果が隣接ノードへ伝播するため、複数回繰り返す
+  // (`LAYER_BALANCE_ITERATIONS`)。範囲外に出さない clamp があるため、循環を除けば
+  // 何度繰り返しても DAG として不正な(接続先が接続元より前になる)配置にはならない。
+  const layer = new Map(earliestLayer);
+  const median = (values: number[]): number => {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid];
+  };
+  const clamp = (value: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, value));
+  for (let iter = 0; iter < LAYER_BALANCE_ITERATIONS; iter++) {
+    for (const id of topoOrder) {
+      const preds = (predecessors.get(id) ?? []).filter((p) => inTopoOrder.has(p));
+      if (preds.length === 0) continue; // 接続元が無ければ右へ動かす理由が無い
+      const succs = (dependents.get(id) ?? []).filter((s) => inTopoOrder.has(s));
+      const lowerBound = Math.max(...preds.map((p) => layer.get(p)!)) + 1;
+      const desired = median([...preds, ...succs].map((n) => layer.get(n)!));
+      layer.set(id, clamp(Math.round(desired), lowerBound, latestLayer.get(id)!));
+    }
+    for (let i = topoOrder.length - 1; i >= 0; i--) {
+      const id = topoOrder[i];
+      const succs = (dependents.get(id) ?? []).filter((s) => inTopoOrder.has(s));
+      if (succs.length === 0) continue; // 接続先が無ければ左へ動かす理由が無い
+      const preds = (predecessors.get(id) ?? []).filter((p) => inTopoOrder.has(p));
+      const lowerBound = preds.length > 0 ? Math.max(...preds.map((p) => layer.get(p)!)) + 1 : 0;
+      const upperBound = Math.min(...succs.map((s) => layer.get(s)!)) - 1;
+      const desired = median([...preds, ...succs].map((n) => layer.get(n)!));
+      layer.set(id, clamp(Math.round(desired), lowerBound, upperBound));
+    }
+  }
+
   const nodesByLayer: string[][] = Array.from({ length: maxLayer + 1 }, () => []);
   for (const node of nodes) {
     nodesByLayer[layer.get(node.id)!].push(node.id);
