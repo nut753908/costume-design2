@@ -86,6 +86,30 @@ export function estimateNodeHeight(type: string, data: unknown): number {
   const rows = inputs.length + outputs.length + extraValueRows;
   return CARD_BASE_HEIGHT + rows * CARD_ROW_HEIGHT + (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0);
 }
+
+/** ソケット `socketId` が、そのノードの中で描画される行の何番目か(0=先頭)を、
+ * 全行数に対する割合(0以上1未満)で返す。`GenericNode.tsx` は入力ソケットを先に、
+ * その後に出力ソケットを描画するため、`direction: 'output'` のソケットは入力の行数ぶん
+ * 後ろにずれる。バリセンターで「同じ1つの接続先/接続元だけを持つノード同士」を
+ * 並べ替える際に、その接続先/接続元の中での実際のソケット行の並びに合わせるために使う
+ * (`computeAutoLayout()` 内のバリセンターのコメント参照)。専用UIを持つ入力系ノードや
+ * `nodeTypeRegistry` に登録の無い種類など、行の並びが明確でない場合は 0(優先順位を
+ * つけない)を返す。テストからも直接検証できるよう export している。 */
+export function socketRowFraction(type: string, data: unknown, socketId: string | null | undefined, direction: 'input' | 'output'): number {
+  if (socketId == null) return 0;
+  if (type in BESPOKE_NODE_HEIGHTS) return 0;
+  if (type === 'groupInput' || type === 'groupOutput') return 0;
+  if (!nodeTypeRegistry.has(type)) return 0;
+
+  const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
+  const total = inputs.length + outputs.length;
+  if (total === 0) return 0;
+  const list = direction === 'input' ? inputs : outputs;
+  const localIndex = list.findIndex((s) => s.id === socketId);
+  if (localIndex < 0) return 0;
+  const index = direction === 'input' ? localIndex : inputs.length + localIndex;
+  return index / total;
+}
 /** 1層あたりの最大行数。このアプリのグラフは入力ノード(numberInput 等)が大量に
  * layer 0 へ集まる星型に近い形になりやすく、折り返さずに1列に積むと極端に縦長(かつ
  * 横に極端に狭い)レイアウトになり、fitView した際にほぼ読めないほど拡大されてしまう。
@@ -152,11 +176,20 @@ export function isotonicRegression(values: number[]): number[] {
  * ノードは layer 0 にフォールバックし(層バランス調整の対象からも除外され)、決して
  * 例外を投げない。 */
 export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<string, LayoutPosition> {
+  const nodeById = new Map(nodes.map((n) => [n.id, n]));
   const nodeHeight = new Map(nodes.map((n) => [n.id, estimateNodeHeight(n.type, n.data)]));
   const nodeIds = new Set(nodes.map((n) => n.id));
   const inDegree = new Map<string, number>();
   const dependents = new Map<string, string[]>();
   const predecessors = new Map<string, string[]>();
+  // id から見て、隣接ノード n が「n の中の何番目のソケット行」で繋がっているかを引く
+  // ためのテーブル(バリセンターで使う、下記参照)。n が接続先(dependent)なら n の
+  // 入力ソケット、n が接続元(predecessor)なら n の出力ソケットの行を指す。
+  const neighborSocket = new Map<string, Map<string, { handle: string | null | undefined; direction: 'input' | 'output' }>>();
+  const setNeighborSocket = (id: string, neighborId: string, handle: string | null | undefined, direction: 'input' | 'output') => {
+    if (!neighborSocket.has(id)) neighborSocket.set(id, new Map());
+    neighborSocket.get(id)!.set(neighborId, { handle, direction });
+  };
 
   for (const node of nodes) {
     inDegree.set(node.id, 0);
@@ -168,6 +201,8 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     inDegree.set(edge.target, (inDegree.get(edge.target) ?? 0) + 1);
     dependents.get(edge.source)!.push(edge.target);
     predecessors.get(edge.target)!.push(edge.source);
+    setNeighborSocket(edge.target, edge.source, edge.sourceHandle, 'output');
+    setNeighborSocket(edge.source, edge.target, edge.targetHandle, 'input');
   }
 
   const earliestLayer = new Map<string, number>();
@@ -262,11 +297,23 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     for (const l of layers) {
       const ids = layerOrder[l];
       const keyed = ids.map((id, index) => {
-        const neighborRows = (neighborsOf.get(id) ?? [])
-          .map((n) => row.get(n))
-          .filter((r): r is number => r !== undefined);
+        const neighborIds = neighborsOf.get(id) ?? [];
+        const neighborRows = neighborIds.map((n) => row.get(n)).filter((r): r is number => r !== undefined);
         // 隣接層に接続が無いノードは、その場で安定させるため現在の順位をそのままキーにする。
-        const key = neighborRows.length > 0 ? neighborRows.reduce((sum, r) => sum + r, 0) / neighborRows.length : index;
+        let key = neighborRows.length > 0 ? neighborRows.reduce((sum, r) => sum + r, 0) / neighborRows.length : index;
+        // 接続先/接続元がただ1つだけの場合、その1つの中での実際のソケット行の並びに
+        // 合わせて同順位内をさらに並べ替える(例: A,B,C が同じ1つのノード N だけに
+        // それぞれ別のソケットで繋がっている場合、N の中でのソケットの並び順どおりに
+        // 隣接させる)。複数の接続先/接続元を持つノードは、平均順位だけでは
+        // どのソケットを優先すべきか決められないため対象外(0〜1未満の小数を
+        // そのまま順位に加えるだけなので、複数隣接ノードによる平均順位の大小関係は
+        // 変えない)。
+        if (neighborIds.length === 1) {
+          const neighborId = neighborIds[0];
+          const socket = neighborSocket.get(id)?.get(neighborId);
+          const neighborNode = socket && nodeById.get(neighborId);
+          if (socket && neighborNode) key += socketRowFraction(neighborNode.type, neighborNode.data, socket.handle, socket.direction);
+        }
         return { id, key };
       });
       keyed.sort((a, b) => a.key - b.key);

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { computeAutoLayout, estimateNodeHeight, isotonicRegression, COLUMN_SPACING, ROW_SPACING, type LayoutPosition } from './autoLayout';
+import {
+  computeAutoLayout,
+  estimateNodeHeight,
+  isotonicRegression,
+  socketRowFraction,
+  COLUMN_SPACING,
+  ROW_SPACING,
+  type LayoutPosition,
+} from './autoLayout';
 import { registerNodeType } from './registry';
 import type { GraphEdge, GraphNode, NodeTypeDefinition } from './types';
 
@@ -326,6 +334,57 @@ describe('computeAutoLayout', () => {
     // 同じ長さになる)。gen/material 自身の位置は変えず(前の層の最適化には影響しない)、
     // output だけがそれに追従する。
     expect(outputY).toBeCloseTo((genY + materialY) / 2, 0);
+  });
+
+  it('同じ1つの接続先しか持たないノード同士は、その接続先のソケット行の並び順に合わせて並び替わる', () => {
+    // pantsGroup の内部で実際に踏んだケースの再現: target(Pants 相当)は a,b,c という
+    // 順でソケットを持つが、それぞれへ繋がる接続元(srcA/srcB/srcC)は配列上わざと
+    // バラバラの順序(srcC, srcA, srcB)で定義する。それぞれ target 以外に接続先/接続元を
+    // 持たないため、バリセンターの平均順位だけでは同順位になり、並べ替えられないと
+    // 元の配列順(srcC, srcA, srcB)のまま残ってしまう。
+    registerTestType({
+      type: '__socket_order_target__',
+      inputs: [
+        { id: 'a', label: 'A', type: 'number' },
+        { id: 'b', label: 'B', type: 'number' },
+        { id: 'c', label: 'C', type: 'number' },
+      ],
+    });
+    const nodes = [node('srcC'), node('srcA'), node('srcB'), { id: 'target', type: '__socket_order_target__', data: {} }];
+    const edges = [
+      edge('srcC', 'target'),
+      edge('srcA', 'target'),
+      edge('srcB', 'target'),
+    ].map((e, i) => ({ ...e, targetHandle: ['c', 'a', 'b'][i] }));
+
+    const positions = computeAutoLayout(nodes, edges);
+
+    expect(positions.get('srcA')!.y).toBeLessThan(positions.get('srcB')!.y);
+    expect(positions.get('srcB')!.y).toBeLessThan(positions.get('srcC')!.y);
+  });
+});
+
+describe('socketRowFraction', () => {
+  it('登録済みのノード型では、入力ソケットは前半・出力ソケットは後半の行として割合を返す', () => {
+    registerTestType({
+      type: '__socket_fraction_test__',
+      inputs: [
+        { id: 'a', label: 'A', type: 'number' },
+        { id: 'b', label: 'B', type: 'number' },
+      ],
+      outputs: [{ id: 'out', label: 'Out', type: 'geometry' }],
+    });
+    // 全3行のうち、a=0行目、b=1行目、out=2行目。
+    expect(socketRowFraction('__socket_fraction_test__', {}, 'a', 'input')).toBe(0);
+    expect(socketRowFraction('__socket_fraction_test__', {}, 'b', 'input')).toBe(1 / 3);
+    expect(socketRowFraction('__socket_fraction_test__', {}, 'out', 'output')).toBe(2 / 3);
+  });
+
+  it('未登録の型・専用UI系・存在しないソケットIDは 0 を返す(優先順位をつけない)', () => {
+    expect(socketRowFraction('__unregistered__', {}, 'a', 'input')).toBe(0);
+    expect(socketRowFraction('numberInput', {}, 'value', 'output')).toBe(0);
+    registerTestType({ type: '__socket_fraction_missing__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
+    expect(socketRowFraction('__socket_fraction_missing__', {}, 'nonexistent', 'input')).toBe(0);
   });
 });
 
