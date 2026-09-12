@@ -62,7 +62,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 2080
+        "y": 720
       },
       "data": {
         "value": 0.14,
@@ -76,8 +76,8 @@
       "id": "skirtGroup",
       "type": "skirtGroup",
       "position": {
-        "x": 260,
-        "y": 510
+        "x": 400,
+        "y": 0
       },
       "data": {}
     },
@@ -86,7 +86,7 @@
       "type": "numberInput",
       "position": {
         "x": 0,
-        "y": 1130
+        "y": 440
       },
       "data": {
         "value": 0.29,
@@ -101,7 +101,7 @@
       "type": "colorInput",
       "position": {
         "x": 0,
-        "y": 1240
+        "y": 610
       },
       "data": {
         "hex": "#5b8fa8",
@@ -112,8 +112,8 @@
       "id": "topRadiusScale",
       "type": "numberMultiply",
       "position": {
-        "x": 140,
-        "y": 1130
+        "x": 200,
+        "y": 440
       },
       "data": {}
     },
@@ -121,8 +121,8 @@
       "id": "topMaterial",
       "type": "toonMaterial",
       "position": {
-        "x": 140,
-        "y": 1240
+        "x": 200,
+        "y": 610
       },
       "data": {}
     },
@@ -130,8 +130,8 @@
       "id": "topGroup",
       "type": "topGroup",
       "position": {
-        "x": 260,
-        "y": 1130
+        "x": 400,
+        "y": 200
       },
       "data": {}
     },
@@ -139,8 +139,8 @@
       "id": "sleeveGroup",
       "type": "sleeveGroup",
       "position": {
-        "x": 580,
-        "y": 1130
+        "x": 650,
+        "y": 200
       },
       "data": {}
     },
@@ -148,8 +148,8 @@
       "id": "pantsGroup",
       "type": "pantsGroup",
       "position": {
-        "x": 260,
-        "y": 1750
+        "x": 400,
+        "y": 400
       },
       "data": {}
     },
@@ -157,8 +157,8 @@
       "id": "shoesGroup",
       "type": "shoesGroup",
       "position": {
-        "x": 260,
-        "y": 2450
+        "x": 400,
+        "y": 600
       },
       "data": {}
     },
@@ -166,8 +166,8 @@
       "id": "socksGroup",
       "type": "socksGroup",
       "position": {
-        "x": 260,
-        "y": 3040
+        "x": 400,
+        "y": 800
       },
       "data": {}
     },
@@ -175,8 +175,8 @@
       "id": "glovesGroup",
       "type": "glovesGroup",
       "position": {
-        "x": 260,
-        "y": 3660
+        "x": 400,
+        "y": 1000
       },
       "data": {}
     },
@@ -184,8 +184,8 @@
       "id": "beltGroup",
       "type": "beltGroup",
       "position": {
-        "x": 260,
-        "y": 4790
+        "x": 400,
+        "y": 1200
       },
       "data": {}
     },
@@ -193,8 +193,8 @@
       "id": "scarfGroup",
       "type": "scarfGroup",
       "position": {
-        "x": 260,
-        "y": 5410
+        "x": 400,
+        "y": 1400
       },
       "data": {}
     },
@@ -202,8 +202,8 @@
       "id": "jacketGroup",
       "type": "jacketGroup",
       "position": {
-        "x": 260,
-        "y": 6140
+        "x": 400,
+        "y": 1600
       },
       "data": {}
     },
@@ -211,8 +211,8 @@
       "id": "dressGroup",
       "type": "dressGroup",
       "position": {
-        "x": 260,
-        "y": 6760
+        "x": 400,
+        "y": 1800
       },
       "data": {}
     },
@@ -220,8 +220,8 @@
       "id": "hatGroup",
       "type": "hatGroup",
       "position": {
-        "x": 260,
-        "y": 4280
+        "x": 400,
+        "y": 2000
       },
       "data": {}
     },
@@ -229,8 +229,8 @@
       "id": "bagGroup",
       "type": "bagGroup",
       "position": {
-        "x": 260,
-        "y": 7490
+        "x": 400,
+        "y": 2200
       },
       "data": {}
     },
@@ -238,8 +238,8 @@
       "id": "necktieGroup",
       "type": "necktieGroup",
       "position": {
-        "x": 260,
-        "y": 8550
+        "x": 400,
+        "y": 2400
       },
       "data": {}
     },
@@ -247,8 +247,8 @@
       "id": "glassesGroup",
       "type": "glassesGroup",
       "position": {
-        "x": 260,
-        "y": 9500
+        "x": 400,
+        "y": 2600
       },
       "data": {}
     }

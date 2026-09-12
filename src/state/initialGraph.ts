@@ -36,13 +36,19 @@ import initialGraphData from './initialGraph.json';
 // 沿って配置している(nodes/autoLayout.ts の computeAutoLayout() を機械的に適用すると、
 // 全ガーメントの入力ノードが1つの巨大な層にまとまり、バリセンター順の並び替えだけでは
 // エッジがノード上を大量に横切ってしまうため、これは使っていない)。x=0 列には
-// bodyHeight/bodyBuild/bodyShoulder/bodySkinColor のシードノードと、複数グループに共有される
-// pantsLegSpacing だけが並ぶ(ガーメント固有の生パラメータは各 <name>GroupNode.ts の内部へ
-// 移したため、このファイルにはもう存在しない)。x=260 列に各グループノードが並び、y座標は
-// 生パラメータがまだこのファイルの外側の列として存在していた旧レイアウトから引き継いでいる
-// (グループ1つあたりの縦幅はそのままのため、現在は間隔がやや広めに空いている)。topGroup の
-// 左側だけは x=0(topRadius/topColor)→ x=140(topRadiusScale/topMaterial)という2列を追加で持ち、
-// x=260 の topGroup と x=580 の sleeveGroup の両方へファンアウトしている。
+// bodyHeight/bodyBuild/bodyShoulder/bodySkinColor のシードノード、topRadius/topColor、
+// pantsLegSpacing が並ぶ(ガーメント固有の生パラメータは各 <name>GroupNode.ts の内部へ移した
+// ため、このファイルにはもう存在しない)。x=200 列には topRadiusScale/topMaterial が
+// topRadius/topColor と同じ y に並ぶ。x=400 列に14個のグループノードが200pxおきに並ぶ
+// (この各グループの外部ソケットは0〜2個程度まで減っているため、旧レイアウト(生パラメータが
+// まだこの列の外側に並んでいた頃の縦幅)よりずっと詰めた間隔にできる)。sleeveGroup だけは
+// x=650 で topGroup と同じ y に置き、隣接させている。列の間隔(x方向200、y方向は基本110/
+// 200)は、ノードカードが `.react-flow__viewport` の zoom(初期表示は fitView によりおよそ
+// 0.48)を考慮しても隣接カードと重ならないよう、実際に描画したノードの
+// `getBoundingClientRect()` を計測して逆算した値 — カード自体の座標系での実サイズは
+// 画面上のピクセルサイズを zoom で割った値になる点に注意(単純に「離れているように見える
+// pxの間隔」を position の数値としてそのまま使うと、zoom<1 の分だけ間隔が狭くなりすぎて
+// 重なる)。
 // 新しいガーメント種を追加する際は add-garment-type スキル・上記の慣例に従うこと。
 export const initialNodes: Node[] = initialGraphData.nodes as Node[];
 export const initialEdges: Edge[] = initialGraphData.edges as Edge[];
