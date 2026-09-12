@@ -289,6 +289,44 @@ describe('computeAutoLayout', () => {
     expect(relativeY(positions, 'clusterA2', 'clusterA1')).toBe(relativeY(clusterOnly, 'clusterA2', 'clusterA1'));
     expect(relativeY(positions, 'clusterB', 'clusterA1')).toBe(relativeY(clusterOnly, 'clusterB', 'clusterA1'));
   });
+
+  it('同じ層で複数の接続元/接続先が絡み合う場合(2ホップ)でも、後ろの層は前の層の最終位置を見て線を短くする', () => {
+    // scarfGroup の内部で実際に踏んだケースの再現: gen(接続元多数)と material(接続元少数)
+    // が同じ列に並び、互いに引っ張り合って本来の位置(初期のランク)から動く。その両方に
+    // 繋がる output の位置は、gen/material の「動く前の初期値」ではなく「実際に動いた後の
+    // 最終位置」を見て決まるべき。
+    const nodes = [
+      node('p1'),
+      node('p2'),
+      node('p3'),
+      node('p4'),
+      node('p5'),
+      node('q1'),
+      node('gen'),
+      node('material'),
+      node('output'),
+    ];
+    const edges = [
+      edge('p1', 'gen'),
+      edge('p2', 'gen'),
+      edge('p3', 'gen'),
+      edge('p4', 'gen'),
+      edge('p5', 'gen'),
+      edge('q1', 'material'),
+      edge('gen', 'output'),
+      edge('material', 'output'),
+    ];
+
+    const positions = computeAutoLayout(nodes, edges);
+    const genY = positions.get('gen')!.y;
+    const materialY = positions.get('material')!.y;
+    const outputY = positions.get('output')!.y;
+
+    // output は gen/material の実際の最終位置のちょうど中間に来る(どちらの辺も
+    // 同じ長さになる)。gen/material 自身の位置は変えず(前の層の最適化には影響しない)、
+    // output だけがそれに追従する。
+    expect(outputY).toBeCloseTo((genY + materialY) / 2, 0);
+  });
 });
 
 describe('isotonicRegression', () => {

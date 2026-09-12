@@ -361,22 +361,31 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     return offsets;
   };
 
-  // 目標値(desired)は、最初のランクに基づく固定値(initialRowY)から計算する。もし
-  // isotonicRegression の出力(反復して変わりうる値)を目標値にすると、隣接ノード同士が
-  // 「相手が動いた分だけさらに動く」を繰り返して値が際限なく増えていく(発散する)
-  // ことがある(実際に初期プリセットで踏んだ不具合)。目標値を固定することで、この
-  // フィードバックループが起きないことを保証する。
+  // 最初のランクに基づく固定値(initialRowY)。同じ成分内であっても、相手がまだ一度も
+  // 配置されていない(rowY に無い)場合のフォールバック参照先として使う。
   const initialRowY = new Map<string, number>();
   for (const group of columnGroups) {
     const offsets = cumulativeOffsetsOf(group);
     group.forEach((id, i) => initialRowY.set(id, offsets[i]));
   }
+  // 目標値(desired)は、既に配置済み(rowY にある)なら隣接ノードの現在値、まだ未配置
+  // なら initialRowY にフォールバックして計算する。columnGroups を層の並び順(0→末尾)
+  // に1回だけ処理するため、後ろの層のノードは前の層の隣接ノードの「実際に最適化された
+  // 後の位置」を見て自分の目標値を決められる(例: A,B → C で A,B が同じ層でお互いに
+  // 引っ張り合って本来の位置から動いた場合でも、C はその移動後の位置を見て自分の位置を
+  // 決められる)。逆に前の層のノードは、まだ配置されていない後ろの層の隣接ノードについては
+  // initialRowY にフォールバックする(例: A,B 自身は C の最終位置を見られない)ため、
+  // 情報は一方向にしか伝わらない。双方向に反復させる(後ろの層の結果を前の層へも
+  // 反映させる)設計も試したが、往復のたびに振動して特定の反復回数の偶奇に結果が
+  // 依存してしまう(発散はしないが、収束もしない)ことが分かったため、単純な一方向
+  // 1パスに留めている。
+  const rowY = new Map<string, number>();
+  const neighborY = (id: string): number => rowY.get(id) ?? initialRowY.get(id)!;
   const desiredY = (id: string): number => {
     const neighbors = [...(predecessors.get(id) ?? []), ...(dependents.get(id) ?? [])];
-    return neighbors.length > 0 ? median(neighbors.map((n) => initialRowY.get(n)!)) : initialRowY.get(id)!;
+    return neighbors.length > 0 ? median(neighbors.map((n) => neighborY(n))) : initialRowY.get(id)!;
   };
-  const rowY = new Map<string, number>();
-  for (const group of columnGroups) {
+  const fitColumnGroup = (group: string[]) => {
     // 成分をまたいで isotonicRegression に混ぜない。異なる成分の間には辺が無いため
     // 目標値は互いに無関係で、同じ数列に混ぜて詰めると片方の(もう片方とは無関係な)
     // 目標値にもう片方が引きずられてしまう。並び順は既に成分ごとにひとかたまりに
@@ -396,7 +405,7 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
       // 「直前のノードの下端より NODE_GAP 以上下」という制約は、各ノードの目標値から
       // ラン内での累積オフセット(stepAfter の累積和)をあらかじめ差し引いておけば
       // 「非減少」という制約に帰着できる(差し引いた分は最後に戻す)。
-      // isotonicRegression で目標値に最も近い配置を1回で求める(反復・発散の心配が無い)。
+      // isotonicRegression で目標値に最も近い配置を求める。
       const offsets = cumulativeOffsetsOf(run);
       const adjusted = run.map((id, i) => desiredY(id) - offsets[i]);
       const fitted = isotonicRegression(adjusted);
@@ -422,6 +431,14 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
       run.forEach((id, i) => rowY.set(id, y[i]));
       cursor = y[y.length - 1] + nodeHeight.get(run[run.length - 1])!;
     });
+  };
+  for (const group of columnGroups) fitColumnGroup(group);
+  // 保険: 各列の先頭ランは負の値にならないよう個別にずらしているため通常は不要だが、
+  // 万一 y=0 を下回るノードがあればグラフ全体を平行移動して打ち消す(ノード同士の
+  // 相対距離には影響しない)。
+  if (rowY.size > 0) {
+    const minY = Math.min(...rowY.values());
+    if (minY !== 0) for (const id of rowY.keys()) rowY.set(id, rowY.get(id)! - minY);
   }
 
   const positions = new Map<string, LayoutPosition>();
