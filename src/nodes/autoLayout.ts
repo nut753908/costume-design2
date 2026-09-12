@@ -207,6 +207,22 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     sweep(dependents, backwardLayers);
   }
 
+  // 接続が1本も無い孤立ノード(例: ソケットグラフを迂回して直接読まれる bodyHeight、
+  // 外部入力を持たない hat/bag/necktie/glasses グループ)は、他ノードとの位置関係を
+  // 気にする理由が無いので各層の末尾へ寄せる。バリセンターは接続の無いノードを
+  // 「その場で安定」させるだけで先頭に残ることがあり、そのままだと同じ列の中で
+  // 接続のあるノードより手前に来てしまい、後ろのノードが行バランス調整で自分の
+  // 目標値(接続元・接続先の y)へ近づきたくても、この孤立ノードの位置に足止め
+  // される(接続の無いノード自身は動く理由が無く列の先頭に居座るため)。孤立ノード
+  // 同士の相対順序、接続ノード同士の相対順序はどちらも変えない安定した並べ替え。
+  const isIsolated = (id: string) => (predecessors.get(id) ?? []).length === 0 && (dependents.get(id) ?? []).length === 0;
+  for (let l = 0; l <= maxLayer; l++) {
+    const connected = layerOrder[l].filter((id) => !isIsolated(id));
+    const isolated = layerOrder[l].filter(isIsolated);
+    layerOrder[l] = [...connected, ...isolated];
+  }
+  refreshRows();
+
   // 層ごとに必要なサブ列数(MAX_ROWS_PER_COLUMN 行で折り返す)を数え、層の基準x座標を
   // 積み上げて求める。前の層が折り返して複数列を使っていれば、その分だけ次の層は右にずれる。
   const subColsForLayer = nodesByLayer.map((ids) => Math.max(1, Math.ceil(ids.length / MAX_ROWS_PER_COLUMN)));
@@ -242,17 +258,30 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
   };
   const rowY = new Map<string, number>();
   for (const group of columnGroups) {
+    // 孤立ノードは isotonicRegression の対象から外す。孤立ノードの「目標値」は
+    // 単に自分の(この後の並べ替えで意味を持たない)初期ランクでしかなく、それを
+    // 接続ノードと同じ数列に混ぜて詰めると、たまたま隣り合った接続ノードがこの
+    // 実体の無い目標値に引きずられてしまう(接続ノード自身の目標値から不必要に
+    // 遠ざかる)。孤立ノードは「接続ノード群のすぐ下に、間隔を空けて機械的に積む」
+    // だけにする。
+    const splitIndex = group.findIndex((id) => isIsolated(id));
+    const connected = splitIndex === -1 ? group : group.slice(0, splitIndex);
+    const isolated = splitIndex === -1 ? [] : group.slice(splitIndex);
+
     // 「直前のノードより ROW_SPACING 以上下」という制約は、各ノードの目標値から
     // i * ROW_SPACING をあらかじめ差し引いておけば「非減少」という制約に帰着できる
     // (差し引いた分は最後に戻す)。isotonicRegression で目標値に最も近い配置を1回で
     // 求める(反復・発散の心配が無い)。
-    const adjusted = group.map((id, i) => desiredY(id) - i * ROW_SPACING);
+    const adjusted = connected.map((id, i) => desiredY(id) - i * ROW_SPACING);
     const fitted = isotonicRegression(adjusted);
     const y = fitted.map((v, i) => Math.round(v) + i * ROW_SPACING);
     for (let i = 1; i < y.length; i++) y[i] = Math.max(y[i], y[i - 1] + ROW_SPACING); // 丸め誤差の保険
     if (y.length > 0 && y[0] < 0) {
       const offset = -y[0];
       for (let i = 0; i < y.length; i++) y[i] += offset;
+    }
+    for (let i = 0; i < isolated.length; i++) {
+      y.push((y.length > 0 ? y[y.length - 1] : -ROW_SPACING) + ROW_SPACING);
     }
     group.forEach((id, i) => rowY.set(id, y[i]));
   }

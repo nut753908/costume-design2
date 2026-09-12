@@ -217,6 +217,41 @@ describe('computeAutoLayout', () => {
     expect(fitted[0]).toBeLessThan(500);
     expect(fitted[2]).toBeLessThan(1000);
   });
+
+  it('接続が1本も無い孤立ノードは各列の末尾へ寄せられ、接続ノードより後ろに来る', () => {
+    // isolated は connected より先に並んでいても(ノード配列の順番上)、接続の無い
+    // ノードは行バランス調整の目標値を持たないため、列の末尾へ回されるべき。
+    const nodes = [node('isolated'), node('connected'), node('target')];
+    const edges = [edge('connected', 'target')];
+
+    const positions = computeAutoLayout(nodes, edges);
+
+    // connected は target(独立した列にいるため初期位置 y=0)に一致できる。
+    expect(positions.get('connected')!.y).toBe(positions.get('target')!.y);
+    expect(positions.get('connected')!.y).toBeLessThan(positions.get('isolated')!.y);
+  });
+
+  it('孤立ノードが同じ列に混在していても、接続ノードの行位置は孤立ノードが無い場合と変わらない', () => {
+    // 孤立ノードの「目標値」は単に自分自身の(意味を持たない)初期ランクでしかない。
+    // これを接続ノードと同じ isotonicRegression の数列に混ぜてしまうと、たまたま
+    // 隣り合った接続ノードがこの実体の無い目標値に引きずられ、孤立ノードの有無で
+    // 接続ノードの位置が変わってしまう(実際に踏んだ回帰)。孤立ノードは接続ノードの
+    // 位置調整に一切影響してはいけない。
+    const buildGraph = (withIsolated: boolean) => {
+      const nodes = [node('c1'), node('c2'), node('target1'), node('target2')];
+      if (withIsolated) nodes.push(node('iso1'), node('iso2'), node('iso3'));
+      const edges = [edge('c1', 'target1'), edge('c2', 'target2')];
+      return { nodes, edges };
+    };
+    const without = buildGraph(false);
+    const withIsolated = buildGraph(true);
+
+    const positionsWithout = computeAutoLayout(without.nodes, without.edges);
+    const positionsWithIsolated = computeAutoLayout(withIsolated.nodes, withIsolated.edges);
+
+    expect(positionsWithIsolated.get('c1')).toEqual(positionsWithout.get('c1'));
+    expect(positionsWithIsolated.get('c2')).toEqual(positionsWithout.get('c2'));
+  });
 });
 
 describe('isotonicRegression', () => {
