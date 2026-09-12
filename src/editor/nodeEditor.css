@@ -71,6 +71,19 @@
   text-align: right;
 }
 
+/* Handle は各行の position: relative を基準に絶対配置されるため、既定のままだと
+   ノードのパディング(12px)+ボーダー(1px)の内側に埋もれて線が見えにくい。
+   ノードの外枠にちょうど乗るよう、その分だけ外側へ押し出す。 */
+.rf-node__socket-row .react-flow__handle-left,
+.rf-node__io-row .react-flow__handle-left {
+  left: -13px;
+}
+
+.rf-node__socket-row--out .react-flow__handle-right,
+.rf-node__io-row--out .react-flow__handle-right {
+  right: -13px;
+}
+
 .node-palette {
   display: flex;
   flex-direction: column;
