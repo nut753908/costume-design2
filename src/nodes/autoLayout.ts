@@ -204,33 +204,38 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
       columnGroups.push(ids.slice(i, i + MAX_ROWS_PER_COLUMN));
     }
   }
-  const rowY = new Map<string, number>();
+  // 目標値(desired)は、この後何度も反復して変わっていく rowY 自身ではなく、最初の
+  // ランクに基づく固定値(initialRowY)から常に計算する。もし互いに更新し合う rowY を
+  // 目標値にすると、隣接ノード同士が「相手が動いた分だけさらに動く」を繰り返して値が
+  // 際限なく増えていく(発散する)ことがある(実際に初期プリセットで踏んだ不具合)。
+  // 目標値を固定することで、rowY は常に有限な範囲(initialRowY の最小値〜最大値付近)
+  // に収まることが保証される。
+  const initialRowY = new Map<string, number>();
   for (const group of columnGroups) {
-    group.forEach((id, i) => rowY.set(id, i * ROW_SPACING));
+    group.forEach((id, i) => initialRowY.set(id, i * ROW_SPACING));
   }
-  const allNeighborsOf = (id: string) => [...(predecessors.get(id) ?? []), ...(dependents.get(id) ?? [])];
+  const rowY = new Map(initialRowY);
+  const desiredY = (id: string): number => {
+    const neighbors = [...(predecessors.get(id) ?? []), ...(dependents.get(id) ?? [])];
+    return neighbors.length > 0 ? median(neighbors.map((n) => initialRowY.get(n)!)) : initialRowY.get(id)!;
+  };
   for (let iter = 0; iter < ROW_BALANCE_ITERATIONS; iter++) {
-    // 上から下へ: 直前のノードとの間隔(ROW_SPACING 以上)だけを守りながら、接続元・
-    // 接続先の y の中央値に近づける。上限は無いので、必要ならどこまでも下にずれる。
+    // 上から下へ: 直前のノードとの間隔(ROW_SPACING 以上)だけを守りながら、目標値に近づける。
     for (const group of columnGroups) {
       for (let i = 0; i < group.length; i++) {
         const id = group[i];
-        const neighbors = allNeighborsOf(id);
-        const desired = neighbors.length > 0 ? median(neighbors.map((n) => rowY.get(n)!)) : rowY.get(id)!;
         const lowerBound = i === 0 ? 0 : rowY.get(group[i - 1])! + ROW_SPACING;
-        rowY.set(id, Math.max(lowerBound, Math.round(desired)));
+        rowY.set(id, Math.max(lowerBound, Math.round(desiredY(id))));
       }
     }
-    // 下から上へ: 同様に前後のノードとの間隔を守りながら中央値に近づけることで、
+    // 下から上へ: 同様に前後のノードとの間隔を守りながら目標値に近づけることで、
     // 上のパスで必要以上に下へ押し出された分を詰め直す。
     for (const group of columnGroups) {
       for (let i = group.length - 1; i >= 0; i--) {
         const id = group[i];
-        const neighbors = allNeighborsOf(id);
-        const desired = neighbors.length > 0 ? median(neighbors.map((n) => rowY.get(n)!)) : rowY.get(id)!;
         const lowerBound = i === 0 ? 0 : rowY.get(group[i - 1])! + ROW_SPACING;
         const upperBound = i === group.length - 1 ? Infinity : rowY.get(group[i + 1])! - ROW_SPACING;
-        rowY.set(id, clamp(Math.round(desired), lowerBound, upperBound));
+        rowY.set(id, clamp(Math.round(desiredY(id)), lowerBound, upperBound));
       }
     }
   }

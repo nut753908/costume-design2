@@ -160,6 +160,26 @@ describe('computeAutoLayout', () => {
     expect(my).toBeCloseTo((a1y + a2y) / 2, 0);
   });
 
+  it('多数の接続先を持つハブノードでも、行バランス調整の値が際限なく増えない(発散しない)', () => {
+    // 実際に初期プリセットで踏んだ不具合の最小再現: hub の目標値(desired)を接続先
+    // (leaf群)の「更新され続ける現在値」から計算すると、hub → leaf → hub → leaf ... と
+    // 互いに引っ張り合って値が反復のたびに増え続けてしまう。目標値は最初のランクに
+    // 基づく固定値から計算しなければならない。
+    const hub = node('hub');
+    const leaves = Array.from({ length: 9 }, (_, i) => node(`leaf${i}`));
+    const nodes = [hub, ...leaves];
+    const edges = leaves.map((leaf) => edge('hub', leaf.id));
+
+    const positions = computeAutoLayout(nodes, edges);
+    const maxY = Math.max(...nodes.map((n) => positions.get(n.id)!.y));
+
+    // 素朴なランクベースの配置(0, ROW_SPACING, ..., (leaves.length-1)*ROW_SPACING)と
+    // 同じ範囲に収まっているはず。発散していれば、この上限を大きく超える。
+    expect(maxY).toBe((leaves.length - 1) * ROW_SPACING);
+    // hub はリーフ群のちょうど中間(中央値)に寄る。
+    expect(positions.get('hub')!.y).toBe(Math.floor(leaves.length / 2) * ROW_SPACING);
+  });
+
   it('行バランス調整後も、同じ列(x)に並ぶノード同士は ROW_SPACING 以上離れる', () => {
     const nodes = [node('a1'), node('a2'), node('a3'), node('m1'), node('m2')];
     const edges = [edge('a1', 'm1'), edge('a2', 'm1'), edge('a2', 'm2'), edge('a3', 'm2')];
