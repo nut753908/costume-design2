@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeAutoLayout } from './autoLayout';
+import { computeAutoLayout, ROW_SPACING } from './autoLayout';
 import type { GraphEdge, GraphNode } from './types';
 
 function node(id: string): GraphNode {
@@ -69,7 +69,7 @@ describe('computeAutoLayout', () => {
     const maxY = Math.max(...nodes.map((n) => positions.get(n.id)!.y));
 
     expect(xs.size).toBeGreaterThan(1); // 折り返して複数列になっている
-    expect(maxY).toBeLessThan(20 * 110); // 20行ぶんの高さには積み上がっていない
+    expect(maxY).toBeLessThan(19 * ROW_SPACING); // 20行ぶん(折り返し無しの場合の高さ)には積み上がっていない
   });
 
   it('存在しないノードを参照するエッジ(削除済みノードの残骸など)は無視される', () => {
