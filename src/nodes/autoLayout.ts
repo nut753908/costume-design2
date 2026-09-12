@@ -20,9 +20,17 @@ export const ROW_SPACING = 280;
  * この行数を超えたら同じ層の中で次のサブ列へ折り返し、全体の縦横比を穏やかに保つ。 */
 const MAX_ROWS_PER_COLUMN = 14;
 
+/** 層内の順序を安定させるための反復バリセンター(Sugiyama法)の往復回数。前→後、後→前の
+ * 1往復を1イテレーションとして数える。片方向のバリセンターだけでは後続層の並びが前層の
+ * 並びに影響を返せず、star型のグラフ(入力ノードが1層に大量に集まる)で線が不必要に
+ * 交差・迂回しやすい。往復を重ねるほど交差・総延長は減るが効果は早期に収束するため、
+ * このアプリの規模(数十〜百ノード程度)では4往復で十分。 */
+const BARYCENTER_ITERATIONS = 4;
+
 /** ノードグラフを、入力から出力へ向かうトポロジカルな層(最長経路)に沿って整列させた
- * 新しい位置を返す。各層内の順序は、1つ前の層にある接続元ノードの平均順位
- * (バリセンター)で決め、`MAX_ROWS_PER_COLUMN` を超える層はサブ列に折り返す。
+ * 新しい位置を返す。各層内の順序は、隣接層(前層/後層)にある接続先ノードの平均順位
+ * (バリセンター)を前→後・後→前と交互に何度か往復して収束させて決め(`BARYCENTER_ITERATIONS`
+ * 参照)、`MAX_ROWS_PER_COLUMN` を超える層はサブ列に折り返す。
  * circular な接続は評価不能だが(evaluateGraph は例外を投げる)、整列ボタンは
  * グラフの実行可能性を問わずいつでも安全に使えるべきなので、循環に巻き込まれた
  * ノードは layer 0 にフォールバックし、決して例外を投げない。 */
@@ -69,12 +77,39 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     nodesByLayer[layer.get(node.id)!].push(node.id);
   }
 
-  // row は層内での順位(0始まりの連番)。次の層のバリセンター計算にも使うため、
-  // サブ列への折り返しとは独立した「連続した順位」として保持する。
+  // layerOrder は層ごとのノード順序(ミュータブル)。row はそこから引いた「層内での順位」
+  // (0始まりの連番)で、次の層/前の層のバリセンター計算にも使うため、サブ列への折り返し
+  // とは独立した「連続した順位」として保持する。
+  const layerOrder: string[][] = nodesByLayer.map((ids) => [...ids]);
   const row = new Map<string, number>();
-  for (const ids of nodesByLayer) {
-    const ordered = [...ids].sort((a, b) => barycenter(a, ids, predecessors, row) - barycenter(b, ids, predecessors, row));
-    ordered.forEach((id, index) => row.set(id, index));
+  const refreshRows = () => {
+    for (const ids of layerOrder) ids.forEach((id, index) => row.set(id, index));
+  };
+  refreshRows();
+
+  // Sugiyama法の反復バリセンター: 前→後(predecessors 参照)、後→前(dependents 参照)の
+  // 並び替えを交互に繰り返し、隣接層の順序と整合するまで収束させる。
+  const sweep = (neighborsOf: Map<string, string[]>, layers: number[]) => {
+    for (const l of layers) {
+      const ids = layerOrder[l];
+      const keyed = ids.map((id, index) => {
+        const neighborRows = (neighborsOf.get(id) ?? [])
+          .map((n) => row.get(n))
+          .filter((r): r is number => r !== undefined);
+        // 隣接層に接続が無いノードは、その場で安定させるため現在の順位をそのままキーにする。
+        const key = neighborRows.length > 0 ? neighborRows.reduce((sum, r) => sum + r, 0) / neighborRows.length : index;
+        return { id, key };
+      });
+      keyed.sort((a, b) => a.key - b.key);
+      layerOrder[l] = keyed.map((k) => k.id);
+      refreshRows();
+    }
+  };
+  const forwardLayers = Array.from({ length: maxLayer }, (_, i) => i + 1); // 1..maxLayer
+  const backwardLayers = Array.from({ length: maxLayer }, (_, i) => maxLayer - 1 - i); // maxLayer-1..0
+  for (let iter = 0; iter < BARYCENTER_ITERATIONS; iter++) {
+    sweep(predecessors, forwardLayers);
+    sweep(dependents, backwardLayers);
   }
 
   // 層ごとに必要なサブ列数(MAX_ROWS_PER_COLUMN 行で折り返す)を数え、層の基準x座標を
@@ -97,17 +132,4 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
     });
   }
   return positions;
-}
-
-/** 接続元ノード(既に行位置が確定済みの前の層)の平均行位置。接続元が無いノードは、
- * 同じ層内での元の並び順を安定した既定順として使う。 */
-function barycenter(
-  id: string,
-  layerIds: string[],
-  predecessors: Map<string, string[]>,
-  row: Map<string, number>,
-): number {
-  const rows = (predecessors.get(id) ?? []).map((p) => row.get(p)).filter((r): r is number => r !== undefined);
-  if (rows.length > 0) return rows.reduce((sum, r) => sum + r, 0) / rows.length;
-  return layerIds.indexOf(id);
 }
