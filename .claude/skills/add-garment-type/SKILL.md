@@ -94,7 +94,7 @@ defineGroupNode({
 });
 ```
 
-外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合、`internalNodes` に `groupOutput` ノードを追加して該当する内部ノードの出力をそこへ配線する、という方法も**技術的には**可能だが、その値が本当にそのガーメント専用なのか、複数ガーメントで共有されるべき値なのかをまず疑うこと。後者なら一方のグループに閉じ込めて `groupOutput` で覗き穴を開けるのではなく、`bodyBuild`/`pantsLegSpacing`/`topRadiusScale`/`topMaterial` と同じく `src/state/initialGraph.ts` 側のトップレベル共有ノードへ引き上げ、関係する各グループへファンアウトする方が筋がよい(下記5節、`topGroupNode.ts`/`sleeveGroupNode.ts` の実例を参照)。
+外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、`internalNodes` に `groupOutput` ノードを追加する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
 
 `groupInput`/`groupOutput` はどちらも省略可 — 他ガーメントと共有される値が1つも無いガーメントでは `groupInput` ノード自体を `internalNodes` に含めなくてよい(`hatGroupNode.ts`/`bagGroupNode.ts`/`necktieGroupNode.ts`/`glassesGroupNode.ts` の実例を参照。外部から見た入力ソケットは0個になる)。
 

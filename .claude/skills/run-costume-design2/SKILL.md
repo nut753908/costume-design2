@@ -88,10 +88,9 @@ page.locator('.react-flow__node[data-id="<ノードID>"] select')               
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
 `bodyHeight`/`bodyBuild`/`bodyShoulder`/`bodySkinColor`・`pantsLegSpacing`・`topRadius`/
 `topColor`/`topRadiusScale`/`topMaterial`(topGroup/sleeveGroup 共有ノード)・各 `<name>Group`
-(sleeve も `sleeveGroup` としてグループ化済み)しか無い点に注意 — skirt/belt など各ガーメント
-固有の生パラメータ(旧 `skirtWaist`/`skirtColor` 相当)は対応する `<name>GroupNode.ts` の
-`internalNodes` に埋め込まれているため、まずそのグループをダブルクリックして中に入ってから
-`waistRadiusIn`/`colorIn`/`torsoRadiusIn` のような `<socketId>In` という id で探す。ラベルでは
+(sleeve も `sleeveGroup` としてグループ化済み)しか無い点に注意。各ガーメント固有の生パラメータ
+は対応するグループの中に `waistRadiusIn`/`colorIn`/`torsoRadiusIn` のような `<socketId>In` と
+いう id で埋め込まれているため、上のステップ5と同様にまず中に入ってから探す。ラベルでは
 なく `id` フィールドを使うこと)。
 
 range/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
