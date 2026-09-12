@@ -1,10 +1,13 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** pantsWaistScale(numberMultiply)+pantsGen(pantsGenerator)+pantsMaterial(toonMaterial)+
- * pantsOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。
+ * pantsOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。Waist Radius/Hem
+ * Radius/Inseam/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
+ * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  *
  * Leg Spacing(`pantsLegSpacing`)は shoesGroup/socksGroup からも直接再引きされる外部の
- * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、追加の出力公開は不要。 */
+ * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build と合わせて
+ * 外部ソケットのまま。 */
 defineGroupNode({
   type: 'pantsGroup',
   label: 'Pants',
@@ -15,31 +18,31 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'waistRadius', label: 'Waist Radius', type: 'number', default: 0.16 },
-          { id: 'hemRadius', label: 'Hem Radius', type: 'number', default: 0.1 },
-          { id: 'inseam', label: 'Inseam', type: 'number', default: 0.75 },
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.14 },
-          { id: 'segments', label: 'Segments', type: 'number', default: 16 },
-          { id: 'color', label: 'Color', type: 'color', default: '#9c7b4f' },
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
         ],
       },
     },
+    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005, label: 'Waist Radius' } },
+    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.1, min: 0.05, max: 0.2, step: 0.005, label: 'Hem Radius' } },
+    { id: 'inseamIn', type: 'numberInput', data: { value: 0.75, min: 0.3, max: 1, step: 0.01, label: 'Inseam' } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+    { id: 'colorIn', type: 'colorInput', data: { hex: '#9c7b4f', label: 'Pants Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'pantsGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#9c7b4f' } },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'waistRadius', target: 'scale', targetHandle: 'value' },
+    { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
     { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'waistRadius' },
-    { source: 'input', sourceHandle: 'hemRadius', target: 'gen', targetHandle: 'hemRadius' },
-    { source: 'input', sourceHandle: 'inseam', target: 'gen', targetHandle: 'inseam' },
+    { source: 'hemRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'hemRadius' },
+    { source: 'inseamIn', sourceHandle: 'value', target: 'gen', targetHandle: 'inseam' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'gen', targetHandle: 'legSpacing' },
-    { source: 'input', sourceHandle: 'segments', target: 'gen', targetHandle: 'segments' },
+    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });

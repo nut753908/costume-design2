@@ -1,5 +1,10 @@
 import { defineGroupNode } from './groupNodeFactory';
 
+/** beltRadiusScale(numberMultiply)+beltGen(beltGenerator)+beltMaterial(toonMaterial)+
+ * beltOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。Radius/Thickness/
+ * Bulge/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
+ * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。Body Build の
+ * みガーメント間で共有されるため外部ソケットのまま。 */
 defineGroupNode({
   type: 'beltGroup',
   label: 'Belt',
@@ -9,30 +14,28 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [
-          { id: 'radius', label: 'Radius', type: 'number', default: 0.32 },
-          { id: 'thickness', label: 'Thickness', type: 'number', default: 0.05 },
-          { id: 'bulge', label: 'Bulge', type: 'number', default: 1.15 },
-          { id: 'segments', label: 'Segments', type: 'number', default: 24 },
-          { id: 'color', label: 'Color', type: 'color', default: '#3a2e26' },
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-        ],
+        sockets: [{ id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }],
       },
     },
+    { id: 'radiusIn', type: 'numberInput', data: { value: 0.32, min: 0.2, max: 0.45, step: 0.01, label: 'Radius' } },
+    { id: 'thicknessIn', type: 'numberInput', data: { value: 0.05, min: 0.02, max: 0.12, step: 0.005, label: 'Thickness' } },
+    { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01, label: 'Bulge' } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
+    { id: 'colorIn', type: 'colorInput', data: { hex: '#3a2e26', label: 'Belt Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'beltGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#3a2e26' } },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'radius', target: 'scale', targetHandle: 'value' },
+    { source: 'radiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
     { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'thickness', target: 'gen', targetHandle: 'thickness' },
-    { source: 'input', sourceHandle: 'bulge', target: 'gen', targetHandle: 'bulge' },
-    { source: 'input', sourceHandle: 'segments', target: 'gen', targetHandle: 'segments' },
+    { source: 'thicknessIn', sourceHandle: 'value', target: 'gen', targetHandle: 'thickness' },
+    { source: 'bulgeIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bulge' },
+    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });

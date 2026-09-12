@@ -1,5 +1,10 @@
 import { defineGroupNode } from './groupNodeFactory';
 
+/** dressTorsoScale(numberMultiply)+dressGen(dressGenerator)+dressMaterial(toonMaterial)+
+ * dressOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。Torso Radius/Hem
+ * Radius/Length/Neckline/Neckline Depth/Color は他のガーメントと共有されない単独パラメータ
+ * のため、外側の numberInput/colorInput/enumInput ノードではなくグループ内部の同型ノードと
+ * して保持する。Body Build のみガーメント間で共有されるため外部ソケットのまま。 */
 defineGroupNode({
   type: 'dressGroup',
   label: 'Dress',
@@ -9,32 +14,30 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [
-          { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.29 },
-          { id: 'hemRadius', label: 'Hem Radius', type: 'number', default: 0.55 },
-          { id: 'length', label: 'Length', type: 'number', default: 0.9 },
-          { id: 'neckline', label: 'Neckline', type: 'enum', default: 'round', options: ['round', 'v', 'square'] },
-          { id: 'necklineDepth', label: 'Neckline Depth', type: 'number', default: 0.12 },
-          { id: 'color', label: 'Color', type: 'color', default: '#3d7a72' },
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-        ],
+        sockets: [{ id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }],
       },
     },
+    { id: 'torsoRadiusIn', type: 'numberInput', data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
+    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.55, min: 0.3, max: 1, step: 0.01, label: 'Hem Radius' } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.9, min: 0.4, max: 1.3, step: 0.01, label: 'Length' } },
+    { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
+    { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
+    { id: 'colorIn', type: 'colorInput', data: { hex: '#3d7a72', label: 'Dress Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'dressGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#3d7a72' } },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'scale', targetHandle: 'value' },
+    { source: 'torsoRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
     { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'torsoRadius' },
-    { source: 'input', sourceHandle: 'hemRadius', target: 'gen', targetHandle: 'hemRadius' },
-    { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'neckline', target: 'gen', targetHandle: 'necklineType' },
-    { source: 'input', sourceHandle: 'necklineDepth', target: 'gen', targetHandle: 'necklineDepth' },
+    { source: 'hemRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'hemRadius' },
+    { source: 'lengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'length' },
+    { source: 'necklineIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineType' },
+    { source: 'necklineDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineDepth' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });

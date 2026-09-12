@@ -2,7 +2,9 @@ import { defineGroupNode } from './groupNodeFactory';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
  * bagGen(bagGenerator)+bagMaterial(toonMaterial)+bagOutput(garmentOutput) の3ノードを
- * 1枚にまとめる。 */
+ * 1枚にまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、外側の
+ * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する — 共有される
+ * 外部ソケットが1つも無いため、この groupInput ノードはソケットを持たない(`sockets: []`)。 */
 defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
@@ -11,35 +13,32 @@ defineGroupNode({
     {
       id: 'input',
       type: 'groupInput',
-      data: {
-        sockets: [
-          { id: 'strapWidth', label: 'Strap Width', type: 'number', default: 0.04 },
-          { id: 'strapThickness', label: 'Strap Thickness', type: 'number', default: 0.015 },
-          { id: 'shoulderOffset', label: 'Shoulder Offset', type: 'number', default: 0.08 },
-          { id: 'hipOffset', label: 'Hip Offset', type: 'number', default: 0.26 },
-          { id: 'drop', label: 'Drop', type: 'number', default: 0.55 },
-          { id: 'bagWidth', label: 'Bag Width', type: 'number', default: 0.16 },
-          { id: 'bagHeight', label: 'Bag Height', type: 'number', default: 0.14 },
-          { id: 'bagDepth', label: 'Bag Depth', type: 'number', default: 0.08 },
-          { id: 'color', label: 'Color', type: 'color', default: '#8a4a2e' },
-        ],
-      },
+      data: { sockets: [] },
     },
+    { id: 'strapWidthIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.08, step: 0.005, label: 'Strap Width' } },
+    { id: 'strapThicknessIn', type: 'numberInput', data: { value: 0.015, min: 0.005, max: 0.03, step: 0.005, label: 'Strap Thickness' } },
+    { id: 'shoulderOffsetIn', type: 'numberInput', data: { value: 0.08, min: 0, max: 0.2, step: 0.01, label: 'Shoulder Offset' } },
+    { id: 'hipOffsetIn', type: 'numberInput', data: { value: 0.26, min: 0, max: 0.4, step: 0.01, label: 'Hip Offset' } },
+    { id: 'dropIn', type: 'numberInput', data: { value: 0.55, min: 0.2, max: 0.9, step: 0.01, label: 'Drop' } },
+    { id: 'bagWidthIn', type: 'numberInput', data: { value: 0.16, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Width' } },
+    { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Height' } },
+    { id: 'bagDepthIn', type: 'numberInput', data: { value: 0.08, min: 0.02, max: 0.2, step: 0.01, label: 'Bag Depth' } },
+    { id: 'colorIn', type: 'colorInput', data: { hex: '#8a4a2e', label: 'Bag Color' } },
     { id: 'gen', type: 'bagGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#8a4a2e' } },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'strapWidth', target: 'gen', targetHandle: 'strapWidth' },
-    { source: 'input', sourceHandle: 'strapThickness', target: 'gen', targetHandle: 'strapThickness' },
-    { source: 'input', sourceHandle: 'shoulderOffset', target: 'gen', targetHandle: 'shoulderOffset' },
-    { source: 'input', sourceHandle: 'hipOffset', target: 'gen', targetHandle: 'hipOffset' },
-    { source: 'input', sourceHandle: 'drop', target: 'gen', targetHandle: 'drop' },
-    { source: 'input', sourceHandle: 'bagWidth', target: 'gen', targetHandle: 'bagWidth' },
-    { source: 'input', sourceHandle: 'bagHeight', target: 'gen', targetHandle: 'bagHeight' },
-    { source: 'input', sourceHandle: 'bagDepth', target: 'gen', targetHandle: 'bagDepth' },
+    { source: 'strapWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'strapWidth' },
+    { source: 'strapThicknessIn', sourceHandle: 'value', target: 'gen', targetHandle: 'strapThickness' },
+    { source: 'shoulderOffsetIn', sourceHandle: 'value', target: 'gen', targetHandle: 'shoulderOffset' },
+    { source: 'hipOffsetIn', sourceHandle: 'value', target: 'gen', targetHandle: 'hipOffset' },
+    { source: 'dropIn', sourceHandle: 'value', target: 'gen', targetHandle: 'drop' },
+    { source: 'bagWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagWidth' },
+    { source: 'bagHeightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagHeight' },
+    { source: 'bagDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagDepth' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });

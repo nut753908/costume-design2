@@ -42,13 +42,18 @@ node .claude/skills/run-costume-design2/driver.mjs
 やること:
 1. `localhost:5173` が応答していなければ `npm run dev` をプロジェクトルートで自動起動し、
    準備完了までポーリングで待つ(既に起動済みなら何もしない)。
-2. ヘッドレスChromiumで開き、`.react-flow__node[data-id="skirtWaist"]` と `canvas` の描画を待つ。
+2. ヘッドレスChromiumで開き、`.react-flow__node[data-id="skirtGroup"]` と `canvas` の描画を待つ。
 3. 初期状態のスクリーンショットを撮る。
 4. `OrbitControls` でカメラをドラッグ操作し、再描画されることを確認するスクリーンショットを撮る
    (`frameloop="demand"` でもカメラ操作時に再描画されるかの検証を兼ねる)。
-5. `skirtWaist`(numberInputノード)のスライダーに高頻度のinputイベントを連続発火させ
-   (実際のドラッグ操作の再現)、ジオメトリが追従して変化した後のスクリーンショットを撮る。
-6. `skirtColor`(colorInputノード)の色を変更し、ガーメントの色が変わった後のスクリーンショットを撮る。
+5. `skirtGroup` をダブルクリックして中に入り(ガーメント固有の生パラメータは
+   `<name>GroupNode.ts` の `internalNodes` に埋め込まれているため、中に入らないと操作できない
+   — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`waistRadiusIn`(numberInputノード)の
+   スライダーに高頻度のinputイベントを連続発火させ(実際のドラッグ操作の再現)、ジオメトリが
+   追従して変化した後のスクリーンショットを撮る。
+6. 同じく中にいる `colorIn`(colorInputノード)の色を変更し、トップレベルへ戻ってから
+   ガーメントの色が変わった後のスクリーンショットを撮る(3Dシーンは `rootEvaluatedResults` 経由
+   でスコープに関わらず常に最新なので、戻る前の変更もすでに反映されている)。
 7. コンソールエラー/ページエラーを収集し、1件でもあれば非ゼロ終了。
 8. このスクリプト自身が起動した dev サーバーのみ停止する(元から起動していたものは触らない)。
 
@@ -80,8 +85,13 @@ page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  
 page.locator('.react-flow__node[data-id="<ノードID>"] select')               // enumInput
 ```
 
-ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(例:
-`skirtWaist`/`skirtColor`/`topRadius`/`topColor` など、ラベルではなく `id` フィールドを使う)。
+ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
+`bodyHeight`/`bodyBuild`/`bodyShoulder`/`bodySkinColor`・`pantsLegSpacing`・sleeve関連・各
+`<name>Group` しか無い点に注意 — skirt/top など各ガーメント固有の生パラメータ(旧
+`skirtWaist`/`skirtColor`/`topRadius`/`topColor` 相当)は対応する `<name>GroupNode.ts` の
+`internalNodes` に埋め込まれているため、まずそのグループをダブルクリックして中に入ってから
+`waistRadiusIn`/`colorIn`/`torsoRadiusIn` のような `<socketId>In` という id で探す。ラベルでは
+なく `id` フィールドを使うこと)。
 
 range/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
 onChangeが発火しない。ネイティブの value setter 経由で値をセットしてから `input` イベントを
@@ -110,4 +120,4 @@ onChangeが発火しない。ネイティブの value setter 経由で値をセ�
 |---|---|
 | `Chromium 実行ファイルが見つかりません` | `~/.cache/ms-playwright` にキャッシュが無い。`cd .claude/skills/run-costume-design2 && npm install && npx playwright-core install chromium` |
 | `dev server が30秒以内に応答しませんでした` | ポート5173が塞がっている可能性。`lsof -ti:5173 -sTCP:LISTEN \| xargs -r kill` してから再実行 |
-| `.react-flow__node[data-id="skirtWaist"]` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された)。`src/state/graphStore.ts` の `initialNodes` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |
+| `.react-flow__node[data-id="skirtGroup"]`/`waistRadiusIn`/`colorIn` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された、または対象ノードがグループの中に埋め込まれた)。`src/state/graphStore.ts` の `initialNodes` や該当する `<name>GroupNode.ts` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |

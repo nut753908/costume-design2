@@ -1,9 +1,11 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** skirtWaistScale(numberMultiply)+skirtGen(skirtGenerator)+skirtMaterial(toonMaterial)+
- * skirtOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。
- * 生パラメータ(Waist Radius/Length/Flare/Segments)と Color は引き続き外側の
- * numberInput/colorInput ノードとして残り、既存のスライダー/カラーピッカーUIで編集する。 */
+ * skirtOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。Waist Radius/Length/
+ * Flare/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
+ * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する(スライダー/
+ * カラーピッカーUIそのものは変わらない)。Body Build のみ全ガーメント共有のため外部ソケットの
+ * まま。 */
 defineGroupNode({
   type: 'skirtGroup',
   label: 'Skirt',
@@ -13,30 +15,28 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [
-          { id: 'waistRadius', label: 'Waist Radius', type: 'number', default: 0.3 },
-          { id: 'length', label: 'Length', type: 'number', default: 0.55 },
-          { id: 'flare', label: 'Flare', type: 'number', default: 0.7 },
-          { id: 'segments', label: 'Segments', type: 'number', default: 28 },
-          { id: 'color', label: 'Color', type: 'color', default: '#d9738c' },
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-        ],
+        sockets: [{ id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }],
       },
     },
+    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.3, min: 0.15, max: 0.5, step: 0.01, label: 'Waist Radius' } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.55, min: 0.2, max: 1, step: 0.01, label: 'Length' } },
+    { id: 'flareIn', type: 'numberInput', data: { value: 0.7, min: 0, max: 2.5, step: 0.05, label: 'Flare' } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 28, min: 8, max: 48, step: 1, label: 'Segments' } },
+    { id: 'colorIn', type: 'colorInput', data: { hex: '#d9738c', label: 'Skirt Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'skirtGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0.03, fallbackColor: '#d9738c' } },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'waistRadius', target: 'scale', targetHandle: 'value' },
+    { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
     { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'waistRadius' },
-    { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'flare', target: 'gen', targetHandle: 'flare' },
-    { source: 'input', sourceHandle: 'segments', target: 'gen', targetHandle: 'segments' },
+    { source: 'lengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'length' },
+    { source: 'flareIn', sourceHandle: 'value', target: 'gen', targetHandle: 'flare' },
+    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });

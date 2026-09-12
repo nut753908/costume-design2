@@ -2,7 +2,10 @@ import { defineGroupNode } from './groupNodeFactory';
 
 /** necktie は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
  * necktieGen(necktieGenerator)+necktieMaterial(toonMaterial)+necktieOutput(garmentOutput)
- * の3ノードを1枚にまとめる。 */
+ * の3ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、
+ * 外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する —
+ * 共有される外部ソケットが1つも無いため、この groupInput ノードはソケットを持たない
+ * (`sockets: []`)。 */
 defineGroupNode({
   type: 'necktieGroup',
   label: 'Necktie',
@@ -11,33 +14,30 @@ defineGroupNode({
     {
       id: 'input',
       type: 'groupInput',
-      data: {
-        sockets: [
-          { id: 'knotWidth', label: 'Knot Width', type: 'number', default: 0.05 },
-          { id: 'knotHeight', label: 'Knot Height', type: 'number', default: 0.04 },
-          { id: 'knotThickness', label: 'Knot Thickness', type: 'number', default: 0.025 },
-          { id: 'bladeTopWidth', label: 'Blade Top Width', type: 'number', default: 0.035 },
-          { id: 'bladeBottomWidth', label: 'Blade Bottom Width', type: 'number', default: 0.06 },
-          { id: 'bladeThickness', label: 'Blade Thickness', type: 'number', default: 0.008 },
-          { id: 'bladeLength', label: 'Blade Length', type: 'number', default: 0.4 },
-          { id: 'color', label: 'Color', type: 'color', default: '#7a1f2b' },
-        ],
-      },
+      data: { sockets: [] },
     },
+    { id: 'knotWidthIn', type: 'numberInput', data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005, label: 'Knot Width' } },
+    { id: 'knotHeightIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.07, step: 0.005, label: 'Knot Height' } },
+    { id: 'knotThicknessIn', type: 'numberInput', data: { value: 0.025, min: 0.01, max: 0.05, step: 0.005, label: 'Knot Thickness' } },
+    { id: 'bladeTopWidthIn', type: 'numberInput', data: { value: 0.035, min: 0.015, max: 0.06, step: 0.005, label: 'Blade Top Width' } },
+    { id: 'bladeBottomWidthIn', type: 'numberInput', data: { value: 0.06, min: 0.03, max: 0.12, step: 0.005, label: 'Blade Bottom Width' } },
+    { id: 'bladeThicknessIn', type: 'numberInput', data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001, label: 'Blade Thickness' } },
+    { id: 'bladeLengthIn', type: 'numberInput', data: { value: 0.4, min: 0.2, max: 0.7, step: 0.01, label: 'Blade Length' } },
+    { id: 'colorIn', type: 'colorInput', data: { hex: '#7a1f2b', label: 'Necktie Color' } },
     { id: 'gen', type: 'necktieGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#7a1f2b' } },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'knotWidth', target: 'gen', targetHandle: 'knotWidth' },
-    { source: 'input', sourceHandle: 'knotHeight', target: 'gen', targetHandle: 'knotHeight' },
-    { source: 'input', sourceHandle: 'knotThickness', target: 'gen', targetHandle: 'knotThickness' },
-    { source: 'input', sourceHandle: 'bladeTopWidth', target: 'gen', targetHandle: 'bladeTopWidth' },
-    { source: 'input', sourceHandle: 'bladeBottomWidth', target: 'gen', targetHandle: 'bladeBottomWidth' },
-    { source: 'input', sourceHandle: 'bladeThickness', target: 'gen', targetHandle: 'bladeThickness' },
-    { source: 'input', sourceHandle: 'bladeLength', target: 'gen', targetHandle: 'bladeLength' },
+    { source: 'knotWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'knotWidth' },
+    { source: 'knotHeightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'knotHeight' },
+    { source: 'knotThicknessIn', sourceHandle: 'value', target: 'gen', targetHandle: 'knotThickness' },
+    { source: 'bladeTopWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bladeTopWidth' },
+    { source: 'bladeBottomWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bladeBottomWidth' },
+    { source: 'bladeThicknessIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bladeThickness' },
+    { source: 'bladeLengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bladeLength' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
   ],
 });
