@@ -30,9 +30,9 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
     const incomingEdges = edgesByTarget.get(node.id) ?? [];
     const inputs: Record<string, SocketValue> = {};
 
-    // グループノードインスタンスは data.exposedInputs でソケット構成を上書きできる
-    // (nodes/resolveNodeSockets.ts 参照)ため、型の静的な def.inputs ではなくこちら経由で
-    // 未接続ソケットのフォールバック解決を行う。
+    // グループノードインスタンスは内部の groupInput/groupOutput ノードの data.sockets で
+    // ソケット構成を動的に上書きできる(nodes/resolveNodeSockets.ts 参照)ため、型の静的な
+    // def.inputs ではなくこちら経由で未接続ソケットのフォールバック解決を行う。
     for (const socket of resolveNodeSockets(node.type, node.data).inputs) {
       const incoming = incomingEdges.find((e) => (e.targetHandle ?? undefined) === socket.id);
       const upstreamValue = incoming
