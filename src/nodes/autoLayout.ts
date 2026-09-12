@@ -1,3 +1,5 @@
+import { getNodeType, nodeTypeRegistry } from './registry';
+import { resolveNodeSockets } from './resolveNodeSockets';
 import type { GraphEdge, GraphNode } from './types';
 
 export interface LayoutPosition {
@@ -7,14 +9,83 @@ export interface LayoutPosition {
 
 /** 隣接する層(x)の中心間隔。テストからも参照するため export している。 */
 export const COLUMN_SPACING = 340;
-/** 同じ列内で連続する行の中心間隔。ノードカードの実際の高さは種類によって様々で
- * (例: `numberInput` は約84px、フィールド数の多いジェネレーターノード — 実測した中で
- * 最大の bagGenerator は8フィールド+出力で約246px)、`computeAutoLayout()` は DOM を
- * 一切見ないピュアな関数のため個々のカードの実高さを知らない。そのため、実測した中で
- * 最も高いカードより余裕を持って大きい固定値にし、どんな組み合わせで隣り合っても
- * カード同士が重ならないようにしている(小さいカードだけが並ぶ列は間延びするが、
- * 重なって配線が読めなくなるより安全)。テストからも参照するため export している。 */
+/** 同じ列内で隣り合うノードの間に必ず空ける余白。ノードカードの実際の高さは
+ * `estimateNodeHeight()` がノードの種類ごとに見積もるため、この値は「カードの高さ」
+ * ではなく純粋な隙間(マージン)だけを表す小さな定数でよい。 */
+const NODE_GAP = 24;
+/** ノードの種類(type)を判別できない場合(単体テストの `type: 'test'` など、
+ * `nodeTypeRegistry` に登録の無い型)に使う既定の高さ。実測した中で最も高いカード
+ * (フィールド数の多い bagGenerator、約246px)より余裕を持って大きい値にし、未知の
+ * 種類のノードが混ざっていても重ならないようにしている。 `estimateNodeHeight()` が
+ * 使えない場合の唯一のフォールバックであり、`ROW_SPACING - NODE_GAP` から逆算した
+ * 値(このモジュール導入前の固定行間隔 `ROW_SPACING` と一致させ、既存のテストや
+ * 未知の種類に対する挙動を変えないため)。 */
 export const ROW_SPACING = 280;
+const FALLBACK_NODE_HEIGHT = ROW_SPACING - NODE_GAP;
+
+/** ノードカード内の1行(ソケット行・値表示行)の高さ、および行を持たない土台(タイトル
+ * バー+パディング)の高さ。`run-costume-design2` スキルで実機のカードを実測して較正
+ * した値(`.rf-node` の `offsetHeight`)。generator/material/output/group 系のノードは
+ * `editor/nodeComponents/GenericNode.tsx` が入力/出力ソケットを1行ずつ描画するだけの
+ * シンプルな構造で、実測値は驚くほど正確にこの線形の式(土台 + 行数 × 行高さ)に
+ * 一致した(誤差1px未満、例: bagGenerator は 8入力+1出力の9行で 40 + 9*23 = 247 ≈
+ * 実測246px)。 */
+const CARD_BASE_HEIGHT = 40;
+const CARD_ROW_HEIGHT = 23;
+/** category が `'group'` のノードだけ追加で表示される「ダブルクリックで中に入る」の
+ * ヒント行の高さ。 */
+const CARD_GROUP_HINT_HEIGHT = 14;
+/** スライダー/カラーピッカー/セレクトなど専用UIを持つ入力系ノードは、ソケット数に
+ * よらずほぼ固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの。 */
+const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
+  numberInput: 84,
+  colorInput: 66,
+  enumInput: 60,
+};
+
+/** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
+ * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
+ * 固定値では小さいノード(numberInput 約84px)も大きいノード(bagGenerator 約246px)も
+ * 同じ間隔で並べることになり、間延びしすぎる問題があった(詳細は Git 履歴参照)。
+ *
+ * - `BESPOKE_NODE_HEIGHTS` に載っている専用UI系はその固定値を返す。
+ * - `groupInput`/`groupOutput` は `editor/nodeComponents/` の専用UI(ソケットごとの
+ *   行 + 末尾の追加行)を持ち、`GenericNode.tsx` の行とは構造が異なるが、行の高さは
+ *   同じ `CARD_ROW_HEIGHT` で近似し、追加行の分だけ余分に足す。
+ * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
+ *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT` (+ category が `'group'` なら
+ *   `CARD_GROUP_HINT_HEIGHT`)。行数は `resolveNodeSockets()` の入力+出力の合計に、
+ *   数値/enum型の出力ソケットの分だけ加える — `GenericNode.tsx` は評価結果のうち
+ *   数値/enum型の出力を「ソケット行」とは別にもう一度「値表示行」として描画する
+ *   ため(例: numberMultiply の "Value" 出力はソケット行1つ+値表示行1つの計2行分)。
+ *   `garmentOutput` 型、および `defineGroupNode()` が作る全ての group カテゴリの
+ *   ノードは、静的な `outputs` 宣言には現れない `anchor`/`offsetY` を追加で返し
+ *   常に表示する(`src/nodes/CLAUDE.md` の「グループノード」節の落とし穴参照)ため、
+ *   これは `resolveNodeSockets()` からは分からず個別に2行ぶん加えている。
+ * - `nodeTypeRegistry` に登録の無い種類(単体テストの `type: 'test'` など)は
+ *   `FALLBACK_NODE_HEIGHT` を返す。
+ *
+ * テストからも直接検証できるよう export している。 */
+export function estimateNodeHeight(type: string, data: unknown): number {
+  const bespoke = BESPOKE_NODE_HEIGHTS[type];
+  if (bespoke !== undefined) return bespoke;
+
+  if (type === 'groupInput' || type === 'groupOutput') {
+    const sockets = (data as { sockets?: unknown[] } | undefined)?.sockets ?? [];
+    return CARD_BASE_HEIGHT + sockets.length * CARD_ROW_HEIGHT + CARD_ROW_HEIGHT; // + 末尾の追加行
+  }
+
+  if (!nodeTypeRegistry.has(type)) return FALLBACK_NODE_HEIGHT;
+
+  const def = getNodeType(type);
+  const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
+  const showsGarmentOutputExtras = def.category === 'group' || type === 'garmentOutput';
+  const extraValueRows = showsGarmentOutputExtras
+    ? 2 // anchor + offsetY
+    : outputs.filter((o) => o.type === 'number' || o.type === 'enum').length;
+  const rows = inputs.length + outputs.length + extraValueRows;
+  return CARD_BASE_HEIGHT + rows * CARD_ROW_HEIGHT + (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0);
+}
 /** 1層あたりの最大行数。このアプリのグラフは入力ノード(numberInput 等)が大量に
  * layer 0 へ集まる星型に近い形になりやすく、折り返さずに1列に積むと極端に縦長(かつ
  * 横に極端に狭い)レイアウトになり、fitView した際にほぼ読めないほど拡大されてしまう。
@@ -73,12 +144,15 @@ export function isotonicRegression(values: number[]): number[] {
  * さらにその順序(同じサブ列内での連続した並び)を保ったまま、実際の y 座標も接続元・
  * 接続先ノードの y 座標の中央値へできるだけ近づけて縦方向の線も短くする
  * (`isotonicRegression` 参照。バリセンターは「同じ層の中で何番目か」という順位だけを
- * 最適化するのに対し、こちらは順位を保ったまま実際の座標値を動かす点が異なる)。
+ * 最適化するのに対し、こちらは順位を保ったまま実際の座標値を動かす点が異なる)。行間隔は
+ * `estimateNodeHeight()` がノードの種類ごとに見積もる実際のカードの高さ+`NODE_GAP` を
+ * 使うため、小さいノードは詰めて配置され、無駄な余白が出にくい。
  * circular な接続は評価不能だが(evaluateGraph は例外を投げる)、整列ボタンは
  * グラフの実行可能性を問わずいつでも安全に使えるべきなので、循環に巻き込まれた
  * ノードは layer 0 にフォールバックし(層バランス調整の対象からも除外され)、決して
  * 例外を投げない。 */
 export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<string, LayoutPosition> {
+  const nodeHeight = new Map(nodes.map((n) => [n.id, estimateNodeHeight(n.type, n.data)]));
   const nodeIds = new Set(nodes.map((n) => n.id));
   const inDegree = new Map<string, number>();
   const dependents = new Map<string, string[]>();
@@ -274,6 +348,19 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
       columnGroups.push(ids.slice(i, i + MAX_ROWS_PER_COLUMN));
     }
   }
+  // stepAfter(id) は「id の直後に次のノードを置くとしたら、その上端は id の上端から
+  // 最低何px下でなければならないか」(= id 自身の高さ + 余白)。ノードごとに高さが
+  // 違うため、後続の isotonicRegression 用の変換(下記)は ROW_SPACING のような
+  // 一定値ではなく、この累積和を使う。
+  const stepAfter = (id: string) => nodeHeight.get(id)! + NODE_GAP;
+  // 各ノードの「累積オフセット」= そのランの先頭からの高さ+余白の累積和。ランの先頭
+  // ノードは 0。isotonicRegression 用の変換・逆変換の両方でこれを使う。
+  const cumulativeOffsetsOf = (run: string[]): number[] => {
+    const offsets = [0];
+    for (let i = 1; i < run.length; i++) offsets.push(offsets[i - 1] + stepAfter(run[i - 1]));
+    return offsets;
+  };
+
   // 目標値(desired)は、最初のランクに基づく固定値(initialRowY)から計算する。もし
   // isotonicRegression の出力(反復して変わりうる値)を目標値にすると、隣接ノード同士が
   // 「相手が動いた分だけさらに動く」を繰り返して値が際限なく増えていく(発散する)
@@ -281,7 +368,8 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
   // フィードバックループが起きないことを保証する。
   const initialRowY = new Map<string, number>();
   for (const group of columnGroups) {
-    group.forEach((id, i) => initialRowY.set(id, i * ROW_SPACING));
+    const offsets = cumulativeOffsetsOf(group);
+    group.forEach((id, i) => initialRowY.set(id, offsets[i]));
   }
   const desiredY = (id: string): number => {
     const neighbors = [...(predecessors.get(id) ?? []), ...(dependents.get(id) ?? [])];
@@ -303,16 +391,17 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
       else runs.push([id]);
     }
 
-    let cursor = 0;
+    let cursor = 0; // 直前のランの最後のノードの下端(y + 高さ)
     runs.forEach((run, runIndex) => {
-      // 「直前のノードより ROW_SPACING 以上下」という制約は、各ノードの目標値から
-      // i * ROW_SPACING をあらかじめ差し引いておけば「非減少」という制約に帰着できる
-      // (差し引いた分は最後に戻す)。isotonicRegression で目標値に最も近い配置を1回で
-      // 求める(反復・発散の心配が無い)。i はラン内でのローカルな順位。
-      const adjusted = run.map((id, i) => desiredY(id) - i * ROW_SPACING);
+      // 「直前のノードの下端より NODE_GAP 以上下」という制約は、各ノードの目標値から
+      // ラン内での累積オフセット(stepAfter の累積和)をあらかじめ差し引いておけば
+      // 「非減少」という制約に帰着できる(差し引いた分は最後に戻す)。
+      // isotonicRegression で目標値に最も近い配置を1回で求める(反復・発散の心配が無い)。
+      const offsets = cumulativeOffsetsOf(run);
+      const adjusted = run.map((id, i) => desiredY(id) - offsets[i]);
       const fitted = isotonicRegression(adjusted);
-      const y = fitted.map((v, i) => Math.round(v) + i * ROW_SPACING);
-      for (let i = 1; i < y.length; i++) y[i] = Math.max(y[i], y[i - 1] + ROW_SPACING); // 丸め誤差の保険
+      const y = fitted.map((v, i) => Math.round(v) + offsets[i]);
+      for (let i = 1; i < y.length; i++) y[i] = Math.max(y[i], y[i - 1] + stepAfter(run[i - 1])); // 丸め誤差の保険
 
       if (runIndex === 0) {
         // 先頭のラン(本体の成分)は従来通り、負の値にだけならないようずらす。
@@ -327,11 +416,11 @@ export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<s
         // 「前のランのすぐ下」へ揃えてしまうと、層をまたいだその成分内部での相対的な
         // 位置関係(例: 層0の接続元と層1の接続先の相対距離)が崩れてしまう。前のランと
         // 重なるときだけ、重ならなくなる最小限の量だけ下へずらす。
-        const shift = Math.max(0, cursor + ROW_SPACING - y[0]);
+        const shift = Math.max(0, cursor + NODE_GAP - y[0]);
         for (let i = 0; i < y.length; i++) y[i] += shift;
       }
       run.forEach((id, i) => rowY.set(id, y[i]));
-      cursor = y[y.length - 1];
+      cursor = y[y.length - 1] + nodeHeight.get(run[run.length - 1])!;
     });
   }
 

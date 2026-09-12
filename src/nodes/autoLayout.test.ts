@@ -1,6 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { computeAutoLayout, isotonicRegression, COLUMN_SPACING, ROW_SPACING, type LayoutPosition } from './autoLayout';
-import type { GraphEdge, GraphNode } from './types';
+import { computeAutoLayout, estimateNodeHeight, isotonicRegression, COLUMN_SPACING, ROW_SPACING, type LayoutPosition } from './autoLayout';
+import { registerNodeType } from './registry';
+import type { GraphEdge, GraphNode, NodeTypeDefinition } from './types';
+
+function registerTestType(overrides: Partial<NodeTypeDefinition> & { type: string }): void {
+  registerNodeType({
+    label: overrides.type,
+    category: 'generator',
+    inputs: [],
+    outputs: [],
+    createDefaultData: () => ({}),
+    evaluate: () => ({}),
+    ...overrides,
+  });
+}
 
 function node(id: string): GraphNode {
   return { id, type: 'test', data: {} };
@@ -304,5 +317,52 @@ describe('isotonicRegression', () => {
 
   it('空配列を渡すと空配列を返す', () => {
     expect(isotonicRegression([])).toEqual([]);
+  });
+});
+
+describe('estimateNodeHeight', () => {
+  it('nodeTypeRegistry に登録の無い種類は ROW_SPACING - NODE_GAP(24) 相当を返す', () => {
+    // 導入前の固定行間隔(ROW_SPACING)と一致させ、単体テストの type: 'test' や未知の
+    // 種類のノードに対する挙動を変えないためのフォールバック。
+    expect(estimateNodeHeight('__unregistered_test_type__', {})).toBe(ROW_SPACING - 24);
+  });
+
+  it('専用UIを持つ入力系ノードは実測した固定値を返す(ソケット数によらない)', () => {
+    expect(estimateNodeHeight('numberInput', {})).toBe(84);
+    expect(estimateNodeHeight('colorInput', {})).toBe(66);
+    expect(estimateNodeHeight('enumInput', {})).toBe(60);
+  });
+
+  it('入出力ソケット数が多いほど、その分だけ線形に高さが増える', () => {
+    registerTestType({ type: '__height_test_a__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
+    registerTestType({
+      type: '__height_test_b__',
+      inputs: [
+        { id: 'a', label: 'A', type: 'number' },
+        { id: 'b', label: 'B', type: 'number' },
+        { id: 'c', label: 'C', type: 'number' },
+      ],
+    });
+    const heightA = estimateNodeHeight('__height_test_a__', {});
+    const heightB = estimateNodeHeight('__height_test_b__', {});
+    // b は a よりソケット2つぶん多い(3行 vs 1行)。
+    expect(heightB - heightA).toBe(2 * 23);
+  });
+
+  it('数値/enum型の出力ソケットは、ソケット行とは別に値表示行の分だけ高さが増える', () => {
+    registerTestType({ type: '__height_test_geometry_out__', outputs: [{ id: 'out', label: 'Out', type: 'geometry' }] });
+    registerTestType({ type: '__height_test_number_out__', outputs: [{ id: 'out', label: 'Out', type: 'number' }] });
+    const geometryOutHeight = estimateNodeHeight('__height_test_geometry_out__', {});
+    const numberOutHeight = estimateNodeHeight('__height_test_number_out__', {});
+    expect(numberOutHeight - geometryOutHeight).toBe(23); // 値表示行1行ぶん
+  });
+
+  it('group カテゴリのノードは、ヒント行+anchor/offsetY相当の2行ぶん高さが増える', () => {
+    registerTestType({ type: '__height_test_group__', category: 'group', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
+    registerTestType({ type: '__height_test_generator_same_inputs__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
+    const groupHeight = estimateNodeHeight('__height_test_group__', {});
+    const generatorHeight = estimateNodeHeight('__height_test_generator_same_inputs__', {});
+    // group はヒント行(14) + anchor/offsetY 相当の2行(23*2=46) ぶん高い。
+    expect(groupHeight - generatorHeight).toBe(14 + 2 * 23);
   });
 });
