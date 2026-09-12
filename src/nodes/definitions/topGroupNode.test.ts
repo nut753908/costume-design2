@@ -1,38 +1,50 @@
 import * as THREE from 'three';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../registry';
-// topGroup の埋め込みサブグラフが参照する numberInput/colorInput/numberMultiply/
-// toonMaterial/garmentOutput/topGenerator を含め、全ノードタイプを登録する。
+import * as topGeometry from '../../geometry/top';
+// topGroup の埋め込みサブグラフが参照する numberInput/enumInput/garmentOutput/topGenerator を
+// 含め、全ノードタイプを登録する。
 import '../definitions';
 
-// topGroup は sleeve から topRadiusScale/topMaterial 相当の内部値を再引きされるため、
-// terminalNodeId(garmentOutput相当)の geometry/material/anchor/offsetY だけでなく、
-// attachRadiusScaled/material という追加の出力ソケットも正しく転送する必要がある。
+// topGroup は Torso Radius(Body Build 適用後のスケール済みの値)と Material を、共有ノード
+// (initialGraph.ts の topRadiusScale/topMaterial)から外部ソケットとして受け取るだけの
+// シンプルな形になった(sleeveGroup も同じ2つの値を同じ共有ノードから受け取る)。
 describe('topGroup', () => {
-  it('Body Build を反映した Attach Radius(Scaled) を出力する', () => {
-    // torsoRadius は他ガーメントと共有されない単独パラメータのため、外部から注入できる
-    // 公開ソケットではなくなった(内部ノード torsoRadiusIn のデフォルト 0.29 が使われる)。
-    // 外部から接続できるのは全ガーメント共有の bodyBuild のみ。
-    const result = getNodeType('topGroup').evaluate({ bodyBuild: { type: 'number', value: 1.2 } }, {});
-    expect(result.attachRadiusScaled).toEqual({ type: 'number', value: 0.29 * 1.2 });
+  it('外部から注入された torsoRadius が(スケールされずそのまま)生成ノードへ渡る', () => {
+    const spy = vi.spyOn(topGeometry, 'buildTopGeometry');
+    try {
+      getNodeType('topGroup').evaluate({ torsoRadius: { type: 'number', value: 0.36 } }, {});
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ torsoRadius: 0.36 }));
+    } finally {
+      spy.mockRestore();
+    }
   });
 
-  it('material 出力に topGroup 内部の Color(colorIn のデフォルト)が反映される(Sleeve の再引き先)', () => {
-    // color も外部から注入できる公開ソケットではなくなったため、内部ノード colorIn の
-    // デフォルト値(#5b8fa8)がそのまま toonMaterial へ渡ることを確認する。
-    const result = getNodeType('topGroup').evaluate({}, {});
+  it('外部から注入された material がそのまま output.material として転送される(Sleeve と共有)', () => {
+    const result = getNodeType('topGroup').evaluate(
+      { material: { type: 'material', value: new THREE.MeshToonMaterial({ color: new THREE.Color('#112233') }) } },
+      {},
+    );
     expect(result.material?.type).toBe('material');
-    // toonMaterial の内部実装(createToonMaterial)が色を反映しているかは
-    // toonMaterial.test.ts の責務。ここでは topGroup が colorIn の値を正しく
-    // 埋め込みサブグラフの toonMaterial ノードへ渡していることだけを確認する。
     const material = result.material?.type === 'material' ? (result.material.value as THREE.MeshToonMaterial) : undefined;
-    expect(material?.color.getHexString()).toBe('5b8fa8');
+    expect(material?.color.getHexString()).toBe('112233');
   });
 
-  it('未接続なら埋め込みサブグラフ自身のデフォルト値が使われる', () => {
-    const result = getNodeType('topGroup').evaluate({}, {});
-    // torsoRadiusIn のデフォルト(0.29) * bodyBuildIn のデフォルト(1)
-    expect(result.attachRadiusScaled).toEqual({ type: 'number', value: 0.29 });
+  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.29)、material は output の fallbackColor から作られる', () => {
+    const spy = vi.spyOn(topGeometry, 'buildTopGeometry');
+    try {
+      const result = getNodeType('topGroup').evaluate({}, {});
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ torsoRadius: 0.29 }));
+      // material 型にはリテラルなデフォルトが無い(literalGroupInputValue は常に undefined を
+      // 返す)ため未接続扱いになるが、garmentOutput.evaluate() 自身が
+      // data.fallbackColor から material を合成するフォールバックを持っているため
+      // 完全に消えるわけではない(garmentOutput.ts 参照)。
+      const material = result.material?.type === 'material' ? (result.material.value as THREE.MeshToonMaterial) : undefined;
+      expect(material?.color.getHexString()).toBe('5b8fa8');
+      expect(result.geometry?.type).toBe('geometry');
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('geometry/anchor/offsetY のような terminalNodeId 由来のキーも転送される', () => {

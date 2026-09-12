@@ -15,8 +15,11 @@ export interface GroupNodeConfig {
    *  `data.sockets` がこのグループノードが外部に見せる入力ソケット一覧になる。
    *  他ガーメントと共有される値(`bodyBuild` など)が無いガーメントでは省略でき、その場合
    *  外部から見た入力ソケットは0個になる(hat/bag/necktie/glasses の実例を参照)。
-   *  `type: 'groupOutput'` ノードも同じく省略可 — 他ガーメントから再引きされる値
-   *  (sleeve が topGroup を再引きする例)を追加公開したい場合だけ含める。 */
+   *  `type: 'groupOutput'` ノードも同じく省略可 — 他ガーメントから再引きされる値を追加公開
+   *  したい場合だけ含める(現在この用途で使っている実例は無い。値が複数ガーメントで
+   *  共有される場合は、一方のグループに閉じ込めて覗き穴を開けるのではなく `bodyBuild` の
+   *  ようにトップレベルの共有ノードへ引き上げる方が筋がよいため — topGroup/sleeveGroup
+   *  参照)。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];
 }

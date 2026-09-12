@@ -58,58 +58,6 @@
       }
     },
     {
-      "id": "sleeveLength",
-      "type": "numberInput",
-      "position": {
-        "x": 520,
-        "y": 1130
-      },
-      "data": {
-        "value": 0.22,
-        "min": 0,
-        "max": 0.4,
-        "step": 0.01,
-        "label": "Sleeve Length"
-      }
-    },
-    {
-      "id": "sleeveRadius",
-      "type": "numberInput",
-      "position": {
-        "x": 520,
-        "y": 1240
-      },
-      "data": {
-        "value": 0.085,
-        "min": 0.05,
-        "max": 0.14,
-        "step": 0.005,
-        "label": "Sleeve Radius"
-      }
-    },
-    {
-      "id": "sleeveGen",
-      "type": "sleeveGenerator",
-      "position": {
-        "x": 780,
-        "y": 1130
-      },
-      "data": {}
-    },
-    {
-      "id": "sleeveOutput",
-      "type": "garmentOutput",
-      "position": {
-        "x": 1040,
-        "y": 1130
-      },
-      "data": {
-        "anchor": "shoulder",
-        "offsetY": 0,
-        "fallbackColor": "#5b8fa8"
-      }
-    },
-    {
       "id": "pantsLegSpacing",
       "type": "numberInput",
       "position": {
@@ -134,10 +82,64 @@
       "data": {}
     },
     {
+      "id": "topRadius",
+      "type": "numberInput",
+      "position": {
+        "x": 0,
+        "y": 1130
+      },
+      "data": {
+        "value": 0.29,
+        "min": 0.2,
+        "max": 0.4,
+        "step": 0.01,
+        "label": "Torso Radius"
+      }
+    },
+    {
+      "id": "topColor",
+      "type": "colorInput",
+      "position": {
+        "x": 0,
+        "y": 1240
+      },
+      "data": {
+        "hex": "#5b8fa8",
+        "label": "Top Color"
+      }
+    },
+    {
+      "id": "topRadiusScale",
+      "type": "numberMultiply",
+      "position": {
+        "x": 140,
+        "y": 1130
+      },
+      "data": {}
+    },
+    {
+      "id": "topMaterial",
+      "type": "toonMaterial",
+      "position": {
+        "x": 140,
+        "y": 1240
+      },
+      "data": {}
+    },
+    {
       "id": "topGroup",
       "type": "topGroup",
       "position": {
         "x": 260,
+        "y": 1130
+      },
+      "data": {}
+    },
+    {
+      "id": "sleeveGroup",
+      "type": "sleeveGroup",
+      "position": {
+        "x": 580,
         "y": 1130
       },
       "data": {}
@@ -260,48 +262,6 @@
       "targetHandle": "bodyBuild"
     },
     {
-      "id": "e-top-radius-build",
-      "source": "bodyBuild",
-      "sourceHandle": "value",
-      "target": "topGroup",
-      "targetHandle": "bodyBuild"
-    },
-    {
-      "id": "e-sleeve-attach-radius",
-      "source": "topGroup",
-      "sourceHandle": "attachRadiusScaled",
-      "target": "sleeveGen",
-      "targetHandle": "attachRadius"
-    },
-    {
-      "id": "e-sleeve-length",
-      "source": "sleeveLength",
-      "sourceHandle": "value",
-      "target": "sleeveGen",
-      "targetHandle": "sleeveLength"
-    },
-    {
-      "id": "e-sleeve-radius",
-      "source": "sleeveRadius",
-      "sourceHandle": "value",
-      "target": "sleeveGen",
-      "targetHandle": "sleeveRadius"
-    },
-    {
-      "id": "e-sleeve-geometry",
-      "source": "sleeveGen",
-      "sourceHandle": "geometry",
-      "target": "sleeveOutput",
-      "targetHandle": "geometry"
-    },
-    {
-      "id": "e-sleeve-material",
-      "source": "topGroup",
-      "sourceHandle": "material",
-      "target": "sleeveOutput",
-      "targetHandle": "material"
-    },
-    {
       "id": "e-pants-waist-build",
       "source": "bodyBuild",
       "sourceHandle": "value",
@@ -377,6 +337,55 @@
       "sourceHandle": "value",
       "target": "dressGroup",
       "targetHandle": "bodyBuild"
+    },
+    {
+      "id": "e-top-radius",
+      "source": "topRadius",
+      "sourceHandle": "value",
+      "target": "topRadiusScale",
+      "targetHandle": "value"
+    },
+    {
+      "id": "e-top-radius-build",
+      "source": "bodyBuild",
+      "sourceHandle": "value",
+      "target": "topRadiusScale",
+      "targetHandle": "factor"
+    },
+    {
+      "id": "e-top-radius-scaled-topgroup",
+      "source": "topRadiusScale",
+      "sourceHandle": "value",
+      "target": "topGroup",
+      "targetHandle": "torsoRadius"
+    },
+    {
+      "id": "e-top-radius-scaled-sleeve",
+      "source": "topRadiusScale",
+      "sourceHandle": "value",
+      "target": "sleeveGroup",
+      "targetHandle": "attachRadius"
+    },
+    {
+      "id": "e-top-color",
+      "source": "topColor",
+      "sourceHandle": "color",
+      "target": "topMaterial",
+      "targetHandle": "color"
+    },
+    {
+      "id": "e-top-material-topgroup",
+      "source": "topMaterial",
+      "sourceHandle": "material",
+      "target": "topGroup",
+      "targetHandle": "material"
+    },
+    {
+      "id": "e-top-material-sleeve",
+      "source": "topMaterial",
+      "sourceHandle": "material",
+      "target": "sleeveGroup",
+      "targetHandle": "material"
     }
   ]
 }

@@ -9,9 +9,13 @@ import type { GroupIOSocket } from './groupIOSocket';
  * `data.sockets` から導出される(`groupNodeFactory.ts` 参照)。
  *
  * 内部の `garmentOutput` 相当ノード(`config.terminalNodeId`)が geometry/material の
- * ような主要な出力を担うのとは別に、他ガーメントから再引きされる値(sleeve が topGroup の
- * Attach Radius/Material を再引きする例)を配線するために使う — 任意の内部ノードの出力に
- * ワイヤーを繋ぐだけで、その値がグループの外へ追加公開される。 */
+ * ような主要な出力を担うのとは別に、他ガーメントから再引きされる値を配線するために使う —
+ * 任意の内部ノードの出力にワイヤーを繋ぐだけで、その値がグループの外へ追加公開される。
+ * 現在この用途で使っている実例は無い(かつて topGroup が sleeve のためだけの覗き穴として
+ * 使っていたが、「本来共有すべき値が一方のグループに閉じ込められている」という設計上の
+ * 問題があったため、`src/state/initialGraph.ts` 側のトップレベル共有ノードへ引き上げる形に
+ * 改めた — `nodes/CLAUDE.md` の「グループノード」節、`topGroupNode.ts`/`sleeveGroupNode.ts`
+ * 参照)。 */
 export interface GroupOutputData extends Record<string, unknown> {
   sockets: GroupIOSocket[];
 }

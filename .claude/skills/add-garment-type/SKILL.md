@@ -5,7 +5,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 # 新しいガーメント種の追加
 
-ガーメント1種の追加には最低3ファイルが要る(geometry/material/output を持たない、他ガーメントの内部値を再引きするなどグループ化を見送る場合は3が不要)。
+ガーメント1種の追加には最低3ファイルが要る(何らかの理由でグループ化を見送る場合は3が不要)。
 
 1. `src/geometry/<name>.ts` — `build<Name>Geometry(params) -> THREE.BufferGeometry` という純粋関数。
 2. `src/nodes/definitions/<name>Generator.ts` — 1のジオメトリ関数をノードグラフに配線するノードタイプ。ノードタイプ自体の登録は `import.meta.glob` により自動化されているので、これ以外にレジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
@@ -55,7 +55,7 @@ Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を
 
 ## 4. グループノードの定義(src/nodes/definitions/\<name\>GroupNode.ts)
 
-sleeve を除く既存14種は「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
+既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する。
 
@@ -94,17 +94,17 @@ defineGroupNode({
 });
 ```
 
-外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合は、`internalNodes` に `groupOutput` ノードを追加し、該当する内部ノードの出力をそこへ配線する(sleeve/topGroup の実例を参照)。そのような依存を持つガーメント自身(sleeve)はグループ化を見送って個別ノードのまま残してもよい。
+外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値(material・スケール後の半径など)を再引きしたい新ガーメントを作る場合、`internalNodes` に `groupOutput` ノードを追加して該当する内部ノードの出力をそこへ配線する、という方法も**技術的には**可能だが、その値が本当にそのガーメント専用なのか、複数ガーメントで共有されるべき値なのかをまず疑うこと。後者なら一方のグループに閉じ込めて `groupOutput` で覗き穴を開けるのではなく、`bodyBuild`/`pantsLegSpacing`/`topRadiusScale`/`topMaterial` と同じく `src/state/initialGraph.ts` 側のトップレベル共有ノードへ引き上げ、関係する各グループへファンアウトする方が筋がよい(下記5節、`topGroupNode.ts`/`sleeveGroupNode.ts` の実例を参照)。
 
 `groupInput`/`groupOutput` はどちらも省略可 — 他ガーメントと共有される値が1つも無いガーメントでは `groupInput` ノード自体を `internalNodes` に含めなくてよい(`hatGroupNode.ts`/`bagGroupNode.ts`/`necktieGroupNode.ts`/`glassesGroupNode.ts` の実例を参照。外部から見た入力ソケットは0個になる)。
 
 ## 5. initialGraph.ts への配線(慣例)
 
-既存14種(sleeve を除く)は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、グループノードの `Body Build` 入力ソケットへ `bodyBuild` を配線すること(例: `bodyBuild → skirtGroup.bodyBuild`)。これを省くと、ボディをリサイズしたときだけそのガーメントが体を突き抜けたり浮いたりする。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径はスケール対象外でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「ボディスケールはソケットグラフを迂回して直接読み取られる」節を参照。
+既存15種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、グループノードの `Body Build` 入力ソケットへ `bodyBuild` を配線すること(例: `bodyBuild → skirtGroup.bodyBuild`)。これを省くと、ボディをリサイズしたときだけそのガーメントが体を突き抜けたり浮いたりする。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径はスケール対象外でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「ボディスケールはソケットグラフを迂回して直接読み取られる」節を参照。
 
-新しいガーメントが pants/shoes/socks の Leg Spacing のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の `numberInput` ノードとして残し、関係する各グループの `groupInput` ソケットへ配線すること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing` の実例を参照)。
+新しいガーメントが pants/shoes/socks の Leg Spacing や topGroup/sleeveGroup の Torso Radius/Material のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing`、`topRadiusScale → topGroup.torsoRadius`/`sleeveGroup.attachRadius` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(実際に topGroup/sleeveGroup で踏んだ落とし穴、`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 
-グループ化しない場合(sleeve のような、他ガーメントの内部値を再引きする特殊なガーメント)は、これまで通り `src/state/initialGraph.ts` 側に「入力 → (numberMultiply) → ジェネレーター → toonMaterial ← colorInput → garmentOutput」という個別配線を置く。
+何らかの理由でグループ化しない場合は、`src/state/initialGraph.ts` 側に「入力 → (numberMultiply) → ジェネレーター → toonMaterial ← colorInput → garmentOutput」という個別配線を置く。
 
 ノードの `position` は `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使う汎用アルゴリズム)ではなく、`src/state/initialGraph.ts` 冒頭のコメントに書かれている手作業の列テンプレートに従って配置すること。汎用アルゴリズムは全ガーメントの入力ノードを1つの巨大な層にまとめてしまい、エッジがノード上を大量に横切る見づらいレイアウトになるため、初期グラフでは採用していない。グループ化されたガーメント1つ分は x=260 のグループノード1つのみ(生パラメータは内部に埋め込まれているため、このファイル側にはもう列を持たない)。新しいガーメントは、関連の薄い既存ガーメント2つの間ではなく、末尾(または `top`+`sleeve`・`pants`+`shoes`+`socks` のように依存関係のあるガーメントに隣接させる場合はそのすぐ下)に追加する。`<name>GroupNode.ts` の `internalNodes` 自体の座標は `nodes/autoLayout.ts` の `computeAutoLayout()` が自動算出するため、手作業での配置は不要。
 

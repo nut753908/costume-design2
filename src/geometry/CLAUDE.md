@@ -15,7 +15,7 @@
 放射対称な Lathe では表現できない形状は、それぞれ別の技術で構築しています:
 
 - `top.ts`/`dress.ts` — Lathe/Extrude では**ない**。ネックラインの落ち込みは放射対称ではないため。どちらも `ringGrid.ts` の `buildRingGridGeometry()` に「行ごとの半径/Y座標」のリストを渡すだけで、リング構築・インデックス組み立て・法線計算はそちらに任せている。`top.ts` は全行が torsoRadius で一定の半径リストを渡すだけ、`dress.ts` は `latheProfile.ts` のイージング済み半径プロファイルから半径リストを作ることで、肩(torsoRadius)から裾(hemRadius)まで半径が変化する1続きの形状にしている。
-- `sleeve.ts` — 肩の各角度ごとにローカルな(外向き、接線、従法線)フレーム内で構築された、テーパー状の短い2本のチューブで、トルソーの壁面に食い込ませて重ねたままにしています(`body.ts` が腕に対して使っているのと同じ、意図的な交差を許容するアプローチで、ブーリアン演算や穴あけは行いません)。top と同じ `shoulder` アンカーに取り付けられ、通常は top の `toonMaterial` ノードを共有するように配線されます(1つの Color/Material ノードから2つの Garment Output へのファンアウト)。これにより top の色を変えると sleeve も一緒に再着色されます。
+- `sleeve.ts` — 肩の各角度ごとにローカルな(外向き、接線、従法線)フレーム内で構築された、テーパー状の短い2本のチューブで、トルソーの壁面に食い込ませて重ねたままにしています(`body.ts` が腕に対して使っているのと同じ、意図的な交差を許容するアプローチで、ブーリアン演算や穴あけは行いません)。top と同じ `shoulder` アンカーに取り付けられ、`initialGraph.ts` ではトップレベルの共有ノード(`topRadiusScale`/`topMaterial`)から topGroup/sleeveGroup の両方へ同じ半径・同じ `toonMaterial` をファンアウトする配線になっている(1つの Color/Material ノードから2つの Garment Output へのファンアウト、`nodes/CLAUDE.md` の「グループノード」節参照)。これにより top の色を変えると sleeve も一緒に再着色される。
 - `necktie.ts` — sleeve.ts と同じ「行=長さ方向、列=断面の周」という手組みチューブの考え方を、円形断面ではなく矩形の4隅に置き換えたもの。
 - `bag.ts`/`glasses.ts` — `body.ts` と同じく THREE.js 標準プリミティブ(BoxGeometry/TorusGeometry)を使い、頂点を手組みせず `alignedBox.ts` で整列・配置するだけで組み立てる。
 - `body.ts` — マネキン用のカプセル/球/円柱プリミティブ。純粋関数(`computeBodyDimensions`/`computeBodyLayout`/`computeBodyAnchors`)をエクスポートしており、静的定数ではありません — 寸法は `BodyScaleParams` (`heightScale`/`buildScale`/`shoulderScale`) から算出されるため、ボディメッシュとガーメントが取り付く `waist`/`shoulder`/`feet`/`wrist`/`head` アンカーのいずれも、ボディのリサイズに合わせて一緒に動きます。
