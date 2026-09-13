@@ -1,5 +1,5 @@
 import { registerNodeType } from '../registry';
-import { evaluateGraph } from '../evaluateGraph';
+import { evaluateGraph, type EvaluatedGraph } from '../evaluateGraph';
 import { computeAutoLayout } from '../autoLayout';
 import type { GraphEdge, GraphNode, GroupInternalEdge, GroupInternalNode, SocketDef, SocketValue } from '../types';
 import type { GroupIOSocket } from './groupIOSocket';
@@ -59,6 +59,37 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
     // target+targetHandle の組は埋め込みサブグラフ内で一意になる。
     id: `${edge.target}.${edge.targetHandle}`,
   }));
+}
+
+/** 埋め込みサブグラフの中から、実際に描画対象として解決済みの geometry+material を1組だけ
+ * 探す。`internalNodes` を先頭から見て、最初に見つかったものを採用する(`groupOutput` を
+ * 探すのと同じ「決定的な探索」で、優先順位を隠し持たない)。見つかる形は2通り:
+ *
+ * 1. `type === 'sceneOutput'` のノード自身 — その評価結果は素通しされた `geometry`/
+ *    `material`(sceneOutput 自身の入力ソケット名)を持つ。
+ * 2. それ以外の任意のノード(典型的には、内部に自分自身の `sceneOutput` を持つネストした
+ *    グループノードインスタンス)— その評価結果がすでに `sceneOutputGeometry`/
+ *    `sceneOutputMaterial`(このグループがさらに1つ内側から転送してきた予約キー)を持って
+ *    いれば、そのまま採用する。
+ *
+ * この2つ目のケースがあるおかげで、`sceneOutput` を持つグループが別のグループの内部に
+ * 埋め込まれていても(多段ネスト)、各階層の `evaluate()` が同じこの関数を呼ぶだけで
+ * 自然に何階層でも外側まで転送される — 特別な再帰処理は不要。 */
+function findResolvedSceneOutput(
+  internalNodes: GraphNode[],
+  internalResults: EvaluatedGraph,
+): { geometry: SocketValue; material: SocketValue } | null {
+  for (const node of internalNodes) {
+    const result = internalResults.get(node.id);
+    if (!result) continue;
+
+    const geometry = node.type === 'sceneOutput' ? result.geometry : result.sceneOutputGeometry;
+    const material = node.type === 'sceneOutput' ? result.material : result.sceneOutputMaterial;
+    if (geometry?.type === 'geometry' && material?.type === 'material') {
+      return { geometry, material };
+    }
+  }
+  return null;
 }
 
 /**
@@ -126,14 +157,14 @@ export function defineGroupNode(config: GroupNodeConfig): void {
       // の `value` と同じパターン)、他ノードへ配線することはできない。これにより
       // 「グループの中に sceneOutput を置いて配線する」というキャンバス上で見える操作だけが、
       // トップレベルに別途 `sceneOutput` ノードを置く場合と同じ「明示的な配線が仕様」という
-      // 原則の下で描画対象になる(nodes/CLAUDE.md/scene/CLAUDE.md 参照)。
-      const sceneOutputNode = internalNodes.find((n) => n.type === 'sceneOutput');
-      if (sceneOutputNode) {
-        const sceneResult = internalResults.get(sceneOutputNode.id);
-        if (sceneResult?.geometry?.type === 'geometry' && sceneResult.material?.type === 'material') {
-          forwarded.sceneOutputGeometry = sceneResult.geometry;
-          forwarded.sceneOutputMaterial = sceneResult.material;
-        }
+      // 原則の下で描画対象になる(nodes/CLAUDE.md/scene/CLAUDE.md 参照)。`findResolvedSceneOutput()`
+      // は直接の `sceneOutput` だけでなく、内部にネストした別のグループノード(その内部で
+      // すでに解決済みの `sceneOutputGeometry`/`sceneOutputMaterial` を持つ)も見つけるため、
+      // この転送は各階層で同じロジックが繰り返されるだけで、多段ネストにも自然に対応する。
+      const resolvedSceneOutput = findResolvedSceneOutput(internalNodes, internalResults);
+      if (resolvedSceneOutput) {
+        forwarded.sceneOutputGeometry = resolvedSceneOutput.geometry;
+        forwarded.sceneOutputMaterial = resolvedSceneOutput.material;
       }
 
       return forwarded;

@@ -264,6 +264,35 @@ describe('defineGroupNode', () => {
     expect(result.sceneOutputMaterial).toBeUndefined();
   });
 
+  it('多段ネスト: 孫グループの内部 sceneOutput が、間の子グループを2階層以上またいで祖先グループまで転送される', () => {
+    // groupFactoryTestGroupWithSceneOutput(上のテストで登録済み、内部に直接 sceneOutput を
+    // 持つ「孫」)を、外部入力に一切依存せず自己完結で描画対象を解決できるグループとしてそのまま
+    // 「子」グループの内部に埋め込み、さらにその「子」を「親」グループの内部に埋め込む。
+    // 子・親グループはどちらも自分自身の sceneOutput を持たない — 孫が解決した
+    // sceneOutputGeometry/sceneOutputMaterial を findResolvedSceneOutput() がそのまま
+    // 見つけて転送するだけで、階層の深さに関わらず動くことを確認する。
+    if (!nodeTypeRegistry.has('groupFactoryTestChildGroup')) {
+      defineGroupNode({
+        type: 'groupFactoryTestChildGroup',
+        label: 'Test Child Group',
+        internalNodes: [{ id: 'grandchild', type: 'groupFactoryTestGroupWithSceneOutput', data: {} }],
+        internalEdges: [],
+      });
+    }
+    if (!nodeTypeRegistry.has('groupFactoryTestParentGroup')) {
+      defineGroupNode({
+        type: 'groupFactoryTestParentGroup',
+        label: 'Test Parent Group',
+        internalNodes: [{ id: 'child', type: 'groupFactoryTestChildGroup', data: {} }],
+        internalEdges: [],
+      });
+    }
+
+    const result = getNodeType('groupFactoryTestParentGroup').evaluate({}, {});
+    expect(result.sceneOutputGeometry).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial).toEqual({ type: 'material', value: {} });
+  });
+
   it('groupOutput ノードも groupInput と同様に省略でき、外部出力は0個になる(既存15種のガーメントの実例)', () => {
     const { internalNodes, internalEdges } = buildInternalGraph();
     const withoutOutput = {
