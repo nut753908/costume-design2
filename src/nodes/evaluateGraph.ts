@@ -58,6 +58,24 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
   return results;
 }
 
+/** 与えられた `edges` の中から `targetId`/`targetHandle` へ入ってくる接続を1本探し、
+ * その接続元(`results`、`evaluateGraph()` の戻り値)の出力値を返す。`evaluateGraph()`
+ * 本体の未接続ソケット解決ループ(上記)とは別に、あるノードの1ソケットについてだけ
+ * 「今実際に何が配線されているか」を、そのノードの評価そのものとは独立に知りたい場合に使う
+ * (`state/useParentScopeEvaluatedGraph.ts` 参照 — グループの中に入っている間、外部から
+ * 実際に注入されている値を表示するため)。見つからなければ `undefined`(未接続、または
+ * 接続元がまだ評価されていない)。 */
+export function resolveIncomingValue(
+  edges: { source: string; target: string; sourceHandle?: string | null; targetHandle?: string | null }[],
+  results: EvaluatedGraph,
+  targetId: string,
+  targetHandle: string,
+): SocketValue | undefined {
+  const edge = edges.find((e) => e.target === targetId && (e.targetHandle ?? undefined) === targetHandle);
+  if (!edge) return undefined;
+  return results.get(edge.source)?.[edge.sourceHandle ?? ''];
+}
+
 function literalSocketValue(type: SocketValue['type'], raw: unknown): SocketValue | undefined {
   if (raw === undefined) return undefined;
   // 'color' のリテラル値は node.data に単純な hex 文字列として保持される(UIで編集可能、

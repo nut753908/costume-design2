@@ -4,6 +4,7 @@ import { NodeEditor } from './editor/NodeEditor';
 import { Scene } from './scene/Scene';
 import { useEvaluatedGraph } from './state/useEvaluatedGraph';
 import { useRootEvaluatedGraph } from './state/useRootEvaluatedGraph';
+import { useParentScopeEvaluatedGraph } from './state/useParentScopeEvaluatedGraph';
 
 const MIN_PANEL_RATIO = 0.2;
 const MAX_PANEL_RATIO = 0.8;
@@ -12,6 +13,7 @@ const DIVIDER_WIDTH = 6;
 function App() {
   const { evaluationCount } = useEvaluatedGraph();
   useRootEvaluatedGraph();
+  useParentScopeEvaluatedGraph();
   const containerRef = useRef<HTMLDivElement>(null);
   const [leftRatio, setLeftRatio] = useState(0.45);
 

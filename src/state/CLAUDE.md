@@ -34,6 +34,12 @@
 
 一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GenericNodeView` のノードカード上のリアルタイム値表示を駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
 
+### 3つ目の評価パイプライン: 親スコープ視点(`parentScopeEvaluatedResults`)
+
+`groupInput` ノードの各ソケットは、外部から値が配線されていてもいなくても、`evaluatedResults`(＝「今開いている階層」の評価)の上では常に未接続時のデフォルト値にしかならない — グループの中に入る操作自体が `nodes/definitions/groupNodeFactory.ts` の `evaluate()` が担う外部入力の注入(`data.injected` への一時パッチ)を素通りし、内部の `nodes`/`edges` を直接 `evaluateGraph()` に渡すだけだから。「今、外部から実際に何が配線されているか」を `GroupInputNode.tsx` のカード上に表示するために、`state/useParentScopeEvaluatedGraph.ts` が3つ目の小さなパイプラインとして常時マウントされている: `scopeStack` の最後のフレーム(＝今入っているグループより1階層上の nodes/edges のスナップショット)を評価し、結果を `parentScopeEvaluatedResults` に書き込む(トップレベルにいる間は `null`)。`nodes/evaluateGraph.ts` の `resolveIncomingValue(edges, results, targetId, targetHandle)` で、そのフレームの `edges` からグループノード自身(`frame.parentId`)の該当ソケットへの接続を1本引き、接続元の評価値を取り出す。
+
+このアプリの実際のグループ定義は1階層のみ(グループの中に別のグループを埋め込む多段ネストは無い)ため、「親スコープが1つ上のフレームで十分」という前提で成り立っている。将来グループの多段ネストを許すようになった場合、`scopeStack` を1つ遡るだけでは足りなくなる(親スコープ自身がさらに外側からの注入を必要とする可能性がある)ため、その時点でこのパイプラインも再帰的な合成に見直す必要がある。
+
 ## 初期状態への復帰: initialGraph.ts と「初期状態(デフォルト)」プリセット
 
 `state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、bodyBuild 乗算、sleeve/socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。

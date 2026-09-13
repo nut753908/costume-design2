@@ -53,6 +53,13 @@ interface GraphState {
    * 他の全ガーメントが描画され続ける。`evaluatedResults` は今開いている階層の評価結果の
    * ままで(ノードカード上のリアルタイム値表示用)、無改修で残す。 */
   rootEvaluatedResults: EvaluatedGraph | null;
+  /** グループの中に入っている間、その直上の親スコープ(`scopeStack` の最後のフレーム)を
+   * 評価した結果(`state/useParentScopeEvaluatedGraph.ts` が書き込む)。トップレベルにいる、
+   * またはグループが多段ネストしている場合の2階層以上上は対象外(このアプリの実際のグループは
+   * 1階層のみで、親スコープ自身が別のグループの中で未接続のデフォルトに頼っている、という
+   * ケースは実質発生しない)。`GroupInputNode.tsx` が、外部から実際に配線されている値を
+   * (未接続時のデフォルトへのフォールバックではなく)表示するために使う。 */
+  parentScopeEvaluatedResults: EvaluatedGraph | null;
   /** グループの中に入るたびに積まれる、上位階層のスナップショット。空ならトップレベル。 */
   scopeStack: ScopeFrame[];
   past: HistorySnapshot[];
@@ -73,6 +80,7 @@ interface GraphState {
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
   setEvaluatedResults: (results: EvaluatedGraph) => void;
   setRootEvaluatedResults: (results: EvaluatedGraph) => void;
+  setParentScopeEvaluatedResults: (results: EvaluatedGraph | null) => void;
   addNode: (type: string, position: { x: number; y: number }) => void;
   loadGraph: (nodes: Node[], edges: Edge[]) => void;
   undo: () => void;
@@ -125,6 +133,7 @@ export const useGraphStore = create<GraphState>()(
         edges: initialEdges,
         evaluatedResults: null,
         rootEvaluatedResults: null,
+        parentScopeEvaluatedResults: null,
         scopeStack: [],
         past: [],
         future: [],
@@ -169,6 +178,7 @@ export const useGraphStore = create<GraphState>()(
         },
         setEvaluatedResults: (results) => set({ evaluatedResults: results }),
         setRootEvaluatedResults: (results) => set({ rootEvaluatedResults: results }),
+        setParentScopeEvaluatedResults: (results) => set({ parentScopeEvaluatedResults: results }),
         addNode: (type, position) => {
           pushHistory();
           const def = getNodeType(type);

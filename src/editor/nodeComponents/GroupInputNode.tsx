@@ -6,6 +6,7 @@ import type { GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
 import type { SocketType, SocketValue } from '../../nodes/types';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { resolveIncomingValue } from '../../nodes/evaluateGraph';
 
 const SOCKET_TYPES: SocketType[] = ['number', 'color', 'enum', 'geometry', 'material'];
 
@@ -41,11 +42,11 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
  * 選択肢一覧 `socket.options` を含む)は `defineGroupNode()` の登録時テンプレート、または
  * `addSocket()` 時の `defaultForType()` 由来の値が使われるのみで、この場での編集は一切
  * できない(型を問わず値そのものを UI から直接いじる手段は無い — 変えたい場合はソケットへ
- * 配線して値を供給する)。各ソケット行には `evaluatedResults`(`GenericNode.tsx` の値表示と同じ
- * 現在スコープの評価結果)から引いた現在値を表示する — ただしこれはグループの中を直接編集して
- * いる間の評価であり、外部から接続された値の注入(`groupNodeFactory.ts` の `injected`)を経由
- * しないため、実際には未接続時のデフォルト値のみが表示される(親スコープ側で値を配線していても
- * 反映されない)。 */
+ * 配線して値を供給する)。各ソケット行には現在値を表示する — 親スコープ側でそのソケットに実際に
+ * 値が配線されていれば `parentScopeEvaluatedResults`(`state/useParentScopeEvaluatedGraph.ts`、
+ * 親スコープ視点の評価)から引いた実際の注入値を、配線が無ければ `evaluatedResults`
+ * (`GenericNode.tsx` の値表示と同じ現在スコープの評価結果)から引いた未接続時のデフォルト値を
+ * 表示する。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
   const sockets = nodeData.sockets ?? [];
@@ -53,7 +54,18 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const removeGroupIOSocket = useGraphStore((s) => s.removeGroupIOSocket);
   const evaluated = useGraphStore((s) => s.evaluatedResults);
   const outputValues = evaluated?.get(id);
+  const scopeStack = useGraphStore((s) => s.scopeStack);
+  const parentScopeResults = useGraphStore((s) => s.parentScopeEvaluatedResults);
+  const parentFrame = scopeStack.at(-1);
   const [newType, setNewType] = useState<SocketType>('number');
+
+  const valueFor = (socketId: string): SocketValue | undefined => {
+    const injected =
+      parentFrame && parentScopeResults
+        ? resolveIncomingValue(parentFrame.edges, parentScopeResults, parentFrame.parentId, socketId)
+        : undefined;
+    return injected ?? outputValues?.[socketId];
+  };
 
   const patchSocket = (socketId: string, patch: Partial<GroupIOSocket>) => {
     updateNodeData(id, { sockets: sockets.map((s) => (s.id === socketId ? { ...s, ...patch } : s)) });
@@ -86,7 +98,7 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
             value={socket.label}
             onChange={(e) => patchSocket(socket.id, { label: e.target.value })}
           />
-          <SocketValueDisplay value={outputValues?.[socket.id]} />
+          <SocketValueDisplay value={valueFor(socket.id)} />
           <Handle type="source" position={Position.Right} id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
         </div>
       ))}
