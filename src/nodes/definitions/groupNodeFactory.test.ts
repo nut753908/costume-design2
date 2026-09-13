@@ -6,6 +6,7 @@ import { defineGroupNode } from './groupNodeFactory';
 import './groupInput';
 import './groupOutput';
 import './numberMultiply';
+import './sceneOutput';
 
 // テスト専用の中間ノード型。geometry/material のような実ノードを持ち込まずに、
 // 「groupOutput に配線されたキーだけが外部出力になり、配線されていないキーは転送されない」
@@ -181,6 +182,86 @@ describe('defineGroupNode', () => {
     const withExternalInput = def.evaluate({ radius: { type: 'number', value: 999 } }, {});
     const withoutExternalInput = def.evaluate({}, {});
     expect(withExternalInput).toEqual(withoutExternalInput);
+  });
+
+  it('内部に sceneOutput ノードを置いて geometry+material を配線すると、sceneOutputGeometry/sceneOutputMaterial として外部出力に転送される', () => {
+    if (!nodeTypeRegistry.has('groupFactoryTestMeshSource')) {
+      registerNodeType({
+        type: 'groupFactoryTestMeshSource',
+        label: 'Test Mesh Source',
+        category: 'generator',
+        inputs: [],
+        outputs: [
+          { id: 'geometry', label: 'Geometry', type: 'geometry' },
+          { id: 'material', label: 'Material', type: 'material' },
+        ],
+        createDefaultData: () => ({}),
+        evaluate: (): Record<string, SocketValue> => ({
+          geometry: { type: 'geometry', value: {} as THREE.BufferGeometry },
+          material: { type: 'material', value: {} as THREE.Material },
+        }),
+      });
+    }
+
+    const { internalNodes, internalEdges } = buildInternalGraph();
+    const withSceneOutput = {
+      internalNodes: [
+        ...internalNodes,
+        { id: 'meshSource', type: 'groupFactoryTestMeshSource', data: {} },
+        { id: 'sceneOut', type: 'sceneOutput', data: {} },
+      ],
+      internalEdges: [
+        ...internalEdges,
+        { source: 'meshSource', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+        { source: 'meshSource', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
+      ],
+    };
+    if (!nodeTypeRegistry.has('groupFactoryTestGroupWithSceneOutput')) {
+      defineGroupNode({
+        type: 'groupFactoryTestGroupWithSceneOutput',
+        label: 'Test Group (internal sceneOutput)',
+        ...withSceneOutput,
+      });
+    }
+
+    const result = getNodeType('groupFactoryTestGroupWithSceneOutput').evaluate({}, {});
+    expect(result.sceneOutputGeometry).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial).toEqual({ type: 'material', value: {} });
+    // sceneOutputGeometry/sceneOutputMaterial は groupOutput 経由の通常出力とは独立している。
+    expect(result.doubledRadius).toBeDefined();
+  });
+
+  it('sceneOutput ノードが内部に無ければ、sceneOutputGeometry/sceneOutputMaterial は現れない', () => {
+    const result = getNodeType('groupFactoryTestGroup').evaluate({}, {});
+    expect(result.sceneOutputGeometry).toBeUndefined();
+    expect(result.sceneOutputMaterial).toBeUndefined();
+  });
+
+  it('内部の sceneOutput が geometry/material 片方しか受け取っていなければ転送されない', () => {
+    const { internalNodes, internalEdges } = buildInternalGraph();
+    const withPartialSceneOutput = {
+      internalNodes: [
+        ...internalNodes,
+        { id: 'meshSource', type: 'groupFactoryTestMeshSource', data: {} },
+        { id: 'sceneOut', type: 'sceneOutput', data: {} },
+      ],
+      internalEdges: [
+        ...internalEdges,
+        // material だけ配線し、geometry は未接続のままにする。
+        { source: 'meshSource', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
+      ],
+    };
+    if (!nodeTypeRegistry.has('groupFactoryTestGroupPartialSceneOutput')) {
+      defineGroupNode({
+        type: 'groupFactoryTestGroupPartialSceneOutput',
+        label: 'Test Group (partial internal sceneOutput)',
+        ...withPartialSceneOutput,
+      });
+    }
+
+    const result = getNodeType('groupFactoryTestGroupPartialSceneOutput').evaluate({}, {});
+    expect(result.sceneOutputGeometry).toBeUndefined();
+    expect(result.sceneOutputMaterial).toBeUndefined();
   });
 
   it('groupOutput ノードが無いと登録時に例外を投げる', () => {

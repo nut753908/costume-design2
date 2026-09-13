@@ -117,7 +117,28 @@ export function defineGroupNode(config: GroupNodeConfig): void {
       // インスタンス側でこのノードが削除されていれば、フォールバックにより単に外部出力が
       // 空になるだけで、他ノード削除時と同じ挙動。
       const outputNode = internalNodes.find((n) => n.type === 'groupOutput');
-      return outputNode ? (internalResults.get(outputNode.id) ?? {}) : {};
+      const forwarded = outputNode ? { ...(internalResults.get(outputNode.id) ?? {}) } : {};
+
+      // 埋め込みサブグラフの中に `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードが
+      // あれば(任意、groupOutput と違って必須ではない)、それが実際に geometry+material を
+      // 受け取っているかを見て、`sceneOutputGeometry`/`sceneOutputMaterial` という予約キーで
+      // このグループ自身の外部出力へ転送する。`groupOutput` が転送する通常の `geometry`/
+      // `material`(グループ間で再利用するための汎用ソケット)とは別の、Garments.tsx だけが
+      // 読む専用チャンネル — この2キーはグループの静的な `outputs` には含まれず(numberDisplay
+      // の `value` と同じパターン)、他ノードへ配線することはできない。これにより
+      // 「グループの中に sceneOutput を置いて配線する」というキャンバス上で見える操作だけが、
+      // トップレベルに別途 `sceneOutput` ノードを置く場合と同じ「明示的な配線が仕様」という
+      // 原則の下で描画対象になる(nodes/CLAUDE.md/scene/CLAUDE.md 参照)。
+      const sceneOutputNode = internalNodes.find((n) => n.type === 'sceneOutput');
+      if (sceneOutputNode) {
+        const sceneResult = internalResults.get(sceneOutputNode.id);
+        if (sceneResult?.geometry?.type === 'geometry' && sceneResult.material?.type === 'material') {
+          forwarded.sceneOutputGeometry = sceneResult.geometry;
+          forwarded.sceneOutputMaterial = sceneResult.material;
+        }
+      }
+
+      return forwarded;
     },
   });
 }

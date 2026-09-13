@@ -1,6 +1,8 @@
+import type * as THREE from 'three';
 import { useGraphStore } from '../state/graphStore';
 import { useRootGraphLite } from '../state/selectors';
 import { ToonMesh } from '../rendering/ToonMesh';
+import type { SocketValue } from '../nodes/types';
 
 /** ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
  * 評価時にジオメトリの頂点座標へ焼き込み済み(Blender の Geometry Nodes で位置をジオメトリに
@@ -25,21 +27,29 @@ export function Garments() {
 
   return (
     <>
-      {Array.from(evaluated.entries()).map(([nodeId, result]) => {
-        // `sceneOutput` へ実際に配線されているガーメントだけを描画する — 各 `<name>Group`
-        // 自身の評価結果にも geometry+material は含まれるが(グループ内部の `groupOutput`
-        // から転送されるため)、それだけでは描画対象にしない。「配線されているか」が
-        // 仕様そのものになる(`nodes/definitions/sceneOutput.ts`/`scene/CLAUDE.md` 参照)。
-        if (!outputNodeIds.has(nodeId)) return null;
+      {Array.from(evaluated.entries()).flatMap(([nodeId, result]) => {
+        // 描画対象になる経路は2つ、どちらも「明示的にsceneOutputへ配線されているか」という
+        // 同じ仕様の2つの現れ方(nodes/definitions/sceneOutput.ts 参照):
+        // (1) トップレベルに置いた sceneOutput ノード自身 — geometry/material をそのまま読む。
+        // (2) グループの内部に sceneOutput を置いた場合 — groupNodeFactory.ts の evaluate() が
+        //     `sceneOutputGeometry`/`sceneOutputMaterial` という予約キーへ転送済みなので、
+        //     ノードの型を問わずそのキーの有無だけを見る。通常の `geometry`/`material`
+        //     キー(groupOutput から転送される、他ガーメントと共有するための汎用ソケット)
+        //     だけを見て自動描画する、という以前の暗黙の検出には戻さない。
+        const mesh = outputNodeIds.has(nodeId)
+          ? extractMesh(result.geometry, result.material)
+          : extractMesh(result.sceneOutputGeometry, result.sceneOutputMaterial);
 
-        const geometry = result.geometry;
-        const material = result.material;
-        if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') {
-          return null;
-        }
-
-        return <ToonMesh key={nodeId} geometry={geometry.value} material={material.value} />;
+        return mesh ? [<ToonMesh key={nodeId} geometry={mesh.geometry} material={mesh.material} />] : [];
       })}
     </>
   );
+}
+
+function extractMesh(
+  geometry: SocketValue | undefined,
+  material: SocketValue | undefined,
+): { geometry: THREE.BufferGeometry; material: THREE.Material } | null {
+  if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') return null;
+  return { geometry: geometry.value, material: material.value };
 }
