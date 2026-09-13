@@ -25,14 +25,14 @@ export const initialNodes: Node[] = [
   // state/useBodySkinColor.ts が id で直接読み取る慣例的なシードノード。エッジでは
   // 何にも配線しない(ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して
   // 直接読み取られる」を参照)。
-  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 830 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 722 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
-  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 938 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
-  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 1844 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 832 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 681 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 983 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
+  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 1889 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1736 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1738 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + anchor/offsetY用の
@@ -54,16 +54,16 @@ export const initialNodes: Node[] = [
   // groupOutput 経由で sleeve だけに再公開していたが、「本来共有すべき値が一方のグループの
   // 中に閉じ込められている」という設計上の問題があったため、bodyBuild/pantsLegSpacing と同じ
   // 「共有ノードをトップレベルに置いて複数グループへ配線する」形に改めた。
-  { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 110 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
+  { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 114 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
   { id: 'topColor', type: 'colorInput', position: { x: 0, y: 0 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
   { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 110 }, data: {} },
   { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 0 }, data: {} },
-  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 626 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 819 }, data: {} },
+  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 585 }, data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 778 }, data: {} },
 
   { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1736 }, data: {} },
   { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 1906 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 884 }, data: {} },
+  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 908 }, data: {} },
   { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 413 }, data: {} },
   { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 560 }, data: {} },
   { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 707 }, data: {} },
