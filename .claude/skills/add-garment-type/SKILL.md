@@ -55,7 +55,7 @@ Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を
 
 ## 4. グループノードの定義(src/nodes/definitions/\<name\>GroupNode.ts)
 
-既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
+既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput + groupOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する。
 
@@ -67,7 +67,6 @@ import { defineGroupNode } from './groupNodeFactory';
 defineGroupNode({
   type: 'xxxGroup',
   label: 'Xxx',
-  terminalNodeId: 'output', // 内部の garmentOutput 型ノードのID
   internalNodes: [
     {
       id: 'input',
@@ -86,17 +85,35 @@ defineGroupNode({
     { id: 'gen', type: 'xxxGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#cccccc' } },
+    // groupOutput は必須 — グループの外部出力はこのノードに実際に配線された値だけになる。
+    // geometry/material/anchor/offsetY の4つを output(garmentOutput)からここへ配線すること。
+    {
+      id: 'outputIO',
+      type: 'groupOutput',
+      data: {
+        sockets: [
+          { id: 'geometry', label: 'Geometry', type: 'geometry' },
+          { id: 'material', label: 'Material', type: 'material' },
+          { id: 'anchor', label: 'Anchor', type: 'enum' },
+          { id: 'offsetY', label: 'Offset Y', type: 'number' },
+        ],
+      },
+    },
   ],
   internalEdges: [
     // ... radiusIn.value -> scale.value, input.bodyBuild -> scale.factor, scale -> gen.radius,
     // colorIn.color -> material.color, ...
+    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });
 ```
 
-外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、`internalNodes` に `groupOutput` ノードを追加する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
+外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、上記の `outputIO` ノードへ追加でソケットを増やして配線する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
 
-`groupInput`/`groupOutput` はどちらも省略可 — 他ガーメントと共有される値が1つも無いガーメントでは `groupInput` ノード自体を `internalNodes` に含めなくてよい(`hatGroupNode.ts`/`bagGroupNode.ts`/`necktieGroupNode.ts`/`glassesGroupNode.ts` の実例を参照。外部から見た入力ソケットは0個になる)。
+`groupInput` は省略可 — 他ガーメントと共有される値が1つも無いガーメントでは `groupInput` ノード自体を `internalNodes` に含めなくてよい(`hatGroupNode.ts`/`bagGroupNode.ts`/`necktieGroupNode.ts`/`glassesGroupNode.ts` の実例を参照。外部から見た入力ソケットは0個になる)。`groupOutput` は省略不可(無いと `defineGroupNode()` が登録時に例外を投げる)。
 
 ## 5. initialGraph.ts への配線(慣例)
 

@@ -1,15 +1,14 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
- * bagGen(bagGenerator)+bagMaterial(toonMaterial)+bagOutput(garmentOutput) の3ノードを
- * 1枚にまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、外側の
- * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する — 共有される
- * 外部ソケットが1つも無いため、`groupInput` ノード自体を省略している(`defineGroupNode()` は
- * groupInput/groupOutput のどちらも省略可)。 */
+ * bagGen(bagGenerator)+bagMaterial(toonMaterial)+bagOutput(garmentOutput)+
+ * outputIO(groupOutput) の4ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない
+ * 単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノード
+ * として保持する — 共有される外部入力ソケットが1つも無いため、`groupInput` ノード自体を
+ * 省略している(`defineGroupNode()` は groupInput は省略可、groupOutput は必須)。 */
 defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
-  terminalNodeId: 'output',
   internalNodes: [
     { id: 'strapWidthIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.08, step: 0.005, label: 'Strap Width' } },
     { id: 'strapThicknessIn', type: 'numberInput', data: { value: 0.015, min: 0.005, max: 0.03, step: 0.005, label: 'Strap Thickness' } },
@@ -23,6 +22,18 @@ defineGroupNode({
     { id: 'gen', type: 'bagGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#8a4a2e' } },
+    {
+      id: 'outputIO',
+      type: 'groupOutput',
+      data: {
+        sockets: [
+          { id: 'geometry', label: 'Geometry', type: 'geometry' },
+          { id: 'material', label: 'Material', type: 'material' },
+          { id: 'anchor', label: 'Anchor', type: 'enum' },
+          { id: 'offsetY', label: 'Offset Y', type: 'number' },
+        ],
+      },
+    },
   ],
   internalEdges: [
     { source: 'strapWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'strapWidth' },
@@ -36,5 +47,9 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });

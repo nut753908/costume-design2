@@ -58,10 +58,9 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
  *   数値/enum型の出力ソケットの分だけ加える — `GenericNode.tsx` は評価結果のうち
  *   数値/enum型の出力を「ソケット行」とは別にもう一度「値表示行」として描画する
  *   ため(例: numberMultiply の "Value" 出力はソケット行1つ+値表示行1つの計2行分)。
- *   `garmentOutput` 型、および `defineGroupNode()` が作る全ての group カテゴリの
- *   ノードは、静的な `outputs` 宣言には現れない `anchor`/`offsetY` を追加で返し
- *   常に表示する(`src/nodes/CLAUDE.md` の「グループノード」節の落とし穴参照)ため、
- *   これは `resolveNodeSockets()` からは分からず個別に2行ぶん加えている。
+ *   `garmentOutput` の geometry/material/anchor/offsetY は静的な `outputs` として
+ *   宣言されているため(`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の
+ *   特殊扱いは不要で、この一般式にそのまま乗る。
  * - `nodeTypeRegistry` に登録の無い種類(単体テストの `type: 'test'` など)は
  *   `FALLBACK_NODE_HEIGHT` を返す。
  *
@@ -79,10 +78,7 @@ export function estimateNodeHeight(type: string, data: unknown): number {
 
   const def = getNodeType(type);
   const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
-  const showsGarmentOutputExtras = def.category === 'group' || type === 'garmentOutput';
-  const extraValueRows = showsGarmentOutputExtras
-    ? 2 // anchor + offsetY
-    : outputs.filter((o) => o.type === 'number' || o.type === 'enum').length;
+  const extraValueRows = outputs.filter((o) => o.type === 'number' || o.type === 'enum').length;
   const rows = inputs.length + outputs.length + extraValueRows;
   return CARD_BASE_HEIGHT + rows * CARD_ROW_HEIGHT + (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0);
 }

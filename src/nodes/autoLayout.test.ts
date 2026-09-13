@@ -454,12 +454,14 @@ describe('estimateNodeHeight', () => {
     expect(numberOutHeight - geometryOutHeight).toBe(23); // 値表示行1行ぶん
   });
 
-  it('group カテゴリのノードは、ヒント行+anchor/offsetY相当の2行ぶん高さが増える', () => {
+  it('group カテゴリのノードは、ダブルクリックヒント行の分だけ高さが増える', () => {
     registerTestType({ type: '__height_test_group__', category: 'group', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
     registerTestType({ type: '__height_test_generator_same_inputs__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
     const groupHeight = estimateNodeHeight('__height_test_group__', {});
     const generatorHeight = estimateNodeHeight('__height_test_generator_same_inputs__', {});
-    // group はヒント行(14) + anchor/offsetY 相当の2行(23*2=46) ぶん高い。
-    expect(groupHeight - generatorHeight).toBe(14 + 2 * 23);
+    // group はヒント行(14)ぶんだけ高い。anchor/offsetY のような garmentOutput 相当の出力は
+    // 現在は静的な outputs 宣言(または内部の groupOutput ノードの sockets)として通常の
+    // ソケット行の計算にそのまま乗るため、ここでは特殊扱いしない。
+    expect(groupHeight - generatorHeight).toBe(14);
   });
 });

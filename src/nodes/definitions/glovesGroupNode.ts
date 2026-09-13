@@ -1,14 +1,13 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** glovesWristScale(numberMultiply)+glovesGen(glovesGenerator)+glovesMaterial(toonMaterial)+
- * glovesOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。Wrist Radius/Hand
- * Radius/Length/Arm Spacing/Color は他のガーメントと共有されない単独パラメータのため、外側の
- * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。Body Build の
- * みガーメント間で共有されるため外部ソケットのまま。 */
+ * glovesOutput(garmentOutput)+outputIO(groupOutput) の5ノードを1枚にまとめたグループノード。
+ * Wrist Radius/Hand Radius/Length/Arm Spacing/Color は他のガーメントと共有されない単独
+ * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
+ * して保持する。Body Build のみガーメント間で共有されるため外部ソケットのまま。 */
 defineGroupNode({
   type: 'glovesGroup',
   label: 'Gloves',
-  terminalNodeId: 'output',
   internalNodes: [
     {
       id: 'input',
@@ -26,6 +25,18 @@ defineGroupNode({
     { id: 'gen', type: 'glovesGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'wrist', offsetY: 0, fallbackColor: '#b0413e' } },
+    {
+      id: 'outputIO',
+      type: 'groupOutput',
+      data: {
+        sockets: [
+          { id: 'geometry', label: 'Geometry', type: 'geometry' },
+          { id: 'material', label: 'Material', type: 'material' },
+          { id: 'anchor', label: 'Anchor', type: 'enum' },
+          { id: 'offsetY', label: 'Offset Y', type: 'number' },
+        ],
+      },
+    },
   ],
   internalEdges: [
     { source: 'wristRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -37,5 +48,9 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });

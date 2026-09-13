@@ -7,19 +7,15 @@ import type { GroupIOSocket } from './groupIOSocket';
 export interface GroupNodeConfig {
   type: string;
   label: string;
-  /** 埋め込みサブグラフの評価結果のうち、この内部ノードの全キー(SocketDef で
-   *  宣言されていない anchor/offsetY のようなキーも含む)を最終出力のベースとして
-   *  まるごと転送する「終端」ノードのID。通常は内部の garmentOutput 型ノード。 */
-  terminalNodeId: string;
   /** `type: 'groupInput'` ノード(Blender の Group Input ノード相当)を含めると、その
    *  `data.sockets` がこのグループノードが外部に見せる入力ソケット一覧になる。
    *  他ガーメントと共有される値(`bodyBuild` など)が無いガーメントでは省略でき、その場合
    *  外部から見た入力ソケットは0個になる(hat/bag/necktie/glasses の実例を参照)。
-   *  `type: 'groupOutput'` ノードも同じく省略可 — 他ガーメントから再引きされる値を追加公開
-   *  したい場合だけ含める(現在この用途で使っている実例は無い。値が複数ガーメントで
-   *  共有される場合は、一方のグループに閉じ込めて覗き穴を開けるのではなく `bodyBuild` の
-   *  ようにトップレベルの共有ノードへ引き上げる方が筋がよいため — topGroup/sleeveGroup
-   *  参照)。 */
+   *  `type: 'groupOutput'` ノード(Blender の Group Output ノード相当)は必須 —
+   *  グループ本体の出力は、この内部ノードに実際に配線された値だけがそのまま外部出力になる
+   *  (通常は内部の `garmentOutput` 型ノードの geometry/material/anchor/offsetY の
+   *  4つを配線する)。「どのノードが終端か」を設定値として隠し持つのではなく、
+   *  Group Input と対称に、キャンバス上で見える配線そのものが仕様になる。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];
 }
@@ -74,20 +70,18 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
  * (`editor/GenericNode.tsx` のダブルクリックで中に入るUI、詳細は nodes/CLAUDE.md 参照)。
  *
  * evaluate() は外部から渡された入力値を埋め込みサブグラフ内の `groupInput` ノードへ
- * 一時的に注入してから evaluateGraph() を再帰的に呼び、`groupOutput` ノード(あれば)の
- * 評価結果を追加の出力として転送するだけ。
+ * 一時的に注入してから evaluateGraph() を再帰的に呼び、`groupOutput` ノードの評価結果を
+ * そのまま外部出力として返すだけ。
  */
 export function defineGroupNode(config: GroupNodeConfig): void {
-  const internalIds = new Set(config.internalNodes.map((n) => n.id));
-  if (!internalIds.has(config.terminalNodeId)) {
-    throw new Error(`defineGroupNode("${config.type}"): terminalNodeId "${config.terminalNodeId}" is not an internal node`);
-  }
-
   const templateInputNode = config.internalNodes.find((n) => n.type === 'groupInput');
   const templateOutputNode = config.internalNodes.find((n) => n.type === 'groupOutput');
+  if (!templateOutputNode) {
+    throw new Error(`defineGroupNode("${config.type}"): internalNodes must include a 'groupOutput' node (geometry/material/anchor/offsetY must be wired through it)`);
+  }
 
   const staticInputs = toSocketDefs((templateInputNode?.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
-  const staticOutputs = toSocketDefs((templateOutputNode?.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
+  const staticOutputs = toSocketDefs((templateOutputNode.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
 
   registerNodeType<GroupNodeData>({
     type: config.type,
@@ -116,17 +110,12 @@ export function defineGroupNode(config: GroupNodeConfig): void {
 
       const internalResults = evaluateGraph(patchedNodes, internalEdges);
 
-      // terminalNodeId(内部の garmentOutput 相当ノード)の全キーをまるごと転送する。
-      // config.terminalNodeId が指すノードが削除されていれば、このフォールバックにより
-      // 単に描画されなくなるだけで、他ノード削除時と同じ挙動。
-      const terminal = internalResults.get(config.terminalNodeId) ?? {};
-
-      // groupOutput ノード(あれば)の評価結果 — 配線された各ソケットの値をそのまま
-      // 追加の外部出力として転送する。
+      // groupOutput ノードに実際に配線された値だけが、そのまま外部出力になる
+      // (通常は内部の garmentOutput 型ノードの geometry/material/anchor/offsetY を配線する)。
+      // インスタンス側でこのノードが削除されていれば、フォールバックにより単に外部出力が
+      // 空になるだけで、他ノード削除時と同じ挙動。
       const outputNode = internalNodes.find((n) => n.type === 'groupOutput');
-      const extra = outputNode ? (internalResults.get(outputNode.id) ?? {}) : {};
-
-      return { ...terminal, ...extra };
+      return outputNode ? (internalResults.get(outputNode.id) ?? {}) : {};
     },
   });
 }

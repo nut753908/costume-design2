@@ -25,14 +25,14 @@ export const initialNodes: Node[] = [
   // state/useBodySkinColor.ts が id で直接読み取る慣例的なシードノード。エッジでは
   // 何にも配線しない(ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して
   // 直接読み取られる」を参照)。
-  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 1426 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 781 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
-  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 1534 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
-  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 1642 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 2070 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 1103 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 2178 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
+  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 2286 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1318 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1962 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput という
@@ -41,7 +41,7 @@ export const initialNodes: Node[] = [
   // Color は他のガーメントと共有されない単独パラメータのため、internalNodes に groupInput ノードと
   // 並べて直接書かれており(グループの中に入って初めて編集できる)、このファイルには現れない —
   // 詳細は src/nodes/CLAUDE.md の「グループノード」節を参照。
-  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 277 }, data: {} },
+  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 288 }, data: {} },
 
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と
   // Material — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要がある
@@ -52,23 +52,23 @@ export const initialNodes: Node[] = [
   // 「共有ノードをトップレベルに置いて複数グループへ配線する」形に改めた。
   { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 110 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
   { id: 'topColor', type: 'colorInput', position: { x: 0, y: 0 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
-  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 121 }, data: {} },
+  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 132 }, data: {} },
   { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 0 }, data: {} },
   { id: 'topGroup', type: 'topGroup', position: { x: 680, y: 0 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 680, y: 170 }, data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 680, y: 262 }, data: {} },
 
-  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1159 }, data: {} },
-  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 1329 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 340, y: 1499 }, data: {} },
-  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 424 }, data: {} },
-  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 571 }, data: {} },
-  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 718 }, data: {} },
-  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 865 }, data: {} },
-  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1012 }, data: {} },
-  { id: 'hatGroup', type: 'hatGroup', position: { x: 0, y: 1732 }, data: {} },
-  { id: 'bagGroup', type: 'bagGroup', position: { x: 0, y: 1856 }, data: {} },
-  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 0, y: 1980 }, data: {} },
-  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 0, y: 2104 }, data: {} },
+  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1722 }, data: {} },
+  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 1984 }, data: {} },
+  { id: 'socksGroup', type: 'socksGroup', position: { x: 340, y: 2246 }, data: {} },
+  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 527 }, data: {} },
+  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 766 }, data: {} },
+  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 1005 }, data: {} },
+  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 1244 }, data: {} },
+  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1483 }, data: {} },
+  { id: 'hatGroup', type: 'hatGroup', position: { x: 0, y: 2376 }, data: {} },
+  { id: 'bagGroup', type: 'bagGroup', position: { x: 0, y: 2592 }, data: {} },
+  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 0, y: 2808 }, data: {} },
+  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 0, y: 3024 }, data: {} },
 ];
 
 export const initialEdges: Edge[] = [

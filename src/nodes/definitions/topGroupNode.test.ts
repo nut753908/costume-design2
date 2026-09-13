@@ -47,7 +47,7 @@ describe('topGroup', () => {
     }
   });
 
-  it('geometry/anchor/offsetY のような terminalNodeId 由来のキーも転送される', () => {
+  it('geometry/anchor/offsetY のような outputIO(groupOutput)に配線されたキーも転送される', () => {
     const result = getNodeType('topGroup').evaluate({}, {});
     expect(result.geometry?.type).toBe('geometry');
     expect(result.anchor).toEqual({ type: 'enum', value: 'shoulder' });

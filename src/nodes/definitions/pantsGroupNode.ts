@@ -1,9 +1,10 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** pantsWaistScale(numberMultiply)+pantsGen(pantsGenerator)+pantsMaterial(toonMaterial)+
- * pantsOutput(garmentOutput) の4ノードを1枚にまとめたグループノード。Waist Radius/Hem
- * Radius/Inseam/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
- * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+ * pantsOutput(garmentOutput)+outputIO(groupOutput) の5ノードを1枚にまとめたグループノード。
+ * Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有されない単独
+ * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
+ * して保持する。
  *
  * Leg Spacing(`pantsLegSpacing`)は shoesGroup/socksGroup からも直接再引きされる外部の
  * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build と合わせて
@@ -11,7 +12,6 @@ import { defineGroupNode } from './groupNodeFactory';
 defineGroupNode({
   type: 'pantsGroup',
   label: 'Pants',
-  terminalNodeId: 'output',
   internalNodes: [
     {
       id: 'input',
@@ -32,6 +32,18 @@ defineGroupNode({
     { id: 'gen', type: 'pantsGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#9c7b4f' } },
+    {
+      id: 'outputIO',
+      type: 'groupOutput',
+      data: {
+        sockets: [
+          { id: 'geometry', label: 'Geometry', type: 'geometry' },
+          { id: 'material', label: 'Material', type: 'material' },
+          { id: 'anchor', label: 'Anchor', type: 'enum' },
+          { id: 'offsetY', label: 'Offset Y', type: 'number' },
+        ],
+      },
+    },
   ],
   internalEdges: [
     { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -44,5 +56,9 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });
