@@ -72,15 +72,15 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
           <Handle type="source" position={Position.Right} id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
         </div>
       ))}
-      <div className="rf-node__io-add nodrag">
-        <select value={newType} onChange={(e) => setNewType(e.target.value as SocketType)}>
+      <div className="rf-node__io-add">
+        <select className="nodrag" value={newType} onChange={(e) => setNewType(e.target.value as SocketType)}>
           {SOCKET_TYPES.map((t) => (
             <option key={t} value={t}>
               {t}
             </option>
           ))}
         </select>
-        <button type="button" onClick={addSocket}>
+        <button type="button" className="nodrag" onClick={addSocket}>
           + Add
         </button>
       </div>
