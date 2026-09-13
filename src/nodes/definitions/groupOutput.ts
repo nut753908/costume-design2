@@ -12,8 +12,9 @@ import type { GroupIOSocket } from './groupIOSocket';
  * (`defineGroupNode()` は internalNodes にこのノードを含めることを必須としている)。
  * 通常は内部の `garmentPlacement` 型ノードの geometry(取り付け位置を焼き込み済み)と、
  * `toonMaterial` 型ノードなどの material の2つだけをここへ配線する。anchor/offsetY
- * (`garmentAnchor.ts`)は `garmentPlacement.ts` が内部で消費してジオメトリの
- * 頂点座標へ焼き込むため、この `groupOutput` の外まで出ることはない(Blender で位置が
+ * (`enumInput`/`numberInput` から `garmentPlacement` へ配線される値)は `garmentPlacement.ts`
+ * が内部で消費してジオメトリの頂点座標へ焼き込むため、この `groupOutput` の外まで
+ * 出ることはない(Blender で位置が
  * ノードツリーの外側にあるオブジェクトのトランスフォームとして扱われ、Group Output の
  * ソケットには現れないのと同じ考え方 — `garmentPlacement.ts`/`nodes/CLAUDE.md` の
  * 「グループノード」節参照)。

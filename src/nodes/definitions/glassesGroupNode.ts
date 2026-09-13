@@ -1,8 +1,8 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** glasses は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
- * glassesGen(glassesGenerator)+glassesMaterial(toonMaterial)+anchor(garmentAnchor)+
- * placement(garmentPlacement)+outputIO(groupOutput) の5ノードを1枚にまとめる。全パラメータが他の
+ * glassesGen(glassesGenerator)+glassesMaterial(toonMaterial)+anchorIn(enumInput)+
+ * offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput) の6ノードを1枚にまとめる。全パラメータが他の
  * ガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput ノードでは
  * なくグループ内部の同型ノードとして保持する — 共有される外部入力ソケットが1つも無いため、
  * `groupInput` ノード自体を省略している(`defineGroupNode()` は groupInput は省略可、
@@ -31,7 +31,8 @@ defineGroupNode({
     { id: 'colorIn', type: 'colorInput', data: { hex: '#2a2a2a', label: 'Glasses Color' } },
     { id: 'gen', type: 'glassesGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'head', offsetY: -0.02 } },
+    { id: 'anchorIn', type: 'enumInput', data: { value: 'head', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
+    { id: 'offsetYIn', type: 'numberInput', data: { value: -0.02, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     {
       id: 'outputIO',
@@ -54,8 +55,8 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'anchor', sourceHandle: 'anchor', target: 'placement', targetHandle: 'anchor' },
-    { source: 'anchor', sourceHandle: 'offsetY', target: 'placement', targetHandle: 'offsetY' },
+    { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
+    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },

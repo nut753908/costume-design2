@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** socksAnkleScale(numberMultiply)+socksGen(socksGenerator)+socksMaterial(toonMaterial)+
- * anchor(garmentAnchor)+placement(garmentPlacement)+outputIO(groupOutput) の6ノードを1枚に
+ * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput) の7ノードを1枚に
  * まとめたグループノード。Ankle Radius/Calf Radius/Height/Segments/Color は他のガーメントと共有
  * されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の
  * 同型ノードとして保持する。
@@ -31,7 +31,8 @@ defineGroupNode({
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'socksGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'feet', offsetY: 0 } },
+    { id: 'anchorIn', type: 'enumInput', data: { value: 'feet', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
+    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     {
       id: 'outputIO',
@@ -55,8 +56,8 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'anchor', sourceHandle: 'anchor', target: 'placement', targetHandle: 'anchor' },
-    { source: 'anchor', sourceHandle: 'offsetY', target: 'placement', targetHandle: 'offsetY' },
+    { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
+    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },

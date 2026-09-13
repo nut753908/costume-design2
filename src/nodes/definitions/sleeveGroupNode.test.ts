@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../registry';
 import * as sleeveGeometry from '../../geometry/sleeve';
-// sleeveGroup の埋め込みサブグラフが参照する numberInput/garmentAnchor/garmentPlacement/
+// sleeveGroup の埋め込みサブグラフが参照する numberInput/enumInput/garmentPlacement/
 // sleeveGenerator を含め、全ノードタイプを登録する。
 import '../definitions';
 

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../registry';
 import * as topGeometry from '../../geometry/top';
-// topGroup の埋め込みサブグラフが参照する numberInput/enumInput/garmentAnchor/
+// topGroup の埋め込みサブグラフが参照する numberInput/enumInput/
 // garmentPlacement/topGenerator を含め、全ノードタイプを登録する。
 import '../definitions';
 

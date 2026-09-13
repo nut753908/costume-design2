@@ -62,8 +62,8 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
 }
 
 /**
- * 複数の既存ノード(numberMultiply/generator/toonMaterial/garmentAnchor/garmentPlacement
- * 等)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せる
+ * 複数の既存ノード(numberMultiply/generator/toonMaterial/enumInput/numberInput/
+ * garmentPlacement 等)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せる
  * 「グループノード」を定義する。外部インターフェース(入出力ソケット構成)は Blender の
  * Geometry Nodes と同じく、埋め込みサブグラフ内に置く専用ノード `groupInput`/`groupOutput`
  * (`nodes/definitions/groupInput.ts`/`groupOutput.ts`)そのものが定義する — 中に入って

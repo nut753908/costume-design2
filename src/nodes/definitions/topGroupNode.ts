@@ -1,6 +1,6 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** topGen(topGenerator)+anchor(garmentAnchor)+placement(garmentPlacement)+
+/** topGen(topGenerator)+anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+
  * outputIO(groupOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
  * 他のガーメントと共有され
  * ない単独パラメータのため、外側の numberInput/enumInput ノードではなくグループ内部の同型
@@ -39,7 +39,8 @@ defineGroupNode({
     { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
     { id: 'gen', type: 'topGenerator', data: {} },
-    { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'shoulder', offsetY: 0 } },
+    { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
+    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     {
       id: 'outputIO',
@@ -59,8 +60,8 @@ defineGroupNode({
     { source: 'necklineDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineDepth' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'anchor', sourceHandle: 'anchor', target: 'placement', targetHandle: 'anchor' },
-    { source: 'anchor', sourceHandle: 'offsetY', target: 'placement', targetHandle: 'offsetY' },
+    { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
+    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },

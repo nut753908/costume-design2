@@ -58,9 +58,9 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
  *   数値/enum型の出力ソケットの分だけ加える — `GenericNode.tsx` は評価結果のうち
  *   数値/enum型の出力を「ソケット行」とは別にもう一度「値表示行」として描画する
  *   ため(例: numberMultiply の "Value" 出力はソケット行1つ+値表示行1つの計2行分)。
- *   `garmentPlacement`(geometry)/`garmentAnchor`(anchor/offsetY)はどちらも静的な
- *   `outputs` として宣言されているため(`src/nodes/CLAUDE.md` の「グループノード」節参照)、
- *   個別の特殊扱いは不要で、この一般式にそのまま乗る。
+ *   `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
+ *   (`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の特殊扱いは不要で、
+ *   この一般式にそのまま乗る。
  * - `nodeTypeRegistry` に登録の無い種類(単体テストの `type: 'test'` など)は
  *   `FALLBACK_NODE_HEIGHT` を返す。
  *
