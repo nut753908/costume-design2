@@ -25,14 +25,14 @@ export const initialNodes: Node[] = [
   // state/useBodySkinColor.ts が id で直接読み取る慣例的なシードノード。エッジでは
   // 何にも配線しない(ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して
   // 直接読み取られる」を参照)。
-  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 1006 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 898 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
-  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 1114 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
-  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 2304 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 830 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 722 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 938 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
+  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 1844 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 2196 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1736 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + anchor/offsetY用の
@@ -41,10 +41,11 @@ export const initialNodes: Node[] = [
   // <name>GroupNode.ts)に集約している。生パラメータと Color は他のガーメントと共有されない
   // 単独パラメータのため、internalNodes に groupInput ノードと並べて直接書かれており
   // (グループの中に入って初めて編集できる)、このファイルには現れない — 詳細は
-  // src/nodes/CLAUDE.md の「グループノード」節を参照。各 <name>Group の geometry/material は
-  // このファイル末尾の <name>Output(sceneOutput、nodes/definitions/sceneOutput.ts)へ配線
-  // されて初めて実際にシーンへ描画される(下記エッジ一覧末尾参照)。
-  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 0 }, data: {} },
+  // src/nodes/CLAUDE.md の「グループノード」節を参照。各 <name>GroupNode.ts の internalNodes
+  // は `groupOutput` と並べて `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードも
+  // 内包しており、実際にシーンへ描画されるのはこの内部 `sceneOutput` への配線があるからで
+  // ある(このファイルにはその配線は現れない)。
+  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 266 }, data: {} },
 
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と
   // Material — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要がある
@@ -53,46 +54,25 @@ export const initialNodes: Node[] = [
   // groupOutput 経由で sleeve だけに再公開していたが、「本来共有すべき値が一方のグループの
   // 中に閉じ込められている」という設計上の問題があったため、bodyBuild/pantsLegSpacing と同じ
   // 「共有ノードをトップレベルに置いて複数グループへ配線する」形に改めた。
-  { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 193 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
-  { id: 'topColor', type: 'colorInput', position: { x: 0, y: 349 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
-  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 193 }, data: {} },
-  { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 349 }, data: {} },
-  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 126 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 365 }, data: {} },
+  { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 110 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
+  { id: 'topColor', type: 'colorInput', position: { x: 0, y: 0 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
+  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 110 }, data: {} },
+  { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 0 }, data: {} },
+  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 626 }, data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 819 }, data: {} },
 
-  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 2196 }, data: {} },
-  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 2412 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 952 }, data: {} },
-  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 459 }, data: {} },
-  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 652 }, data: {} },
-  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 845 }, data: {} },
-  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 1038 }, data: {} },
-  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1231 }, data: {} },
-  { id: 'hatGroup', type: 'hatGroup', position: { x: 340, y: 1424 }, data: {} },
-  { id: 'bagGroup', type: 'bagGroup', position: { x: 340, y: 1617 }, data: {} },
-  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 340, y: 1810 }, data: {} },
-  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 340, y: 2003 }, data: {} },
-
-  // 各 <name>Group の geometry/material を受け取り、実際にシーンへ描画するための終端ノード
-  // (nodes/definitions/sceneOutput.ts)。Garments.tsx はこのノードへ配線されているものだけを
-  // 描画するため、ガーメントを追加しても、この配線を忘れると3Dビューには表示されない
-  // (グループ自身の評価結果にも geometry/material は含まれるが、それだけでは描画対象に
-  // ならない — ルート CLAUDE.md 参照)。
-  { id: 'skirtOutput', type: 'sceneOutput', position: { x: 1020, y: 0 }, data: {} },
-  { id: 'topOutput', type: 'sceneOutput', position: { x: 1700, y: 126 }, data: {} },
-  { id: 'sleeveOutput', type: 'sceneOutput', position: { x: 1700, y: 365 }, data: {} },
-  { id: 'pantsOutput', type: 'sceneOutput', position: { x: 1020, y: 2196 }, data: {} },
-  { id: 'shoesOutput', type: 'sceneOutput', position: { x: 1020, y: 2412 }, data: {} },
-  { id: 'socksOutput', type: 'sceneOutput', position: { x: 1360, y: 952 }, data: {} },
-  { id: 'glovesOutput', type: 'sceneOutput', position: { x: 1020, y: 604 }, data: {} },
-  { id: 'beltOutput', type: 'sceneOutput', position: { x: 1020, y: 714 }, data: {} },
-  { id: 'scarfOutput', type: 'sceneOutput', position: { x: 1020, y: 845 }, data: {} },
-  { id: 'jacketOutput', type: 'sceneOutput', position: { x: 1020, y: 1038 }, data: {} },
-  { id: 'dressOutput', type: 'sceneOutput', position: { x: 1020, y: 1231 }, data: {} },
-  { id: 'hatOutput', type: 'sceneOutput', position: { x: 1020, y: 1424 }, data: {} },
-  { id: 'bagOutput', type: 'sceneOutput', position: { x: 1020, y: 1617 }, data: {} },
-  { id: 'necktieOutput', type: 'sceneOutput', position: { x: 1020, y: 1810 }, data: {} },
-  { id: 'glassesOutput', type: 'sceneOutput', position: { x: 1020, y: 2003 }, data: {} },
+  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1736 }, data: {} },
+  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 1906 }, data: {} },
+  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 884 }, data: {} },
+  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 413 }, data: {} },
+  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 560 }, data: {} },
+  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 707 }, data: {} },
+  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 854 }, data: {} },
+  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1001 }, data: {} },
+  { id: 'hatGroup', type: 'hatGroup', position: { x: 340, y: 1148 }, data: {} },
+  { id: 'bagGroup', type: 'bagGroup', position: { x: 340, y: 1295 }, data: {} },
+  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 340, y: 1442 }, data: {} },
+  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 340, y: 1589 }, data: {} },
 ];
 
 export const initialEdges: Edge[] = [
@@ -157,38 +137,4 @@ export const initialEdges: Edge[] = [
   { id: 'e-glasses-height', source: 'bodyHeight', sourceHandle: 'value', target: 'glassesGroup', targetHandle: 'bodyHeight' },
   { id: 'e-glasses-build', source: 'bodyBuild', sourceHandle: 'value', target: 'glassesGroup', targetHandle: 'bodyBuild' },
   { id: 'e-glasses-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'glassesGroup', targetHandle: 'bodyShoulder' },
-
-  // 各 <name>Group の geometry/material を対応する sceneOutput ノードへ配線する — これが
-  // 「そのガーメントが実際に描画される」ことの唯一の根拠になる(上記 sceneOutput ノードの
-  // コメント参照)。
-  { id: 'e-skirt-geometry-output', source: 'skirtGroup', sourceHandle: 'geometry', target: 'skirtOutput', targetHandle: 'geometry' },
-  { id: 'e-skirt-material-output', source: 'skirtGroup', sourceHandle: 'material', target: 'skirtOutput', targetHandle: 'material' },
-  { id: 'e-top-geometry-output', source: 'topGroup', sourceHandle: 'geometry', target: 'topOutput', targetHandle: 'geometry' },
-  { id: 'e-top-material-output', source: 'topGroup', sourceHandle: 'material', target: 'topOutput', targetHandle: 'material' },
-  { id: 'e-sleeve-geometry-output', source: 'sleeveGroup', sourceHandle: 'geometry', target: 'sleeveOutput', targetHandle: 'geometry' },
-  { id: 'e-sleeve-material-output', source: 'sleeveGroup', sourceHandle: 'material', target: 'sleeveOutput', targetHandle: 'material' },
-  { id: 'e-pants-geometry-output', source: 'pantsGroup', sourceHandle: 'geometry', target: 'pantsOutput', targetHandle: 'geometry' },
-  { id: 'e-pants-material-output', source: 'pantsGroup', sourceHandle: 'material', target: 'pantsOutput', targetHandle: 'material' },
-  { id: 'e-shoes-geometry-output', source: 'shoesGroup', sourceHandle: 'geometry', target: 'shoesOutput', targetHandle: 'geometry' },
-  { id: 'e-shoes-material-output', source: 'shoesGroup', sourceHandle: 'material', target: 'shoesOutput', targetHandle: 'material' },
-  { id: 'e-socks-geometry-output', source: 'socksGroup', sourceHandle: 'geometry', target: 'socksOutput', targetHandle: 'geometry' },
-  { id: 'e-socks-material-output', source: 'socksGroup', sourceHandle: 'material', target: 'socksOutput', targetHandle: 'material' },
-  { id: 'e-gloves-geometry-output', source: 'glovesGroup', sourceHandle: 'geometry', target: 'glovesOutput', targetHandle: 'geometry' },
-  { id: 'e-gloves-material-output', source: 'glovesGroup', sourceHandle: 'material', target: 'glovesOutput', targetHandle: 'material' },
-  { id: 'e-belt-geometry-output', source: 'beltGroup', sourceHandle: 'geometry', target: 'beltOutput', targetHandle: 'geometry' },
-  { id: 'e-belt-material-output', source: 'beltGroup', sourceHandle: 'material', target: 'beltOutput', targetHandle: 'material' },
-  { id: 'e-scarf-geometry-output', source: 'scarfGroup', sourceHandle: 'geometry', target: 'scarfOutput', targetHandle: 'geometry' },
-  { id: 'e-scarf-material-output', source: 'scarfGroup', sourceHandle: 'material', target: 'scarfOutput', targetHandle: 'material' },
-  { id: 'e-jacket-geometry-output', source: 'jacketGroup', sourceHandle: 'geometry', target: 'jacketOutput', targetHandle: 'geometry' },
-  { id: 'e-jacket-material-output', source: 'jacketGroup', sourceHandle: 'material', target: 'jacketOutput', targetHandle: 'material' },
-  { id: 'e-dress-geometry-output', source: 'dressGroup', sourceHandle: 'geometry', target: 'dressOutput', targetHandle: 'geometry' },
-  { id: 'e-dress-material-output', source: 'dressGroup', sourceHandle: 'material', target: 'dressOutput', targetHandle: 'material' },
-  { id: 'e-hat-geometry-output', source: 'hatGroup', sourceHandle: 'geometry', target: 'hatOutput', targetHandle: 'geometry' },
-  { id: 'e-hat-material-output', source: 'hatGroup', sourceHandle: 'material', target: 'hatOutput', targetHandle: 'material' },
-  { id: 'e-bag-geometry-output', source: 'bagGroup', sourceHandle: 'geometry', target: 'bagOutput', targetHandle: 'geometry' },
-  { id: 'e-bag-material-output', source: 'bagGroup', sourceHandle: 'material', target: 'bagOutput', targetHandle: 'material' },
-  { id: 'e-necktie-geometry-output', source: 'necktieGroup', sourceHandle: 'geometry', target: 'necktieOutput', targetHandle: 'geometry' },
-  { id: 'e-necktie-material-output', source: 'necktieGroup', sourceHandle: 'material', target: 'necktieOutput', targetHandle: 'material' },
-  { id: 'e-glasses-geometry-output', source: 'glassesGroup', sourceHandle: 'geometry', target: 'glassesOutput', targetHandle: 'geometry' },
-  { id: 'e-glasses-material-output', source: 'glassesGroup', sourceHandle: 'material', target: 'glassesOutput', targetHandle: 'material' },
 ];

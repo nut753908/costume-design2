@@ -1,8 +1,5 @@
-import type * as THREE from 'three';
 import { useGraphStore } from '../state/graphStore';
-import { useRootGraphLite } from '../state/selectors';
 import { ToonMesh } from '../rendering/ToonMesh';
-import type { SocketValue } from '../nodes/types';
 
 /** ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
  * 評価時にジオメトリの頂点座標へ焼き込み済み(Blender の Geometry Nodes で位置をジオメトリに
@@ -16,40 +13,24 @@ export function Garments() {
   // いる間も s.nodes は「今開いている階層」の内部ノードだけになるため、s.nodes を
   // 走査する実装だと他の全ガーメントが3Dビューから消えてしまう。
   const evaluated = useGraphStore((s) => s.rootEvaluatedResults);
-  // どのノードが `sceneOutput`(ルートスコープの描画用終端ノード)かは rootEvaluatedResults
-  // 自体には現れない(nodeId→評価結果の Map でしかなく型情報を持たない)ため、
-  // useRootGraphLite() でトップレベル視点のノード一覧を別途引く。
-  const { nodes } = useRootGraphLite();
 
   if (!evaluated) return null;
-
-  const outputNodeIds = new Set(nodes.filter((n) => n.type === 'sceneOutput').map((n) => n.id));
 
   return (
     <>
       {Array.from(evaluated.entries()).flatMap(([nodeId, result]) => {
-        // 描画対象になる経路は2つ、どちらも「明示的にsceneOutputへ配線されているか」という
-        // 同じ仕様の2つの現れ方(nodes/definitions/sceneOutput.ts 参照):
-        // (1) トップレベルに置いた sceneOutput ノード自身 — geometry/material をそのまま読む。
-        // (2) グループの内部に sceneOutput を置いた場合 — groupNodeFactory.ts の evaluate() が
-        //     `sceneOutputGeometry`/`sceneOutputMaterial` という予約キーへ転送済みなので、
-        //     ノードの型を問わずそのキーの有無だけを見る。通常の `geometry`/`material`
-        //     キー(groupOutput から転送される、他ガーメントと共有するための汎用ソケット)
-        //     だけを見て自動描画する、という以前の暗黙の検出には戻さない。
-        const mesh = outputNodeIds.has(nodeId)
-          ? extractMesh(result.geometry, result.material)
-          : extractMesh(result.sceneOutputGeometry, result.sceneOutputMaterial);
+        // `sceneOutputGeometry`/`sceneOutputMaterial` は、そのノード(通常は `<name>Group`)の
+        // 内部に `sceneOutput`(nodes/definitions/sceneOutput.ts)が実際に配線されている
+        // 場合にだけ `groupNodeFactory.ts` の `evaluate()` が転送する予約キー。ノードの型を
+        // 問わずこの2キーの有無だけを見る — `groupOutput` 経由の通常の `geometry`/`material`
+        // (グループ間で値を再利用するための汎用ソケット)を直接見て自動描画する、という
+        // 暗黙の検出はしない(`nodes/CLAUDE.md`/`scene/CLAUDE.md` 参照)。
+        const geometry = result.sceneOutputGeometry;
+        const material = result.sceneOutputMaterial;
+        if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') return [];
 
-        return mesh ? [<ToonMesh key={nodeId} geometry={mesh.geometry} material={mesh.material} />] : [];
+        return [<ToonMesh key={nodeId} geometry={geometry.value} material={material.value} />];
       })}
     </>
   );
-}
-
-function extractMesh(
-  geometry: SocketValue | undefined,
-  material: SocketValue | undefined,
-): { geometry: THREE.BufferGeometry; material: THREE.Material } | null {
-  if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') return null;
-  return { geometry: geometry.value, material: material.value };
 }

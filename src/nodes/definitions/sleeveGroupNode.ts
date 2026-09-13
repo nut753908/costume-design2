@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** sleeveGen(sleeveGenerator)+anchorIn(enumInput)+offsetYIn(numberInput)+
- * placement(garmentPlacement)+outputIO(groupOutput) を1枚にまとめたグループノード。Sleeve Radius/Sleeve Length は sleeve 固有の単独パラメータ
+ * placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) を1枚にまとめたグループノード。Sleeve Radius/Sleeve Length は sleeve 固有の単独パラメータ
  * のため、外側の numberInput ノードではなくグループ内部の同型ノードとして保持する。
  *
  * Attach Radius(Body Build 適用後の Top の胴体半径と同じ値)と Material(Top と同じ
@@ -35,25 +35,21 @@ defineGroupNode({
     {
       id: 'outputIO',
       type: 'groupOutput',
-      data: {
-        sockets: [
-          { id: 'geometry', label: 'Geometry', type: 'geometry' },
-          { id: 'material', label: 'Material', type: 'material' },
-        ],
-      },
+      data: { sockets: [] },
     },
+    { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
     { source: 'input', sourceHandle: 'attachRadius', target: 'gen', targetHandle: 'attachRadius' },
     { source: 'sleeveRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'sleeveRadius' },
     { source: 'sleeveLengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'sleeveLength' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'input', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
     { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
   ],
 });

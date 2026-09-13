@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** glovesWristScale(numberMultiply)+glovesGen(glovesGenerator)+glovesMaterial(toonMaterial)+
- * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput) の7ノードを1枚に
+ * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) の8ノードを1枚に
  * まとめたグループノード。Wrist Radius/Hand Radius/Length/Arm Spacing/Color は他のガーメントと
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Body Build のみガーメント間で共有されるため外部ソケットの
@@ -35,13 +35,9 @@ defineGroupNode({
     {
       id: 'outputIO',
       type: 'groupOutput',
-      data: {
-        sockets: [
-          { id: 'geometry', label: 'Geometry', type: 'geometry' },
-          { id: 'material', label: 'Material', type: 'material' },
-        ],
-      },
+      data: { sockets: [] },
     },
+    { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
     { source: 'wristRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -52,12 +48,12 @@ defineGroupNode({
     { source: 'armSpacingIn', sourceHandle: 'value', target: 'gen', targetHandle: 'armSpacing' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
     { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
   ],
 });
