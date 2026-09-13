@@ -1,5 +1,9 @@
+/* 以前は min-width だけで内容に応じて幅がバラついていた(166px〜216px)。ノード種別を
+   問わずカードの見た目を揃えるため、実測した現状の最大幅(Group Input の216px)に
+   余裕を見た固定幅にする。ここより広い内容(非常に長いラベル文字列など)が来た場合は
+   切り詰めずに折り返す(各行の white-space は既定の normal のまま)。 */
 .rf-node {
-  min-width: 140px;
+  width: 220px;
   padding: 8px 12px;
   border-radius: 6px;
   border: 1px solid #333;
@@ -263,10 +267,6 @@
   opacity: 0.5;
 }
 
-.rf-node--io {
-  min-width: 190px;
-}
-
 .rf-node__io-row {
   position: relative;
   display: flex;
@@ -281,9 +281,7 @@
 
 /* `.rf-node__title-input` と同じ理由(`flex: 1` の flex-basis: 0% も不確定な包含
    ブロックに対しては auto 相当に扱われ、ブラウザ既定の <input> 実寸にフォールバック
-   する)で、確定した固定幅を指定する。Group Input/Output(`.rf-node--io`、
-   min-width: 190px)ではこれまで目立たなかったが、同じクラスを流用した enumInput の
-   選択肢編集行(`EnumInputNode.tsx`、カードの既定幅がずっと小さい)で顕在化した。 */
+   する)で、確定した固定幅を指定する。 */
 .rf-node__io-label {
   flex: 1 1 100px;
   width: 100px;
