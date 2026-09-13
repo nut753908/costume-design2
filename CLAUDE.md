@@ -44,7 +44,7 @@ WebGL に触れない React フック(zustand ストアの購読 + useMemo/useRe
 
 ### ボディスケールはソケットグラフを迂回して直接読み取られる
 
-`state/useBodyScale.ts` は、慣例的な ID を持つ3つのシードノード(`bodyHeight`/`bodyBuild`/`bodyShoulder` — 新しいノードタイプではなく、普通の `numberInput` ノード)を、`evaluateGraph` を完全に迂回して zustand ストアから **id で直接**読み取ります。これは「すべてはソケットを介して流れる」というパターンに対する意図的な例外です。ボディスケールはガーメントの `{geometry, material}` 出力ではなく、`Body.tsx` と `Garments.tsx`(アンカー位置のため)の両方が合意する必要のあるシーン全体のパラメータであり、「シーン全体に影響する」構造的な値を表すソケットタイプは存在しないためです。これら3つのノードが削除された場合は `DEFAULT_BODY_SCALE` (1, 1, 1) にフォールバックします。
+`state/useBodyScale.ts` は、慣例的な ID を持つ3つのシードノード(`bodyHeight`/`bodyBuild`/`bodyShoulder` — 新しいノードタイプではなく、普通の `numberInput` ノード)を、`evaluateGraph` を完全に迂回して zustand ストアから **id で直接**読み取ります。これは「すべてはソケットを介して流れる」というパターンに対する意図的な例外です。ボディスケールはガーメントの `{geometry, material}` 出力ではなく、`Body.tsx`(ボディメッシュ自体の寸法)が使うシーン全体のパラメータであり、「シーン全体に影響する」構造的な値を表すソケットタイプは存在しないためです。これら3つのノードが削除された場合は `DEFAULT_BODY_SCALE` (1, 1, 1) にフォールバックします。ガーメントの取り付け位置(アンカー)は、この迂回とは別に、`bodyHeight`/`bodyBuild`/`bodyShoulder` を通常のソケット配線で各ガーメントグループへ配線し、グループ内部の `garmentPlacement` ノード(`nodes/definitions/garmentPlacement.ts`)がジオメトリの頂点座標へ焼き込む方式に変わりました(`Garments.tsx` は現在アンカー計算を一切行いません) — 詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節を参照。
 
 同じパターンで `state/useBodySkinColor.ts` が慣例的な ID `bodySkinColor`(普通の `colorInput` ノード)を id で直接読み取り、`Body.tsx` の肌の色として使います。肌色もガーメントの `material` 出力ではなく `Body.tsx` 単体が使うシーン全体のパラメータであるため、同じ迂回が必要になりました。このノードが削除された場合は `DEFAULT_BODY_SKIN_COLOR` (`'#f2c9a0'`) にフォールバックします。`initialGraph.test.ts` はこれら4つのシードノードすべての存在を検証しています。
 
