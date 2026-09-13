@@ -35,13 +35,18 @@ const CARD_ROW_HEIGHT = 23;
 /** category が `'group'` のノードだけ追加で表示される「ダブルクリックで中に入る」の
  * ヒント行の高さ。 */
 const CARD_GROUP_HINT_HEIGHT = 14;
-/** スライダー/カラーピッカー/セレクトなど専用UIを持つ入力系ノードは、ソケット数に
- * よらずほぼ固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの。 */
+/** スライダー/カラーピッカーなど専用UIを持つ入力系ノードのうち、ノード固有設定
+ * (ラベル名・min/max/step・カラーコードのテキスト欄)の行数が固定な2種は、ソケット数に
+ * よらずほぼ固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの。enumInput は
+ * 選択肢(`rf-node__io-row`)を可変個描画するため、この固定値方式ではなく後述の
+ * `ENUM_INPUT_BASE_HEIGHT` を使った式で見積もる。 */
 const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
-  numberInput: 84,
-  colorInput: 66,
-  enumInput: 60,
+  numberInput: 127,
+  colorInput: 90,
 };
+/** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: 選択肢3個で153px、
+ * 5個で199px、傾き23pxは CARD_ROW_HEIGHT と一致したため、切片だけを定数として持つ)。 */
+const ENUM_INPUT_BASE_HEIGHT = 84;
 
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
@@ -49,6 +54,7 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
  * 同じ間隔で並べることになり、間延びしすぎる問題があった(詳細は Git 履歴参照)。
  *
  * - `BESPOKE_NODE_HEIGHTS` に載っている専用UI系はその固定値を返す。
+ * - `enumInput` は選択肢数だけ可変(`ENUM_INPUT_BASE_HEIGHT + 選択肢数 * CARD_ROW_HEIGHT`)。
  * - `groupInput`/`groupOutput` は `editor/nodeComponents/` の専用UI(ソケットごとの
  *   行 + 末尾の追加行)を持ち、`GenericNode.tsx` の行とは構造が異なるが、行の高さは
  *   同じ `CARD_ROW_HEIGHT` で近似し、追加行の分だけ余分に足す。
@@ -68,6 +74,11 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
 export function estimateNodeHeight(type: string, data: unknown): number {
   const bespoke = BESPOKE_NODE_HEIGHTS[type];
   if (bespoke !== undefined) return bespoke;
+
+  if (type === 'enumInput') {
+    const options = (data as { options?: unknown[] } | undefined)?.options ?? [];
+    return ENUM_INPUT_BASE_HEIGHT + options.length * CARD_ROW_HEIGHT;
+  }
 
   if (type === 'groupInput' || type === 'groupOutput') {
     const sockets = (data as { sockets?: unknown[] } | undefined)?.sockets ?? [];
@@ -94,6 +105,7 @@ export function estimateNodeHeight(type: string, data: unknown): number {
 export function socketRowFraction(type: string, data: unknown, socketId: string | null | undefined, direction: 'input' | 'output'): number {
   if (socketId == null) return 0;
   if (type in BESPOKE_NODE_HEIGHTS) return 0;
+  if (type === 'enumInput') return 0;
   if (type === 'groupInput' || type === 'groupOutput') return 0;
   if (!nodeTypeRegistry.has(type)) return 0;
 

@@ -383,6 +383,7 @@ describe('socketRowFraction', () => {
   it('未登録の型・専用UI系・存在しないソケットIDは 0 を返す(優先順位をつけない)', () => {
     expect(socketRowFraction('__unregistered__', {}, 'a', 'input')).toBe(0);
     expect(socketRowFraction('numberInput', {}, 'value', 'output')).toBe(0);
+    expect(socketRowFraction('enumInput', {}, 'value', 'output')).toBe(0);
     registerTestType({ type: '__socket_fraction_missing__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
     expect(socketRowFraction('__socket_fraction_missing__', {}, 'nonexistent', 'input')).toBe(0);
   });
@@ -424,10 +425,14 @@ describe('estimateNodeHeight', () => {
     expect(estimateNodeHeight('__unregistered_test_type__', {})).toBe(ROW_SPACING - 24);
   });
 
-  it('専用UIを持つ入力系ノードは実測した固定値を返す(ソケット数によらない)', () => {
-    expect(estimateNodeHeight('numberInput', {})).toBe(84);
-    expect(estimateNodeHeight('colorInput', {})).toBe(66);
-    expect(estimateNodeHeight('enumInput', {})).toBe(60);
+  it('専用UIを持つ入力系ノードのうち固定行数の2種は実測した固定値を返す(ソケット数によらない)', () => {
+    expect(estimateNodeHeight('numberInput', {})).toBe(127);
+    expect(estimateNodeHeight('colorInput', {})).toBe(90);
+  });
+
+  it('enumInputは選択肢の数に比例して高さが増える', () => {
+    expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c'] })).toBe(84 + 3 * 23);
+    expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c', 'd', 'e'] })).toBe(84 + 5 * 23);
   });
 
   it('入出力ソケット数が多いほど、その分だけ線形に高さが増える', () => {

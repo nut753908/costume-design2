@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { useGraphStore } from '../../state/graphStore';
 import type { NumberInputData } from '../../nodes/definitions/numberInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
@@ -7,6 +8,7 @@ import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
 function NumberInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as NumberInputData;
+  const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const throttledUpdate = useThrottledNodeDataUpdate(id);
   const min = nodeData.min ?? 0;
   const max = nodeData.max ?? 10;
@@ -20,7 +22,11 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
 
   return (
     <div className="rf-node">
-      <NodeTitleBar id={id} label={nodeData.label ?? 'Number'} />
+      <NodeTitleBar
+        id={id}
+        label={nodeData.label ?? 'Number'}
+        onLabelChange={(label) => updateNodeData(id, { label })}
+      />
       <input
         className="rf-node__slider nodrag"
         type="range"
@@ -36,6 +42,24 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
         }}
       />
       <div className="rf-node__value">{localValue.toFixed(2)}</div>
+      <div className="rf-node__settings-row nodrag">
+        <label className="rf-node__settings-field">
+          Min
+          <input type="number" value={min} onChange={(e) => updateNodeData(id, { min: Number(e.target.value) })} />
+        </label>
+        <label className="rf-node__settings-field">
+          Max
+          <input type="number" value={max} onChange={(e) => updateNodeData(id, { max: Number(e.target.value) })} />
+        </label>
+        <label className="rf-node__settings-field">
+          Step
+          <input
+            type="number"
+            value={step}
+            onChange={(e) => updateNodeData(id, { step: Number(e.target.value) })}
+          />
+        </label>
+      </div>
       <Handle type="source" position={Position.Right} id="value" style={{ background: SOCKET_COLORS.number }} />
     </div>
   );
