@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../registry';
 import * as topGeometry from '../../geometry/top';
-// topGroup の埋め込みサブグラフが参照する numberInput/enumInput/garmentMesh/garmentAnchor/
-// topGenerator を含め、全ノードタイプを登録する。
+// topGroup の埋め込みサブグラフが参照する numberInput/enumInput/garmentAnchor/
+// garmentPlacement/topGenerator を含め、全ノードタイプを登録する。
 import '../definitions';
 
 // topGroup は Torso Radius(Body Build 適用後のスケール済みの値)と Material を、共有ノード
@@ -36,8 +36,8 @@ describe('topGroup', () => {
       const result = getNodeType('topGroup').evaluate({}, {});
       expect(spy).toHaveBeenCalledWith(expect.objectContaining({ torsoRadius: 0.29 }));
       // material 型にはリテラルなデフォルトが無い(literalGroupInputValue は常に undefined を
-      // 返す)ため未接続扱いになる。garmentMesh はフォールバックを持たない(garmentMesh.ts
-      // 参照)ため、material キー自体が無い。
+      // 返す)ため未接続扱いになり、そのまま material キー自体が無い状態で groupOutput まで
+      // 伝播する(フォールバックを持つ中継ノードは無い)。
       expect(result.material).toBeUndefined();
       expect(result.geometry?.type).toBe('geometry');
     } finally {

@@ -13,11 +13,11 @@ export interface GroupNodeConfig {
    *  外部から見た入力ソケットは0個になる(hat/bag/necktie/glasses の実例を参照)。
    *  `type: 'groupOutput'` ノード(Blender の Group Output ノード相当)は必須 —
    *  グループ本体の出力は、この内部ノードに実際に配線された値だけがそのまま外部出力になる
-   *  (通常は内部の `garmentMesh` 型ノードの geometry/material の2つを配線する。anchor/
-   *  offsetY は `garmentPlacement` 型ノードが内部で消費してジオメトリの頂点座標へ焼き込む
-   *  ため、`groupOutput` の外まで出ることはない — `garmentPlacement.ts` 参照)。「どのノード
-   *  が終端か」を設定値として隠し持つのではなく、Group Input と対称に、キャンバス上で
-   *  見える配線そのものが仕様になる。 */
+   *  (通常は `garmentPlacement` 型ノードの geometry と、`toonMaterial` 型ノードなどの
+   *  material の2つを配線する。anchor/offsetY は `garmentPlacement` 型ノードが内部で消費して
+   *  ジオメトリの頂点座標へ焼き込むため、`groupOutput` の外まで出ることはない —
+   *  `garmentPlacement.ts` 参照)。「どのノードが終端か」を設定値として隠し持つのではなく、
+   *  Group Input と対称に、キャンバス上で見える配線そのものが仕様になる。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];
 }
@@ -62,11 +62,10 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
 }
 
 /**
- * 複数の既存ノード(numberMultiply/generator/toonMaterial/garmentMesh/garmentAnchor/
- * garmentPlacement 等)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力
- * ソケットだけを見せる「グループノード」を定義する。外部インターフェース(入出力ソケット
- * 構成)は Blender の Geometry
- * Nodes と同じく、埋め込みサブグラフ内に置く専用ノード `groupInput`/`groupOutput`
+ * 複数の既存ノード(numberMultiply/generator/toonMaterial/garmentAnchor/garmentPlacement
+ * 等)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せる
+ * 「グループノード」を定義する。外部インターフェース(入出力ソケット構成)は Blender の
+ * Geometry Nodes と同じく、埋め込みサブグラフ内に置く専用ノード `groupInput`/`groupOutput`
  * (`nodes/definitions/groupInput.ts`/`groupOutput.ts`)そのものが定義する — 中に入って
  * その2ノードにソケットを増減・配線するだけで、外部から見えるハンドルが増減する。
  * 内部配線・外部ソケット構成はノードインスタンスごとに独立してキャンバス上で編集できる
@@ -114,7 +113,7 @@ export function defineGroupNode(config: GroupNodeConfig): void {
       const internalResults = evaluateGraph(patchedNodes, internalEdges);
 
       // groupOutput ノードに実際に配線された値だけが、そのまま外部出力になる
-      // (通常は内部の garmentMesh 型ノードの geometry/material の2つを配線する)。
+      // (通常は garmentPlacement の geometry と toonMaterial などの material の2つを配線する)。
       // インスタンス側でこのノードが削除されていれば、フォールバックにより単に外部出力が
       // 空になるだけで、他ノード削除時と同じ挙動。
       const outputNode = internalNodes.find((n) => n.type === 'groupOutput');

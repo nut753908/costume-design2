@@ -8,7 +8,7 @@ export interface GarmentAnchorData extends Record<string, unknown> {
 }
 
 /** ガーメントをボディのどこに取り付けるかという配置情報だけを生成するノード。
- * geometry+material のペア(`garmentMesh.ts` が担う「描画」の責務)とは分離しており、
+ * geometry+material のペア(グループの外部出力そのもの)とは分離しており、
  * このノード自身は入力を一切持たず、`data.anchor`/`data.offsetY` を SocketValue に変換して
  * 返すだけ(以前は `garmentOutput` という1つのノードがこの配置情報と描画情報の両方を
  * 担っていたが、責務が混在していたため分割した — `nodes/CLAUDE.md` の「グループノード」節

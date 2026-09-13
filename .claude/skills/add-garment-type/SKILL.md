@@ -47,21 +47,20 @@ defineGeneratorNode({
 
 `fields` を解決するだけで済まない形(独自の入力ソケット構成が要る、他ノードの出力に依存するなど)の場合のみ `registerNodeType()` を直接呼ぶ。その場合の既定値の扱いは [`add-node-type` スキル](../add-node-type/SKILL.md)の「それ以外のノードタイプ」節を参照。
 
-## 3. 描画と配置(garmentMesh / garmentAnchor / garmentPlacement)
+## 3. 配置(garmentAnchor / garmentPlacement)
 
-ガーメント自体はどこにも取り付かない。取り付け位置は3つのノードの連携で決まる:
+ガーメント自体はどこにも取り付かない。取り付け位置は2つのノードの連携で決まる:
 
 - `garmentAnchor` — 入力を持たず、`data.anchor` で取り付け位置を選ぶだけのノード。`anchor` は `'waist' | 'shoulder' | 'feet' | 'wrist' | 'head'` の固定列挙(`garmentAnchor.ts`)で、これらは `body.ts` の `computeBodyAnchors()` が返す座標に対応する。**新しいアンカー種を増やす場合は `garmentAnchor.ts` の型と `body.ts`/`Body.tsx`/`garmentPlacement.ts` 側の対応を同時に変更する必要がある**(通常の追加では既存アンカーのどれかを再利用すれば足りる)。
-- `garmentPlacement` — `geometry` と `garmentAnchor` の出力(anchor/offsetY)、そして `bodyHeight`/`bodyBuild`/`bodyShoulder`(下記4節参照、全グループが例外なく外部ソケットとして受け取る)を受け取り、実際のアンカー座標を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。
-- `garmentMesh` — `garmentPlacement` で位置が焼き込まれた geometry と material のペアを、そのまま転送するだけの描画専用ノード。`data` を一切持たない。
+- `garmentPlacement` — `geometry` と `garmentAnchor` の出力(anchor/offsetY)、そして `bodyHeight`/`bodyBuild`/`bodyShoulder`(下記4節参照、全グループが例外なく外部ソケットとして受け取る)を受け取り、実際のアンカー座標を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。出力は位置が焼き込まれた geometry 1つだけ。
 
-この3ノードは責務を分けた別々のノードで、以前あった `garmentOutput` という1ノードでの兼務(描画+配置+material未配線時のフォールバック生成)は廃止した。最終的に `garmentMesh` の出力だけを、次節で作るグループの `groupOutput` ノードへ配線する(`garmentAnchor`/`garmentPlacement` の出力はグループの外まで出ない)。
+この2ノードは責務を分けた別々のノードで、以前あった `garmentOutput` という1ノードでの兼務(描画+配置+material未配線時のフォールバック生成)は廃止した。`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `groupOutput` ノードへ**直接**配線する(`garmentAnchor`/`garmentPlacement` が受け取る anchor/offsetY 自体はグループの外まで出ない)。かつては両方を一旦 `garmentMesh` という素通しノードへまとめてから `groupOutput` へ配線していたが、`garmentMesh` は何も変換しない冗長な中継ノードだったため削除した — `groupOutput` 自身がすでに「配線されたものをまとめて出す」という同じ役割を持っているため。
 
 Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を走査し `geometry`+`material` を持つものを自動的にレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
 ## 4. グループノードの定義(src/nodes/definitions/\<name\>GroupNode.ts)
 
-既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentMesh + garmentAnchor + garmentPlacement + groupOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
+既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentAnchor + garmentPlacement + groupOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する。
 
@@ -97,10 +96,10 @@ defineGroupNode({
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'waist', offsetY: 0 } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'mesh', type: 'garmentMesh', data: {} },
     // groupOutput は必須 — グループの外部出力はこのノードに実際に配線された値だけになる。
-    // geometry/material は mesh(garmentMesh)からだけここへ配線する(anchor/offsetY は
-    // garmentPlacement が内部で消費するため、ここまで出てこない)。
+    // geometry は placement(garmentPlacement)から、material は material(toonMaterial)から
+    // 直接ここへ配線する(anchor/offsetY は garmentPlacement が内部で消費するため、
+    // ここまで出てこない)。
     {
       id: 'outputIO',
       type: 'groupOutput',
@@ -121,10 +120,8 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'mesh', targetHandle: 'material' },
-    { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'material', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
   ],
 });
 ```

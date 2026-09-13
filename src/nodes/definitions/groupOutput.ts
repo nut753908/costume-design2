@@ -10,8 +10,9 @@ import type { GroupIOSocket } from './groupIOSocket';
  *
  * `groupInput` と対称に、グループ本体の出力はすべてこのノードに実際に配線された値だけになる
  * (`defineGroupNode()` は internalNodes にこのノードを含めることを必須としている)。
- * 通常は内部の `garmentMesh` 型ノードの geometry/material の2つだけをここへ配線する。
- * anchor/offsetY(`garmentAnchor.ts`)は `garmentPlacement.ts` が内部で消費してジオメトリの
+ * 通常は内部の `garmentPlacement` 型ノードの geometry(取り付け位置を焼き込み済み)と、
+ * `toonMaterial` 型ノードなどの material の2つだけをここへ配線する。anchor/offsetY
+ * (`garmentAnchor.ts`)は `garmentPlacement.ts` が内部で消費してジオメトリの
  * 頂点座標へ焼き込むため、この `groupOutput` の外まで出ることはない(Blender で位置が
  * ノードツリーの外側にあるオブジェクトのトランスフォームとして扱われ、Group Output の
  * ソケットには現れないのと同じ考え方 — `garmentPlacement.ts`/`nodes/CLAUDE.md` の

@@ -1,7 +1,8 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** topGen(topGenerator)+mesh(garmentMesh)+anchor(garmentAnchor)+outputIO(groupOutput) を
- * 1枚にまとめたグループノード。Length/Neckline/Neckline Depth は他のガーメントと共有され
+/** topGen(topGenerator)+anchor(garmentAnchor)+placement(garmentPlacement)+
+ * outputIO(groupOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
+ * 他のガーメントと共有され
  * ない単独パラメータのため、外側の numberInput/enumInput ノードではなくグループ内部の同型
  * ノードとして保持する。
  *
@@ -15,8 +16,8 @@ import { defineGroupNode } from './groupNodeFactory';
  * ファンアウトする形に改めた(`src/geometry/CLAUDE.md` の sleeve の節が元々説明していた
  * 「1つの Color/Material ノードから2つの Garment Output へのファンアウト」を文字通り実現)。
  * `outputIO`(`groupOutput`)は、その「他ガーメントへの再公開」という以前の役割ではなく、
- * `defineGroupNode()` が全グループに必須とする geometry/material/anchor/offsetY の
- * 通常の出力経路として使っている(`groupNodeFactory.ts` 参照)。 */
+ * `defineGroupNode()` が全グループに必須とする geometry/material の通常の出力経路として
+ * 使っている(`groupNodeFactory.ts` 参照)。 */
 defineGroupNode({
   type: 'topGroup',
   label: 'Top',
@@ -38,7 +39,6 @@ defineGroupNode({
     { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
     { id: 'gen', type: 'topGenerator', data: {} },
-    { id: 'mesh', type: 'garmentMesh', data: {} },
     { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'shoulder', offsetY: 0 } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     {
@@ -58,14 +58,12 @@ defineGroupNode({
     { source: 'necklineIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineType' },
     { source: 'necklineDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineDepth' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'material', target: 'mesh', targetHandle: 'material' },
-    { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'input', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
     { source: 'anchor', sourceHandle: 'anchor', target: 'placement', targetHandle: 'anchor' },
     { source: 'anchor', sourceHandle: 'offsetY', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
   ],
 });

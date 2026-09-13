@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../registry';
 import * as sleeveGeometry from '../../geometry/sleeve';
-// sleeveGroup の埋め込みサブグラフが参照する numberInput/garmentMesh/garmentAnchor/
+// sleeveGroup の埋め込みサブグラフが参照する numberInput/garmentAnchor/garmentPlacement/
 // sleeveGenerator を含め、全ノードタイプを登録する。
 import '../definitions';
 
@@ -45,8 +45,8 @@ describe('sleeveGroup', () => {
     try {
       const result = getNodeType('sleeveGroup').evaluate({}, {});
       expect(spy).toHaveBeenCalledWith(expect.objectContaining({ attachRadius: 0.29 }));
-      // material 型にはリテラルなデフォルトが無いため未接続扱いになる。garmentMesh は
-      // フォールバックを持たない(garmentMesh.ts 参照)ため、material キー自体が無い。
+      // material 型にはリテラルなデフォルトが無いため未接続扱いになり、そのまま material
+      // キー自体が無い状態で groupOutput まで伝播する(フォールバックを持つ中継ノードは無い)。
       expect(result.material).toBeUndefined();
       expect(result.geometry?.type).toBe('geometry');
     } finally {

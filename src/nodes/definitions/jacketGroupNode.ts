@@ -1,8 +1,8 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** jacketShoulderScale(numberMultiply)+jacketGen(jacketGenerator)+jacketMaterial(toonMaterial)+
- * mesh(garmentMesh)+anchor(garmentAnchor)+outputIO(groupOutput) の6ノードを1枚にまとめた
- * グループノード。Shoulder Radius/Length/Hem Flare/Segments/Color は他のガーメントと
+ * anchor(garmentAnchor)+placement(garmentPlacement)+outputIO(groupOutput) の6ノードを1枚に
+ * まとめたグループノード。Shoulder Radius/Length/Hem Flare/Segments/Color は他のガーメントと
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Body Build のみガーメント間で共有されるため外部ソケットの
  * まま。 */
@@ -29,7 +29,6 @@ defineGroupNode({
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'jacketGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'mesh', type: 'garmentMesh', data: {} },
     { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'shoulder', offsetY: 0 } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     {
@@ -52,14 +51,12 @@ defineGroupNode({
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'mesh', targetHandle: 'material' },
-    { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'material', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
     { source: 'anchor', sourceHandle: 'anchor', target: 'placement', targetHandle: 'anchor' },
     { source: 'anchor', sourceHandle: 'offsetY', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
     { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
   ],
 });

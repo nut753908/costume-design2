@@ -14,9 +14,10 @@ function isAnchorKey(value: string): value is AnchorKey {
  * Translate Geometry に渡す」のと同じ考え方 — 取り付け位置をノードグラフの外側を流れる
  * メタデータとして運ぶのではなく、ジオメトリの頂点座標そのものに焼き込む。
  *
- * これにより `garmentMesh`(および `groupOutput`、最終的に `Garments.tsx`)は anchor/offsetY
- * を一切知る必要がなくなり、常に「原点に置けば正しい位置になる」geometry+material の2つだけを
- * 扱えばよくなる(`nodes/CLAUDE.md` の「グループノード」節参照)。
+ * これにより `groupOutput`(そして最終的に `Garments.tsx`)は anchor/offsetY を一切知る必要が
+ * なくなり、常に「原点に置けば正しい位置になる」geometry+material の2つだけを扱えばよくなる
+ * (`geometry` はそのままこのノードの出力を `groupOutput` へ直接配線する — 描画のためだけの
+ * 中継ノードは置かない。`nodes/CLAUDE.md` の「グループノード」節参照)。
  *
  * bodyHeight/bodyBuild/bodyShoulder は、`state/useBodyScale.ts` が直接読むのと同じ3つの
  * シードノードの値を、通常のソケット配線で受け取ったもの(`geometry/body.ts` の純粋関数は
