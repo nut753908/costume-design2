@@ -265,9 +265,27 @@ describe('defineGroupNode', () => {
   });
 
   it('多段ネスト: 孫グループの内部 sceneOutput が、間の子グループを2階層以上またいで祖先グループまで転送される', () => {
-    // groupFactoryTestGroupWithSceneOutput(上のテストで登録済み、内部に直接 sceneOutput を
-    // 持つ「孫」)を、外部入力に一切依存せず自己完結で描画対象を解決できるグループとしてそのまま
-    // 「子」グループの内部に埋め込み、さらにその「子」を「親」グループの内部に埋め込む。
+    // このテスト専用に、他のテストの登録に依存しない自己完結した「孫」グループを用意する
+    // (`groupFactoryTestGroupWithSceneOutput` など他のテストが登録するグループ型は使わない —
+    // このテストだけを実行しても、他のテストの実行順序が変わっても成立するようにするため)。
+    // sceneOutput ノード自身の data に geometry/material のリテラル値を直接持たせれば、
+    // 生成ノードを挟まずに「geometry+material が解決済みの sceneOutput」を用意できる
+    // (evaluateGraph() は未接続ソケットをノード自身の data 値にフォールバックさせる —
+    // nodes/CLAUDE.md の evaluateGraph の節参照)。
+    if (!nodeTypeRegistry.has('groupFactoryTestGrandchildGroup')) {
+      defineGroupNode({
+        type: 'groupFactoryTestGrandchildGroup',
+        label: 'Test Grandchild Group',
+        internalNodes: [
+          {
+            id: 'sceneOut',
+            type: 'sceneOutput',
+            data: { geometry: {} as THREE.BufferGeometry, material: {} as THREE.Material },
+          },
+        ],
+        internalEdges: [],
+      });
+    }
     // 子・親グループはどちらも自分自身の sceneOutput を持たない — 孫が解決した
     // sceneOutputGeometry/sceneOutputMaterial を findResolvedSceneOutput() がそのまま
     // 見つけて転送するだけで、階層の深さに関わらず動くことを確認する。
@@ -275,7 +293,7 @@ describe('defineGroupNode', () => {
       defineGroupNode({
         type: 'groupFactoryTestChildGroup',
         label: 'Test Child Group',
-        internalNodes: [{ id: 'grandchild', type: 'groupFactoryTestGroupWithSceneOutput', data: {} }],
+        internalNodes: [{ id: 'grandchild', type: 'groupFactoryTestGrandchildGroup', data: {} }],
         internalEdges: [],
       });
     }
