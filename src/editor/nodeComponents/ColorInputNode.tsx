@@ -19,7 +19,7 @@ function ColorInputNodeViewImpl({ id, data }: NodeProps) {
     <div className="rf-node">
       <NodeTitleBar id={id} label={nodeData.label ?? 'Color'} />
       <input
-        className="rf-node__color"
+        className="rf-node__color nodrag"
         type="color"
         aria-labelledby={`${id}-label`}
         value={localHex}

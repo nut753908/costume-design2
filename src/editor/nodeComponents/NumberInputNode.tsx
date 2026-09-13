@@ -22,7 +22,7 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
     <div className="rf-node">
       <NodeTitleBar id={id} label={nodeData.label ?? 'Number'} />
       <input
-        className="rf-node__slider"
+        className="rf-node__slider nodrag"
         type="range"
         min={min}
         max={max}
