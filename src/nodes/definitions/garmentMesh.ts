@@ -7,8 +7,9 @@ import type { SocketValue } from '../types';
  * `outputs` を宣言しているのは、グループの内部でこの2つの値を `groupOutput` ノードへ
  * 実際にワイヤーで配線できるようにするため(`nodes/definitions/groupNodeFactory.ts` 参照)。
  *
- * このノードは描画対象を示すこと以外の責務を一切持たない — 配置情報(anchor/offsetY)は
- * `garmentAnchor.ts` が別途担う。material が未配線の場合のフォールバック生成のような
+ * このノードは描画対象を示すこと以外の責務を一切持たない — 配置(取り付け位置への平行移動)は
+ * `garmentPlacement.ts` が geometry の頂点座標に焼き込んだ上でここへ渡す(このノード自身は
+ * anchor/offsetY を一切知らない)。material が未配線の場合のフォールバック生成のような
  * 「組み立て」寄りの処理も持たない(以前の `garmentOutput` にはあったが、責務が混在する
  * ため廃止した — 未配線なら単にそのガーメントは描画されない)。 */
 registerNodeType({

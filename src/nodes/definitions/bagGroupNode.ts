@@ -10,6 +10,17 @@ defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
   internalNodes: [
+    {
+      id: 'input',
+      type: 'groupInput',
+      data: {
+        sockets: [
+          { id: 'bodyHeight', label: 'Body Height', type: 'number', default: 1 },
+          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
+          { id: 'bodyShoulder', label: 'Body Shoulder', type: 'number', default: 1 },
+        ],
+      },
+    },
     { id: 'strapWidthIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.08, step: 0.005, label: 'Strap Width' } },
     { id: 'strapThicknessIn', type: 'numberInput', data: { value: 0.015, min: 0.005, max: 0.03, step: 0.005, label: 'Strap Thickness' } },
     { id: 'shoulderOffsetIn', type: 'numberInput', data: { value: 0.08, min: 0, max: 0.2, step: 0.01, label: 'Shoulder Offset' } },
@@ -23,6 +34,7 @@ defineGroupNode({
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'mesh', type: 'garmentMesh', data: {} },
     { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'shoulder', offsetY: 0 } },
+    { id: 'placement', type: 'garmentPlacement', data: {} },
     {
       id: 'outputIO',
       type: 'groupOutput',
@@ -30,8 +42,6 @@ defineGroupNode({
         sockets: [
           { id: 'geometry', label: 'Geometry', type: 'geometry' },
           { id: 'material', label: 'Material', type: 'material' },
-          { id: 'anchor', label: 'Anchor', type: 'enum' },
-          { id: 'offsetY', label: 'Offset Y', type: 'number' },
         ],
       },
     },
@@ -45,12 +55,16 @@ defineGroupNode({
     { source: 'bagWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagWidth' },
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagHeight' },
     { source: 'bagDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagDepth' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'mesh', targetHandle: 'material' },
     { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
     { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'anchor', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
-    { source: 'anchor', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
+    { source: 'anchor', sourceHandle: 'anchor', target: 'placement', targetHandle: 'anchor' },
+    { source: 'anchor', sourceHandle: 'offsetY', target: 'placement', targetHandle: 'offsetY' },
+    { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
+    { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
+    { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
   ],
 });

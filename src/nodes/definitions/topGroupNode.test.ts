@@ -45,10 +45,10 @@ describe('topGroup', () => {
     }
   });
 
-  it('geometry/anchor/offsetY のような outputIO(groupOutput)に配線されたキーも転送される', () => {
+  it('外部出力は geometry/material のみで、anchor/offsetY は含まれない(garmentPlacement が内部で消費し座標へ焼き込む)', () => {
     const result = getNodeType('topGroup').evaluate({}, {});
     expect(result.geometry?.type).toBe('geometry');
-    expect(result.anchor).toEqual({ type: 'enum', value: 'shoulder' });
-    expect(result.offsetY).toEqual({ type: 'number', value: 0 });
+    expect(result.anchor).toBeUndefined();
+    expect(result.offsetY).toBeUndefined();
   });
 });

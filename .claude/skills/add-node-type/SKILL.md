@@ -16,7 +16,7 @@ skirt/belt/hat/dress/... のようにフィールドの値を解決して `build
 
 ## グループノード(category: 'group')の場合
 
-複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`garmentMesh`+`garmentAnchor` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せたい場合は、`registerNodeType()` を直接書かず `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` を使う(`nodes/definitions/skirtGroupNode.ts` 等、既存15種のガーメントグループを参照)。詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節、手順は [`add-garment-type` スキル](../add-garment-type/SKILL.md)を参照。外部から注入できる型に制限は無く、内部配線もノードインスタンスごとに独立してグラフ上で編集できる(ダブルクリックで中に入る)。
+複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`garmentMesh`+`garmentAnchor`+`garmentPlacement` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せたい場合は、`registerNodeType()` を直接書かず `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` を使う(`nodes/definitions/skirtGroupNode.ts` 等、既存15種のガーメントグループを参照)。詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節、手順は [`add-garment-type` スキル](../add-garment-type/SKILL.md)を参照。外部から注入できる型に制限は無く、内部配線もノードインスタンスごとに独立してグラフ上で編集できる(ダブルクリックで中に入る)。
 
 ## それ以外のノードタイプ(input/material/output)の場合
 

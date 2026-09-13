@@ -25,24 +25,24 @@ export const initialNodes: Node[] = [
   // state/useBodySkinColor.ts が id で直接読み取る慣例的なシードノード。エッジでは
   // 何にも配線しない(ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して
   // 直接読み取られる」を参照)。
-  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 2070 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 1103 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
-  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 2178 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
-  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 2286 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 1006 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 898 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 1114 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
+  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 2304 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1962 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 2196 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentMesh +
-  // garmentAnchor という一連のパイプラインを1枚の <name>Group ノード(nodes/definitions/
-  // groupNodeFactory.ts の defineGroupNode() で定義、nodes/definitions/<name>GroupNode.ts)に
-  // 集約している。生パラメータと
-  // Color は他のガーメントと共有されない単独パラメータのため、internalNodes に groupInput ノードと
-  // 並べて直接書かれており(グループの中に入って初めて編集できる)、このファイルには現れない —
-  // 詳細は src/nodes/CLAUDE.md の「グループノード」節を参照。
-  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 288 }, data: {} },
+  // garmentAnchor + garmentPlacement という一連のパイプラインを1枚の <name>Group ノード
+  // (nodes/definitions/groupNodeFactory.ts の defineGroupNode() で定義、nodes/definitions/
+  // <name>GroupNode.ts)に集約している。生パラメータと Color は他のガーメントと共有されない
+  // 単独パラメータのため、internalNodes に groupInput ノードと並べて直接書かれており
+  // (グループの中に入って初めて編集できる)、このファイルには現れない — 詳細は
+  // src/nodes/CLAUDE.md の「グループノード」節を参照。
+  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 266 }, data: {} },
 
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と
   // Material — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要がある
@@ -53,23 +53,23 @@ export const initialNodes: Node[] = [
   // 「共有ノードをトップレベルに置いて複数グループへ配線する」形に改めた。
   { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 110 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
   { id: 'topColor', type: 'colorInput', position: { x: 0, y: 0 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
-  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 132 }, data: {} },
+  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 110 }, data: {} },
   { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 0 }, data: {} },
-  { id: 'topGroup', type: 'topGroup', position: { x: 680, y: 0 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 680, y: 262 }, data: {} },
+  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 779 }, data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 1018 }, data: {} },
 
-  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1722 }, data: {} },
-  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 1984 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 340, y: 2246 }, data: {} },
-  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 527 }, data: {} },
-  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 766 }, data: {} },
-  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 1005 }, data: {} },
-  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 1244 }, data: {} },
-  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1483 }, data: {} },
-  { id: 'hatGroup', type: 'hatGroup', position: { x: 0, y: 2376 }, data: {} },
-  { id: 'bagGroup', type: 'bagGroup', position: { x: 0, y: 2592 }, data: {} },
-  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 0, y: 2808 }, data: {} },
-  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 0, y: 3024 }, data: {} },
+  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 2196 }, data: {} },
+  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 2412 }, data: {} },
+  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 1060 }, data: {} },
+  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 459 }, data: {} },
+  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 652 }, data: {} },
+  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 845 }, data: {} },
+  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 1038 }, data: {} },
+  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1231 }, data: {} },
+  { id: 'hatGroup', type: 'hatGroup', position: { x: 340, y: 1424 }, data: {} },
+  { id: 'bagGroup', type: 'bagGroup', position: { x: 340, y: 1617 }, data: {} },
+  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 340, y: 1810 }, data: {} },
+  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 340, y: 2003 }, data: {} },
 ];
 
 export const initialEdges: Edge[] = [
@@ -92,4 +92,46 @@ export const initialEdges: Edge[] = [
   { id: 'e-top-color', source: 'topColor', sourceHandle: 'color', target: 'topMaterial', targetHandle: 'color' },
   { id: 'e-top-material-topgroup', source: 'topMaterial', sourceHandle: 'material', target: 'topGroup', targetHandle: 'material' },
   { id: 'e-top-material-sleeve', source: 'topMaterial', sourceHandle: 'material', target: 'sleeveGroup', targetHandle: 'material' },
+
+  // garmentPlacement(取り付け位置をジオメトリへ焼き込むノード、nodes/definitions/
+  // garmentPlacement.ts 参照)がボディのアンカー座標を正しく計算できるよう、bodyHeight/
+  // bodyBuild/bodyShoulder を全15グループへ配線する。ガーメント自身の半径スケーリングに
+  // bodyBuild を使わないガーメント(hat/bag/necktie/glasses/top/sleeve)であっても、
+  // アンカー座標の計算にはボディ全体の寸法が必要なため、この3つは例外なく全グループへ配線する。
+  { id: 'e-skirt-height', source: 'bodyHeight', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-skirt-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-pants-height', source: 'bodyHeight', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-pants-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-shoes-height', source: 'bodyHeight', sourceHandle: 'value', target: 'shoesGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-shoes-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'shoesGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-gloves-height', source: 'bodyHeight', sourceHandle: 'value', target: 'glovesGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-gloves-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'glovesGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-belt-height', source: 'bodyHeight', sourceHandle: 'value', target: 'beltGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-belt-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'beltGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-scarf-height', source: 'bodyHeight', sourceHandle: 'value', target: 'scarfGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-scarf-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'scarfGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-jacket-height', source: 'bodyHeight', sourceHandle: 'value', target: 'jacketGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-jacket-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'jacketGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-socks-height', source: 'bodyHeight', sourceHandle: 'value', target: 'socksGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-socks-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'socksGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-dress-height', source: 'bodyHeight', sourceHandle: 'value', target: 'dressGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-dress-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'dressGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-top-height', source: 'bodyHeight', sourceHandle: 'value', target: 'topGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-top-build', source: 'bodyBuild', sourceHandle: 'value', target: 'topGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-top-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'topGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-sleeve-height', source: 'bodyHeight', sourceHandle: 'value', target: 'sleeveGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-sleeve-build', source: 'bodyBuild', sourceHandle: 'value', target: 'sleeveGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-sleeve-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'sleeveGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-hat-height', source: 'bodyHeight', sourceHandle: 'value', target: 'hatGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-hat-build', source: 'bodyBuild', sourceHandle: 'value', target: 'hatGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-hat-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'hatGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-bag-height', source: 'bodyHeight', sourceHandle: 'value', target: 'bagGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-bag-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bagGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-bag-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'bagGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-necktie-height', source: 'bodyHeight', sourceHandle: 'value', target: 'necktieGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-necktie-build', source: 'bodyBuild', sourceHandle: 'value', target: 'necktieGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-necktie-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'necktieGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-glasses-height', source: 'bodyHeight', sourceHandle: 'value', target: 'glassesGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-glasses-build', source: 'bodyBuild', sourceHandle: 'value', target: 'glassesGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-glasses-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'glassesGroup', targetHandle: 'bodyShoulder' },
 ];
