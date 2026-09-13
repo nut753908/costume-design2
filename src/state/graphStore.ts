@@ -54,11 +54,11 @@ interface GraphState {
    * ままで(ノードカード上のリアルタイム値表示用)、無改修で残す。 */
   rootEvaluatedResults: EvaluatedGraph | null;
   /** グループの中に入っている間、その直上の親スコープ(`scopeStack` の最後のフレーム)を
-   * 評価した結果(`state/useParentScopeEvaluatedGraph.ts` が書き込む)。トップレベルにいる、
-   * またはグループが多段ネストしている場合の2階層以上上は対象外(このアプリの実際のグループは
-   * 1階層のみで、親スコープ自身が別のグループの中で未接続のデフォルトに頼っている、という
-   * ケースは実質発生しない)。`GroupInputNode.tsx` が、外部から実際に配線されている値を
-   * (未接続時のデフォルトへのフォールバックではなく)表示するために使う。 */
+   * 評価した結果(`state/useParentScopeEvaluatedGraph.ts` が書き込む)。トップレベルにいる間は
+   * `null`。多段ネスト(グループの中の別グループ)でも、`scopeStack` をトップレベルから
+   * 再帰的に評価する(`evaluateScopeChain()`)ため、親スコープ自身がさらに外側のグループの
+   * 中にネストされていても正しい値になる。`GroupInputNode.tsx` が、外部から実際に配線されて
+   * いる値を(未接続時のデフォルトへのフォールバックではなく)表示するために使う。 */
   parentScopeEvaluatedResults: EvaluatedGraph | null;
   /** グループの中に入るたびに積まれる、上位階層のスナップショット。空ならトップレベル。 */
   scopeStack: ScopeFrame[];
