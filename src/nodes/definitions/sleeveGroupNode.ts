@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** sleeveGen(sleeveGenerator)+anchorIn(enumInput)+offsetYIn(numberInput)+
- * placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) を1枚にまとめたグループノード。Sleeve Radius/Sleeve Length は sleeve 固有の単独パラメータ
+ * placement(garmentPlacement)+sceneOut(sceneOutput) を1枚にまとめたグループノード。Sleeve Radius/Sleeve Length は sleeve 固有の単独パラメータ
  * のため、外側の numberInput ノードではなくグループ内部の同型ノードとして保持する。
  *
  * Attach Radius(Body Build 適用後の Top の胴体半径と同じ値)と Material(Top と同じ
@@ -32,11 +32,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

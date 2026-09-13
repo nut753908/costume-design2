@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** topGen(topGenerator)+anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+
- * outputIO(groupOutput)+sceneOut(sceneOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
+ * sceneOut(sceneOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
  * 他のガーメントと共有され
  * ない単独パラメータのため、外側の numberInput/enumInput ノードではなくグループ内部の同型
  * ノードとして保持する。
@@ -15,9 +15,8 @@ import { defineGroupNode } from './groupNodeFactory';
  * `topMaterial`)へ引き上げ、topGroup/sleeveGroup の両方へ普通の外部ソケットとして
  * ファンアウトする形に改めた(`src/geometry/CLAUDE.md` の sleeve の節が元々説明していた
  * 「1つの Color/Material ノードから2つの Garment Output へのファンアウト」を文字通り実現)。
- * `outputIO`(`groupOutput`)は、その「他ガーメントへの再公開」という以前の役割ではなく、
- * `defineGroupNode()` が全グループに必須とする geometry/material の通常の出力経路として
- * 使っている(`groupNodeFactory.ts` 参照)。 */
+ * `groupOutput` はここでは使わない(他ガーメントへ再公開したい値が無いため省略している)—
+ * geometry/material の描画は `sceneOut`(`sceneOutput`)が別途担う。 */
 defineGroupNode({
   type: 'topGroup',
   label: 'Top',
@@ -42,11 +41,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

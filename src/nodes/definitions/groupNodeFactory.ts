@@ -11,13 +11,13 @@ export interface GroupNodeConfig {
    *  `data.sockets` がこのグループノードが外部に見せる入力ソケット一覧になる。
    *  他ガーメントと共有される値(`bodyBuild` など)が無いガーメントでは省略でき、その場合
    *  外部から見た入力ソケットは0個になる(hat/bag/necktie/glasses の実例を参照)。
-   *  `type: 'groupOutput'` ノード(Blender の Group Output ノード相当)は必須 —
-   *  グループ本体の出力は、この内部ノードに実際に配線された値だけがそのまま外部出力になる
-   *  (通常は `garmentPlacement` 型ノードの geometry と、`toonMaterial` 型ノードなどの
-   *  material の2つを配線する。anchor/offsetY は `garmentPlacement` 型ノードが内部で消費して
-   *  ジオメトリの頂点座標へ焼き込むため、`groupOutput` の外まで出ることはない —
-   *  `garmentPlacement.ts` 参照)。「どのノードが終端か」を設定値として隠し持つのではなく、
-   *  Group Input と対称に、キャンバス上で見える配線そのものが仕様になる。 */
+   *  `type: 'groupOutput'` ノード(Blender の Group Output ノード相当)も同様に省略可 —
+   *  他ガーメントへ再公開したい値(geometry/material 以外の値、下記「値が複数グループで
+   *  共有される場合」参照)が無ければ省略でき、その場合外部から見た出力ソケットは0個になる
+   *  (既存15種のガーメントはすべて省略している — 描画は下記 `sceneOutput` が別途担うため、
+   *  `groupOutput` の出番が無い)。含めた場合、グループ本体のこの出力は、この内部ノードに
+   *  実際に配線された値だけがそのまま外部出力になる。「どのノードが終端か」を設定値として
+   *  隠し持つのではなく、Group Input と対称に、キャンバス上で見える配線そのものが仕様になる。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];
 }
@@ -73,17 +73,15 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
  *
  * evaluate() は外部から渡された入力値を埋め込みサブグラフ内の `groupInput` ノードへ
  * 一時的に注入してから evaluateGraph() を再帰的に呼び、`groupOutput` ノードの評価結果を
- * そのまま外部出力として返すだけ。
+ * そのまま外部出力として返すだけ(`groupInput` と同じく `groupOutput` も省略可 — 省略時は
+ * 外部出力0個の空オブジェクトになる)。
  */
 export function defineGroupNode(config: GroupNodeConfig): void {
   const templateInputNode = config.internalNodes.find((n) => n.type === 'groupInput');
   const templateOutputNode = config.internalNodes.find((n) => n.type === 'groupOutput');
-  if (!templateOutputNode) {
-    throw new Error(`defineGroupNode("${config.type}"): internalNodes must include a 'groupOutput' node (geometry/material must be wired through it)`);
-  }
 
   const staticInputs = toSocketDefs((templateInputNode?.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
-  const staticOutputs = toSocketDefs((templateOutputNode.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
+  const staticOutputs = toSocketDefs((templateOutputNode?.data as { sockets?: GroupIOSocket[] } | undefined)?.sockets);
 
   registerNodeType<GroupNodeData>({
     type: config.type,

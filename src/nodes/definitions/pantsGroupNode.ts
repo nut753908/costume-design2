@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** pantsWaistScale(numberMultiply)+pantsGen(pantsGenerator)+pantsMaterial(toonMaterial)+
- * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) の8ノードを1枚に
+ * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の7ノードを1枚に
  * まとめたグループノード。Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有され
  * ない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型
  * ノードとして保持する。
@@ -36,11 +36,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'waist', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

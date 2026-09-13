@@ -3,11 +3,11 @@ import { defineGroupNode } from './groupNodeFactory';
 /** hat は bodyBuild によるスケーリング対象外(headRadius が computeBodyDimensions で
  * buildScale の影響を受けないため)なので Body Build 入力は無く、
  * hatGen(hatGenerator)+hatMaterial(toonMaterial)+anchorIn(enumInput)+offsetYIn(numberInput)+
- * placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) の7ノードを1枚にまとめる。Brim Radius/Crown Radius/Height/Color も
+ * placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚にまとめる。Brim Radius/Crown Radius/Height/Color も
  * 他のガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput ノードでは
  * なくグループ内部の同型ノードとして保持する — 共有される外部入力ソケットが1つも無いため、
- * `groupInput` ノード自体を省略している(`defineGroupNode()` は groupInput は省略可、
- * groupOutput は必須)。 */
+ * `groupInput` ノード自体を省略している(`groupOutput` も同様に省略でき、こちらは
+ * geometry/material の描画を担う `sceneOut`(`sceneOutput`)があるため出番が無い)。 */
 defineGroupNode({
   type: 'hatGroup',
   label: 'Hat',
@@ -32,11 +32,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'head', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0.1, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

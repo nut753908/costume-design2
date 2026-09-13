@@ -1,7 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** skirtWaistScale(numberMultiply)+skirtGen(skirtGenerator)+skirtMaterial(toonMaterial)+
- * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) の8ノードを1枚に
+ * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の7ノードを1枚に
  * まとめたグループノード。Waist Radius/Length/Flare/Segments/Color は他のガーメントと共有されない
  * 単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型
  * ノードとして保持する(スライダー/カラーピッカーUIそのものは変わらない)。Body Build のみ
@@ -32,11 +32,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'waist', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0.03, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

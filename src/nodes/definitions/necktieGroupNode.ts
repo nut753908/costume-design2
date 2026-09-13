@@ -2,11 +2,11 @@ import { defineGroupNode } from './groupNodeFactory';
 
 /** necktie は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
  * necktieGen(necktieGenerator)+necktieMaterial(toonMaterial)+anchorIn(enumInput)+
- * offsetYIn(numberInput)+placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) の7ノードを1枚にまとめる。全パラメータが他の
+ * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚にまとめる。全パラメータが他の
  * ガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput ノードでは
  * なくグループ内部の同型ノードとして保持する — 共有される外部入力ソケットが1つも無いため、
- * `groupInput` ノード自体を省略している(`defineGroupNode()` は groupInput は省略可、
- * groupOutput は必須)。 */
+ * `groupInput` ノード自体を省略している(`groupOutput` も同様に省略でき、こちらは
+ * geometry/material の描画を担う `sceneOut`(`sceneOutput`)があるため出番が無い)。 */
 defineGroupNode({
   type: 'necktieGroup',
   label: 'Necktie',
@@ -35,11 +35,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

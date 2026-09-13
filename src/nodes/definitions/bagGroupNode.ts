@@ -2,10 +2,11 @@ import { defineGroupNode } from './groupNodeFactory';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
  * bagGen(bagGenerator)+bagMaterial(toonMaterial)+anchorIn(enumInput)+offsetYIn(numberInput)+
- * placement(garmentPlacement)+outputIO(groupOutput)+sceneOut(sceneOutput) の7ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない
+ * placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない
  * 単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノード
  * として保持する — 共有される外部入力ソケットが1つも無いため、`groupInput` ノード自体を
- * 省略している(`defineGroupNode()` は groupInput は省略可、groupOutput は必須)。 */
+ * 省略している(`groupOutput` も同様に省略でき、こちらは geometry/material の描画を
+ * 担う `sceneOut`(`sceneOutput`)があるため出番が無い)。 */
 defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
@@ -35,11 +36,6 @@ defineGroupNode({
     { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: { sockets: [] },
-    },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [

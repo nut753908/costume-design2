@@ -42,9 +42,9 @@ export const initialNodes: Node[] = [
   // 単独パラメータのため、internalNodes に groupInput ノードと並べて直接書かれており
   // (グループの中に入って初めて編集できる)、このファイルには現れない — 詳細は
   // src/nodes/CLAUDE.md の「グループノード」節を参照。各 <name>GroupNode.ts の internalNodes
-  // は `groupOutput` と並べて `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードも
-  // 内包しており、実際にシーンへ描画されるのはこの内部 `sceneOutput` への配線があるからで
-  // ある(このファイルにはその配線は現れない)。
+  // は `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードも内包しており、実際に
+  // シーンへ描画されるのはこの内部 `sceneOutput` への配線があるからである(このファイルには
+  // その配線は現れない)。
   { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 266 }, data: {} },
 
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と

@@ -264,18 +264,23 @@ describe('defineGroupNode', () => {
     expect(result.sceneOutputMaterial).toBeUndefined();
   });
 
-  it('groupOutput ノードが無いと登録時に例外を投げる', () => {
+  it('groupOutput ノードも groupInput と同様に省略でき、外部出力は0個になる(既存15種のガーメントの実例)', () => {
     const { internalNodes, internalEdges } = buildInternalGraph();
     const withoutOutput = {
       internalNodes: internalNodes.filter((n) => n.type !== 'groupOutput'),
       internalEdges: internalEdges.filter((e) => e.target !== 'output'),
     };
-    expect(() =>
+    if (!nodeTypeRegistry.has('groupFactoryTestGroupNoOutput')) {
       defineGroupNode({
         type: 'groupFactoryTestGroupNoOutput',
-        label: 'Invalid',
+        label: 'Test Group (no groupOutput)',
         ...withoutOutput,
-      }),
-    ).toThrow(/groupOutput/);
+      });
+    }
+    const def = getNodeType('groupFactoryTestGroupNoOutput');
+    expect(def.outputs).toEqual([]);
+
+    // groupOutput 自体が無いので、外部出力は常に空オブジェクトになる。
+    expect(def.evaluate({}, {})).toEqual({});
   });
 });
