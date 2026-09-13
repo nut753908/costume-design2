@@ -1,5 +1,6 @@
 import { useGraphStore } from '../state/graphStore';
 import { ToonMesh } from '../rendering/ToonMesh';
+import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/sceneOutput';
 
 /** ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
  * 評価時にジオメトリの頂点座標へ焼き込み済み(Blender の Geometry Nodes で位置をジオメトリに
@@ -18,19 +19,26 @@ export function Garments() {
 
   return (
     <>
-      {Array.from(evaluated.entries()).flatMap(([nodeId, result]) => {
-        // `sceneOutputGeometry`/`sceneOutputMaterial` は、そのノード(通常は `<name>Group`)の
-        // 内部に `sceneOutput`(nodes/definitions/sceneOutput.ts)が実際に配線されている
-        // 場合にだけ `groupNodeFactory.ts` の `evaluate()` が転送する予約キー。ノードの型を
-        // 問わずこの2キーの有無だけを見る — `groupOutput` 経由の通常の `geometry`/`material`
-        // (グループ間で値を再利用するための汎用ソケット)を直接見て自動描画する、という
-        // 暗黙の検出はしない(`nodes/CLAUDE.md`/`scene/CLAUDE.md` 参照)。
-        const geometry = result.sceneOutputGeometry;
-        const material = result.sceneOutputMaterial;
-        if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') return [];
+      {Array.from(evaluated.entries()).flatMap(([nodeId, result]) =>
+        // `sceneOutputGeometry<N>`/`sceneOutputMaterial<N>` は、そのノード(通常は
+        // `<name>Group`)の内部に `sceneOutput`(nodes/definitions/sceneOutput.ts)が実際に
+        // 配線されている場合にだけ `groupNodeFactory.ts` の `evaluate()` が転送する予約キー。
+        // ノードの型を問わずこのキーの有無だけを見る — `groupOutput` 経由の通常の
+        // `geometry`/`material`(グループ間で値を再利用するための汎用ソケット)を直接見て
+        // 自動描画する、という暗黙の検出はしない(`nodes/CLAUDE.md`/`scene/CLAUDE.md` 参照)。
+        // 1つのグループの中に `sceneOutput` は何個でも置けるため、インデックスをすべて
+        // 走査してそれぞれ独立した `ToonMesh` としてマウントする。
+        Object.keys(result).flatMap((key) => {
+          const index = matchSceneOutputGeometryIndex(key);
+          if (index === null) return [];
 
-        return [<ToonMesh key={nodeId} geometry={geometry.value} material={material.value} />];
-      })}
+          const geometry = result[sceneOutputGeometryKey(index)];
+          const material = result[sceneOutputMaterialKey(index)];
+          if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') return [];
+
+          return [<ToonMesh key={`${nodeId}:${index}`} geometry={geometry.value} material={material.value} />];
+        }),
+      )}
     </>
   );
 }

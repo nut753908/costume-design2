@@ -3,6 +3,7 @@ import { evaluateGraph, type EvaluatedGraph } from '../evaluateGraph';
 import { computeAutoLayout } from '../autoLayout';
 import type { GraphEdge, GraphNode, GroupInternalEdge, GroupInternalNode, SocketDef, SocketValue } from '../types';
 import type { GroupIOSocket } from './groupIOSocket';
+import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from './sceneOutput';
 
 export interface GroupNodeConfig {
   type: string;
@@ -61,35 +62,51 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
   }));
 }
 
-/** 埋め込みサブグラフの中から、実際に描画対象として解決済みの geometry+material を1組だけ
- * 探す。`internalNodes` を先頭から見て、最初に見つかったものを採用する(`groupOutput` を
- * 探すのと同じ「決定的な探索」で、優先順位を隠し持たない)。見つかる形は2通り:
+/** 埋め込みサブグラフの中から、実際に描画対象として解決済みの geometry+material の組を
+ * すべて探す。`internalNodes` を先頭から見た順に並べる(`groupOutput` を探すのと同じ
+ * 「決定的な探索」で、優先順位を隠し持たない)。1つのノードから見つかる形は2通り:
  *
  * 1. `type === 'sceneOutput'` のノード自身 — その評価結果は素通しされた `geometry`/
- *    `material`(sceneOutput 自身の入力ソケット名)を持つ。
+ *    `material`(sceneOutput 自身の入力ソケット名)を持つ。**1つのグループの中に
+ *    `sceneOutput` は何個あってもよい**ため、1つ見つけても探索は続ける。
  * 2. それ以外の任意のノード(典型的には、内部に自分自身の `sceneOutput` を持つネストした
- *    グループノードインスタンス)— その評価結果がすでに `sceneOutputGeometry`/
- *    `sceneOutputMaterial`(このグループがさらに1つ内側から転送してきた予約キー)を持って
- *    いれば、そのまま採用する。
+ *    グループノードインスタンス)— その評価結果がすでに `sceneOutputGeometry<N>`/
+ *    `sceneOutputMaterial<N>`(このグループがさらに1つ内側から転送してきた予約キー、
+ *    `nodes/definitions/sceneOutput.ts` 参照)を1組以上持っていれば、そのすべてを採用する
+ *    (ネストしたグループ自身が複数の `sceneOutput` を持っていた場合も、ここですべて拾う)。
  *
  * この2つ目のケースがあるおかげで、`sceneOutput` を持つグループが別のグループの内部に
  * 埋め込まれていても(多段ネスト)、各階層の `evaluate()` が同じこの関数を呼ぶだけで
  * 自然に何階層でも外側まで転送される — 特別な再帰処理は不要。 */
-function findResolvedSceneOutput(
+function findResolvedSceneOutputs(
   internalNodes: GraphNode[],
   internalResults: EvaluatedGraph,
-): { geometry: SocketValue; material: SocketValue } | null {
+): { geometry: SocketValue; material: SocketValue }[] {
+  const found: { geometry: SocketValue; material: SocketValue }[] = [];
+
   for (const node of internalNodes) {
     const result = internalResults.get(node.id);
     if (!result) continue;
 
-    const geometry = node.type === 'sceneOutput' ? result.geometry : result.sceneOutputGeometry;
-    const material = node.type === 'sceneOutput' ? result.material : result.sceneOutputMaterial;
-    if (geometry?.type === 'geometry' && material?.type === 'material') {
-      return { geometry, material };
+    if (node.type === 'sceneOutput') {
+      if (result.geometry?.type === 'geometry' && result.material?.type === 'material') {
+        found.push({ geometry: result.geometry, material: result.material });
+      }
+      continue;
+    }
+
+    for (const key of Object.keys(result)) {
+      const index = matchSceneOutputGeometryIndex(key);
+      if (index === null) continue;
+      const geometry = result[sceneOutputGeometryKey(index)];
+      const material = result[sceneOutputMaterialKey(index)];
+      if (geometry?.type === 'geometry' && material?.type === 'material') {
+        found.push({ geometry, material });
+      }
     }
   }
-  return null;
+
+  return found;
 }
 
 /**
@@ -148,24 +165,23 @@ export function defineGroupNode(config: GroupNodeConfig): void {
       const outputNode = internalNodes.find((n) => n.type === 'groupOutput');
       const forwarded = outputNode ? { ...(internalResults.get(outputNode.id) ?? {}) } : {};
 
-      // 埋め込みサブグラフの中に `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードが
-      // あれば(任意、groupOutput と違って必須ではない)、それが実際に geometry+material を
-      // 受け取っているかを見て、`sceneOutputGeometry`/`sceneOutputMaterial` という予約キーで
-      // このグループ自身の外部出力へ転送する。`groupOutput` が転送する通常の `geometry`/
-      // `material`(グループ間で再利用するための汎用ソケット)とは別の、Garments.tsx だけが
-      // 読む専用チャンネル — この2キーはグループの静的な `outputs` には含まれず(numberDisplay
-      // の `value` と同じパターン)、他ノードへ配線することはできない。これにより
-      // 「グループの中に sceneOutput を置いて配線する」というキャンバス上で見える操作だけが、
-      // トップレベルに別途 `sceneOutput` ノードを置く場合と同じ「明示的な配線が仕様」という
-      // 原則の下で描画対象になる(nodes/CLAUDE.md/scene/CLAUDE.md 参照)。`findResolvedSceneOutput()`
-      // は直接の `sceneOutput` だけでなく、内部にネストした別のグループノード(その内部で
-      // すでに解決済みの `sceneOutputGeometry`/`sceneOutputMaterial` を持つ)も見つけるため、
-      // この転送は各階層で同じロジックが繰り返されるだけで、多段ネストにも自然に対応する。
-      const resolvedSceneOutput = findResolvedSceneOutput(internalNodes, internalResults);
-      if (resolvedSceneOutput) {
-        forwarded.sceneOutputGeometry = resolvedSceneOutput.geometry;
-        forwarded.sceneOutputMaterial = resolvedSceneOutput.material;
-      }
+      // 埋め込みサブグラフの中の `sceneOutput`(nodes/definitions/sceneOutput.ts)ノード
+      // (任意、groupOutput と違って必須ではなく、1つのグループの中に何個あってもよい)が
+      // 実際に geometry+material を受け取っているものを、`sceneOutputGeometry<N>`/
+      // `sceneOutputMaterial<N>` という予約キーで 0 から振り直してこのグループ自身の
+      // 外部出力へ転送する。`groupOutput` が転送する通常の `geometry`/`material`(グループ間で
+      // 再利用するための汎用ソケット)とは別の、Garments.tsx だけが読む専用チャンネル —
+      // この予約キーはグループの静的な `outputs` には含まれず(numberDisplay の `value` と
+      // 同じパターン)、他ノードへ配線することはできない。これにより「グループの中に
+      // sceneOutput を置いて配線する」というキャンバス上で見える操作だけが、「明示的な配線が
+      // 仕様」という原則の下で描画対象になる(nodes/CLAUDE.md/scene/CLAUDE.md 参照)。
+      // `findResolvedSceneOutputs()` は直接の `sceneOutput` だけでなく、内部にネストした別の
+      // グループノード(その内部ですでに解決済みの予約キーを持つ)も見つけるため、この転送は
+      // 各階層で同じロジックが繰り返されるだけで、多段ネストにも自然に対応する。
+      findResolvedSceneOutputs(internalNodes, internalResults).forEach(({ geometry, material }, index) => {
+        forwarded[sceneOutputGeometryKey(index)] = geometry;
+        forwarded[sceneOutputMaterialKey(index)] = material;
+      });
 
       return forwarded;
     },

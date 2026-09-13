@@ -184,7 +184,7 @@ describe('defineGroupNode', () => {
     expect(withExternalInput).toEqual(withoutExternalInput);
   });
 
-  it('内部に sceneOutput ノードを置いて geometry+material を配線すると、sceneOutputGeometry/sceneOutputMaterial として外部出力に転送される', () => {
+  it('内部に sceneOutput ノードを置いて geometry+material を配線すると、sceneOutputGeometry0/sceneOutputMaterial0 として外部出力に転送される', () => {
     if (!nodeTypeRegistry.has('groupFactoryTestMeshSource')) {
       registerNodeType({
         type: 'groupFactoryTestMeshSource',
@@ -225,16 +225,17 @@ describe('defineGroupNode', () => {
     }
 
     const result = getNodeType('groupFactoryTestGroupWithSceneOutput').evaluate({}, {});
-    expect(result.sceneOutputGeometry).toEqual({ type: 'geometry', value: {} });
-    expect(result.sceneOutputMaterial).toEqual({ type: 'material', value: {} });
-    // sceneOutputGeometry/sceneOutputMaterial は groupOutput 経由の通常出力とは独立している。
+    expect(result.sceneOutputGeometry0).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial0).toEqual({ type: 'material', value: {} });
+    expect(result.sceneOutputGeometry1).toBeUndefined(); // sceneOutput は1つしか無い。
+    // sceneOutputGeometry0/sceneOutputMaterial0 は groupOutput 経由の通常出力とは独立している。
     expect(result.doubledRadius).toBeDefined();
   });
 
-  it('sceneOutput ノードが内部に無ければ、sceneOutputGeometry/sceneOutputMaterial は現れない', () => {
+  it('sceneOutput ノードが内部に無ければ、sceneOutputGeometry0/sceneOutputMaterial0 は現れない', () => {
     const result = getNodeType('groupFactoryTestGroup').evaluate({}, {});
-    expect(result.sceneOutputGeometry).toBeUndefined();
-    expect(result.sceneOutputMaterial).toBeUndefined();
+    expect(result.sceneOutputGeometry0).toBeUndefined();
+    expect(result.sceneOutputMaterial0).toBeUndefined();
   });
 
   it('内部の sceneOutput が geometry/material 片方しか受け取っていなければ転送されない', () => {
@@ -260,8 +261,81 @@ describe('defineGroupNode', () => {
     }
 
     const result = getNodeType('groupFactoryTestGroupPartialSceneOutput').evaluate({}, {});
-    expect(result.sceneOutputGeometry).toBeUndefined();
-    expect(result.sceneOutputMaterial).toBeUndefined();
+    expect(result.sceneOutputGeometry0).toBeUndefined();
+    expect(result.sceneOutputMaterial0).toBeUndefined();
+  });
+
+  it('1つのグループの中に sceneOutput を複数置くと、それぞれ独立したインデックスで転送される', () => {
+    const { internalNodes, internalEdges } = buildInternalGraph();
+    const withTwoSceneOutputs = {
+      internalNodes: [
+        ...internalNodes,
+        { id: 'meshSourceA', type: 'groupFactoryTestMeshSource', data: {} },
+        { id: 'meshSourceB', type: 'groupFactoryTestMeshSource', data: {} },
+        { id: 'sceneOutA', type: 'sceneOutput', data: {} },
+        { id: 'sceneOutB', type: 'sceneOutput', data: {} },
+      ],
+      internalEdges: [
+        ...internalEdges,
+        { source: 'meshSourceA', sourceHandle: 'geometry', target: 'sceneOutA', targetHandle: 'geometry' },
+        { source: 'meshSourceA', sourceHandle: 'material', target: 'sceneOutA', targetHandle: 'material' },
+        { source: 'meshSourceB', sourceHandle: 'geometry', target: 'sceneOutB', targetHandle: 'geometry' },
+        { source: 'meshSourceB', sourceHandle: 'material', target: 'sceneOutB', targetHandle: 'material' },
+      ],
+    };
+    if (!nodeTypeRegistry.has('groupFactoryTestGroupWithTwoSceneOutputs')) {
+      defineGroupNode({
+        type: 'groupFactoryTestGroupWithTwoSceneOutputs',
+        label: 'Test Group (2 internal sceneOutputs)',
+        ...withTwoSceneOutputs,
+      });
+    }
+
+    const result = getNodeType('groupFactoryTestGroupWithTwoSceneOutputs').evaluate({}, {});
+    expect(result.sceneOutputGeometry0).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial0).toEqual({ type: 'material', value: {} });
+    expect(result.sceneOutputGeometry1).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial1).toEqual({ type: 'material', value: {} });
+    expect(result.sceneOutputGeometry2).toBeUndefined(); // sceneOutput は2つしか無い。
+  });
+
+  it('多段ネスト: 複数の sceneOutput を持つ子グループを埋め込むと、親グループでもすべて0から振り直されて転送される', () => {
+    // このテスト専用の、他のテストの登録に依存しない自己完結したグループを組む。孫にあたる
+    // グループが sceneOutput を2つ持ち、それを何も持たない親グループの内部に1つだけ埋め込む。
+    if (!nodeTypeRegistry.has('groupFactoryTestGrandchildGroupWithTwoSceneOutputs')) {
+      defineGroupNode({
+        type: 'groupFactoryTestGrandchildGroupWithTwoSceneOutputs',
+        label: 'Test Grandchild Group (2 sceneOutputs)',
+        internalNodes: [
+          {
+            id: 'sceneOutA',
+            type: 'sceneOutput',
+            data: { geometry: {} as THREE.BufferGeometry, material: {} as THREE.Material },
+          },
+          {
+            id: 'sceneOutB',
+            type: 'sceneOutput',
+            data: { geometry: {} as THREE.BufferGeometry, material: {} as THREE.Material },
+          },
+        ],
+        internalEdges: [],
+      });
+    }
+    if (!nodeTypeRegistry.has('groupFactoryTestParentOfTwoSceneOutputs')) {
+      defineGroupNode({
+        type: 'groupFactoryTestParentOfTwoSceneOutputs',
+        label: 'Test Parent Group (nests 2 sceneOutputs)',
+        internalNodes: [{ id: 'child', type: 'groupFactoryTestGrandchildGroupWithTwoSceneOutputs', data: {} }],
+        internalEdges: [],
+      });
+    }
+
+    const result = getNodeType('groupFactoryTestParentOfTwoSceneOutputs').evaluate({}, {});
+    expect(result.sceneOutputGeometry0).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial0).toEqual({ type: 'material', value: {} });
+    expect(result.sceneOutputGeometry1).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial1).toEqual({ type: 'material', value: {} });
+    expect(result.sceneOutputGeometry2).toBeUndefined();
   });
 
   it('多段ネスト: 孫グループの内部 sceneOutput が、間の子グループを2階層以上またいで祖先グループまで転送される', () => {
@@ -287,7 +361,7 @@ describe('defineGroupNode', () => {
       });
     }
     // 子・親グループはどちらも自分自身の sceneOutput を持たない — 孫が解決した
-    // sceneOutputGeometry/sceneOutputMaterial を findResolvedSceneOutput() がそのまま
+    // sceneOutputGeometry0/sceneOutputMaterial0 を findResolvedSceneOutputs() がそのまま
     // 見つけて転送するだけで、階層の深さに関わらず動くことを確認する。
     if (!nodeTypeRegistry.has('groupFactoryTestChildGroup')) {
       defineGroupNode({
@@ -307,8 +381,8 @@ describe('defineGroupNode', () => {
     }
 
     const result = getNodeType('groupFactoryTestParentGroup').evaluate({}, {});
-    expect(result.sceneOutputGeometry).toEqual({ type: 'geometry', value: {} });
-    expect(result.sceneOutputMaterial).toEqual({ type: 'material', value: {} });
+    expect(result.sceneOutputGeometry0).toEqual({ type: 'geometry', value: {} });
+    expect(result.sceneOutputMaterial0).toEqual({ type: 'material', value: {} });
   });
 
   it('groupOutput ノードも groupInput と同様に省略でき、外部出力は0個になる(既存15種のガーメントの実例)', () => {
