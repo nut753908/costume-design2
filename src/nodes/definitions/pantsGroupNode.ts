@@ -1,10 +1,10 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** pantsWaistScale(numberMultiply)+pantsGen(pantsGenerator)+pantsMaterial(toonMaterial)+
- * pantsOutput(garmentOutput)+outputIO(groupOutput) の5ノードを1枚にまとめたグループノード。
- * Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有されない単独
- * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
- * して保持する。
+ * mesh(garmentMesh)+anchor(garmentAnchor)+outputIO(groupOutput) の6ノードを1枚にまとめた
+ * グループノード。Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有され
+ * ない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型
+ * ノードとして保持する。
  *
  * Leg Spacing(`pantsLegSpacing`)は shoesGroup/socksGroup からも直接再引きされる外部の
  * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build と合わせて
@@ -31,7 +31,8 @@ defineGroupNode({
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'pantsGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#9c7b4f' } },
+    { id: 'mesh', type: 'garmentMesh', data: {} },
+    { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'waist', offsetY: 0 } },
     {
       id: 'outputIO',
       type: 'groupOutput',
@@ -53,12 +54,12 @@ defineGroupNode({
     { source: 'inseamIn', sourceHandle: 'value', target: 'gen', targetHandle: 'inseam' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'gen', targetHandle: 'legSpacing' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
-    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
-    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
+    { source: 'material', sourceHandle: 'material', target: 'mesh', targetHandle: 'material' },
+    { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'anchor', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'anchor', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });

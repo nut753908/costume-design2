@@ -5,7 +5,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 # 新しいガーメント種の追加
 
-ガーメント1種の追加には最低3ファイルが要る(何らかの理由でグループ化を見送る場合は3が不要)。
+ガーメント1種の追加には3ファイルが要る(グループ化は必須 — グループの `groupOutput` ノードが唯一の外部出力経路であり、グループ化しない個別配線は現在サポートしていない)。
 
 1. `src/geometry/<name>.ts` — `build<Name>Geometry(params) -> THREE.BufferGeometry` という純粋関数。
 2. `src/nodes/definitions/<name>Generator.ts` — 1のジオメトリ関数をノードグラフに配線するノードタイプ。ノードタイプ自体の登録は `import.meta.glob` により自動化されているので、これ以外にレジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
@@ -47,15 +47,19 @@ defineGeneratorNode({
 
 `fields` を解決するだけで済まない形(独自の入力ソケット構成が要る、他ノードの出力に依存するなど)の場合のみ `registerNodeType()` を直接呼ぶ。その場合の既定値の扱いは [`add-node-type` スキル](../add-node-type/SKILL.md)の「それ以外のノードタイプ」節を参照。
 
-## 3. アンカーへの接続(garmentOutput)
+## 3. 描画と配置(garmentMesh / garmentAnchor)
 
-ガーメント自体はどこにも取り付かない。グラフ上で `geometry` 出力を `toonMaterial` 経由(または直接)で `garmentOutput` ノードに繋ぎ、その `data.anchor` で取り付け位置を選ぶ。`anchor` は `'waist' | 'shoulder' | 'feet' | 'wrist' | 'head'` の固定列挙(`garmentOutput.ts`)で、これらは `body.ts` の `computeBodyAnchors()` が返す座標に対応する。**新しいアンカー種を増やす場合は `garmentOutput.ts` の型と `body.ts`/`Body.tsx`/`Garments.tsx` 側の対応を同時に変更する必要がある**(通常の追加では既存アンカーのどれかを再利用すれば足りる)。
+ガーメント自体はどこにも取り付かない。`geometry` 出力を `toonMaterial` 経由(または直接)で `garmentMesh` ノードへ繋ぐと、その geometry+material のペアが描画対象になる — `garmentMesh` は2つをそのまま転送するだけの描画専用ノードで、`data` を一切持たない。
+
+取り付け位置は別ノード `garmentAnchor` が担う。入力を持たず、`data.anchor` で取り付け位置を選ぶ。`anchor` は `'waist' | 'shoulder' | 'feet' | 'wrist' | 'head'` の固定列挙(`garmentAnchor.ts`)で、これらは `body.ts` の `computeBodyAnchors()` が返す座標に対応する。**新しいアンカー種を増やす場合は `garmentAnchor.ts` の型と `body.ts`/`Body.tsx`/`Garments.tsx` 側の対応を同時に変更する必要がある**(通常の追加では既存アンカーのどれかを再利用すれば足りる)。
+
+`garmentMesh`/`garmentAnchor` は責務を分けた2つの別ノードで、以前あった `garmentOutput` という1ノードでの兼務(描画+配置+material未配線時のフォールバック生成)は廃止した。この2ノードの出力は、次節で作るグループの `groupOutput` ノードへ配線して初めてグループ本体の外部出力になる。
 
 Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を走査し `geometry`+`material` を持つものを自動的にレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
 ## 4. グループノードの定義(src/nodes/definitions/\<name\>GroupNode.ts)
 
-既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput + groupOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
+既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentMesh + garmentAnchor + groupOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する。
 
@@ -84,9 +88,11 @@ defineGroupNode({
     { id: 'scale', type: 'numberMultiply', data: {} }, // 体に触れる半径が無ければ省略
     { id: 'gen', type: 'xxxGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'output', type: 'garmentOutput', data: { anchor: 'waist', offsetY: 0, fallbackColor: '#cccccc' } },
+    { id: 'mesh', type: 'garmentMesh', data: {} },
+    { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'waist', offsetY: 0 } },
     // groupOutput は必須 — グループの外部出力はこのノードに実際に配線された値だけになる。
-    // geometry/material/anchor/offsetY の4つを output(garmentOutput)からここへ配線すること。
+    // geometry/material は mesh(garmentMesh)から、anchor/offsetY は anchor(garmentAnchor)
+    // からここへ配線すること。
     {
       id: 'outputIO',
       type: 'groupOutput',
@@ -102,11 +108,11 @@ defineGroupNode({
   ],
   internalEdges: [
     // ... radiusIn.value -> scale.value, input.bodyBuild -> scale.factor, scale -> gen.radius,
-    // colorIn.color -> material.color, ...
-    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
-    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
+    // colorIn.color -> material.color, gen.geometry -> mesh.geometry, material.material -> mesh.material, ...
+    { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'anchor', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'anchor', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });
 ```
@@ -120,8 +126,6 @@ defineGroupNode({
 既存15種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、グループノードの `Body Build` 入力ソケットへ `bodyBuild` を配線すること(例: `bodyBuild → skirtGroup.bodyBuild`)。これを省くと、ボディをリサイズしたときだけそのガーメントが体を突き抜けたり浮いたりする。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径はスケール対象外でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「ボディスケールはソケットグラフを迂回して直接読み取られる」節を参照。
 
 新しいガーメントが pants/shoes/socks の Leg Spacing や topGroup/sleeveGroup の Torso Radius/Material のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing`、`topRadiusScale → topGroup.torsoRadius`/`sleeveGroup.attachRadius` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(実際に topGroup/sleeveGroup で踏んだ落とし穴、`src/nodes/CLAUDE.md` の「グループノード」節参照)。
-
-何らかの理由でグループ化しない場合は、`src/state/initialGraph.ts` 側に「入力 → (numberMultiply) → ジェネレーター → toonMaterial ← colorInput → garmentOutput」という個別配線を置く。
 
 ノードの `position` は `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使う汎用アルゴリズム)ではなく、`src/state/initialGraph.ts` 冒頭のコメントに書かれている手作業の列テンプレートに従って配置すること。汎用アルゴリズムは全ガーメントの入力ノードを1つの巨大な層にまとめてしまい、エッジがノード上を大量に横切る見づらいレイアウトになるため、初期グラフでは採用していない。グループ化されたガーメント1つ分は x=260 のグループノード1つのみ(生パラメータは内部に埋め込まれているため、このファイル側にはもう列を持たない)。新しいガーメントは、関連の薄い既存ガーメント2つの間ではなく、末尾(または `top`+`sleeve`・`pants`+`shoes`+`socks` のように依存関係のあるガーメントに隣接させる場合はそのすぐ下)に追加する。`<name>GroupNode.ts` の `internalNodes` 自体の座標は `nodes/autoLayout.ts` の `computeAutoLayout()` が自動算出するため、手作業での配置は不要。
 

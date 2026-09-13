@@ -1,8 +1,8 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
- * bagGen(bagGenerator)+bagMaterial(toonMaterial)+bagOutput(garmentOutput)+
- * outputIO(groupOutput) の4ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない
+ * bagGen(bagGenerator)+bagMaterial(toonMaterial)+mesh(garmentMesh)+anchor(garmentAnchor)+
+ * outputIO(groupOutput) の5ノードを1枚にまとめる。全パラメータが他のガーメントと共有されない
  * 単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノード
  * として保持する — 共有される外部入力ソケットが1つも無いため、`groupInput` ノード自体を
  * 省略している(`defineGroupNode()` は groupInput は省略可、groupOutput は必須)。 */
@@ -21,7 +21,8 @@ defineGroupNode({
     { id: 'colorIn', type: 'colorInput', data: { hex: '#8a4a2e', label: 'Bag Color' } },
     { id: 'gen', type: 'bagGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'output', type: 'garmentOutput', data: { anchor: 'shoulder', offsetY: 0, fallbackColor: '#8a4a2e' } },
+    { id: 'mesh', type: 'garmentMesh', data: {} },
+    { id: 'anchor', type: 'garmentAnchor', data: { anchor: 'shoulder', offsetY: 0 } },
     {
       id: 'outputIO',
       type: 'groupOutput',
@@ -44,12 +45,12 @@ defineGroupNode({
     { source: 'bagWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagWidth' },
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagHeight' },
     { source: 'bagDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bagDepth' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'mesh', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'output', targetHandle: 'material' },
-    { source: 'output', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'output', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
-    { source: 'output', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
-    { source: 'output', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
+    { source: 'material', sourceHandle: 'material', target: 'mesh', targetHandle: 'material' },
+    { source: 'mesh', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
+    { source: 'mesh', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'anchor', sourceHandle: 'anchor', target: 'outputIO', targetHandle: 'anchor' },
+    { source: 'anchor', sourceHandle: 'offsetY', target: 'outputIO', targetHandle: 'offsetY' },
   ],
 });

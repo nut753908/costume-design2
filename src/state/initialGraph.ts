@@ -35,9 +35,10 @@ export const initialNodes: Node[] = [
   { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1962 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
-  // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentOutput という
-  // 一連のパイプラインを1枚の <name>Group ノード(nodes/definitions/groupNodeFactory.ts の
-  // defineGroupNode() で定義、nodes/definitions/<name>GroupNode.ts)に集約している。生パラメータと
+  // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + garmentMesh +
+  // garmentAnchor という一連のパイプラインを1枚の <name>Group ノード(nodes/definitions/
+  // groupNodeFactory.ts の defineGroupNode() で定義、nodes/definitions/<name>GroupNode.ts)に
+  // 集約している。生パラメータと
   // Color は他のガーメントと共有されない単独パラメータのため、internalNodes に groupInput ノードと
   // 並べて直接書かれており(グループの中に入って初めて編集できる)、このファイルには現れない —
   // 詳細は src/nodes/CLAUDE.md の「グループノード」節を参照。

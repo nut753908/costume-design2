@@ -19,8 +19,8 @@ function uniqueSocketId(sockets: GroupIOSocket[]): string {
 /** Blender の Geometry Nodes における「Group Output」ノード相当のカスタム描画。
  * グループの中に入っている間、外部へ公開したい内部ノードの出力をこのノードへ配線するだけで
  * グループ本体の外部から見える出力ハンドルが増減する(`nodes/definitions/groupOutput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。geometry/material/anchor/offsetY のような
- * garmentOutput 相当の主要な出力も、他ガーメントへの再公開と同じくこのノードへの配線が
+ * `nodes/resolveNodeSockets.ts` 参照)。`garmentMesh`(geometry/material)/`garmentAnchor`
+ * (anchor/offsetY)のような主要な出力も、他ガーメントへの再公開と同じくこのノードへの配線が
  * 必須(`groupNodeFactory.ts` の `defineGroupNode()` 参照 — この2ノードを区別しない)。 */
 function GroupOutputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupOutputData;

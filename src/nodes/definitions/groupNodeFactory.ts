@@ -13,9 +13,9 @@ export interface GroupNodeConfig {
    *  外部から見た入力ソケットは0個になる(hat/bag/necktie/glasses の実例を参照)。
    *  `type: 'groupOutput'` ノード(Blender の Group Output ノード相当)は必須 —
    *  グループ本体の出力は、この内部ノードに実際に配線された値だけがそのまま外部出力になる
-   *  (通常は内部の `garmentOutput` 型ノードの geometry/material/anchor/offsetY の
-   *  4つを配線する)。「どのノードが終端か」を設定値として隠し持つのではなく、
-   *  Group Input と対称に、キャンバス上で見える配線そのものが仕様になる。 */
+   *  (通常は内部の `garmentMesh` 型ノードの geometry/material と `garmentAnchor` 型ノードの
+   *  anchor/offsetY、計4つを配線する)。「どのノードが終端か」を設定値として隠し持つのでは
+   *  なく、Group Input と対称に、キャンバス上で見える配線そのものが仕様になる。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];
 }
@@ -60,7 +60,7 @@ function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] 
 }
 
 /**
- * 複数の既存ノード(numberMultiply/generator/toonMaterial/garmentOutput 等)を1つの
+ * 複数の既存ノード(numberMultiply/generator/toonMaterial/garmentMesh/garmentAnchor 等)を1つの
  * 埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せる「グループ
  * ノード」を定義する。外部インターフェース(入出力ソケット構成)は Blender の Geometry
  * Nodes と同じく、埋め込みサブグラフ内に置く専用ノード `groupInput`/`groupOutput`
@@ -111,9 +111,9 @@ export function defineGroupNode(config: GroupNodeConfig): void {
       const internalResults = evaluateGraph(patchedNodes, internalEdges);
 
       // groupOutput ノードに実際に配線された値だけが、そのまま外部出力になる
-      // (通常は内部の garmentOutput 型ノードの geometry/material/anchor/offsetY を配線する)。
-      // インスタンス側でこのノードが削除されていれば、フォールバックにより単に外部出力が
-      // 空になるだけで、他ノード削除時と同じ挙動。
+      // (通常は内部の garmentMesh 型ノードの geometry/material と garmentAnchor 型ノードの
+      // anchor/offsetY を配線する)。インスタンス側でこのノードが削除されていれば、
+      // フォールバックにより単に外部出力が空になるだけで、他ノード削除時と同じ挙動。
       const outputNode = internalNodes.find((n) => n.type === 'groupOutput');
       return outputNode ? (internalResults.get(outputNode.id) ?? {}) : {};
     },

@@ -8,8 +8,8 @@ import './groupOutput';
 import './numberMultiply';
 
 // テスト専用の中間ノード型。geometry/material のような実ノードを持ち込まずに、
-// 「groupOutput に配線されたキーだけが外部出力になり、配線されていないキー(garmentOutput の
-// anchor/offsetY 相当の宣言外の値)は転送されない」ことを検証するための最小限のスタブ。
+// 「groupOutput に配線されたキーだけが外部出力になり、配線されていないキーは転送されない」
+// ことを検証するための最小限のスタブ。
 function registerTestMiddle() {
   if (nodeTypeRegistry.has('groupFactoryTestMiddle')) return;
   registerNodeType({
