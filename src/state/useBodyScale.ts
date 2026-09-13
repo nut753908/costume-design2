@@ -1,32 +1,36 @@
 import { useMemo } from 'react';
-import type { Node } from '@xyflow/react';
 import { useGraphStore } from './graphStore';
 import { DEFAULT_BODY_SCALE, type BodyScaleParams } from '../geometry/body';
+import { BODY_NODE_ID } from '../nodes/definitions/body';
+import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 
-// テスト用に export している。useBodyScale 自体は React フックだが、ノード削除時の
-// フォールバックというロジックの核心はここに集約されているため、直接検証できるようにする。
-export function readSeedNumber(nodes: Node[], id: string, fallback: number): number {
-  const node = nodes.find((n) => n.id === id);
-  return typeof node?.data.value === 'number' ? node.data.value : fallback;
+// テスト用に export している。id 'body' の Body ノード(nodes/definitions/body.ts)の
+// 評価結果から、指定ソケットの number 値を読み取る。ノードが削除されている・まだ評価が
+// 走っていない(rootEvaluatedResults が null)・ソケットの値が number でない、のいずれの
+// 場合もフォールバック値を返す。
+export function readBodyNumber(results: EvaluatedGraph | null, socketId: string, fallback: number): number {
+  const socketValue = results?.get(BODY_NODE_ID)?.[socketId];
+  return socketValue?.type === 'number' ? socketValue.value : fallback;
 }
 
-/** 慣例的な ID を持つ3つの "Body Height"/"Body Build"/"Body Shoulder" ナンバーノードを id で直接
- * 読み取り、汎用の evaluateGraph のソケットフローを迂回する — ボディスケールはガーメントの
- * geometry/material 出力ではなく、複数の要素(Body、Garments のアンカー)が合意すべき
- * シーン全体のパラメータであるため。ノードが存在しない(ユーザーが削除した等)場合は
- * DEFAULT_BODY_SCALE にフォールバックする。 */
+/** Body(3Dモデル本体)がシーン全体のパラメータとして使う Height/Build/Shoulder スケールを、
+ * `rootEvaluatedResults`(state/useRootEvaluatedGraph.ts、常にトップレベル視点)上の id 'body'
+ * ノード(nodes/definitions/body.ts、BODY_NODE_ID)の評価結果から読み取る。この Body ノードは
+ * `bodyHeight`/`bodyBuild`/`bodyShoulder`(慣例的な id を持つ numberInput ノード、ガーメントの
+ * アンカー計算にも通常のソケット配線で使われる)から実際にワイヤーで配線されており、
+ * ソケットグラフを迂回してノードを id で直接読んでいた以前の実装と異なり、キャンバス上で
+ * 「Body がどこから値を受け取っているか」が普通のエッジとして見える(ルート CLAUDE.md の
+ * 「ボディスケールはソケットグラフを迂回して直接読み取られる」節参照)。Body ノード自体が
+ * 削除されている場合は DEFAULT_BODY_SCALE (1, 1, 1) にフォールバックする。 */
 export function useBodyScale(): BodyScaleParams {
-  // シードノードは常にトップレベルにしか存在しない(グループの中に入っている間は編集も
-  // 参照もできない)ため、scopeStack が積まれていれば「中に入る前の」真のトップレベル
-  // nodes(scopeStack[0])を、トップレベルにいれば s.nodes をそのまま読む。
   const heightScale = useGraphStore((s) =>
-    readSeedNumber(s.scopeStack[0]?.nodes ?? s.nodes, 'bodyHeight', DEFAULT_BODY_SCALE.heightScale),
+    readBodyNumber(s.rootEvaluatedResults, 'height', DEFAULT_BODY_SCALE.heightScale),
   );
   const buildScale = useGraphStore((s) =>
-    readSeedNumber(s.scopeStack[0]?.nodes ?? s.nodes, 'bodyBuild', DEFAULT_BODY_SCALE.buildScale),
+    readBodyNumber(s.rootEvaluatedResults, 'build', DEFAULT_BODY_SCALE.buildScale),
   );
   const shoulderScale = useGraphStore((s) =>
-    readSeedNumber(s.scopeStack[0]?.nodes ?? s.nodes, 'bodyShoulder', DEFAULT_BODY_SCALE.shoulderScale),
+    readBodyNumber(s.rootEvaluatedResults, 'shoulder', DEFAULT_BODY_SCALE.shoulderScale),
   );
 
   return useMemo(() => ({ heightScale, buildScale, shoulderScale }), [heightScale, buildScale, shoulderScale]);

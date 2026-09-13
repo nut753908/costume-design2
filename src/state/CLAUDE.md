@@ -24,12 +24,12 @@
 
 `nodes/definitions/groupNodeFactory.ts` のグループノードをダブルクリックすると `enterGroup(nodeId)` が呼ばれ、`scopeStack`(`state/composeRootGraph.ts` の `ScopeFrame[]`)に現在の `nodes`/`edges` を退避してpushした上で、ストアの `nodes`/`edges` をそのグループインスタンスの内部データ(`data.nodes`/`data.edges`)へ**丸ごと差し替えます**。`exitGroup()` は逆に、編集後の現在の `nodes`/`edges` を退避先の親ノードの `data` へ書き戻してから1つ上の階層を復元します。**この差し替え方式のおかげで、`onNodesChange`/`onConnect`/`addNode`/`updateNodeData`/Undo/Redo/コピペといった既存アクションは一切改修不要**でした(それらは「今ストアが指している `nodes`/`edges` を素直に読み書きする」だけで、今どの階層にいるかを一切意識しないため)。グループの外部入出力ソケット構成は、埋め込みサブグラフ内の `groupInput`/`groupOutput` ノード(`category:'group-io'`)自身の `data.sockets` が定義するため、それらを編集するのも通常の `updateNodeData()` で足りる(そのノードは「今開いている階層」の `nodes` の中に普通に存在するため)。唯一 `updateNodeData()` では届かないのは、そのグループノード自身(親)の `data` — 中に入っている間は現在の `nodes`(内部グラフ)ではなく直近の `scopeStack` フレームに退避されているが、`removeGroupIOSocket(nodeId, socketId)` はソケット削除に伴う内部/外部エッジの後始末のためだけにこのフレームへ触れる専用アクション(詳細は `src/nodes/CLAUDE.md` の「グループノード」節)。
 
-**落とし穴**: この差し替え方式は、グループの中に入っている間 `state.nodes`/`state.edges` が「今開いている階層」の内部ノードだけになることを意味します。これを知らずに `s.nodes`/`s.edges` を直接読む新しいコードを書くと、`Garments.tsx`(3D描画)・`useBodyScale.ts`/`useBodySkinColor.ts`(ボディスケール/肌色の直接読み取り)・`persist` の `partialize` がそうだったように、グループの中に入った瞬間に他の全ガーメントが3Dビューから消える・ボディスケールがデフォルトにリセットされる・リロードで他の設計が失われる、といった壊れ方をします(実際に設計時に見つかった欠陥)。**トップレベル視点で「完全なグラフ」が必要な箇所は、必ず `composeRootGraph(scopeStack, nodes, edges)` を経由すること**:
+**落とし穴**: この差し替え方式は、グループの中に入っている間 `state.nodes`/`state.edges` が「今開いている階層」の内部ノードだけになることを意味します。これを知らずに `s.nodes`/`s.edges` を直接読む新しいコードを書くと、`Garments.tsx`(3D描画)・`persist` の `partialize` がそうだったように、グループの中に入った瞬間に他の全ガーメントが3Dビューから消える・リロードで他の設計が失われる、といった壊れ方をします(実際に設計時に見つかった欠陥)。**トップレベル視点で「完全なグラフ」が必要な箇所は、必ず `composeRootGraph(scopeStack, nodes, edges)` を経由すること**:
 
 - `state/selectors.ts` の `useRootGraphLite()` — `useNodesLite`/`useEdgesLite` と同じ参照安定化パターンで、合成後のグラフを返す。
 - `state/useRootEvaluatedGraph.ts` — 上記を `evaluateGraph()` に渡し、結果をストアの `rootEvaluatedResults`(`evaluatedResults` とは別フィールド)に書き込む。`App.tsx` で `useEvaluatedGraph()` と並行して常時マウントする。
 - `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。
-- `useBodyScale.ts`/`useBodySkinColor.ts` は `scopeStack[0]?.nodes ?? s.nodes`(シードノードは常にトップレベルにしか存在しないため、`scopeStack` が積まれていれば先頭フレームの `nodes` で十分)。
+- `useBodyScale.ts`/`useBodySkinColor.ts` も同じ `rootEvaluatedResults` を読むが、走査はせず id `'body'`(`nodes/definitions/body.ts` の `BODY_NODE_ID`)の評価結果だけを直接引く(ルート CLAUDE.md の「ボディスケール・肌色は id 'body' の Body ノードの評価結果を直接読み取る」節参照)。
 - `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
 
 一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GenericNodeView` のノードカード上のリアルタイム値表示を駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。

@@ -1,24 +1,24 @@
-import type { Node } from '@xyflow/react';
 import { useGraphStore } from './graphStore';
+import { BODY_NODE_ID } from '../nodes/definitions/body';
+import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 
 export const DEFAULT_BODY_SKIN_COLOR = '#f2c9a0';
 
-// テスト用に export している。useBodyScale.ts の readSeedNumber と同じ考え方(ノード削除時の
-// フォールバック)を、colorInput ノードの hex フィールドに対して行う。
-export function readSeedColor(nodes: Node[], id: string, fallback: string): string {
-  const node = nodes.find((n) => n.id === id);
-  return typeof node?.data.hex === 'string' ? node.data.hex : fallback;
+// テスト用に export している。id 'body' の Body ノード(nodes/definitions/body.ts)の
+// 評価結果から skinColor ソケットの値を hex 文字列として読み取る(SocketValue の 'color' 型は
+// 実行時 THREE.Color を持つため、Body.tsx の createToonMaterial() が受け取れる hex 文字列へ
+// ここで変換する)。useBodyScale.ts の readBodyNumber と同じ考え方でフォールバックする。
+export function readBodyColor(results: EvaluatedGraph | null, socketId: string, fallback: string): string {
+  const socketValue = results?.get(BODY_NODE_ID)?.[socketId];
+  return socketValue?.type === 'color' ? `#${socketValue.value.getHexString()}` : fallback;
 }
 
-/** 慣例的な id 'bodySkinColor' を持つ colorInput ノードを id で直接読み取り、汎用の
- * evaluateGraph のソケットフローを迂回する — useBodyScale.ts の bodyHeight/bodyBuild/
- * bodyShoulder と同じパターン(ルート CLAUDE.md 参照)。肌色はガーメントの geometry/material
- * 出力ではなく Body.tsx が直接使うシーン全体のパラメータであるため。ノードが存在しない
- * (ユーザーが削除した等)場合は DEFAULT_BODY_SKIN_COLOR にフォールバックする。 */
+/** Body(3Dモデル本体)の肌色を、`rootEvaluatedResults` 上の id 'body' ノード
+ * (nodes/definitions/body.ts、BODY_NODE_ID)の評価結果から読み取る。`useBodyScale.ts` と同じ
+ * パターン(ルート CLAUDE.md 参照)— `bodySkinColor`(慣例的な id を持つ colorInput ノード)
+ * から Body ノードへ実際にワイヤーで配線されており、ソケットグラフを迂回してノードを id で
+ * 直接読んでいた以前の実装と異なり、キャンバス上で接続先が見える。Body ノード自体が
+ * 削除されている場合は DEFAULT_BODY_SKIN_COLOR にフォールバックする。 */
 export function useBodySkinColor(): string {
-  // useBodyScale.ts と同じ理由(シードノードは常にトップレベルにしか存在しない)で、
-  // グループの中に入っている場合は scopeStack[0](真のトップレベル nodes)を読む。
-  return useGraphStore((s) =>
-    readSeedColor(s.scopeStack[0]?.nodes ?? s.nodes, 'bodySkinColor', DEFAULT_BODY_SKIN_COLOR),
-  );
+  return useGraphStore((s) => readBodyColor(s.rootEvaluatedResults, 'skinColor', DEFAULT_BODY_SKIN_COLOR));
 }

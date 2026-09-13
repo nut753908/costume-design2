@@ -21,18 +21,23 @@ import type { Node, Edge } from '@xyflow/react';
 //   2. 各ノードの新しい座標を Export JSON で取り出し、対応する position をここへ書き戻す
 // 新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
 export const initialNodes: Node[] = [
-  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor は state/useBodyScale.ts・
-  // state/useBodySkinColor.ts が id で直接読み取る慣例的なシードノード。エッジでは
-  // 何にも配線しない(ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して
-  // 直接読み取られる」を参照)。
-  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 832 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 681 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
-  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 983 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
-  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 1889 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor は慣例的な id を持つシードノード。
+  // 全15グループへの通常のソケット配線(アンカー計算・半径スケーリング用、下記 initialEdges
+  // 参照)に加えて、下記の body ノードへも配線されており、state/useBodyScale.ts・
+  // state/useBodySkinColor.ts はその body ノードの評価結果を id (BODY_NODE_ID) で読み取る
+  // (ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して直接読み取られる」を参照)。
+  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 691 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 540 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 842 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
+  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 993 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+
+  // Body(3Dモデル本体、scene/Body.tsx)がシーン全体のパラメータとして使う4値の受け口。
+  // nodes/definitions/body.ts の BODY_NODE_ID('body')と一致させる必要がある。
+  { id: 'body', type: 'body', position: { x: 340, y: 1736 }, data: { height: 1, build: 1, shoulder: 1, skinColor: '#f2c9a0' } },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1738 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1107 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + anchor/offsetY用の
@@ -54,16 +59,16 @@ export const initialNodes: Node[] = [
   // groupOutput 経由で sleeve だけに再公開していたが、「本来共有すべき値が一方のグループの
   // 中に閉じ込められている」という設計上の問題があったため、bodyBuild/pantsLegSpacing と同じ
   // 「共有ノードをトップレベルに置いて複数グループへ配線する」形に改めた。
-  { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 114 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
-  { id: 'topColor', type: 'colorInput', position: { x: 0, y: 0 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
-  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 110 }, data: {} },
-  { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 0 }, data: {} },
-  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 585 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 778 }, data: {} },
+  { id: 'topRadius', type: 'numberInput', position: { x: 0, y: 0 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
+  { id: 'topColor', type: 'colorInput', position: { x: 0, y: 156 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
+  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 0 }, data: {} },
+  { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 156 }, data: {} },
+  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 444 }, data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 637 }, data: {} },
 
-  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1736 }, data: {} },
-  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 340, y: 1906 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 908 }, data: {} },
+  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1892 }, data: {} },
+  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 680, y: 682 }, data: {} },
+  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 852 }, data: {} },
   { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 413 }, data: {} },
   { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 560 }, data: {} },
   { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 707 }, data: {} },
@@ -76,6 +81,13 @@ export const initialNodes: Node[] = [
 ];
 
 export const initialEdges: Edge[] = [
+  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor から body ノード(BODY_NODE_ID)へ。
+  // state/useBodyScale.ts・state/useBodySkinColor.ts はこの body ノードの評価結果を読む。
+  { id: 'e-body-height', source: 'bodyHeight', sourceHandle: 'value', target: 'body', targetHandle: 'height' },
+  { id: 'e-body-build', source: 'bodyBuild', sourceHandle: 'value', target: 'body', targetHandle: 'build' },
+  { id: 'e-body-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'body', targetHandle: 'shoulder' },
+  { id: 'e-body-skin-color', source: 'bodySkinColor', sourceHandle: 'color', target: 'body', targetHandle: 'skinColor' },
+
   { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyBuild' },
   { id: 'e-pants-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyBuild' },
   { id: 'e-pants-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'legSpacing' },
