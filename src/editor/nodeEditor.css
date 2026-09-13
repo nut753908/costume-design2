@@ -37,8 +37,15 @@
   color: #b0413e;
 }
 
+/* `flex: 1`(= flex-basis: 0%)だけでは、`.rf-node` の shrink-to-fit 計算において
+   この入力欄の最大内容サイズ寄与を抑えられない(flex-basis の % も `width: 100%` と
+   同じく不確定な包含ブロックに対しては auto 相当として扱われ、ブラウザ既定の
+   <input type="text"> の実寸(size=20相当)にフォールバックしてしまう — 上記の
+   `.rf-node__settings-field input`/`.rf-node__hex-input` と同根の問題)。確定した
+   固定幅を指定し、必要なら flex-grow で余白を埋める形にする。 */
 .rf-node__title-input {
-  flex: 1;
+  flex: 1 1 100px;
+  width: 100px;
   min-width: 0;
   padding: 1px 4px;
   border: 1px solid transparent;
@@ -63,8 +70,6 @@
 }
 
 .rf-node__settings-field {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -72,9 +77,14 @@
   color: #666;
 }
 
+/* `.rf-node` は幅を明示指定せず内容に合わせて縮む(shrink-to-fit)ため、ここで
+   `width: 100%` を指定しても基準になる確定幅が無く、ブラウザ既定の <input> の
+   実寸(size=20相当、約150px超)がそのまま採用されてカード全体が横に膨張してしまう
+   (実際に発生した不具合)。数値欄は元々2〜4桁程度しか入力しないので、確定した
+   固定幅を直接指定する。 */
 .rf-node__settings-field input {
-  width: 100%;
-  min-width: 0;
+  box-sizing: border-box;
+  width: 44px;
   padding: 2px 4px;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -95,8 +105,13 @@
   background: none;
 }
 
+/* `.rf-node` は幅を明示指定せず内容に合わせて縮む(shrink-to-fit)ため、`width: 100%`
+   では基準になる確定幅が無くブラウザ既定の <input type="text"> の実寸(size=20相当)が
+   採用されてしまう(`.rf-node__settings-field input` と同じ理由、上記コメント参照)。
+   7桁hex("#ffffff")が収まれば十分なので固定幅にする。 */
 .rf-node__hex-input {
-  width: 100%;
+  box-sizing: border-box;
+  width: 100px;
   margin-top: 4px;
   padding: 2px 4px;
   border: 1px solid #ccc;
@@ -261,8 +276,14 @@
   padding-right: 10px;
 }
 
+/* `.rf-node__title-input` と同じ理由(`flex: 1` の flex-basis: 0% も不確定な包含
+   ブロックに対しては auto 相当に扱われ、ブラウザ既定の <input> 実寸にフォールバック
+   する)で、確定した固定幅を指定する。Group Input/Output(`.rf-node--io`、
+   min-width: 190px)ではこれまで目立たなかったが、同じクラスを流用した enumInput の
+   選択肢編集行(`EnumInputNode.tsx`、カードの既定幅がずっと小さい)で顕在化した。 */
 .rf-node__io-label {
-  flex: 1;
+  flex: 1 1 100px;
+  width: 100px;
   min-width: 0;
   padding: 2px 4px;
   border: 1px solid #ccc;
