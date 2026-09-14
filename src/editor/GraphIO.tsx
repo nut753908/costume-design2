@@ -2,6 +2,7 @@ import { useRef, type ChangeEvent } from 'react';
 import { Panel, useReactFlow, type Node, type Edge } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { validateGraph, GRAPH_VALIDATION_MESSAGES } from '../state/validateGraph';
+import { fitViewPadding } from './paletteShared';
 
 interface GraphFile {
   nodes: Node[];
@@ -28,7 +29,7 @@ export function GraphIO() {
   const handleAutoLayout = () => {
     autoLayout();
     // ノードの新しい位置が React Flow 内部ストアに反映されてから fitView するため1フレーム待つ。
-    requestAnimationFrame(() => fitView({ padding: 0.2, duration: 300 }));
+    requestAnimationFrame(() => fitView({ padding: fitViewPadding(), duration: 300 }));
   };
 
   const handleExport = () => {

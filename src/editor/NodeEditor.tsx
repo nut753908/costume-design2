@@ -33,7 +33,7 @@ import { NodeClipboard } from './NodeClipboard';
 import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
-import { NODE_TYPE_DND_MIME } from './paletteShared';
+import { NODE_TYPE_DND_MIME, fitViewPadding } from './paletteShared';
 
 // 専用UIを持つ3種(number/enum/color)以外は、レジストリに登録済みの全ノードタイプへ
 // GenericNodeView を自動で割り当てる。新しいノードタイプを追加してもここへの追記が
@@ -67,7 +67,7 @@ function NodeEditorInner() {
   // グループの中に入る/出るたびに、新しいスコープのノード群が画面内に収まるよう
   // fitView し直す(fitView props は初回マウント時にしか効かないため)。
   useEffect(() => {
-    requestAnimationFrame(() => fitView({ padding: 0.2, duration: 300 }));
+    requestAnimationFrame(() => fitView({ padding: fitViewPadding(), duration: 300 }));
   }, [scopeDepth, fitView]);
   const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
   const [nodeMenuState, setNodeMenuState] = useState<NodeContextMenuState | null>(null);
@@ -187,6 +187,7 @@ function NodeEditorInner() {
         onDragOver={onDragOver}
         onDrop={onDrop}
         fitView
+        fitViewOptions={{ padding: fitViewPadding() }}
         minZoom={0.1}
       >
         <Background />
