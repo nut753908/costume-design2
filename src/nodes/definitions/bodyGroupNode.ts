@@ -16,9 +16,11 @@ import { defineGroupNode } from './groupNodeFactory';
  * 4パーツそれぞれを generator→`translateY`(Y座標だけを平行移動する汎用ノード、
  * `garmentPlacement` の anchor 版に相当)→`sceneOutput` という流れで独立した `ToonMesh` として
  * 出力する(1つのグループの中に `sceneOutput` は何個あってもよい、nodes/CLAUDE.md 参照)。
- * 肌色は1つの `toonMaterial` ノードから4つの `sceneOutput` すべてへファンアウトする
- * (`bodyBuild` が全ガーメントへファンアウトするのと同じ、1つの出力を複数の入力へ繋ぐだけの
- * 通常のエッジ)。
+ * 肌色(`skinColorIn`)は `bodyGroup` 以外のどのグループとも共有されない単独パラメータのため、
+ * 他ガーメントの生パラメータ・Color と同じく groupInput の外部ソケットにはせず、内部の
+ * `colorInput` ノードとして保持する(グループの中に入って初めて編集できる)。その値を1つの
+ * `toonMaterial` ノードから4つの `sceneOutput` すべてへファンアウトする(1つの出力を複数の
+ * 入力へ繋ぐだけの通常のエッジ)。
  *
  * `garmentPlacement` が各ガーメントのアンカー座標を計算するために使う
  * `bodyHeight`/`bodyBuild`/`bodyShoulder`(`state/initialGraph.ts` の3つのシードノード)は、
@@ -36,10 +38,10 @@ defineGroupNode({
           { id: 'bodyHeight', label: 'Height', type: 'number', default: 1 },
           { id: 'bodyBuild', label: 'Build', type: 'number', default: 1 },
           { id: 'bodyShoulder', label: 'Shoulder', type: 'number', default: 1 },
-          { id: 'skinColor', label: 'Skin Color', type: 'color', default: '#f2c9a0' },
         ],
       },
     },
+    { id: 'skinColorIn', type: 'colorInput', data: { hex: '#f2c9a0', label: 'Skin Color' } },
     { id: 'dims', type: 'bodyDimensions', data: {} },
     { id: 'layout', type: 'bodyLayout', data: {} },
     { id: 'torsoGen', type: 'bodyTorsoGenerator', data: {} },
@@ -86,7 +88,7 @@ defineGroupNode({
     { source: 'legGen', sourceHandle: 'geometry', target: 'legTranslate', targetHandle: 'geometry' },
     { source: 'layout', sourceHandle: 'legCenterY', target: 'legTranslate', targetHandle: 'y' },
 
-    { source: 'input', sourceHandle: 'skinColor', target: 'material', targetHandle: 'color' },
+    { source: 'skinColorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
 
     { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'sceneOutTorso', targetHandle: 'geometry' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOutTorso', targetHandle: 'material' },

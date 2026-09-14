@@ -86,12 +86,12 @@ page.locator('.react-flow__node[data-id="<ノードID>"] select')               
 ```
 
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
-`bodyHeight`/`bodyBuild`/`bodyShoulder`/`bodySkinColor`・`pantsLegSpacing`・`topRadius`/
+`bodyHeight`/`bodyBuild`/`bodyShoulder`・`pantsLegSpacing`・`topRadius`/
 `topColor`/`topRadiusScale`/`topMaterial`(topGroup/sleeveGroup 共有ノード)・各 `<name>Group`
 (sleeve も `sleeveGroup` としてグループ化済み)しか無い点に注意。各ガーメント固有の生パラメータ
-は対応するグループの中に `waistRadiusIn`/`colorIn`/`torsoRadiusIn` のような `<socketId>In` と
-いう id で埋め込まれているため、上のステップ5と同様にまず中に入ってから探す。ラベルでは
-なく `id` フィールドを使うこと)。
+(Body の `skinColorIn` を含む)は対応するグループの中に `waistRadiusIn`/`colorIn`/
+`torsoRadiusIn` のような `<socketId>In` という id で埋め込まれているため、上のステップ5と同様に
+まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。
 
 range/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
 onChangeが発火しない。ネイティブの value setter 経由で値をセットしてから `input` イベントを

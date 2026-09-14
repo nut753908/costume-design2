@@ -21,24 +21,25 @@ import type { Node, Edge } from '@xyflow/react';
 //   2. 各ノードの新しい座標を Export JSON で取り出し、対応する position をここへ書き戻す
 // 新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
 export const initialNodes: Node[] = [
-  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor は慣例的な id を持つシードノード。
-  // 全15ガーメントグループへの通常のソケット配線(アンカー計算・半径スケーリング用、下記
-  // initialEdges 参照)に加えて、下記の bodyGroup ノードへも配線されている — Body 自身の
-  // 形状組み立ても他のガーメントと同じ `<name>Group` パターン(nodes/definitions/
-  // bodyGroupNode.ts)で表現されているため、他のガーメントと全く同じ「シードノード→
-  // グループの groupInput」という配線になる。
-  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 691 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 540 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
-  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 842 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
-  { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 993 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
+  // bodyHeight/bodyBuild/bodyShoulder は慣例的な id を持つシードノード。全15ガーメント
+  // グループへの通常のソケット配線(アンカー計算・半径スケーリング用、下記 initialEdges 参照)
+  // に加えて、下記の bodyGroup ノードへも配線されている — Body 自身の形状組み立ても他の
+  // ガーメントと同じ `<name>Group` パターン(nodes/definitions/bodyGroupNode.ts)で表現されて
+  // いるため、他のガーメントと全く同じ「シードノード→グループの groupInput」という配線になる。
+  // 肌色(Skin Color)は bodyGroup 以外のどのグループとも共有されない単独パラメータのため、
+  // 他ガーメントの生パラメータ・Color と同じくシードノードにはせず bodyGroup 内部の
+  // colorInput ノードとして保持している(bodyGroupNode.ts 参照、このファイルには現れない)。
+  { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 534 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 383 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 685 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
 
   // Body(3Dモデル本体)。他15種のガーメントと同じグループノードで、胴体/頭/腕/脚を
   // 組み立てて描画する(nodes/definitions/bodyGroupNode.ts 参照)。
-  { id: 'bodyGroup', type: 'bodyGroup', position: { x: 340, y: 1736 }, data: {} },
+  { id: 'bodyGroup', type: 'bodyGroup', position: { x: 340, y: 266 }, data: {} },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 1107 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 0, y: 836 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + anchor/offsetY用の
@@ -51,7 +52,7 @@ export const initialNodes: Node[] = [
   // は `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードも内包しており、実際に
   // シーンへ描画されるのはこの内部 `sceneOutput` への配線があるからである(このファイルには
   // その配線は現れない)。
-  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 266 }, data: {} },
+  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 340, y: 413 }, data: {} },
 
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と
   // Material — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要がある
@@ -64,30 +65,29 @@ export const initialNodes: Node[] = [
   { id: 'topColor', type: 'colorInput', position: { x: 0, y: 156 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
   { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 340, y: 0 }, data: {} },
   { id: 'topMaterial', type: 'toonMaterial', position: { x: 340, y: 156 }, data: {} },
-  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 444 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 637 }, data: {} },
+  { id: 'topGroup', type: 'topGroup', position: { x: 1020, y: 287 }, data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1020, y: 480 }, data: {} },
 
-  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1892 }, data: {} },
-  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 680, y: 682 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 852 }, data: {} },
-  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 413 }, data: {} },
-  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 560 }, data: {} },
-  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 707 }, data: {} },
-  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 854 }, data: {} },
-  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1001 }, data: {} },
-  { id: 'hatGroup', type: 'hatGroup', position: { x: 340, y: 1148 }, data: {} },
-  { id: 'bagGroup', type: 'bagGroup', position: { x: 340, y: 1295 }, data: {} },
-  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 340, y: 1442 }, data: {} },
-  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 340, y: 1589 }, data: {} },
+  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 340, y: 1883 }, data: {} },
+  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 680, y: 525 }, data: {} },
+  { id: 'socksGroup', type: 'socksGroup', position: { x: 680, y: 695 }, data: {} },
+  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 340, y: 560 }, data: {} },
+  { id: 'beltGroup', type: 'beltGroup', position: { x: 340, y: 707 }, data: {} },
+  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 340, y: 854 }, data: {} },
+  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 340, y: 1001 }, data: {} },
+  { id: 'dressGroup', type: 'dressGroup', position: { x: 340, y: 1148 }, data: {} },
+  { id: 'hatGroup', type: 'hatGroup', position: { x: 340, y: 1295 }, data: {} },
+  { id: 'bagGroup', type: 'bagGroup', position: { x: 340, y: 1442 }, data: {} },
+  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 340, y: 1589 }, data: {} },
+  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 340, y: 1736 }, data: {} },
 ];
 
 export const initialEdges: Edge[] = [
-  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor から bodyGroup の groupInput へ。
-  // 他15種のガーメントグループが bodyBuild 等を受け取るのと同じ、通常の外部ソケット配線。
+  // bodyHeight/bodyBuild/bodyShoulder から bodyGroup の groupInput へ。他15種のガーメント
+  // グループが bodyBuild 等を受け取るのと同じ、通常の外部ソケット配線。
   { id: 'e-body-height', source: 'bodyHeight', sourceHandle: 'value', target: 'bodyGroup', targetHandle: 'bodyHeight' },
   { id: 'e-body-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bodyGroup', targetHandle: 'bodyBuild' },
   { id: 'e-body-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'bodyGroup', targetHandle: 'bodyShoulder' },
-  { id: 'e-body-skin-color', source: 'bodySkinColor', sourceHandle: 'color', target: 'bodyGroup', targetHandle: 'skinColor' },
 
   { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyBuild' },
   { id: 'e-pants-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyBuild' },

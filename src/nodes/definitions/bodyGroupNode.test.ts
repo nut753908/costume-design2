@@ -36,15 +36,16 @@ describe('bodyGroup', () => {
     expect(tallGeom!.boundingBox!.max.y).toBeGreaterThan(shortGeom!.boundingBox!.max.y);
   });
 
-  it('skinColor が4パーツすべてのマテリアルへファンアウトされる', () => {
-    const result = getNodeType('bodyGroup').evaluate(
-      { skinColor: { type: 'color', value: new THREE.Color('#aabbcc') } },
-      {},
-    );
+  it('内部の skinColorIn(デフォルト #f2c9a0)が4パーツすべてのマテリアルへファンアウトされる', () => {
+    // Skin Color は bodyGroup 以外と共有されない単独パラメータのため groupInput の外部
+    // ソケットではなく内部の colorInput ノード(skinColorIn)として保持している
+    // (bodyGroupNode.ts 参照)。外部からは注入できないため、既定値がそのまま使われることを
+    // 検証する。
+    const result = getNodeType('bodyGroup').evaluate({}, {});
     for (let i = 0; i < 4; i++) {
       const material = result[`sceneOutputMaterial${i}`];
       const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;
-      expect(color?.getHexString()).toBe('aabbcc');
+      expect(color?.getHexString()).toBe(new THREE.Color('#f2c9a0').getHexString());
     }
   });
 });

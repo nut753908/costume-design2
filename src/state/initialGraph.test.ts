@@ -13,22 +13,22 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('bodyGroup、およびそこへ配線する4つのシードノードが存在する', () => {
+  it('bodyGroup、およびそこへ配線する3つのシードノードが存在する', () => {
     // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
-    // Body が静かにデフォルト寸法/デフォルト肌色にフォールバックしてしまうため、id の存在
-    // 自体をここで保証する。
+    // Body が静かにデフォルト寸法にフォールバックしてしまうため、id の存在自体をここで保証する。
+    // 肌色(Skin Color)は bodyGroup 内部の colorInput ノードとして保持しているため、
+    // ここには現れない(bodyGroupNode.test.ts 参照)。
     expect(
-      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodySkinColor', 'bodyGroup'].every((id) => nodesById.has(id)),
+      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodyGroup'].every((id) => nodesById.has(id)),
     ).toBe(true);
   });
 
-  it('bodyHeight/bodyBuild/bodyShoulder/bodySkinColor が bodyGroup へ配線されている', () => {
+  it('bodyHeight/bodyBuild/bodyShoulder が bodyGroup へ配線されている', () => {
     const cases: [string, string, string][] = [
       ['bodyHeight', 'value', 'bodyHeight'],
       ['bodyBuild', 'value', 'bodyBuild'],
       ['bodyShoulder', 'value', 'bodyShoulder'],
-      ['bodySkinColor', 'color', 'skinColor'],
     ];
     for (const [source, sourceHandle, targetHandle] of cases) {
       const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === targetHandle);
