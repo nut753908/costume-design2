@@ -22,18 +22,19 @@ import type { Node, Edge } from '@xyflow/react';
 // 新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
 export const initialNodes: Node[] = [
   // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor は慣例的な id を持つシードノード。
-  // 全15グループへの通常のソケット配線(アンカー計算・半径スケーリング用、下記 initialEdges
-  // 参照)に加えて、下記の body ノードへも配線されており、state/useBodyScale.ts・
-  // state/useBodySkinColor.ts はその body ノードの評価結果を id (BODY_NODE_ID) で読み取る
-  // (ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して直接読み取られる」を参照)。
+  // 全15ガーメントグループへの通常のソケット配線(アンカー計算・半径スケーリング用、下記
+  // initialEdges 参照)に加えて、下記の bodyGroup ノードへも配線されている — Body 自身の
+  // 形状組み立ても他のガーメントと同じ `<name>Group` パターン(nodes/definitions/
+  // bodyGroupNode.ts)で表現されているため、他のガーメントと全く同じ「シードノード→
+  // グループの groupInput」という配線になる。
   { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 691 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
   { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 540 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
   { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 842 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
   { id: 'bodySkinColor', type: 'colorInput', position: { x: 0, y: 993 }, data: { hex: '#f2c9a0', label: 'Body Skin Color' } },
 
-  // Body(3Dモデル本体、scene/Body.tsx)がシーン全体のパラメータとして使う4値の受け口。
-  // nodes/definitions/body.ts の BODY_NODE_ID('body')と一致させる必要がある。
-  { id: 'body', type: 'body', position: { x: 340, y: 1736 }, data: { height: 1, build: 1, shoulder: 1, skinColor: '#f2c9a0' } },
+  // Body(3Dモデル本体)。他15種のガーメントと同じグループノードで、胴体/頭/腕/脚を
+  // 組み立てて描画する(nodes/definitions/bodyGroupNode.ts 参照)。
+  { id: 'bodyGroup', type: 'bodyGroup', position: { x: 340, y: 1736 }, data: {} },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
@@ -81,12 +82,12 @@ export const initialNodes: Node[] = [
 ];
 
 export const initialEdges: Edge[] = [
-  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor から body ノード(BODY_NODE_ID)へ。
-  // state/useBodyScale.ts・state/useBodySkinColor.ts はこの body ノードの評価結果を読む。
-  { id: 'e-body-height', source: 'bodyHeight', sourceHandle: 'value', target: 'body', targetHandle: 'height' },
-  { id: 'e-body-build', source: 'bodyBuild', sourceHandle: 'value', target: 'body', targetHandle: 'build' },
-  { id: 'e-body-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'body', targetHandle: 'shoulder' },
-  { id: 'e-body-skin-color', source: 'bodySkinColor', sourceHandle: 'color', target: 'body', targetHandle: 'skinColor' },
+  // bodyHeight/bodyBuild/bodyShoulder/bodySkinColor から bodyGroup の groupInput へ。
+  // 他15種のガーメントグループが bodyBuild 等を受け取るのと同じ、通常の外部ソケット配線。
+  { id: 'e-body-height', source: 'bodyHeight', sourceHandle: 'value', target: 'bodyGroup', targetHandle: 'bodyHeight' },
+  { id: 'e-body-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bodyGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-body-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'bodyGroup', targetHandle: 'bodyShoulder' },
+  { id: 'e-body-skin-color', source: 'bodySkinColor', sourceHandle: 'color', target: 'bodyGroup', targetHandle: 'skinColor' },
 
   { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyBuild' },
   { id: 'e-pants-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyBuild' },

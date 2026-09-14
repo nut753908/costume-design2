@@ -6,7 +6,7 @@
 
 `state/selectors.ts` (`useNodesLite`/`useEdgesLite`) は React Flow の揮発性フィールド(position、selected、dragging)を取り除き — これが重要な点ですが — それらの揮発性フィールドのみが変化した場合には**同一の配列参照**を返します。これは ref にキャッシュした手動の等価性チェックによるものです(最初に試した zustand の `useShallow` ではありません。これは新しくマップされたオブジェクトに対して一階層のみの `Object.is` 比較を行うため、無限レンダーループを引き起こしました)。`state/useEvaluatedGraph.ts` はこれらの安定した参照を持つ配列を `useMemo(() => evaluateGraph(...))` に渡すため、ジオメトリ/マテリアルの再計算はノードの*データ*やエッジが実際に変化したときにのみ発生し、ドラッグ中やフレームごとには発生しません。これはシーンペイン右下に表示される `evaluations: N` カウンターで実際に確認できます。
 
-この参照安定化ロジックの核である `sameNodes`/`sameEdges`/`toGraphNode`/`toGraphEdge` は純粋関数として `selectors.test.ts` で直接テストしているが、`useNodesLite`/`useEdgesLite` フック自体(useMemo/useRef + ストア購読の配線)も vitest + jsdom + `@testing-library/react` の `renderHook` で end-to-end に検証している(同ファイル内の「(フック)」describe ブロック)。`useBodyScale` も同様に `useBodyScale.test.ts` でフックごとテストしている。ルートの CLAUDE.md 参照。
+この参照安定化ロジックの核である `sameNodes`/`sameEdges`/`toGraphNode`/`toGraphEdge` は純粋関数として `selectors.test.ts` で直接テストしているが、`useNodesLite`/`useEdgesLite` フック自体(useMemo/useRef + ストア購読の配線)も vitest + jsdom + `@testing-library/react` の `renderHook` で end-to-end に検証している(同ファイル内の「(フック)」describe ブロック)。ルートの CLAUDE.md 参照。
 
 **落とし穴**: `Garments.tsx` は evaluator の結果を `useEvaluatedGraph()` の戻り値からではなく、`useGraphStore((s) => s.evaluatedResults)` でストアから直接読む。この値を埋め戻すのは `useEvaluatedGraph.ts` の `useEffect(() => setEvaluatedResults(evaluated), [evaluated])` だけであり、その `evaluated` は上記の参照安定化を経た `nodesLite`/`edgesLite` が実際に変化したときにしか再計算されない。かつて `graphStore.ts` の `loadGraph` は呼ばれるたびに `evaluatedResults: null` を無条件にセットしていたが、渡された `nodes`/`edges` が現在の state と**同一参照**の場合(例: `initialNodes`/`initialEdges` のような module-level singleton を保持する「初期状態」プリセットを2回連続で Load する)、ストアの `nodes`/`edges` が変化しないため `nodesLite`/`edgesLite` も再計算されず、`evaluatedResults` が null のまま固まってガーメントが消える、という分かりにくいバグになっていた(修正前に実際に発生していた)。`loadGraph` は現在この null リセットを行わず、`nodes`/`edges` が実際に変化した場合にのみ上記の通常のリアクティブな経路で `evaluatedResults` が再計算されるのに任せている。`evaluatedResults` を書き込む箇所を増やす場合、この「未変化なら再計算されない」制約を踏まえること。
 
@@ -28,8 +28,7 @@
 
 - `state/selectors.ts` の `useRootGraphLite()` — `useNodesLite`/`useEdgesLite` と同じ参照安定化パターンで、合成後のグラフを返す。
 - `state/useRootEvaluatedGraph.ts` — 上記を `evaluateGraph()` に渡し、結果をストアの `rootEvaluatedResults`(`evaluatedResults` とは別フィールド)に書き込む。`App.tsx` で `useEvaluatedGraph()` と並行して常時マウントする。
-- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。
-- `useBodyScale.ts`/`useBodySkinColor.ts` も同じ `rootEvaluatedResults` を読むが、走査はせず id `'body'`(`nodes/definitions/body.ts` の `BODY_NODE_ID`)の評価結果だけを直接引く(ルート CLAUDE.md の「ボディスケール・肌色は id 'body' の Body ノードの評価結果を直接読み取る」節参照)。
+- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body も他15種のガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
 - `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
 
 一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GenericNodeView` のノードカード上のリアルタイム値表示を駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。

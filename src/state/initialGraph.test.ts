@@ -13,26 +13,25 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('useBodyScale.ts/useBodySkinColor.ts が id (BODY_NODE_ID) で読み取る body ノード、およびそこへ配線する4つのシードノードが存在する', () => {
-    // body ノード自体、またはこれら4つのシードノードのいずれかが無くなっても evaluateGraph
-    // は例外を投げない(単に該当ソケットが未接続扱いになるだけ)ため、上記の整合性テスト群
-    // では検知できない。無くなると useBodyScale.ts/useBodySkinColor.ts が静かに
-    // DEFAULT_BODY_SCALE/DEFAULT_BODY_SKIN_COLOR にフォールバックしてしまうため、id の存在
+  it('bodyGroup、およびそこへ配線する4つのシードノードが存在する', () => {
+    // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
+    // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
+    // Body が静かにデフォルト寸法/デフォルト肌色にフォールバックしてしまうため、id の存在
     // 自体をここで保証する。
     expect(
-      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodySkinColor', 'body'].every((id) => nodesById.has(id)),
+      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodySkinColor', 'bodyGroup'].every((id) => nodesById.has(id)),
     ).toBe(true);
   });
 
-  it('bodyHeight/bodyBuild/bodyShoulder/bodySkinColor が body ノードへ配線されている', () => {
+  it('bodyHeight/bodyBuild/bodyShoulder/bodySkinColor が bodyGroup へ配線されている', () => {
     const cases: [string, string, string][] = [
-      ['bodyHeight', 'value', 'height'],
-      ['bodyBuild', 'value', 'build'],
-      ['bodyShoulder', 'value', 'shoulder'],
+      ['bodyHeight', 'value', 'bodyHeight'],
+      ['bodyBuild', 'value', 'bodyBuild'],
+      ['bodyShoulder', 'value', 'bodyShoulder'],
       ['bodySkinColor', 'color', 'skinColor'],
     ];
     for (const [source, sourceHandle, targetHandle] of cases) {
-      const edge = initialEdges.find((e) => e.target === 'body' && e.targetHandle === targetHandle);
+      const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === targetHandle);
       expect(edge?.source).toBe(source);
       expect(edge?.sourceHandle).toBe(sourceHandle);
     }

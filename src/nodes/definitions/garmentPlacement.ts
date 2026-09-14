@@ -19,7 +19,7 @@ function isAnchorKey(value: string): value is AnchorKey {
  * (`geometry` はそのままこのノードの出力を `groupOutput` へ直接配線する — 描画のためだけの
  * 中継ノードは置かない。`nodes/CLAUDE.md` の「グループノード」節参照)。
  *
- * bodyHeight/bodyBuild/bodyShoulder は、`state/useBodyScale.ts` が直接読むのと同じ3つの
+ * bodyHeight/bodyBuild/bodyShoulder は、`state/initialGraph.ts` の慣例的な3つの
  * シードノードの値を、通常のソケット配線で受け取ったもの(`geometry/body.ts` の純粋関数は
  * React フックではないため、evaluate() の中で直接呼び出せる)。 */
 registerNodeType({

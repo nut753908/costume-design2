@@ -13,8 +13,8 @@ export interface ScopeFrame {
  * 「完全なグラフ」を合成する純関数。`scopeStack` が空(トップレベルにいる)なら
  * `leafNodes`/`leafEdges` をそのまま返す恒等関数になる。
  *
- * `Garments.tsx`(3Dシーンの全ガーメント描画)・`useBodyScale.ts`/`useBodySkinColor.ts`
- * (ボディスケール/肌色の直接読み取り)・`persist` の `partialize`(localStorage永続化)は、
+ * `Garments.tsx`(3Dシーン全体の描画 — `bodyGroup` を含む全 `<name>Group` の `sceneOutput`
+ * を走査する)・`persist` の `partialize`(localStorage永続化)は、
  * グループの中に入っている間も「今開いている階層」ではなく常にこの合成結果を見る必要がある
  * — さもないとグループの中に入った瞬間に他の全ガーメントが3Dビューから消え、ボディスケールが
  * デフォルトにリセットされ、リロードで他の設計が失われる(実際に設計時に見つかった欠陥)。 */

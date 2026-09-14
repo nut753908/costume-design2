@@ -51,7 +51,7 @@ defineGeneratorNode({
 
 ガーメント自体はどこにも取り付かない。取り付け位置は次の連携で決まる:
 
-- `anchorIn`(`enumInput`)/`offsetYIn`(`numberInput`) — 取り付け位置を選ぶための、専用ノード型ではない普通の入力ノード。`anchorIn` の `data.options` は `['waist', 'shoulder', 'feet', 'wrist', 'head']` の固定列挙(`body.ts` の `computeBodyAnchors()` が返す座標に対応する)。**新しいアンカー種を増やす場合はこの選択肢と `body.ts`/`Body.tsx`/`garmentPlacement.ts` 側の対応を同時に変更する必要がある**(通常の追加では既存アンカーのどれかを再利用すれば足りる)。
+- `anchorIn`(`enumInput`)/`offsetYIn`(`numberInput`) — 取り付け位置を選ぶための、専用ノード型ではない普通の入力ノード。`anchorIn` の `data.options` は `['waist', 'shoulder', 'feet', 'wrist', 'head']` の固定列挙(`body.ts` の `computeBodyAnchors()` が返す座標に対応する)。**新しいアンカー種を増やす場合はこの選択肢と `body.ts`/`garmentPlacement.ts` 側の対応を同時に変更する必要がある**(通常の追加では既存アンカーのどれかを再利用すれば足りる)。
 - `garmentPlacement` — `geometry` と上記2ノードの `value` 出力(anchor/offsetY)、そして `bodyHeight`/`bodyBuild`/`bodyShoulder`(下記4節参照、全グループが例外なく外部ソケットとして受け取る)を受け取り、実際のアンカー座標を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。出力は位置が焼き込まれた geometry 1つだけ。
 
 anchor/offsetY にはかつて `garmentAnchor` という専用ノード型(入力を持たず `data.anchor`/`data.offsetY` を出力するだけ)を使っていたが、これは `numberInput`/`enumInput` が既に持つ「固定値+編集可能なUI」という形をそのまま重複させただけの型だったため削除し、`enumInput`/`numberInput` を直接使う形に統一した(ガーメント固有の他のパラメータと同じ扱いになる)。`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `groupOutput` ノードへ**直接**配線する(anchor/offsetY 自体はグループの外まで出ない)。かつては両方を一旦 `garmentMesh` という素通しノードへまとめてから `groupOutput` へ配線していたが、`garmentMesh` は何も変換しない冗長な中継ノードだったため削除した — `groupOutput` 自身がすでに「配線されたものをまとめて出す」という同じ役割を持っているため。

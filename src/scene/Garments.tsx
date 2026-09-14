@@ -2,11 +2,16 @@ import { useGraphStore } from '../state/graphStore';
 import { ToonMesh } from '../rendering/ToonMesh';
 import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/sceneOutput';
 
-/** ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
+/** `bodyGroup`(Body、3Dモデル本体)も他15種のガーメントと同じ `<name>Group` パターンで
+ * 実装されており、内部の `sceneOutput` を通じてこのコンポーネントが走査する
+ * `rootEvaluatedResults` に現れる — Body 専用の描画コード・専用コンポーネントは無い
+ * (ノードの型を一切問わないこの走査ロジックのおかげ)。
+ *
+ * ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
  * 評価時にジオメトリの頂点座標へ焼き込み済み(Blender の Geometry Nodes で位置をジオメトリに
  * 焼き込む考え方と同じ、`src/nodes/CLAUDE.md` の「グループノード」節参照)。そのため
- * ここでは常に原点にメッシュを置くだけでよく、`useBodyScale()`/`computeBodyAnchors()` を
- * 呼ぶ必要は無い(以前はここでアンカー座標を計算していたが、責務がガーメント側の
+ * ここでは常に原点にメッシュを置くだけでよく、`computeBodyAnchors()` を呼ぶ必要は無い
+ * (以前はここでアンカー座標を計算していたが、責務がガーメント側の
  * ノードグラフへ移った)。 */
 export function Garments() {
   // s.nodes ではなく s.rootEvaluatedResults(トップレベル視点で合成した完全なグラフの
