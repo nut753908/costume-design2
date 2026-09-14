@@ -69,6 +69,21 @@ function NodeEditorInner() {
   useEffect(() => {
     requestAnimationFrame(() => fitView({ padding: fitViewPadding(), duration: 300 }));
   }, [scopeDepth, fitView]);
+
+  // <ReactFlow> 自体は enterGroup/exitGroup のたびにアンマウントされず、nodes/edges の
+  // props だけが丸ごと差し替わる(state/CLAUDE.md の「グループの中に入る」節参照)。
+  // すべてのグループの groupInput/groupOutput ノードは慣例的に id 'input'/'output' を
+  // 使う(nodes/CLAUDE.md 参照)ため、多段ネスト(例: bodyGroup の中の bodyDimensionsGroup)
+  // では props 差し替えの前後で同じ id 'input' のノードを React が「同一要素の更新」と
+  // 誤認しうる。実際に発生した不具合として、Body Dimensions グループへ一度入って出て、
+  // 再度入り直すと(bodyGroup 自身の 'input' → bodyDimensionsGroup の 'input' → …と
+  // 同じ id が複数回入れ替わった後)、Group Input ノードの出力から伸びるはずのエッジが
+  // ストア上のデータ(evaluateGraph・Export JSON では正しい)とは無関係に描画されなくなる、
+  // という React Flow 側のハンドル計測キャッシュの取り違えが起きていた。`key={scopeDepth}`
+  // を <ReactFlow> に付けてスコープが変わるたびに強制的にアンマウント→再マウントさせることで、
+  // 内部キャッシュを毎回まっさらな状態から作り直させ、この取り違えを避けている
+  // (NodePalette の検索文字列などスコープを跨いで保持する意味の無い軽量な子コンポーネントの
+  // ローカル state がリセットされる副作用はあるが、実害はない)。
   const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
   const [nodeMenuState, setNodeMenuState] = useState<NodeContextMenuState | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -189,6 +204,7 @@ function NodeEditorInner() {
         fitView
         fitViewOptions={{ padding: fitViewPadding() }}
         minZoom={0.1}
+        key={scopeDepth}
       >
         <Background />
         <Controls />
