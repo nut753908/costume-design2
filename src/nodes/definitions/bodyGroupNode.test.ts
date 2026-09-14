@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../registry';
-// bodyGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/numberAdd/
-// numberSubtract/bodyTorsoGenerator/bodyHeadGenerator/bodyLimbGenerator/translateY/
-// toonMaterial/sceneOutput を含め、全ノードタイプを登録する。
+// bodyGroup の埋め込みサブグラフが参照する bodyDimensionsGroup/bodyLayoutGroup(その内部の
+// numberInput/numberMultiply/numberAdd/numberSubtract を含む)/bodyTorsoGenerator/
+// bodyHeadGenerator/bodyLimbGenerator/translateY/toonMaterial/sceneOutput を含め、
+// 全ノードタイプを登録する。
 import '../definitions';
 
 describe('bodyGroup', () => {
