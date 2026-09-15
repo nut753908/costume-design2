@@ -1,6 +1,6 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** hat は bodyBuild によるスケーリング対象外(headRadius が computeBodyDimensions で
+/** hat は bodyBuild によるスケーリング対象外(headRadius が `bodyDimensionsGroup` の中で
  * buildScale の影響を受けないため)なので Body Build 入力は無く、
  * hatGen(hatGenerator)+hatMaterial(toonMaterial)+anchorIn(enumInput)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚にまとめる。Brim Radius/Crown Radius/Height/Color も

@@ -10,7 +10,7 @@ import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMater
  * ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
  * 評価時にジオメトリの頂点座標へ焼き込み済み(Blender の Geometry Nodes で位置をジオメトリに
  * 焼き込む考え方と同じ、`src/nodes/CLAUDE.md` の「グループノード」節参照)。そのため
- * ここでは常に原点にメッシュを置くだけでよく、`computeBodyAnchors()` を呼ぶ必要は無い
+ * ここでは常に原点にメッシュを置くだけでよく、アンカー座標を計算するコードは一切無い
  * (以前はここでアンカー座標を計算していたが、責務がガーメント側の
  * ノードグラフへ移った)。 */
 export function Garments() {

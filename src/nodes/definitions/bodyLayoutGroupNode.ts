@@ -10,10 +10,12 @@ import { defineGroupNode } from './groupNodeFactory';
  *
  * `computeBodyLayout()` の式のうち、地面のY座標 `feetY` は常に0固定(`+feetY` は常に
  * no-op)なので、加算ノードを置かずに `legHeight` をそのまま `waistY`(= `feetY + legHeight`)
- * として使い回している。同様に `garmentPlacement.ts` が15ガーメント共通のアンカー座標計算に
- * 使う `feetY`/`waistY`/`shoulderY`/`wristY` は、`bodyGroup` 自身のメッシュ配置には使わない
- * ため、このグループの外部出力には含めていない(必要になった時点で `groupOutput` に
- * ソケットを追加すればよい、`nodes/CLAUDE.md` の「グループノード」節参照)。 */
+ * として使い回している。`feetY`/`waistY`/`shoulderY`/`wristY` は `bodyGroup` 自身のメッシュ
+ * 配置には使わないが、`garmentPlacement`(`garmentPlacement.ts`、現在は他の計算グループと
+ * 同じくこの `bodyLayoutGroup`/`bodyDimensionsGroup` をネストして使う `defineGroupNode()`
+ * ベースのグループノード)が15ガーメント共通のアンカー座標計算のためにこの4つ+
+ * `headCenterY`を必要とするため、外部出力に含めている(`feetY` は常に0固定なので `feetYIn`
+ * という定数の `numberInput` をそのまま出力へ配線するだけ)。 */
 defineGroupNode({
   type: 'bodyLayoutGroup',
   label: 'Body Layout',
@@ -37,6 +39,8 @@ defineGroupNode({
     { id: 'halfIn', type: 'numberInput', data: { value: 0.5, min: 0, max: 1, step: 0.01, label: 'Half' } },
     { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2, min: 1, max: 3, step: 0.1, label: 'Torso Cap Ends (x2)' } },
     { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4, min: 0, max: 1, step: 0.01, label: 'Arm-Torso Overlap Ratio' } },
+    // feetY は常に0固定(地面の高さ)。
+    { id: 'feetYIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Feet Y' } },
 
     { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: { label: 'Torso Radius × 2' } },
     { id: 'torsoCapsuleHeight', type: 'numberAdd', data: { label: 'Torso Capsule Height' } },
@@ -49,6 +53,7 @@ defineGroupNode({
     { id: 'armCenterYStep1', type: 'numberSubtract', data: { label: 'Shoulder Y − Arm Half' } },
     { id: 'armCenterYCalc', type: 'numberSubtract', data: { label: 'Arm Center Y' } },
     { id: 'legCenterYCalc', type: 'numberMultiply', data: { label: 'Leg Center Y' } },
+    { id: 'wristYCalc', type: 'numberSubtract', data: { label: 'Wrist Y' } },
 
     {
       id: 'output',
@@ -59,6 +64,10 @@ defineGroupNode({
           { id: 'torsoCenterY', label: 'Torso Center Y', type: 'number' },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number' },
           { id: 'armCenterY', label: 'Arm Center Y', type: 'number' },
+          { id: 'feetY', label: 'Feet Y', type: 'number' },
+          { id: 'waistY', label: 'Waist Y', type: 'number' },
+          { id: 'shoulderY', label: 'Shoulder Y', type: 'number' },
+          { id: 'wristY', label: 'Wrist Y', type: 'number' },
         ],
       },
     },
@@ -101,5 +110,16 @@ defineGroupNode({
     { source: 'armCenterYStep1', sourceHandle: 'value', target: 'armCenterYCalc', targetHandle: 'a' },
     { source: 'armTorsoOverlap', sourceHandle: 'value', target: 'armCenterYCalc', targetHandle: 'b' },
     { source: 'armCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'armCenterY' },
+
+    // feetY = 0(定数)
+    { source: 'feetYIn', sourceHandle: 'value', target: 'output', targetHandle: 'feetY' },
+    // waistY = legHeight(= feetY + legHeight, feetY=0 のため省略)
+    { source: 'input', sourceHandle: 'legHeight', target: 'output', targetHandle: 'waistY' },
+    // shoulderY = waistY(=legHeight) + torsoCapsuleHeight(上で計算済みの shoulderYCalc を再利用)
+    { source: 'shoulderYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'shoulderY' },
+    // wristY = armCenterY - armLength * half
+    { source: 'armCenterYCalc', sourceHandle: 'value', target: 'wristYCalc', targetHandle: 'a' },
+    { source: 'armLengthHalf', sourceHandle: 'value', target: 'wristYCalc', targetHandle: 'b' },
+    { source: 'wristYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'wristY' },
   ],
 });

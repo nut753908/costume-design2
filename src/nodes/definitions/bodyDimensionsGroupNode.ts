@@ -1,6 +1,7 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** `bodyGroup`(`bodyGroupNode.ts`)専用の計算グループ — Height/Build/Shoulder スケールから
+/** `bodyGroup`(`bodyGroupNode.ts`)/`garmentPlacement`(`garmentPlacement.ts`)の両方から
+ * ネストして再利用される計算グループ — Height/Build/Shoulder スケールから
  * 各部位の半径・長さを求める9つの「基準値(`numberInput`)→ `numberMultiply`」チェーンを
  * 1枚にまとめたもの。以前はこの計算を `geometry/body.ts` の `computeBodyDimensions()` を
  * そのまま配線するだけのブラックボックスノード(`bodyDimensions.ts`、9出力)にしていたが、
@@ -13,10 +14,12 @@ import { defineGroupNode } from './groupNodeFactory';
  * (`groupNodeFactory.ts` の多段ネスト対応により `bodyGroup` の中にこのグループを普通に
  * 置ける)。
  *
- * `geometry/body.ts` の `computeBodyDimensions()` 自体は削除しておらず、`garmentPlacement.ts`
- * が15ガーメント共通のアンカー座標計算のために内部で呼び続けている(そちらは別の計算経路、
- * ルート CLAUDE.md 参照)。このグループの基準値(`BASE_DIMENSIONS` 相当)は
- * `computeBodyDimensions()` 側の定数と値を合わせてあるが、変数としては独立している。 */
+ * 以前は `geometry/body.ts` の `computeBodyDimensions()` 自体は削除せず、15ガーメント共通の
+ * アンカー座標計算を担う `garmentPlacement.ts` がその関数を内部で呼び続けていたが、
+ * `garmentPlacement` 自身も同じ理由でこのグループをネストして使う `defineGroupNode()`
+ * ベースへ置き換わったため、`geometry/body.ts` を呼ぶ本番コードが無くなり、ファイルごと
+ * 削除した(`garmentPlacement.ts` のコメント参照)。このグループの基準値は削除前の
+ * `BASE_DIMENSIONS` と値を合わせてあるが、変数としては独立している。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',

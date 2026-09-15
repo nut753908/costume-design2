@@ -21,11 +21,13 @@ import { defineGroupNode } from './groupNodeFactory';
  * 再度グループ化した — ダブルクリックで中に入れば実際の四則演算グラフがそのまま見える
  * (詳細・実際の式は両ファイルのコメント参照)。
  *
- * `geometry/body.ts` の `computeBodyDimensions()`/`computeBodyLayout()` 自体は削除しておらず、
- * `nodes/definitions/garmentPlacement.ts` が15ガーメント共通のアンカー座標計算のために
- * 内部で呼び続けている — こちらは1つのロジックを15箇所で使い回す汎用コードのため、
- * 「配置系の式はコード側に残す」という既存の方針のままにしている(`bodyGroup` 自身の
- * メッシュ生成とは独立した、別の計算経路)。
+ * `nodes/definitions/garmentPlacement.ts` も15ガーメント共通のアンカー座標計算のために
+ * `bodyDimensionsGroup`/`bodyLayoutGroup` の両方をネストして再利用している(`bodyGroup`
+ * 自身のメッシュ生成とは独立した、別のインスタンス)。以前は `garmentPlacement.ts` だけが
+ * `geometry/body.ts` の `computeBodyDimensions()`/`computeBodyLayout()`/`computeBodyAnchors()`
+ * を直接呼び続けていたが、`garmentPlacement.ts` 自身もこのグループを再利用する形へ置き換わり、
+ * `geometry/body.ts` を呼ぶ本番コードが無くなったためファイルごと削除した(詳細は
+ * `garmentPlacement.ts` のコメント参照)。
  *
  * 胴体(カプセル)・頭(球)・腕1組・脚1組の4パーツそれぞれを generator→`translateY`
  * (Y座標だけを平行移動する汎用ノード、`garmentPlacement` の anchor 版に相当)→`sceneOutput`
