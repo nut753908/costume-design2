@@ -25,12 +25,18 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const evaluated = useGraphStore((s) => s.evaluatedResults);
   const enterGroup = useGraphStore((s) => s.enterGroup);
   const outputValues = evaluated?.get(id);
-  const label = (data as { label?: string }).label ?? def.label;
+  const customLabel = (data as { label?: string }).label;
+  const label = customLabel ?? def.label;
   const isGroup = def.category === 'group';
+  // numberAdd/numberMultiply/numberSubtract のように出力が number 型で統一されている
+  // ノードは、SOCKET_COLORS によるソケット色だけでは(numberInput/enumInput/colorInput と
+  // 違って)互いに区別できない。data.label で独自の名前が付けられている場合に限り、
+  // 元のノード種別(type)をそのまま併記して、ラベルの記述内容に頼らず判別できるようにする。
+  const typeName = customLabel !== undefined ? type : undefined;
 
   return (
     <div className="rf-node" onDoubleClick={isGroup ? () => enterGroup(id) : undefined}>
-      <NodeTitleBar id={id} label={label} />
+      <NodeTitleBar id={id} label={label} typeName={typeName} />
       {isGroup && <div className="rf-node__group-hint">ダブルクリックで中に入る</div>}
       {inputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row">

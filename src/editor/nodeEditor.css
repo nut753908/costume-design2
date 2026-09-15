@@ -31,6 +31,18 @@
   cursor: pointer;
 }
 
+/* numberAdd/numberMultiply/numberSubtract を、data.label の記述内容に頼らずノードの
+   type(例: "numberAdd")から判別できるようにするサブタイトル(NodeTitleBar.tsx 参照)。
+   タイトル行に横並びで足すとカードが横長になるため、あえて別行にしている
+   (幅ではなく高さで表示コストを払う。autoLayout.ts の TYPE_NAME_SUBTITLE_HEIGHT 参照)。 */
+.rf-node__type-subtitle {
+  margin: -4px 0 6px 0;
+  color: #999;
+  font-family: monospace;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
 .rf-node__delete:hover {
   background: #f3d4d4;
   border-color: #b0413e;

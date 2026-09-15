@@ -47,6 +47,13 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
 /** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: 選択肢3個で153px、
  * 5個で199px、傾き23pxは CARD_ROW_HEIGHT と一致したため、切片だけを定数として持つ)。 */
 const ENUM_INPUT_BASE_HEIGHT = 84;
+/** `data.label` で独自の名前が付けられた generator 系ノード(今のところ
+ * numberAdd/numberMultiply/numberSubtract のみ、`NodeTitleBar.tsx` の `rf-node__type-subtitle`
+ * 参照)がタイトルの下に追加で表示する、元の type 名(例: "numberAdd")のサブタイトル行が
+ * 占める高さ。`run-costume-design2` スキルで bodyLayoutGroup 内の numberAdd ノード
+ * (rows=4: a/b/value(出力ソケット行)/value(数値表示行)、`shoulderYCalc`)の実測
+ * offsetHeight=145px から逆算して較正した値(145 = 40 + 4*23 + 13、誤差0px)。 */
+const TYPE_NAME_SUBTITLE_HEIGHT = 13;
 
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
@@ -91,7 +98,13 @@ export function estimateNodeHeight(type: string, data: unknown): number {
   const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
   const extraValueRows = outputs.filter((o) => o.type === 'number' || o.type === 'enum').length;
   const rows = inputs.length + outputs.length + extraValueRows;
-  return CARD_BASE_HEIGHT + rows * CARD_ROW_HEIGHT + (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0);
+  const hasTypeNameSubtitle = (data as { label?: string } | undefined)?.label !== undefined;
+  return (
+    CARD_BASE_HEIGHT +
+    rows * CARD_ROW_HEIGHT +
+    (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0) +
+    (hasTypeNameSubtitle ? TYPE_NAME_SUBTITLE_HEIGHT : 0)
+  );
 }
 
 /** ソケット `socketId` が、そのノードの中で描画される行の何番目か(0=先頭)を、
