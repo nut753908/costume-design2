@@ -1,6 +1,6 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** topGen(topGenerator)+anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+
+/** topGen(topGenerator)+offsetYIn(numberInput)+placement(garmentPlacement)+
  * sceneOut(sceneOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
  * 他のガーメントと共有され
  * ない単独パラメータのため、外側の numberInput/enumInput ノードではなくグループ内部の同型
@@ -15,6 +15,8 @@ import { defineGroupNode } from './groupNodeFactory';
  * `topMaterial`)へ引き上げ、topGroup/sleeveGroup の両方へ普通の外部ソケットとして
  * ファンアウトする形に改めた(`src/geometry/CLAUDE.md` の sleeve の節が元々説明していた
  * 「1つの Color/Material ノードから2つの Garment Output へのファンアウト」を文字通り実現)。
+ * Anchor Y(取り付け位置)も同じ考え方で、ルートの `bodyLayout` 共有ノードの shoulderY を
+ * sleeveGroup と同時に受け取る。
  * `groupOutput` はここでは使わない(他ガーメントへ再公開したい値が無いため省略している)—
  * geometry/material の描画は `sceneOut`(`sceneOutput`)が別途担う。 */
 defineGroupNode({
@@ -28,9 +30,7 @@ defineGroupNode({
         sockets: [
           { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.29 },
           { id: 'material', label: 'Material', type: 'material' },
-          { id: 'bodyHeight', label: 'Body Height', type: 'number', default: 1 },
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'bodyShoulder', label: 'Body Shoulder', type: 'number', default: 1 },
+          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
         ],
       },
     },
@@ -38,7 +38,6 @@ defineGroupNode({
     { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
     { id: 'gen', type: 'topGenerator', data: {} },
-    { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
@@ -50,11 +49,8 @@ defineGroupNode({
     { source: 'necklineDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineDepth' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
-    { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
+    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
     { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
   ],
 });

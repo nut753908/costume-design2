@@ -1,12 +1,11 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** necktie は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
- * necktieGen(necktieGenerator)+necktieMaterial(toonMaterial)+anchorIn(enumInput)+
- * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚にまとめる。全パラメータが他の
+ * necktieGen(necktieGenerator)+necktieMaterial(toonMaterial)+
+ * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の5ノードを1枚にまとめる。全パラメータが他の
  * ガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput ノードでは
- * なくグループ内部の同型ノードとして保持する — 共有される外部入力ソケットが1つも無いため、
- * `groupInput` ノード自体を省略している(`groupOutput` も同様に省略でき、こちらは
- * geometry/material の描画を担う `sceneOut`(`sceneOutput`)があるため出番が無い)。 */
+ * なくグループ内部の同型ノードとして保持する。Anchor Y(取り付け位置、ルートの `bodyLayout`
+ * 共有ノードから配線される shoulderY)だけが唯一の外部ソケット。 */
 defineGroupNode({
   type: 'necktieGroup',
   label: 'Necktie',
@@ -15,11 +14,7 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [
-          { id: 'bodyHeight', label: 'Body Height', type: 'number', default: 1 },
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'bodyShoulder', label: 'Body Shoulder', type: 'number', default: 1 },
-        ],
+        sockets: [{ id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 }],
       },
     },
     { id: 'knotWidthIn', type: 'numberInput', data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005, label: 'Knot Width' } },
@@ -32,7 +27,6 @@ defineGroupNode({
     { id: 'colorIn', type: 'colorInput', data: { hex: '#7a1f2b', label: 'Necktie Color' } },
     { id: 'gen', type: 'necktieGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
@@ -48,11 +42,8 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
-    { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
+    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
     { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
   ],
 });

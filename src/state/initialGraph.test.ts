@@ -13,26 +13,72 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('bodyGroup、およびそこへ配線する3つのシードノードが存在する', () => {
+  it('bodyGroup、bodyDimensions/bodyLayout、およびそこへ配線する3つのシードノードが存在する', () => {
     // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
-    // Body が静かにデフォルト寸法にフォールバックしてしまうため、id の存在自体をここで保証する。
-    // 肌色(Skin Color)は bodyGroup 内部の colorInput ノードとして保持しているため、
-    // ここには現れない(bodyGroupNode.test.ts 参照)。
+    // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
+    // id の存在自体をここで保証する。肌色(Skin Color)は bodyGroup 内部の colorInput ノード
+    // として保持しているため、ここには現れない(bodyGroupNode.test.ts 参照)。
     expect(
-      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodyGroup'].every((id) => nodesById.has(id)),
+      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) =>
+        nodesById.has(id),
+      ),
     ).toBe(true);
   });
 
-  it('bodyHeight/bodyBuild/bodyShoulder が bodyGroup へ配線されている', () => {
+  it('bodyHeight/bodyBuild/bodyShoulder が bodyDimensions へ配線されている', () => {
     const cases: [string, string, string][] = [
-      ['bodyHeight', 'value', 'bodyHeight'],
-      ['bodyBuild', 'value', 'bodyBuild'],
-      ['bodyShoulder', 'value', 'bodyShoulder'],
+      ['bodyHeight', 'value', 'heightScale'],
+      ['bodyBuild', 'value', 'buildScale'],
+      ['bodyShoulder', 'value', 'shoulderScale'],
     ];
     for (const [source, sourceHandle, targetHandle] of cases) {
-      const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === targetHandle);
+      const edge = initialEdges.find((e) => e.target === 'bodyDimensions' && e.targetHandle === targetHandle);
       expect(edge?.source).toBe(source);
+      expect(edge?.sourceHandle).toBe(sourceHandle);
+    }
+  });
+
+  it('bodyDimensions/bodyLayout が計算済みの値を bodyGroup へ配線している(bodyGroup 自身は寸法を計算しない)', () => {
+    const dimsSockets = ['legHeight', 'legRadius', 'legSpacing', 'torsoLength', 'torsoRadius', 'headRadius', 'armLength', 'armRadius', 'shoulderSpacing'];
+    for (const socket of dimsSockets) {
+      const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
+      expect(edge?.source).toBe('bodyDimensions');
+      expect(edge?.sourceHandle).toBe(socket);
+    }
+    const layoutSockets = ['legCenterY', 'torsoCenterY', 'headCenterY', 'armCenterY'];
+    for (const socket of layoutSockets) {
+      const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
+      expect(edge?.source).toBe('bodyLayout');
+      expect(edge?.sourceHandle).toBe(socket);
+    }
+  });
+
+  // 以前は各グループ内部の anchorIn(enumInput のドロップダウン)で実行時に選んでいた
+  // アンカーが、bodyLayout のどの出力を anchorY へ配線するかというグラフ上の配線そのものに
+  // なった(garmentPlacement.ts のコメント参照)。各ガーメントが正しいアンカー候補に
+  // 繋がっているかをピンポイントで検証する。
+  it('各ガーメントの anchorY が bodyLayout の正しいアンカー候補に接続されている', () => {
+    const expected: [string, string][] = [
+      ['skirtGroup', 'waistY'],
+      ['pantsGroup', 'waistY'],
+      ['beltGroup', 'waistY'],
+      ['dressGroup', 'shoulderY'],
+      ['necktieGroup', 'shoulderY'],
+      ['bagGroup', 'shoulderY'],
+      ['jacketGroup', 'shoulderY'],
+      ['sleeveGroup', 'shoulderY'],
+      ['topGroup', 'shoulderY'],
+      ['scarfGroup', 'shoulderY'],
+      ['socksGroup', 'feetY'],
+      ['shoesGroup', 'feetY'],
+      ['glovesGroup', 'wristY'],
+      ['hatGroup', 'headCenterY'],
+      ['glassesGroup', 'headCenterY'],
+    ];
+    for (const [target, sourceHandle] of expected) {
+      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'anchorY');
+      expect(edge?.source).toBe('bodyLayout');
       expect(edge?.sourceHandle).toBe(sourceHandle);
     }
   });

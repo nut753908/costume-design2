@@ -1,11 +1,12 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** dressTorsoScale(numberMultiply)+dressGen(dressGenerator)+dressMaterial(toonMaterial)+
- * anchorIn(enumInput)+offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の7ノードを1枚に
+ * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚に
  * まとめたグループノード。Torso Radius/Hem Radius/Length/Neckline/Neckline Depth/Color は他の
  * ガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput/enumInput
- * ノードではなくグループ内部の同型ノードとして保持する。Body Build のみガーメント間で
- * 共有されるため外部ソケットのまま。 */
+ * ノードではなくグループ内部の同型ノードとして保持する。Body Build(半径スケーリング用)と
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される shoulderY)は
+ * 外部ソケットのまま。 */
 defineGroupNode({
   type: 'dressGroup',
   label: 'Dress',
@@ -15,9 +16,8 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'bodyHeight', label: 'Body Height', type: 'number', default: 1 },
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'bodyShoulder', label: 'Body Shoulder', type: 'number', default: 1 },
+          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
         ],
       },
     },
@@ -30,7 +30,6 @@ defineGroupNode({
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'dressGenerator', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'anchorIn', type: 'enumInput', data: { value: 'shoulder', options: ['waist', 'shoulder', 'feet', 'wrist', 'head'], label: 'Anchor' } },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
@@ -46,11 +45,8 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'anchorIn', sourceHandle: 'value', target: 'placement', targetHandle: 'anchor' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'bodyHeight', target: 'placement', targetHandle: 'bodyHeight' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'placement', targetHandle: 'bodyBuild' },
-    { source: 'input', sourceHandle: 'bodyShoulder', target: 'placement', targetHandle: 'bodyShoulder' },
+    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
     { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
   ],
 });

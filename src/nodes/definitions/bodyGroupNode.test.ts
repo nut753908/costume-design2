@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../registry';
-// bodyGroup の埋め込みサブグラフが参照する bodyDimensionsGroup/bodyLayoutGroup(その内部の
-// numberInput/numberMultiply/numberAdd/numberSubtract を含む)/bodyTorsoGenerator/
-// bodyHeadGenerator/bodyLimbGenerator/translateY/toonMaterial/sceneOutput を含め、
-// 全ノードタイプを登録する。
+// bodyGroup の埋め込みサブグラフが参照する bodyTorsoGenerator/bodyHeadGenerator/
+// bodyLimbGenerator/translateY/toonMaterial/sceneOutput を含め、全ノードタイプを登録する。
 import '../definitions';
 
+// bodyGroup は寸法・配置の計算(bodyDimensionsGroup/bodyLayoutGroup)を内部に持たず、
+// state/initialGraph.ts 側のトップレベル共有ノードが計算済みの生の値(半径・長さ・Y座標)を
+// 外部ソケットとして直接受け取るだけになっている(bodyGroupNode.ts のコメント参照)。
 describe('bodyGroup', () => {
   it('未接続でも(groupInput ソケット自身のデフォルトにより)胴体/頭/腕/脚の4パーツが描画対象として出力される', () => {
     const result = getNodeType('bodyGroup').evaluate({}, {});
@@ -17,9 +18,9 @@ describe('bodyGroup', () => {
     expect(result.sceneOutputGeometry4).toBeUndefined();
   });
 
-  it('bodyBuild が大きくなるほど胴体(パーツ0)のジオメトリが外側に広がる', () => {
-    const narrow = getNodeType('bodyGroup').evaluate({ bodyBuild: { type: 'number', value: 0.9 } }, {});
-    const wide = getNodeType('bodyGroup').evaluate({ bodyBuild: { type: 'number', value: 1.3 } }, {});
+  it('torsoRadius が大きくなるほど胴体(パーツ0)のジオメトリが外側に広がる', () => {
+    const narrow = getNodeType('bodyGroup').evaluate({ torsoRadius: { type: 'number', value: 0.2 } }, {});
+    const wide = getNodeType('bodyGroup').evaluate({ torsoRadius: { type: 'number', value: 0.3 } }, {});
     const narrowGeom = narrow.sceneOutputGeometry0?.type === 'geometry' ? narrow.sceneOutputGeometry0.value : undefined;
     const wideGeom = wide.sceneOutputGeometry0?.type === 'geometry' ? wide.sceneOutputGeometry0.value : undefined;
     narrowGeom!.computeBoundingBox();
@@ -27,14 +28,14 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
-  it('bodyHeight が大きくなるほど頭(パーツ1)の中心Yが上がる', () => {
-    const shortResult = getNodeType('bodyGroup').evaluate({ bodyHeight: { type: 'number', value: 0.85 } }, {});
-    const tallResult = getNodeType('bodyGroup').evaluate({ bodyHeight: { type: 'number', value: 1.2 } }, {});
-    const shortGeom = shortResult.sceneOutputGeometry1?.type === 'geometry' ? shortResult.sceneOutputGeometry1.value : undefined;
-    const tallGeom = tallResult.sceneOutputGeometry1?.type === 'geometry' ? tallResult.sceneOutputGeometry1.value : undefined;
-    shortGeom!.computeBoundingBox();
-    tallGeom!.computeBoundingBox();
-    expect(tallGeom!.boundingBox!.max.y).toBeGreaterThan(shortGeom!.boundingBox!.max.y);
+  it('headCenterY が大きくなるほど頭(パーツ1)の中心Yが上がる', () => {
+    const lowResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 1.5 } }, {});
+    const highResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 2.0 } }, {});
+    const lowGeom = lowResult.sceneOutputGeometry1?.type === 'geometry' ? lowResult.sceneOutputGeometry1.value : undefined;
+    const highGeom = highResult.sceneOutputGeometry1?.type === 'geometry' ? highResult.sceneOutputGeometry1.value : undefined;
+    lowGeom!.computeBoundingBox();
+    highGeom!.computeBoundingBox();
+    expect(highGeom!.boundingBox!.max.y).toBeGreaterThan(lowGeom!.boundingBox!.max.y);
   });
 
   it('内部の skinColorIn(デフォルト #f2c9a0)が4パーツすべてのマテリアルへファンアウトされる', () => {
