@@ -11,6 +11,13 @@ function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type
   return value.type === 'number' || value.type === 'enum';
 }
 
+/** ラベルを直接編集できる `GenericNode.tsx` 系ノードの type 名。出力が number 型で
+ * 統一されておりソケット色だけでは互いに判別できない numberAdd/numberMultiply/
+ * numberSubtract は、意味的な名前を付けて見分ける必要性が他の generator 系ノードより
+ * 高いため、numberInput などの専用UIノードと同じくラベルをカード上で直接編集可能にしている
+ * (元の type 名は編集後もサブタイトルとして残るため判別性は失われない、下記 typeName 参照)。 */
+const EDITABLE_LABEL_TYPES = new Set(['numberAdd', 'numberSubtract', 'numberMultiply']);
+
 /** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
  * 入出力ソケットの行、(終端ノードの場合は)リアルタイムの評価値を表示する。
  *
@@ -24,6 +31,7 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const { inputs, outputs } = resolveNodeSockets(type ?? '', data as Record<string, unknown>);
   const evaluated = useGraphStore((s) => s.evaluatedResults);
   const enterGroup = useGraphStore((s) => s.enterGroup);
+  const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const outputValues = evaluated?.get(id);
   const customLabel = (data as { label?: string }).label;
   const label = customLabel ?? def.label;
@@ -33,10 +41,13 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   // 違って)互いに区別できない。data.label で独自の名前が付けられている場合に限り、
   // 元のノード種別(type)をそのまま併記して、ラベルの記述内容に頼らず判別できるようにする。
   const typeName = customLabel !== undefined ? type : undefined;
+  const onLabelChange = EDITABLE_LABEL_TYPES.has(type ?? '')
+    ? (newLabel: string) => updateNodeData(id, { label: newLabel })
+    : undefined;
 
   return (
     <div className="rf-node" onDoubleClick={isGroup ? () => enterGroup(id) : undefined}>
-      <NodeTitleBar id={id} label={label} typeName={typeName} />
+      <NodeTitleBar id={id} label={label} typeName={typeName} onLabelChange={onLabelChange} />
       {isGroup && <div className="rf-node__group-hint">ダブルクリックで中に入る</div>}
       {inputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row">
