@@ -49,16 +49,19 @@
   color: #b0413e;
 }
 
-/* `flex: 1`(= flex-basis: 0%)だけでは、`.rf-node` の shrink-to-fit 計算において
-   この入力欄の最大内容サイズ寄与を抑えられない(flex-basis の % も `width: 100%` と
-   同じく不確定な包含ブロックに対しては auto 相当として扱われ、ブラウザ既定の
-   <input type="text"> の実寸(size=20相当)にフォールバックしてしまう — 上記の
-   `.rf-node__settings-field input`/`.rf-node__hex-input` と同根の問題)。確定した
-   固定幅を指定し、必要なら flex-grow で余白を埋める形にする。 */
+/* 固定幅(旧: 100px)だと "Torso Capsule Height × Half" のような長いラベル(GenericNode.tsx
+   の numberAdd/numberSubtract/numberMultiply でラベル編集を解禁した際、bodyLayoutGroupNode.ts
+   の長いラベルが入力欄の中で見切れて読めなくなる不具合として実際に発生した)が収まらない。
+   `field-sizing: content` は <input> の実寸をブラウザ既定の size=20 相当ではなく実際の入力
+   内容の幅に合わせて決定するため、旧来の「固定幅を指定してブラウザ既定へのフォールバックを
+   防ぐ」ワークアラウンド(`.rf-node__settings-field input`/`.rf-node__hex-input` が使っている
+   もの)が不要になり、`<span>` 時代と同じ「テキストの実寸に応じて `.rf-node` 自体が
+   shrink-to-fit で広がる」挙動に戻せる(Chromium 123+ で対応、本プロジェクトが動作確認に
+   使っている headless Chromium でもサポート済み確認済み)。min-width はラベルが空文字の
+   ときでもクリックできる最小サイズを確保するためのもの。 */
 .rf-node__title-input {
-  flex: 1 1 100px;
-  width: 100px;
-  min-width: 0;
+  field-sizing: content;
+  min-width: 30px;
   padding: 1px 4px;
   border: 1px solid transparent;
   border-radius: 3px;
