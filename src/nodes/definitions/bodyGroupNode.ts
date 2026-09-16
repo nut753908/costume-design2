@@ -20,14 +20,27 @@ import { defineGroupNode } from './groupNodeFactory';
  * `bodyHeight`/`bodyBuild`/`bodyShoulder`(3つのスケール係数)ではなく、`bodyDimensions`/
  * `bodyLayout` が計算済みの生の値そのもの(半径・長さ・Y座標)になっている。
  *
- * 胴体(カプセル)・頭(球)・腕1組・脚1組の4パーツそれぞれを generator→`translateY`
- * (Y座標だけを平行移動する汎用ノード、`garmentPlacement` が使うのと同じ)→`sceneOutput`
- * という流れで独立した `ToonMesh` として出力する(1つのグループの中に `sceneOutput` は
- * 何個あってもよい、nodes/CLAUDE.md 参照)。肌色(`skinColorIn`)は `bodyGroup` 以外の
- * どのグループとも共有されない単独パラメータのため、他ガーメントの生パラメータ・Color と
- * 同じく groupInput の外部ソケットにはせず、内部の `colorInput` ノードとして保持する
- * (グループの中に入って初めて編集できる)。その値を1つの `toonMaterial` ノードから4つの
- * `sceneOutput` すべてへファンアウトする(1つの出力を複数の入力へ繋ぐだけの通常のエッジ)。 */
+ * 胴体(カプセル)・頭(球)・腕1組・脚1組の4パーツは、それぞれ `bodyTorsoGroup`/
+ * `bodyHeadGroup`/`bodyLimbGroup`(腕/脚の2インスタンス)という4つのネストしたグループノード
+ * インスタンスへ切り出されている(`bodyTorsoGroupNode.ts`/`bodyHeadGroupNode.ts`/
+ * `bodyLimbGroupNode.ts` 参照)。各サブグループは `gen(ジェネレーター)→translate(translateY,
+ * Y座標だけを平行移動する汎用ノード)→sceneOut(sceneOutput)` の3ノードだけを内包し、
+ * 15種のガーメントグループと同じ「1グループ=1つの描画対象パーツ」という粒度になっている。
+ * 以前はこの4パーツの生成チェーンを `bodyGroup` の埋め込みサブグラフに直接フラットに
+ * 並べていたが、ガーメント側は「1グループ=1着」という粒度で揃っているのに対し Body だけ
+ * 「1グループ=4パーツ」という粗い粒度になっており、他ガーメントの `<name>Group` との粒度が
+ * 揃っていなかったため、この形へ分割した。
+ *
+ * 肌色(`skinColorIn`)は4パーツすべてで共有される値のため、どれか1つのサブグループの内部に
+ * 閉じ込めて `groupOutput` で覗き穴を開けるのではなく、`bodyGroup` 自身が持つ
+ * `skinColorIn`(`colorInput`)→`material`(`toonMaterial`)から4つのサブグループそれぞれの
+ * 外部ソケット `material` へ普通の配線でファンアウトする(`topGroup`/`sleeveGroup` が
+ * Torso Radius/Material を共有ノードから受け取るのと同じパターン、`nodes/CLAUDE.md` の
+ * 「値が複数グループで共有される場合」参照)。各サブグループが内部の `sceneOutput` で
+ * 解決した geometry+material の組は、`groupNodeFactory.ts` の `findResolvedSceneOutputs()`
+ * がネストしたグループの内部から自動的に見つけて `bodyGroup` 自身の
+ * `sceneOutputGeometry<N>`/`sceneOutputMaterial<N>` へ0から振り直して転送する(多段ネスト、
+ * `nodes/CLAUDE.md` 参照)ため、`bodyGroup` 自身は `sceneOutput` を1つも持たない。 */
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',
@@ -54,49 +67,34 @@ defineGroupNode({
       },
     },
     { id: 'skinColorIn', type: 'colorInput', data: { hex: '#f2c9a0', label: 'Skin Color' } },
-    { id: 'torsoGen', type: 'bodyTorsoGenerator', data: {} },
-    { id: 'headGen', type: 'bodyHeadGenerator', data: {} },
-    { id: 'armGen', type: 'bodyLimbGenerator', data: {} },
-    { id: 'legGen', type: 'bodyLimbGenerator', data: {} },
-    { id: 'torsoTranslate', type: 'translateY', data: {} },
-    { id: 'headTranslate', type: 'translateY', data: {} },
-    { id: 'armTranslate', type: 'translateY', data: {} },
-    { id: 'legTranslate', type: 'translateY', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'sceneOutTorso', type: 'sceneOutput', data: {} },
-    { id: 'sceneOutHead', type: 'sceneOutput', data: {} },
-    { id: 'sceneOutArms', type: 'sceneOutput', data: {} },
-    { id: 'sceneOutLegs', type: 'sceneOutput', data: {} },
+    { id: 'torsoGroup', type: 'bodyTorsoGroup', data: {} },
+    { id: 'headGroup', type: 'bodyHeadGroup', data: {} },
+    { id: 'armGroup', type: 'bodyLimbGroup', data: {} },
+    { id: 'legGroup', type: 'bodyLimbGroup', data: {} },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'torsoLength', target: 'torsoGen', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'armRadius', target: 'armGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'armLength', target: 'armGen', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armGen', targetHandle: 'spacing' },
-    { source: 'input', sourceHandle: 'legRadius', target: 'legGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'legHeight', target: 'legGen', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'legSpacing', target: 'legGen', targetHandle: 'spacing' },
-
-    { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'torsoCenterY', target: 'torsoTranslate', targetHandle: 'y' },
-    { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'headCenterY', target: 'headTranslate', targetHandle: 'y' },
-    { source: 'armGen', sourceHandle: 'geometry', target: 'armTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'armCenterY', target: 'armTranslate', targetHandle: 'y' },
-    { source: 'legGen', sourceHandle: 'geometry', target: 'legTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'legCenterY', target: 'legTranslate', targetHandle: 'y' },
-
     { source: 'skinColorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
 
-    { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'sceneOutTorso', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOutTorso', targetHandle: 'material' },
-    { source: 'headTranslate', sourceHandle: 'geometry', target: 'sceneOutHead', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOutHead', targetHandle: 'material' },
-    { source: 'armTranslate', sourceHandle: 'geometry', target: 'sceneOutArms', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOutArms', targetHandle: 'material' },
-    { source: 'legTranslate', sourceHandle: 'geometry', target: 'sceneOutLegs', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOutLegs', targetHandle: 'material' },
+    { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGroup', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'torsoLength', target: 'torsoGroup', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'torsoCenterY', target: 'torsoGroup', targetHandle: 'centerY' },
+    { source: 'material', sourceHandle: 'material', target: 'torsoGroup', targetHandle: 'material' },
+
+    { source: 'input', sourceHandle: 'headRadius', target: 'headGroup', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'headCenterY', target: 'headGroup', targetHandle: 'centerY' },
+    { source: 'material', sourceHandle: 'material', target: 'headGroup', targetHandle: 'material' },
+
+    { source: 'input', sourceHandle: 'armRadius', target: 'armGroup', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'armLength', target: 'armGroup', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armGroup', targetHandle: 'spacing' },
+    { source: 'input', sourceHandle: 'armCenterY', target: 'armGroup', targetHandle: 'centerY' },
+    { source: 'material', sourceHandle: 'material', target: 'armGroup', targetHandle: 'material' },
+
+    { source: 'input', sourceHandle: 'legRadius', target: 'legGroup', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'legHeight', target: 'legGroup', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'legSpacing', target: 'legGroup', targetHandle: 'spacing' },
+    { source: 'input', sourceHandle: 'legCenterY', target: 'legGroup', targetHandle: 'centerY' },
+    { source: 'material', sourceHandle: 'material', target: 'legGroup', targetHandle: 'material' },
   ],
 });
