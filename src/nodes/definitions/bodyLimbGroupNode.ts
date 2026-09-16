@@ -10,11 +10,14 @@ import { defineGroupNode } from './groupNodeFactory';
  * (`nodes/definitions/mirrorPair.ts`、`geometry/mirrorPair.ts` の
  * `buildMirroredPairGeometry()` を1つの geometry 入力向けにラップしたもの)の組み合わせで
  * 表現する。「手首/足首側を根元よりわずかに細くする」というテーパー比率(旧 `bodyParts.ts`
- * の `LIMB_TAPER_RATIO = 0.85` というコード上の固定値)は、`radius → taper(numberMultiply,
- * factor=0.85) → cylinderGen.radiusBottom` という配線そのものへ展開している — 他ガーメントの
- * 『体に触れる半径』(`waistRadiusIn → numberMultiply(bodyBuild) → generator`)や
- * `bodyDimensionsGroup`/`bodyLayoutGroup` の四則演算チェーンと同じく、ノードグラフを見ただけで
- * 何を計算しているかが分かるようにするため、コード側の定数としては持たない。 */
+ * の `LIMB_TAPER_RATIO = 0.85` というコード上の固定値)は、`taperRatioIn`(`numberInput`)→
+ * `taper`(`numberMultiply`)→`cylinderGen.radiusBottom` という配線そのものへ展開している —
+ * `bodyLayoutGroupNode.ts` の `armTorsoOverlapRatioIn` と同じく、四則演算チェーンで使う定数は
+ * `numberMultiply`/`numberAdd`/`numberSubtract` 自身の `data` にリテラルとして隠さず、必ず
+ * 専用の `numberInput` ノードとして配置してから配線する(そうすることでキャンバス上で値が
+ * 見え、かつ編集もできる — `numberMultiply` 等は `data.label` の編集はできても専用の値編集
+ * UIを持たないため、リテラルのまま `data` に隠すと数値そのものがキャンバス上のどこにも
+ * 現れなくなってしまう)。 */
 defineGroupNode({
   type: 'bodyLimbGroup',
   label: 'Body Limb Pair',
@@ -32,7 +35,8 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'taper', type: 'numberMultiply', data: { factor: 0.85, label: 'Wrist/Ankle Taper' } },
+    { id: 'taperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01, label: 'Wrist/Ankle Taper Ratio' } },
+    { id: 'taper', type: 'numberMultiply', data: { label: 'Wrist/Ankle Taper' } },
     { id: 'gen', type: 'cylinderGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'translate', type: 'translateY', data: {} },
@@ -41,6 +45,7 @@ defineGroupNode({
   internalEdges: [
     { source: 'input', sourceHandle: 'radius', target: 'gen', targetHandle: 'radiusTop' },
     { source: 'input', sourceHandle: 'radius', target: 'taper', targetHandle: 'value' },
+    { source: 'taperRatioIn', sourceHandle: 'value', target: 'taper', targetHandle: 'factor' },
     { source: 'taper', sourceHandle: 'value', target: 'gen', targetHandle: 'radiusBottom' },
     { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'height' },
     { source: 'gen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
