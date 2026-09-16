@@ -50,3 +50,29 @@ export function buildCylinderGeometry({
 }): THREE.BufferGeometry {
   return new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
 }
+
+export function buildTorusGeometry({
+  radius,
+  tube,
+  radialSegments,
+  tubularSegments,
+}: {
+  radius: number;
+  tube: number;
+  radialSegments: number;
+  tubularSegments: number;
+}): THREE.BufferGeometry {
+  return new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments);
+}
+
+export function buildBoxGeometry({
+  width,
+  height,
+  depth,
+}: {
+  width: number;
+  height: number;
+  depth: number;
+}): THREE.BufferGeometry {
+  return new THREE.BoxGeometry(width, height, depth);
+}

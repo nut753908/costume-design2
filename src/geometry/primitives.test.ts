@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCapsuleGeometry, buildCylinderGeometry, buildSphereGeometry } from './primitives';
+import { buildBoxGeometry, buildCapsuleGeometry, buildCylinderGeometry, buildSphereGeometry, buildTorusGeometry } from './primitives';
 
 function positions(geometry: ReturnType<typeof buildCapsuleGeometry>): Float32Array {
   return geometry.getAttribute('position').array as Float32Array;
@@ -82,5 +82,52 @@ describe('buildCylinderGeometry', () => {
     expect(long.boundingBox!.max.y - long.boundingBox!.min.y).toBeGreaterThan(
       short.boundingBox!.max.y - short.boundingBox!.min.y,
     );
+  });
+});
+
+describe('buildTorusGeometry', () => {
+  it('妥当で退化していないジオメトリを生成する', () => {
+    const geometry = buildTorusGeometry({ radius: 0.1, tube: 0.02, radialSegments: 8, tubularSegments: 16 });
+    const index = geometry.getIndex();
+    expect(index).not.toBeNull();
+    expect(index!.count % 3).toBe(0);
+    const pos = positions(geometry);
+    for (let i = 0; i < pos.length; i++) expect(Number.isNaN(pos[i])).toBe(false);
+  });
+
+  it('radius が大きくなるほど全体(管の中心線の半径)が広がる', () => {
+    const small = buildTorusGeometry({ radius: 0.1, tube: 0.02, radialSegments: 8, tubularSegments: 16 });
+    const large = buildTorusGeometry({ radius: 0.3, tube: 0.02, radialSegments: 8, tubularSegments: 16 });
+    small.computeBoundingBox();
+    large.computeBoundingBox();
+    expect(large.boundingBox!.max.x).toBeGreaterThan(small.boundingBox!.max.x);
+  });
+
+  it('tube が太くなるほど管そのものが太くなる', () => {
+    const thin = buildTorusGeometry({ radius: 0.1, tube: 0.01, radialSegments: 8, tubularSegments: 16 });
+    const thick = buildTorusGeometry({ radius: 0.1, tube: 0.05, radialSegments: 8, tubularSegments: 16 });
+    thin.computeBoundingBox();
+    thick.computeBoundingBox();
+    expect(thick.boundingBox!.max.x).toBeGreaterThan(thin.boundingBox!.max.x);
+  });
+});
+
+describe('buildBoxGeometry', () => {
+  it('妥当で退化していないジオメトリを生成する', () => {
+    const geometry = buildBoxGeometry({ width: 0.1, height: 0.2, depth: 0.05 });
+    const index = geometry.getIndex();
+    expect(index).not.toBeNull();
+    expect(index!.count % 3).toBe(0);
+    const pos = positions(geometry);
+    for (let i = 0; i < pos.length; i++) expect(Number.isNaN(pos[i])).toBe(false);
+  });
+
+  it('width/height/depth が各軸のサイズをそれぞれ独立に決める', () => {
+    const geometry = buildBoxGeometry({ width: 0.1, height: 0.4, depth: 0.02 });
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox!;
+    expect(box.max.x - box.min.x).toBeCloseTo(0.1, 5);
+    expect(box.max.y - box.min.y).toBeCloseTo(0.4, 5);
+    expect(box.max.z - box.min.z).toBeCloseTo(0.02, 5);
   });
 });
