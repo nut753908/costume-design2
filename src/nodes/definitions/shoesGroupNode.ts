@@ -1,10 +1,17 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** shoesSoleScale(numberMultiply)+shoesGen(shoesGenerator)+shoesMaterial(toonMaterial)+
- * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚に
- * まとめたグループノード。Sole Radius/Cuff Radius/Height/Toe Length/Color は他のガーメントと共有
- * されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の
- * 同型ノードとして保持する。
+/** shoesSoleScale(numberMultiply)+shoeGen(shoeGenerator)+mirror(mirrorPair)+
+ * shoesMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
+ * sceneOut(sceneOutput)の7ノードを1枚にまとめたグループノード。Sole Radius/Cuff Radius/
+ * Height/Toe Length/Color は他のガーメントと共有されない単独パラメータのため、外側の
+ * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+ *
+ * 靴1本ぶんのジオメトリ(`shoeGen`)と、それを ±legSpacing だけ X方向に離した左右対称ペアへ
+ * まとめる処理(`mirror`)は分離している — `pantsGroupNode.ts`/`bodyLimbGroupNode.ts` と同じ形
+ * (`geometry/shoes.ts`/`nodes/CLAUDE.md` 参照)。以前は `shoesGenerator` という単一ノードが
+ * `legSpacing` も受け取り、内部の `buildShoesGeometry()`(`buildMirroredPairGeometry()` を
+ * 呼ぶブラックボックス)へそのまま渡していた。
+ *
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
@@ -29,7 +36,8 @@ defineGroupNode({
     { id: 'toeLengthIn', type: 'numberInput', data: { value: 1.5, min: 1, max: 2.5, step: 0.05, label: 'Toe Length' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#3d3630', label: 'Shoes Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'gen', type: 'shoesGenerator', data: {} },
+    { id: 'shoeGen', type: 'shoeGenerator', data: {} },
+    { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
@@ -38,12 +46,13 @@ defineGroupNode({
   internalEdges: [
     { source: 'soleRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'soleRadius' },
-    { source: 'cuffRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'cuffRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'height' },
-    { source: 'toeLengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'toeLength' },
-    { source: 'input', sourceHandle: 'legSpacing', target: 'gen', targetHandle: 'legSpacing' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
+    { source: 'scale', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'soleRadius' },
+    { source: 'cuffRadiusIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'cuffRadius' },
+    { source: 'heightIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'height' },
+    { source: 'toeLengthIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'toeLength' },
+    { source: 'shoeGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
+    { source: 'mirror', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },

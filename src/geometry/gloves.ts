@@ -1,35 +1,20 @@
 import * as THREE from 'three';
 import { buildEasedLatheProfile } from './latheProfile';
-import { buildMirroredPairGeometry } from './mirrorPair';
 
-export interface GlovesParams {
+export interface GloveParams {
   wristRadius: number;
   handRadius: number;
   length: number;
-  armSpacing: number;
   segments: number;
 }
 
 const PROFILE_STEPS = 10;
 
-/** 1つの手袋を、手首(アンカー、上)から指先(下)までのプロファイルを回転体(Lathe)で構築する。 */
-function buildGloveGeometry(
-  wristRadius: number,
-  handRadius: number,
-  length: number,
-  segments: number,
-): THREE.BufferGeometry {
+/** 1つの手袋を、手首(アンカー、上)から指先(下)までのプロファイルを回転体(Lathe)で構築する。
+ * 左右2つを ±armSpacing だけ X方向に離してまとめる処理は、この関数の責務ではなく
+ * `nodes/definitions/mirrorPair.ts`(グループノード)がノードグラフ側で担う
+ * (`pants.ts`/`bodyLimbGroupNode.ts` と同じ形)。 */
+export function buildGloveGeometry({ wristRadius, handRadius, length, segments }: GloveParams): THREE.BufferGeometry {
   const points = buildEasedLatheProfile(wristRadius, handRadius, length, 'down', PROFILE_STEPS);
   return new THREE.LatheGeometry(points, segments);
-}
-
-/** 左右2つの手袋のジオメトリを1つの BufferGeometry にまとめる。wrist アンカーは中心線(x=0)の
- * 1点のみのため、肩幅ぶんの左右オフセットはこの関数が自分で行う(sleeve.ts が肩の左右チューブを
- * 単一の shoulder アンカーに対して自分で行っているのと同じ)。 */
-export function buildGlovesGeometry(params: GlovesParams): THREE.BufferGeometry {
-  const { wristRadius, handRadius, length, armSpacing, segments } = params;
-  return buildMirroredPairGeometry(
-    () => buildGloveGeometry(wristRadius, handRadius, length, segments),
-    armSpacing,
-  );
 }
