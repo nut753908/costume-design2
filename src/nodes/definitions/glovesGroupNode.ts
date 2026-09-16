@@ -15,10 +15,12 @@ import { defineGroupNode } from './groupNodeFactory';
  * (`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま渡していた。プロファイル
  * 生成自体も `pantsGroupNode.ts` と同じ理由で `easedLatheProfile`→`latheGenerator` という
  * 汎用ノードの組み合わせへ展開している(`geometry/gloves.ts`/
- * `nodes/definitions/gloveGenerator.ts` は呼び出し元が無くなったため削除済み)。`gloveGen` の
- * Segments は他ガーメントと異なり `segmentsIn` を持たず、以前の `gloveGenerator` の既定値
- * (12)をそのまま `latheGenerator` インスタンスの `data.segments` に引き継いでいる
- * (未接続のため編集はできない、既存の挙動を変えていないだけ)。 */
+ * `nodes/definitions/gloveGenerator.ts` は呼び出し元が無くなったため削除済み)。以前の
+ * `glovesGenerator`(`defineGeneratorNode` ベース)は Segments を専用の `segmentsIn` に
+ * 配線せず、型の既定値(12)へ未接続のままフォールバックさせていたが、`numberMultiply` の
+ * `factor` と同じ理由(専用UIを持たない generator 系ノードの未接続ソケットは、値そのものが
+ * カード上のどこにも見えなくなる)で、pants/socks と同じく専用の `segmentsIn`
+ * (`numberInput`)を追加して配線している。 */
 defineGroupNode({
   type: 'glovesGroup',
   label: 'Gloves',
@@ -37,10 +39,11 @@ defineGroupNode({
     { id: 'handRadiusIn', type: 'numberInput', data: { value: 0.09, min: 0.05, max: 0.16, step: 0.005, label: 'Hand Radius' } },
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Length' } },
     { id: 'armSpacingIn', type: 'numberInput', data: { value: 0.34, min: 0.2, max: 0.5, step: 0.01, label: 'Arm Spacing' } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 12, min: 8, max: 32, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#b0413e', label: 'Gloves Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
-    { id: 'gloveGen', type: 'latheGenerator', data: { segments: 12 } },
+    { id: 'gloveGen', type: 'latheGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
@@ -54,6 +57,7 @@ defineGroupNode({
     { source: 'handRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
     { source: 'lengthIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
     { source: 'profile', sourceHandle: 'points', target: 'gloveGen', targetHandle: 'points' },
+    { source: 'segmentsIn', sourceHandle: 'value', target: 'gloveGen', targetHandle: 'segments' },
     { source: 'gloveGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'armSpacingIn', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
     { source: 'mirror', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },

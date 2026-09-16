@@ -3,7 +3,7 @@ import { defineGroupNode } from './groupNodeFactory';
 /** shoesSoleScale(numberMultiply)+shoeGen(shoeGenerator)+mirror(mirrorPair)+
  * shoesMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
  * sceneOut(sceneOutput)の7ノードを1枚にまとめたグループノード。Sole Radius/Cuff Radius/
- * Height/Toe Length/Color は他のガーメントと共有されない単独パラメータのため、外側の
+ * Height/Toe Length/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
  * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  *
  * 靴1本ぶんのジオメトリ(`shoeGen`)と、それを ±legSpacing だけ X方向に離した左右対称ペアへ
@@ -14,7 +14,12 @@ import { defineGroupNode } from './groupNodeFactory';
  *
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
+ * から配線される feetY)と合わせて外部ソケットのまま受け取る。
+ *
+ * `shoeGen` の Segments は以前 `segmentsIn` に配線されず、型の既定値(16)へ未接続のまま
+ * フォールバックしていた(専用UIを持たない generator 系ノードの未接続ソケットは値が
+ * カード上のどこにも見えなくなる、`numberMultiply` の `factor` と同じ問題)。他ガーメントと
+ * 同じく専用の `segmentsIn`(`numberInput`)を追加して配線している。 */
 defineGroupNode({
   type: 'shoesGroup',
   label: 'Shoes',
@@ -34,6 +39,7 @@ defineGroupNode({
     { id: 'cuffRadiusIn', type: 'numberInput', data: { value: 0.1, min: 0.08, max: 0.16, step: 0.005, label: 'Cuff Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.12, min: 0.05, max: 0.25, step: 0.005, label: 'Height' } },
     { id: 'toeLengthIn', type: 'numberInput', data: { value: 1.5, min: 1, max: 2.5, step: 0.05, label: 'Toe Length' } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#3d3630', label: 'Shoes Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'shoeGen', type: 'shoeGenerator', data: {} },
@@ -50,6 +56,7 @@ defineGroupNode({
     { source: 'cuffRadiusIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'cuffRadius' },
     { source: 'heightIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'height' },
     { source: 'toeLengthIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'toeLength' },
+    { source: 'segmentsIn', sourceHandle: 'value', target: 'shoeGen', targetHandle: 'segments' },
     { source: 'shoeGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
     { source: 'mirror', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
