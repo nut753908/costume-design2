@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../registry';
-// bodyGroup の埋め込みサブグラフが参照する bodyTorsoGenerator/bodyHeadGenerator/
-// bodyLimbGenerator/translateY/toonMaterial/sceneOutput を含め、全ノードタイプを登録する。
+// bodyGroup の埋め込みサブグラフがネストする bodyTorsoGroup/bodyHeadGroup/bodyLimbGroup
+// (内部で使う capsuleGenerator/sphereGenerator/cylinderGenerator/mirrorPair/translateY/
+// toonMaterial/sceneOutput を含む)を含め、全ノードタイプを登録する。
 import '../definitions';
 
 // bodyGroup は寸法・配置の計算(bodyDimensionsGroup/bodyLayoutGroup)を内部に持たず、

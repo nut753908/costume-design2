@@ -1,9 +1,11 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** `bodyGroup` にネストされる、頭1パーツぶんの `gen(bodyHeadGenerator)→translate
+/** `bodyGroup` にネストされる、頭1パーツぶんの `gen(sphereGenerator)→translate
  * (translateY)→sceneOut(sceneOutput)` チェーンだけを内包するグループノード。
  * `bodyTorsoGroupNode.ts` と同じ理由・同じ形(Material は共有ノードから外部ソケットで
- * 受け取るだけ)で分割した。 */
+ * 受け取るだけ)で分割した。ジェネレーターは Body 専用の `bodyHeadGenerator` ではなく、
+ * 汎用プリミティブノード `sphereGenerator`(`nodes/definitions/sphereGenerator.ts`)を使う
+ * (`bodyTorsoGroupNode.ts` の `capsuleGenerator` と同じ理由)。 */
 defineGroupNode({
   type: 'bodyHeadGroup',
   label: 'Body Head',
@@ -19,7 +21,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'gen', type: 'bodyHeadGenerator', data: {} },
+    { id: 'gen', type: 'sphereGenerator', data: {} },
     { id: 'translate', type: 'translateY', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],

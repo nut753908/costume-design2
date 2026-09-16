@@ -1,10 +1,20 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** `bodyGroup` にネストされる、左右対称な腕1組・脚1組のどちらにも使う共通のグループノード
- * (`bodyLimbGenerator` 自身が腕/脚で共用されるのと同じ考え方で、`bodyGroup` 内に2インスタンス
- * 置く)。`gen(bodyLimbGenerator)→translate(translateY)→sceneOut(sceneOutput)` チェーンだけを
- * 内包する。`bodyTorsoGroupNode.ts`/`bodyHeadGroupNode.ts` と同じ理由・同じ形(Material は
- * 共有ノードから外部ソケットで受け取るだけ)で分割した。 */
+ * (`bodyGroup` 内に2インスタンス置く)。`bodyTorsoGroupNode.ts`/`bodyHeadGroupNode.ts` と
+ * 同じ理由・同じ形(Material は共有ノードから外部ソケットで受け取るだけ)で分割した。
+ *
+ * ジェネレーターは Body 専用の `bodyLimbGenerator` ではなく、汎用プリミティブノード
+ * `cylinderGenerator`(`nodes/definitions/cylinderGenerator.ts`、上下の半径を独立指定できる
+ * テーパー円柱)と、左右対称ペアへまとめる汎用ノード `mirrorPair`
+ * (`nodes/definitions/mirrorPair.ts`、`geometry/mirrorPair.ts` の
+ * `buildMirroredPairGeometry()` を1つの geometry 入力向けにラップしたもの)の組み合わせで
+ * 表現する。「手首/足首側を根元よりわずかに細くする」というテーパー比率(旧 `bodyParts.ts`
+ * の `LIMB_TAPER_RATIO = 0.85` というコード上の固定値)は、`radius → taper(numberMultiply,
+ * factor=0.85) → cylinderGen.radiusBottom` という配線そのものへ展開している — 他ガーメントの
+ * 『体に触れる半径』(`waistRadiusIn → numberMultiply(bodyBuild) → generator`)や
+ * `bodyDimensionsGroup`/`bodyLayoutGroup` の四則演算チェーンと同じく、ノードグラフを見ただけで
+ * 何を計算しているかが分かるようにするため、コード側の定数としては持たない。 */
 defineGroupNode({
   type: 'bodyLimbGroup',
   label: 'Body Limb Pair',
@@ -22,15 +32,20 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'gen', type: 'bodyLimbGenerator', data: {} },
+    { id: 'taper', type: 'numberMultiply', data: { factor: 0.85, label: 'Wrist/Ankle Taper' } },
+    { id: 'gen', type: 'cylinderGenerator', data: {} },
+    { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'translate', type: 'translateY', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'radius', target: 'gen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'spacing', target: 'gen', targetHandle: 'spacing' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'translate', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'radius', target: 'gen', targetHandle: 'radiusTop' },
+    { source: 'input', sourceHandle: 'radius', target: 'taper', targetHandle: 'value' },
+    { source: 'taper', sourceHandle: 'value', target: 'gen', targetHandle: 'radiusBottom' },
+    { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'height' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'spacing', target: 'mirror', targetHandle: 'offset' },
+    { source: 'mirror', sourceHandle: 'geometry', target: 'translate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'centerY', target: 'translate', targetHandle: 'y' },
     { source: 'translate', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
