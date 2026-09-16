@@ -20,7 +20,7 @@ export interface GroupIOSocket {
 }
 
 /** `groupInput.evaluate()` が、外部から値が注入されていないソケットに使う
- * リテラルなデフォルト値を SocketValue へ変換する。geometry/material はリテラルな
+ * リテラルなデフォルト値を SocketValue へ変換する。geometry/material/points はリテラルな
  * デフォルトを表現できないため常に undefined を返す(=未接続なら単に出力されない)。 */
 export function literalGroupInputValue(socket: GroupIOSocket): SocketValue | undefined {
   switch (socket.type) {
@@ -32,6 +32,7 @@ export function literalGroupInputValue(socket: GroupIOSocket): SocketValue | und
       return { type: 'enum', value: typeof socket.default === 'string' ? socket.default : (socket.options?.[0] ?? '') };
     case 'geometry':
     case 'material':
+    case 'points':
       return undefined;
   }
 }

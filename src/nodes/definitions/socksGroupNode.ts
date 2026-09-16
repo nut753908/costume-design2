@@ -1,16 +1,21 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** socksAnkleScale(numberMultiply)+sockGen(sockGenerator)+mirror(mirrorPair)+
- * socksMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
- * sceneOut(sceneOutput)の7ノードを1枚にまとめたグループノード。Ankle Radius/Calf Radius/
- * Height/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
- * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+/** socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
+ * mirror(mirrorPair)+socksMaterial(toonMaterial)+offsetYIn(numberInput)+
+ * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
+ * Ankle Radius/Calf Radius/Height/Segments/Color は他のガーメントと共有されない単独
+ * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
+ * して保持する。
  *
- * 靴下1本ぶんのジオメトリ(`sockGen`)と、それを ±legSpacing だけ X方向に離した左右対称ペアへ
- * まとめる処理(`mirror`)は分離している — `pantsGroupNode.ts`/`bodyLimbGroupNode.ts` と同じ形
- * (`geometry/socks.ts`/`nodes/CLAUDE.md` 参照)。以前は `socksGenerator` という単一ノードが
- * `legSpacing` も受け取り、内部の `buildSocksGeometry()`(`buildMirroredPairGeometry()` を
- * 呼ぶブラックボックス)へそのまま渡していた。
+ * 靴下1本ぶんのジオメトリ(`profile`→`sockGen`)と、それを ±legSpacing だけ X方向に離した
+ * 左右対称ペアへまとめる処理(`mirror`)は分離している — `pantsGroupNode.ts`/
+ * `bodyLimbGroupNode.ts` と同じ形(`nodes/CLAUDE.md` 参照)。以前は `socksGenerator` という
+ * 単一ノードが `legSpacing` も受け取り、内部の `buildSocksGeometry()`
+ * (`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま渡していた。プロファイル
+ * 生成自体も `pantsGroupNode.ts` と同じ理由で `easedLatheProfile`→`latheGenerator` という
+ * 汎用ノードの組み合わせへ展開している(`geometry/socks.ts`/
+ * `nodes/definitions/sockGenerator.ts` は呼び出し元が無くなったため削除済み)。socks は
+ * shoes/hat と同じ `direction: 'up'`(足首から上=ふくらはぎ側へ伸びる)。
  *
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
@@ -36,7 +41,8 @@ defineGroupNode({
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#d4a83a', label: 'Socks Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'sockGen', type: 'sockGenerator', data: {} },
+    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
+    { id: 'sockGen', type: 'latheGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
@@ -46,9 +52,10 @@ defineGroupNode({
   internalEdges: [
     { source: 'ankleRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'sockGen', targetHandle: 'ankleRadius' },
-    { source: 'calfRadiusIn', sourceHandle: 'value', target: 'sockGen', targetHandle: 'calfRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'sockGen', targetHandle: 'height' },
+    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
+    { source: 'calfRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
+    { source: 'heightIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
+    { source: 'profile', sourceHandle: 'points', target: 'sockGen', targetHandle: 'points' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'sockGen', targetHandle: 'segments' },
     { source: 'sockGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },

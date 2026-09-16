@@ -1,13 +1,14 @@
 import type * as THREE from 'three';
 
-export type SocketType = 'number' | 'color' | 'enum' | 'geometry' | 'material';
+export type SocketType = 'number' | 'color' | 'enum' | 'geometry' | 'material' | 'points';
 
 export type SocketValue =
   | { type: 'number'; value: number }
   | { type: 'color'; value: THREE.Color }
   | { type: 'enum'; value: string }
   | { type: 'geometry'; value: THREE.BufferGeometry }
-  | { type: 'material'; value: THREE.Material };
+  | { type: 'material'; value: THREE.Material }
+  | { type: 'points'; value: THREE.Vector2[] };
 
 export interface SocketDef {
   id: string;

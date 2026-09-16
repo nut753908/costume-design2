@@ -2,11 +2,21 @@ import { defineGroupNode } from './groupNodeFactory';
 
 /** hat は bodyBuild によるスケーリング対象外(headRadius が `bodyDimensionsGroup` の中で
  * buildScale の影響を受けないため)なので Body Build 入力は無く、
- * hatGen(hatGenerator)+hatMaterial(toonMaterial)+offsetYIn(numberInput)+
- * placement(garmentPlacement)+sceneOut(sceneOutput) の5ノードを1枚にまとめる。Brim Radius/Crown Radius/Height/Color も
- * 他のガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput ノードでは
- * なくグループ内部の同型ノードとして保持する。Anchor Y(取り付け位置、ルートの `bodyLayout`
- * 共有ノードから配線される headCenterY)だけが唯一の外部ソケット。 */
+ * profile(easedLatheProfile)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
+ * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚に
+ * まとめる。Brim Radius/Crown Radius/Height/Color も他のガーメントと共有されない単独
+ * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
+ * して保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
+ * headCenterY)だけが唯一の外部ソケット。
+ *
+ * プロファイル生成は `pantsGroupNode.ts` 等と同じ理由で `easedLatheProfile`→
+ * `latheGenerator` という汎用ノードの組み合わせへ展開している(`geometry/hat.ts`/
+ * `nodes/definitions/hatGenerator.ts` は呼び出し元が無くなったため削除済み)。head は左右対称な
+ * 単一パーツなので `mirrorPair` は挟まない(`buildHatGeometry()` のコメント参照)。hat は
+ * shoes/socks と同じ `direction: 'up'`(つばから上=クラウン側へ伸びる)。`hatGen` の Segments は
+ * gloves と同様 `segmentsIn` を持たず、以前の `hatGenerator` の既定値(20)をそのまま
+ * `latheGenerator` インスタンスの `data.segments` に引き継いでいる(未接続のため編集はできない、
+ * 既存の挙動を変えていないだけ)。 */
 defineGroupNode({
   type: 'hatGroup',
   label: 'Hat',
@@ -22,16 +32,18 @@ defineGroupNode({
     { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02, min: 0, max: 0.15, step: 0.005, label: 'Crown Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01, label: 'Height' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#4a3b6b', label: 'Hat Color' } },
-    { id: 'gen', type: 'hatGenerator', data: {} },
+    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
+    { id: 'gen', type: 'latheGenerator', data: { segments: 20 } },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0.1, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
-    { source: 'brimRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'brimRadius' },
-    { source: 'crownRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'crownRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'gen', targetHandle: 'height' },
+    { source: 'brimRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
+    { source: 'crownRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
+    { source: 'heightIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
+    { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },

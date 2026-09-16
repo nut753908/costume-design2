@@ -1,17 +1,26 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** pantsWaistScale(numberMultiply)+legGen(pantsLegGenerator)+mirror(mirrorPair)+
- * pantsMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
- * sceneOut(sceneOutput)の7ノードを1枚にまとめたグループノード。Waist Radius/Hem Radius/
- * Inseam/Segments/Color は他のガーメントと共有されない単独パラメータのため、外側の
- * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+/** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
+ * mirror(mirrorPair)+pantsMaterial(toonMaterial)+offsetYIn(numberInput)+
+ * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
+ * Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有されない単独パラメータ
+ * のため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  *
- * 脚1本ぶんのジオメトリ(`legGen`)と、それを ±legSpacing だけ X方向に離した左右対称ペアへ
- * まとめる処理(`mirror`)は分離している — `bodyLimbGroupNode.ts` の
- * `cylinderGenerator`→`mirrorPair` と同じ形(`geometry/pants.ts`/`nodes/CLAUDE.md` 参照)。
- * 以前は `pantsGenerator` という単一ノードが `legSpacing` も受け取り、内部の
- * `buildPantsGeometry()`(`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま
- * 渡していた。
+ * 脚1本ぶんのジオメトリ(`profile`→`legGen`)と、それを ±legSpacing だけ X方向に離した
+ * 左右対称ペアへまとめる処理(`mirror`)は分離している — `bodyLimbGroupNode.ts` の
+ * `cylinderGenerator`→`mirrorPair` と同じ形(`nodes/CLAUDE.md` 参照)。以前は `pantsGenerator`
+ * という単一ノードが `legSpacing` も受け取り、内部の `buildPantsGeometry()`
+ * (`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま渡していた。
+ *
+ * 脚のプロファイル生成自体も、Body 専用ではなく汎用プリミティブノードへ切り出した
+ * `capsuleGenerator` 等と同じ理由で、`pantsLegGenerator` という Pants 専用のジェネレーター
+ * 型ではなく `easedLatheProfile`(`nodes/definitions/easedLatheProfile.ts`、
+ * `geometry/latheProfile.ts` の `buildEasedLatheProfile()` をラップした汎用ノード)→
+ * `legGen`(`latheGenerator`、生の `THREE.LatheGeometry` ラッパー)というノードグラフへ
+ * 展開している(`geometry/pants.ts`/`nodes/definitions/pantsLegGenerator.ts` は呼び出し元が
+ * 無くなったため削除済み)。`profile` の `direction`(`'down'`)/`steps`(`10`)は
+ * `capsuleGenerator` の `capSegments`/`radialSegments` と同じくソケット化せず `data` に
+ * 固定している(`easedLatheProfile.ts` 参照)。
  *
  * Leg Spacing(`pantsLegSpacing`)は shoesGroup/socksGroup からも直接再引きされる外部の
  * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build(半径
@@ -38,7 +47,8 @@ defineGroupNode({
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#9c7b4f', label: 'Pants Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'legGen', type: 'pantsLegGenerator', data: {} },
+    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
+    { id: 'legGen', type: 'latheGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
@@ -48,9 +58,10 @@ defineGroupNode({
   internalEdges: [
     { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'legGen', targetHandle: 'waistRadius' },
-    { source: 'hemRadiusIn', sourceHandle: 'value', target: 'legGen', targetHandle: 'hemRadius' },
-    { source: 'inseamIn', sourceHandle: 'value', target: 'legGen', targetHandle: 'inseam' },
+    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
+    { source: 'hemRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
+    { source: 'inseamIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
+    { source: 'profile', sourceHandle: 'points', target: 'legGen', targetHandle: 'points' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'legGen', targetHandle: 'segments' },
     { source: 'legGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },

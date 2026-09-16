@@ -6,4 +6,5 @@ export const SOCKET_COLORS: Record<SocketType, string> = {
   enum: '#a066e0',
   geometry: '#3aa676',
   material: '#e0a83a',
+  points: '#2bb4c4',
 };
