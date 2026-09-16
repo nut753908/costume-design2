@@ -1,12 +1,25 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** scarfNeckScale(numberMultiply)+scarfGen(scarfGenerator)+scarfMaterial(toonMaterial)+
- * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚に
- * まとめたグループノード。Neck Radius/Band Thickness/Tail Width/Tail Length/Segments/Color は
- * 他のガーメントと共有されない単独パラメータのため、外側の numberInput/colorInput ノードで
- * はなくグループ内部の同型ノードとして保持する。Body Build(半径スケーリング用)と Anchor Y
- * (取り付け位置、ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットの
- * まま。 */
+/** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
+ * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている(新規ノード型は
+ * 追加していない)。旧 `geometry/scarf.ts` の `buildScarfGeometry()` は「首元の輪(`band`)は
+ * `belt.ts` の `buildBeltGeometry()` を固定の `bulge=1.05` で呼ぶだけ」「タイ(`tail`)は
+ * 単純な `BoxGeometry`+`.translate(0, y, z)`」という2パーツの組み合わせだったため、
+ * `bandGen` にはガーメント専用の新型を作らず、そのまま既存の `beltGenerator` ノードを
+ * ネストして再利用している(`bulgeIn` は固定値1.05の `numberInput`)。`tailGen`
+ * (`boxGenerator`)の配置も `bagGroupNode.ts`/`glassesGroupNode.ts` と同じ理由で
+ * `translateY`/`translateZ` へ展開しており、Y座標(`tailCenterY = (0 - bandThickness) -
+ * tailLength × 0.5`)/Z座標(`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、
+ * 固定値0.9)はどちらも可視の四則演算チェーンで導出する(`zeroIn`/`halfIn` は
+ * `bodyLayoutGroupNode.ts` の `halfIn`/`feetYIn` と同じ「常に一定の値を持つ
+ * `numberInput`」のイディオム)。`band`/`tail` は最後に `mergeGeometry` で1つにまとめる。
+ * `geometry/scarf.ts`/`nodes/definitions/scarfGenerator.ts` は呼び出し元が無くなったため
+ * 削除済み(`geometry/CLAUDE.md` 参照)。
+ *
+ * Neck Radius/Band Thickness/Tail Width/Tail Length/Segments/Color は他のガーメントと
+ * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
+ * 内部の同型ノードとして保持する。Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
+ * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
 defineGroupNode({
   type: 'scarfGroup',
   label: 'Scarf',
@@ -27,8 +40,20 @@ defineGroupNode({
     { id: 'tailLengthIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01, label: 'Tail Length' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#8a2e3a', label: 'Scarf Color' } },
+    { id: 'zeroIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Zero' } },
+    { id: 'halfIn', type: 'numberInput', data: { value: 0.5, min: 0.5, max: 0.5, step: 0.01, label: 'Half' } },
+    { id: 'bulgeIn', type: 'numberInput', data: { value: 1.05, min: 1.05, max: 1.05, step: 0.01, label: 'Band Bulge' } },
+    { id: 'tailFrontInsetIn', type: 'numberInput', data: { value: 0.9, min: 0.9, max: 0.9, step: 0.01, label: 'Tail Front Inset' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'gen', type: 'scarfGenerator', data: {} },
+    { id: 'bandGen', type: 'beltGenerator', data: {} },
+    { id: 'tailGen', type: 'boxGenerator', data: {} },
+    { id: 'negatedBandThickness', type: 'numberSubtract', data: { label: 'Negated Band Thickness' } },
+    { id: 'halfTailLength', type: 'numberMultiply', data: { label: 'Tail Length × Half' } },
+    { id: 'tailCenterY', type: 'numberSubtract', data: { label: 'Tail Center Y' } },
+    { id: 'tailCenterZ', type: 'numberMultiply', data: { label: 'Tail Center Z' } },
+    { id: 'tailTranslateY', type: 'translateY', data: {} },
+    { id: 'tailTranslateZ', type: 'translateZ', data: {} },
+    { id: 'merge', type: 'mergeGeometry', data: {} },
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0.08, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
@@ -37,12 +62,35 @@ defineGroupNode({
   internalEdges: [
     { source: 'neckRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'neckRadius' },
-    { source: 'bandThicknessIn', sourceHandle: 'value', target: 'gen', targetHandle: 'bandThickness' },
-    { source: 'tailWidthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'tailWidth' },
-    { source: 'tailLengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'tailLength' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
+
+    { source: 'scale', sourceHandle: 'value', target: 'bandGen', targetHandle: 'radius' },
+    { source: 'bandThicknessIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'thickness' },
+    { source: 'bulgeIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'bulge' },
+    { source: 'segmentsIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'segments' },
+
+    { source: 'tailWidthIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'width' },
+    { source: 'tailLengthIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'height' },
+    { source: 'bandThicknessIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'depth' },
+
+    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedBandThickness', targetHandle: 'a' },
+    { source: 'bandThicknessIn', sourceHandle: 'value', target: 'negatedBandThickness', targetHandle: 'b' },
+    { source: 'tailLengthIn', sourceHandle: 'value', target: 'halfTailLength', targetHandle: 'value' },
+    { source: 'halfIn', sourceHandle: 'value', target: 'halfTailLength', targetHandle: 'factor' },
+    { source: 'negatedBandThickness', sourceHandle: 'value', target: 'tailCenterY', targetHandle: 'a' },
+    { source: 'halfTailLength', sourceHandle: 'value', target: 'tailCenterY', targetHandle: 'b' },
+
+    { source: 'scale', sourceHandle: 'value', target: 'tailCenterZ', targetHandle: 'value' },
+    { source: 'tailFrontInsetIn', sourceHandle: 'value', target: 'tailCenterZ', targetHandle: 'factor' },
+
+    { source: 'tailGen', sourceHandle: 'geometry', target: 'tailTranslateY', targetHandle: 'geometry' },
+    { source: 'tailCenterY', sourceHandle: 'value', target: 'tailTranslateY', targetHandle: 'y' },
+    { source: 'tailTranslateY', sourceHandle: 'geometry', target: 'tailTranslateZ', targetHandle: 'geometry' },
+    { source: 'tailCenterZ', sourceHandle: 'value', target: 'tailTranslateZ', targetHandle: 'z' },
+
+    { source: 'bandGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryA' },
+    { source: 'tailTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryB' },
+
+    { source: 'merge', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
