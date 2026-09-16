@@ -1,44 +1,38 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { buildAlignedBox } from './alignedBox';
 
-export interface BagParams {
+export interface BagStrapParams {
   strapWidth: number;
   strapThickness: number;
-  /** 肩の付け根(アンカー付近)でのストラップの横方向オフセット。 */
   shoulderOffset: number;
-  /** 反対の腰側でのストラップの横方向オフセット。shoulderOffset と逆側に置くことで
-   * 斜めがけの角度をつける。 */
   hipOffset: number;
-  /** アンカーからバッグ本体までの垂れ下がり量。 */
   drop: number;
-  bagWidth: number;
-  bagHeight: number;
-  bagDepth: number;
 }
 
-/** ストラップの開始点(肩付近)は体の前面にごく近い深さ、終端(反対の腰)は体の輪郭より
- * 前に出す深さ。torso の壁(半径 0.26〜0.34 程度)の内側に埋もれて見えなくならないよう、
- * hipOffset とあわせて胴体の外側にはっきり出るようにするための固定値。 */
+/** ストラップの開始点(肩付近)は体の前面にごく近い深さ。torso の壁(半径 0.26〜0.34 程度)の
+ * 内側に埋もれて見えなくならないようにするための固定値。 */
 const STRAP_START_DEPTH = 0.05;
-const BAG_FRONT_DEPTH = 0.18;
+/** ストラップの終端(反対の腰)・バッグ本体を置く深さ。胴体の輪郭より前に出すことで、
+ * hipOffset とあわせて胴体の外側にはっきり出るようにする。バッグ本体の配置は
+ * `bagGroupNode.ts` 側の `bagFrontDepthIn`(ノードグラフ上の固定 `numberInput`)がこの値と
+ * 同じ数値を持つ形で再現している — この定数を変えたら `bagFrontDepthIn` の値も合わせて
+ * 変えること。 */
+export const BAG_FRONT_DEPTH = 0.18;
 
-/** 斜めがけのバッグ。これまでのガーメント(Lathe の回転体、または top/dress の手組みリンググリッド)
- * とは異なり、body.ts と同じ THREE.js 標準プリミティブ(BoxGeometry)を使う。ストラップは
- * 肩付近から反対の腰側までを結ぶ2点間に箱を整列させて作り(回転・平行移動のみの剛体変換なので
- * 標準プリミティブの正しい巻き順はそのまま保たれる)、バッグ本体はストラップの終端に置いた
- * もう1つの箱。mirrorPair.ts と同じ mergeGeometries で1つの BufferGeometry にまとめる。 */
-export function buildBagGeometry(params: BagParams): THREE.BufferGeometry {
-  const { strapWidth, strapThickness, shoulderOffset, hipOffset, drop, bagWidth, bagHeight, bagDepth } = params;
-
+/** 斜めがけのストラップだけを構築する。これまでのガーメント(Lathe の回転体、または
+ * top/dress の手組みリンググリッド)とは異なり、body.ts と同じ THREE.js 標準プリミティブ
+ * (BoxGeometry)を、肩付近から反対の腰側までを結ぶ2点間に整列させて作る(回転・平行移動
+ * のみの剛体変換なので標準プリミティブの正しい巻き順はそのまま保たれる)。
+ *
+ * バッグ本体(直方体)は以前この関数の中で組み立てていたが、`.translate(x,y,z)` だけの
+ * 単純な配置だったため `bagGroupNode.ts` 側で `boxGenerator`→`translateX`/`translateY`/
+ * `translateZ` というノードグラフへ切り出した(`pantsLegGenerator` 等と同じ「単体パーツの
+ * 生成とノードグラフ側の配置を分離する」考え方)。ストラップは `alignedBox.ts`(2点間に
+ * 整列させる回転+平行移動)を使っており、こちらをノード化する汎用の「2点間整列」ノードは
+ * まだ無いため、この関数にコードとして残っている(`geometry/CLAUDE.md` 参照)。 */
+export function buildBagStrapGeometry(params: BagStrapParams): THREE.BufferGeometry {
+  const { strapWidth, strapThickness, shoulderOffset, hipOffset, drop } = params;
   const strapStart = new THREE.Vector3(shoulderOffset, 0, STRAP_START_DEPTH);
   const strapEnd = new THREE.Vector3(-hipOffset, -drop, BAG_FRONT_DEPTH);
-  const strap = buildAlignedBox(strapWidth, strapThickness, strapStart, strapEnd);
-
-  const bagCenter = strapEnd.clone().add(new THREE.Vector3(0, -bagHeight / 2, 0));
-  const bag = new THREE.BoxGeometry(bagWidth, bagHeight, bagDepth).translate(bagCenter.x, bagCenter.y, bagCenter.z);
-
-  const merged = mergeGeometries([strap, bag])!;
-  merged.computeVertexNormals();
-  return merged;
+  return buildAlignedBox(strapWidth, strapThickness, strapStart, strapEnd);
 }
