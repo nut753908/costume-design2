@@ -19,12 +19,14 @@ export interface EasedLatheProfileData extends Record<string, unknown> {
 /** `geometry/latheProfile.ts` の `buildEasedLatheProfile()` を薄くラップし、アンカー側から
  * 反対側の端まで半径をイージングしながら結ぶ点列を `points` 型のソケットとして出力する汎用
  * ノード。`latheGenerator`(`latheGenerator.ts`)へ渡すと `THREE.LatheGeometry` になる —
- * skirt/pants(脚)/shoes/gloves/hat/jacket/socks が個別に持っていた「プロファイル計算+Lathe」
- * という形状生成ロジックのうち、`pantsLegGenerator`/`shoeGenerator`/`gloveGenerator`/
- * `sockGenerator`/`hatGenerator` はこの2ノードの組み合わせへ置き換わった(`capsuleGenerator`
- * 等と同じ「汎用プリミティブノード」への切り出し、`geometry/CLAUDE.md` 参照)。skirt/jacket
- * (裾半径を `Math.max` でクランプしてから導出する)と belt(プロファイルを2回呼んで連結する)
- * は、この2ノードだけでは表現しきれない追加のロジックを持つため、今回はまだ移行していない。 */
+ * skirt/pants(脚)/shoes/gloves/hat/jacket/socks/belt が個別に持っていた「プロファイル計算+
+ * Lathe」という形状生成ロジックは、すべてこの2ノードの組み合わせ(+ 必要に応じて
+ * `numberMax`/`scaleZ`/`translatePointsY`/`slicePoints`/`concatPoints` 等)へ置き換わった
+ * (`capsuleGenerator` 等と同じ「汎用プリミティブノード」への切り出し、`geometry/CLAUDE.md`
+ * 参照)。専用の `build*Geometry()` を今も持つのは、この2ノードだけでは表現しきれない
+ * 追加のロジック(`alignedBox.ts` を使う bag/glasses のストラップ/ブリッジ・テンプル、
+ * リンググリッドを手組みする top/dress、手組みチューブの sleeve/necktie)を持つガーメントに
+ * 限られる。 */
 registerNodeType<EasedLatheProfileData>({
   type: 'easedLatheProfile',
   label: 'Eased Lathe Profile',
