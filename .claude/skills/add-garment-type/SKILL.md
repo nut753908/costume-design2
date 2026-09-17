@@ -5,7 +5,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 # 新しいガーメント種の追加
 
-ガーメント1種の追加には3ファイルが要る(グループ化は必須 — グループの `groupOutput` ノードが唯一の外部出力経路であり、グループ化しない個別配線は現在サポートしていない)。
+ガーメント1種の追加には3ファイルが要る(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線は現在サポートしていない)。
 
 1. `src/geometry/<name>.ts` — `build<Name>Geometry(params) -> THREE.BufferGeometry` という純粋関数。
 2. `src/nodes/definitions/<name>Generator.ts` — 1のジオメトリ関数をノードグラフに配線するノードタイプ。ノードタイプ自体の登録は `import.meta.glob` により自動化されているので、これ以外にレジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
@@ -55,13 +55,13 @@ defineGeneratorNode({
 - `offsetYIn`(`numberInput`)— アンカー座標からの微調整量。ガーメント固有の内部ノードとして保持する。
 - `garmentPlacement` — `geometry`・`anchorY`・`offsetY` を受け取り、`anchorY + offsetY` を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。出力は位置が焼き込まれた geometry 1つだけ。
 
-`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `groupOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。
+`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `sceneOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。
 
 Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を走査し `geometry`+`material` を持つものを自動的にレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
 ## 4. グループノードの定義(src/nodes/definitions/\<name\>GroupNode.ts)
 
-既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetYIn(numberInput) + garmentPlacement + groupOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
+既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetYIn(numberInput) + garmentPlacement + sceneOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する。
 
@@ -96,20 +96,12 @@ defineGroupNode({
     { id: 'material', type: 'toonMaterial', data: {} },
     { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
     { id: 'placement', type: 'garmentPlacement', data: {} },
-    // groupOutput は必須 — グループの外部出力はこのノードに実際に配線された値だけになる。
-    // geometry は placement(garmentPlacement)から、material は material(toonMaterial)から
-    // 直接ここへ配線する(anchorY/offsetY は garmentPlacement が内部で消費するため、
-    // ここまで出てこない)。
-    {
-      id: 'outputIO',
-      type: 'groupOutput',
-      data: {
-        sockets: [
-          { id: 'geometry', label: 'Geometry', type: 'geometry' },
-          { id: 'material', label: 'Material', type: 'material' },
-        ],
-      },
-    },
+    // sceneOutput が唯一の描画経路 — geometry は placement(garmentPlacement)から、
+    // material は material(toonMaterial)から直接ここへ配線する(anchorY/offsetY は
+    // garmentPlacement が内部で消費するため、ここまで出てこない)。groupOutput は
+    // 使わない(既存15種のガーメントはどれも含めていない — 他ガーメントへ値を再公開
+    // したい場合だけ別途追加する、下記参照)。
+    { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
     // ... radiusIn.value -> scale.value, input.bodyBuild -> scale.factor, scale -> gen.radius,
@@ -117,15 +109,15 @@ defineGroupNode({
     { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
     { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
     { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'outputIO', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'outputIO', targetHandle: 'material' },
+    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
   ],
 });
 ```
 
-外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、上記の `outputIO` ノードへ追加でソケットを増やして配線する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
+外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、`groupOutput` ノードを追加して配線する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
 
-`groupInput` はガーメント固有の外部ソケットが1つも無ければ省略できるが、`anchorY` が常に必要なため、実質すべてのガーメントで必要になる。`groupOutput` は省略不可(無いと `defineGroupNode()` が登録時に例外を投げる)。
+`groupInput` はガーメント固有の外部ソケットが1つも無ければ省略できるが、`anchorY` が常に必要なため、実質すべてのガーメントで必要になる。`groupOutput` は省略可能で、既存15種のガーメントはどれも含めていない — geometry/material の描画は `sceneOutput` が専任で担うため出番が無い。
 
 ## 5. initialGraph.ts への配線(慣例)
 
