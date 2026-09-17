@@ -51,11 +51,11 @@ defineGeneratorNode({
 
 ガーメント自体はどこにも取り付かない。取り付け位置は次の連携で決まる:
 
-- `anchorY`(外部ソケット、`number`)— `src/state/initialGraph.ts` 側のトップレベル共有ノード `bodyLayout`(`bodyLayoutGroup`)が計算した5つのアンカー候補(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に使う1つを配線する(`state/initialGraph.ts` の `e-anchor-*` エッジを参照)。**新しいアンカー種を増やす場合はこの5候補と `bodyLayoutGroupNode.ts` 側の出力を同時に変更する必要がある**(通常の追加では既存5候補のどれかを再利用すれば足りる)。以前はこれを `anchorIn`(`enumInput`、`data.options` に `['waist', 'shoulder', 'feet', 'wrist', 'head']` を持つ)というドロップダウンで実行時に選ぶ方式だったが、`bodyDimensionsGroup`/`bodyLayoutGroup` をトップレベル共有ノードへ引き上げたことで、「どのアンカーを使うか」はグラフ上の配線そのもので表現できるようになったため廃止した(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
+- `anchorY`(外部ソケット、`number`)— `src/state/initialGraph.ts` 側のトップレベル共有ノード `bodyLayout`(`bodyLayoutGroup`)が計算した5つのアンカー候補(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に使う1つを配線する(`state/initialGraph.ts` の `e-anchor-*` エッジを参照)。**新しいアンカー種を増やす場合はこの5候補と `bodyLayoutGroupNode.ts` 側の出力を同時に変更する必要がある**(通常の追加では既存5候補のどれかを再利用すれば足りる)。どのアンカーを使うかはこの配線そのものが仕様であり、実行時に選択する仕組みは無い(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 - `offsetYIn`(`numberInput`)— アンカー座標からの微調整量。ガーメント固有の内部ノードとして保持する。
 - `garmentPlacement` — `geometry`・`anchorY`・`offsetY` を受け取り、`anchorY + offsetY` を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。出力は位置が焼き込まれた geometry 1つだけ。
 
-`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `groupOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。かつては両方を一旦 `garmentMesh` という素通しノードへまとめてから `groupOutput` へ配線していたが、`garmentMesh` は何も変換しない冗長な中継ノードだったため削除した — `groupOutput` 自身がすでに「配線されたものをまとめて出す」という同じ役割を持っているため。
+`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `groupOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。
 
 Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を走査し `geometry`+`material` を持つものを自動的にレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
@@ -87,7 +87,7 @@ defineGroupNode({
       },
     },
     // ガーメント固有の生パラメータは internalNodes に直接、通常の numberInput/colorInput/
-    // enumInput ノードとして持たせる(旧 initialGraph.ts 側にあった個別ノードと同じ形)。
+    // enumInput ノードとして持たせる。
     { id: 'radiusIn', type: 'numberInput', data: { value: 0.3, min: 0.1, max: 0.5, step: 0.01, label: 'Radius' } },
     // ...
     { id: 'colorIn', type: 'colorInput', data: { hex: '#cccccc', label: 'Xxx Color' } },
@@ -125,7 +125,7 @@ defineGroupNode({
 
 外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、上記の `outputIO` ノードへ追加でソケットを増やして配線する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
 
-`groupInput` はガーメント固有の外部ソケットが1つも無ければ省略できるが、`anchorY` が常に必要なため、実質すべてのガーメントで必要になる(かつては hat/bag/necktie/glasses が省略していたが、`garmentPlacement` 導入に伴い追加した)。`groupOutput` は省略不可(無いと `defineGroupNode()` が登録時に例外を投げる)。
+`groupInput` はガーメント固有の外部ソケットが1つも無ければ省略できるが、`anchorY` が常に必要なため、実質すべてのガーメントで必要になる。`groupOutput` は省略不可(無いと `defineGroupNode()` が登録時に例外を投げる)。
 
 ## 5. initialGraph.ts への配線(慣例)
 
