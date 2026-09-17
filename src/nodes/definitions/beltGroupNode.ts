@@ -8,19 +8,15 @@ import { defineGroupNode } from './groupNodeFactory';
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される waistY)は外部ソケットのまま(`nodes/CLAUDE.md` の「グループノード」節参照)。
  *
- * 旧 `buildBeltGeometry()`(`geometry/belt.ts`)は、waist アンカー(上端、radius)から下端
- * (radius)まで、中間で bulge 倍に膨らむ帯状の回転体を、上半分・下半分それぞれの
- * `buildEasedLatheProfile()` の結果を連結して作っていた。この「プロファイルを2回呼んで
- * 連結する」処理自体も、他のガーメントの `easedLatheProfile`→`latheGenerator` と同じ理由で
- * 可視のノードグラフへ展開している:
+ * waist アンカー(上端、radius)から下端(radius)まで、中間で bulge 倍に膨らむ帯状の回転体を、
+ * 上半分・下半分それぞれの `easedLatheProfile` の結果を連結して作る:
  *   - `bulgeRadiusCalc`(`numberMultiply`、`radius(スケール後) × bulge`)
  *   - `halfCalc`(`numberMultiply`、`thickness × 0.5`)
  *   - `lowerProfile`(`easedLatheProfile`、`bulgeRadius → radius` を `half` の距離でイージング)
  *   - `negatedHalf`(`numberSubtract`、`0 - half`)
- *   - `lowerShifted`(`translatePointsY`、`lowerProfile` を `negatedHalf` ぶんY方向にシフト
- *     — 旧コードの `for (const p of lower) p.y -= half;` に相当)
+ *   - `lowerShifted`(`translatePointsY`、`lowerProfile` を `negatedHalf` ぶんY方向にシフト)
  *   - `lowerSliced`(`slicePoints`、`dropEnd=1` で末尾の1点(`upperProfile` の始点と重複する
- *     接続点)を間引く — 旧コードの `lower.slice(0, -1)` に相当)
+ *     接続点)を間引く)
  *   - `upperProfile`(`easedLatheProfile`、`radius → bulgeRadius` を `half` の距離で
  *     イージング)
  *   - `combined`(`concatPoints`、`lowerSliced` + `upperProfile` を連結)
@@ -28,11 +24,9 @@ import { defineGroupNode } from './groupNodeFactory';
  * `zeroIn`/`halfIn`/`oneIn` は `bodyLayoutGroupNode.ts` の `halfIn`/`feetYIn` と同じ「常に
  * 一定の値を持つ `numberInput`」のイディオム。
  *
- * `nodes/definitions/beltGenerator.ts`(旧 `gen`、`buildBeltGeometry()` をそのまま呼ぶ
- * ブラックボックス)自体は削除していない — `scarfGroupNode.ts` が首元の輪を
- * `bulge=1.05` 固定でネストして再利用しているため(`geometry/CLAUDE.md` 参照)、belt 自身の
- * 内部実装がこのように展開されているかどうかとは独立して、既存の完成ノードを「値を1回
- * 呼ぶだけの部品」として使い続けている。 */
+ * `nodes/definitions/beltGenerator.ts`(`buildBeltGeometry()` をそのまま呼ぶノード)自体は
+ * 削除していない — `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして再利用
+ * しているため(`geometry/CLAUDE.md` 参照)。 */
 defineGroupNode({
   type: 'beltGroup',
   label: 'Belt',

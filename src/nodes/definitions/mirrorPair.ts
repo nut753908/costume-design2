@@ -5,24 +5,11 @@ import { defineGroupNode } from './groupNodeFactory';
  * `shoesGroupNode.ts`(左右2本)/`glovesGroupNode.ts`(左右2つ)/`socksGroupNode.ts`
  * (左右2本)が使う、全ガーメント共通の左右対称ペア化ノード。
  *
- * 「平行移動して結合する」という処理自体も、Bodyの寸法計算(`bodyDimensionsGroup`/
- * `bodyLayoutGroup`)と同じ理由(ノードグラフを見ただけで何をしているか分かるようにする)で、
- * 単一ノードの `evaluate()` の中にコードとして隠さず、`translateX`(`translateX.ts`、
- * `translateY` の X版)×2 と `mergeGeometry`(`mergeGeometry.ts`、`mergeGeometries()`+
- * `computeVertexNormals()` を切り出したもの)というノードグラフ上に展開している。
- * 入力の `offset` は片方の `translateX` へはそのまま、もう片方へは `negate`
- * (`numberMultiply`)を経由して符号反転してから渡すことで、+offset/-offset それぞれへ
- * 平行移動した2つのコピーを作る。符号反転に使う `-1` は `negate` 自身の `data` にリテラルとして
- * 隠さず、`bodyLayoutGroupNode.ts` の `feetYIn`(常に0固定、`min`/`max` を同じ値にして
- * 動かせないことを示す)と同じ「常に一定の値を持つ `numberInput`」のイディオムで
- * `negativeOneIn` として配置してから配線する(`bodyLimbGroupNode.ts` の `taperRatioIn` 参照)。
- *
- * 以前は Body だけがこのノードを使い、pants/shoes/gloves/socks は自分自身の
- * `build*Geometry()` の中から `geometry/mirrorPair.ts` の `buildMirroredPairGeometry()`
- * (build() コールバックを受け取る高階関数版)を直接呼ぶ別経路だったが、同じ理由(左右結合の
- * 生成チェーンをブラックボックスにしない)で全ガーメントこちらへ移行し、
- * `geometry/mirrorPair.ts`(と単体テスト)は呼び出し元が無くなったため削除した
- * (`geometry/CLAUDE.md` 参照)。 */
+ * `offset` は片方の `translateX` へはそのまま、もう片方へは `negate`(`numberMultiply`)
+ * を経由して符号反転してから渡すことで、+offset/-offset それぞれへ平行移動した2つの
+ * コピーを作る。符号反転に使う `-1` は `negate` の `data` にリテラルとして隠さず、
+ * 「常に一定の値を持つ `numberInput`」のイディオムで `negativeOneIn` として配置してから
+ * 配線する(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 defineGroupNode({
   type: 'mirrorPair',
   label: 'Mirror Pair',

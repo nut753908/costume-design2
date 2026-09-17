@@ -1,21 +1,16 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** `bodyGroup`(`bodyGroupNode.ts`)専用の計算グループ — `bodyDimensionsGroupNode.ts` が
- * 求めた各部位の半径・長さから、胴体/頭/腕/脚をどのY座標に置けば継ぎ目なく積み上がるかを
- * numberAdd/numberSubtract/numberMultiply の四則演算チェーンで求める。以前は
- * `geometry/body.ts` の `computeBodyLayout()` をそのまま配線するだけのブラックボックス
- * ノード(`bodyLayout.ts`、4出力)だったが、`bodyDimensionsGroupNode.ts` と同じ理由で
- * 四則演算ノードへ展開し、1つのグループへまとめ直した(経緯は `bodyDimensionsGroupNode.ts`
- * のコメント、ルート CLAUDE.md 参照)。
+/** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyLayout`)としてただ1組
+ * だけ存在し、`bodyGroup` と全15ガーメントへファンアウトされる計算グループ —
+ * `bodyDimensionsGroupNode.ts` が求めた各部位の半径・長さから、胴体/頭/腕/脚をどのY座標に
+ * 置けば継ぎ目なく積み上がるかを numberAdd/numberSubtract/numberMultiply の四則演算
+ * チェーンで求める。
  *
- * `computeBodyLayout()` の式のうち、地面のY座標 `feetY` は常に0固定(`+feetY` は常に
- * no-op)なので、加算ノードを置かずに `legHeight` をそのまま `waistY`(= `feetY + legHeight`)
- * として使い回している。`feetY`/`waistY`/`shoulderY`/`wristY` は `bodyGroup` 自身のメッシュ
- * 配置には使わないが、`garmentPlacement`(`garmentPlacement.ts`、現在は他の計算グループと
- * 同じくこの `bodyLayoutGroup`/`bodyDimensionsGroup` をネストして使う `defineGroupNode()`
- * ベースのグループノード)が15ガーメント共通のアンカー座標計算のためにこの4つ+
- * `headCenterY`を必要とするため、外部出力に含めている(`feetY` は常に0固定なので `feetYIn`
- * という定数の `numberInput` をそのまま出力へ配線するだけ)。 */
+ * 地面のY座標 `feetY` は常に0固定(`+feetY` は常に no-op)なので、加算ノードを置かずに
+ * `legHeight` をそのまま `waistY`(= `feetY + legHeight`)として使い回している。
+ * `feetY`/`waistY`/`shoulderY`/`wristY`/`headCenterY` は `bodyGroup` 自身のメッシュ配置には
+ * 使わないが、15ガーメント共通のアンカー候補として `garmentPlacement.ts` の `anchorY` へ
+ * 配線されるため出力に含めている。 */
 defineGroupNode({
   type: 'bodyLayoutGroup',
   label: 'Body Layout',

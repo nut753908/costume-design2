@@ -8,12 +8,7 @@ import type { Node, Edge } from '@xyflow/react';
 // ノードの position は nodes/autoLayout.ts の computeAutoLayout()(GraphIO.tsx の
 // 「Arrange」ボタンが呼ぶのと同じ関数)を initialNodes/initialEdges 自身に適用して機械的に
 // 算出し、静的な座標として埋め込んだもの — 初回ロード時から「Arrange」を1度押した後の状態に
-// なっている。以前は(孤立ノードや要素数の少ない連結成分を分けて並べる・ノードの種類ごとの
-// 実高さを見積もる・同じ1つの接続先のソケット行の並びに合わせて同順位内を並べ替える、と
-// いった調整が無かった頃の)computeAutoLayout() では全ガーメントの入力ノードが1つの巨大な
-// 層にまとまって大量に線が交差してしまうため使えず、ガーメントごとに手作業で列テンプレートに
-// 沿って配置していたが、その後 computeAutoLayout() 側にこれらの調整が入り機械的な算出でも
-// 十分読みやすくなったため、この形に改めた。
+// なっている。
 //
 // ノード/エッジの構成(特にどのノードが何に接続されているか)を変更した場合、この座標は
 // 古くなりうるため、変更と同じコミットで次のように再計算し直すこと:
@@ -21,26 +16,16 @@ import type { Node, Edge } from '@xyflow/react';
 //   2. 各ノードの新しい座標を Export JSON で取り出し、対応する position をここへ書き戻す
 // 新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
 export const initialNodes: Node[] = [
-  // bodyHeight/bodyBuild/bodyShoulder は慣例的な id を持つシードノード。以前は全16グループ
-  // (ガーメント15種+bodyGroup)へ3つとも無条件でファンアウトしていたが、`bodyDimensions`/
-  // `bodyLayout`(下記)という2つの共有ノードへ集約したことで、この3つが直接配線される先は
-  // `bodyDimensions` 1箇所だけになった(ガーメント自身の半径スケーリングに使う `bodyBuild`
-  // だけは、下記の通り各ガーメントへも別途配線される)。
+  // bodyHeight/bodyBuild/bodyShoulder は慣例的な id を持つシードノード。この3つが直接
+  // 配線される先は `bodyDimensions`(下記)1箇所だけ(`bodyBuild` だけは、ガーメント自身の
+  // 半径スケーリング用に各ガーメントへも別途配線される、下記参照)。
   { id: 'bodyHeight', type: 'numberInput', position: { x: 0, y: 0 }, data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
   { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 1228 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
   { id: 'bodyShoulder', type: 'numberInput', position: { x: 0, y: 151 }, data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
 
   // ボディの寸法(9個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
-  // アンカー候補)を計算する2つの共有ノード。以前は bodyGroup(1個)と15個の
-  // garmentPlacement インスタンスのそれぞれが独立してこれと同じ2つのグループをネストし、
-  // 合計16回同じ計算を重複して行っていた(値は常に同じだが計算そのものが重複)。
-  // `bodyBuild`/`topRadiusScale` と同じ「値が複数グループで共有される場合はトップレベルの
-  // 共有ノードへ引き上げる」パターン(nodes/CLAUDE.md の「グループノード」節)に合わせ、
-  // この2つの計算をトップレベルへ引き上げて1回だけ行い、各グループへ普通の外部ソケットとして
-  // ファンアウトする形に改めた。この結果、`garmentPlacement.ts` からは `anchor`(enum)と
-  // `anchorSelect` ノードが不要になった — 「どのアンカーを使うか」は実行時のドロップダウンで
-  // はなく、`bodyLayout` のどの出力をそのガーメントの `anchorY` へ配線するかという、
-  // グラフ上で見える配線そのものになった(下記 initialEdges 参照)。
+  // アンカー候補)を計算する2つの共有ノード。bodyGroup と全15ガーメントへ普通の外部
+  // ソケットとしてファンアウトする(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyDimensions', type: 'bodyDimensionsGroup', position: { x: 340, y: 0 }, data: {} },
   { id: 'bodyLayout', type: 'bodyLayoutGroup', position: { x: 680, y: 134 }, data: {} },
 
@@ -70,10 +55,7 @@ export const initialNodes: Node[] = [
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と
   // Material — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要がある
   // ため、この2つの値はどちらのグループの内部にも置かず、このファイル側の共有ノードとして
-  // 両方へファンアウトしている。かつては topGroup の内部にこの2つを計算するノードを持ち、
-  // groupOutput 経由で sleeve だけに再公開していたが、「本来共有すべき値が一方のグループの
-  // 中に閉じ込められている」という設計上の問題があったため、bodyBuild/pantsLegSpacing と同じ
-  // 「共有ノードをトップレベルに置いて複数グループへ配線する」形に改めた。
+  // 両方へファンアウトしている。
   { id: 'topRadius', type: 'numberInput', position: { x: 340, y: 712 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
   { id: 'topColor', type: 'colorInput', position: { x: 340, y: 868 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
   { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 680, y: 846 }, data: {} },
@@ -153,11 +135,7 @@ export const initialEdges: Edge[] = [
   // garmentPlacement(取り付け位置をジオメトリへ焼き込むノード、nodes/definitions/
   // garmentPlacement.ts 参照)の `anchorY` へ、bodyLayout が計算した5つのアンカー候補
   // (waistY/shoulderY/feetY/wristY/headCenterY)のうち、そのガーメントが実際に使う1つを
-  // 配線する。以前はこれを各グループ内部の `anchorIn`(enumInput のドロップダウン)で実行時に
-  // 選んでいたが、`bodyDimensions`/`bodyLayout` を共有ノードへ引き上げたことで
-  // 「5候補のうちどれを配線するか」というグラフ上の配線そのもので表現できるようになったため、
-  // `anchor`(enum)と `anchorSelect` ノードは廃止した(nodes/CLAUDE.md の「グループノード」節、
-  // garmentPlacement.ts のコメント参照)。
+  // 配線する。
   { id: 'e-anchor-skirt', source: 'bodyLayout', sourceHandle: 'waistY', target: 'skirtGroup', targetHandle: 'anchorY' },
   { id: 'e-anchor-pants', source: 'bodyLayout', sourceHandle: 'waistY', target: 'pantsGroup', targetHandle: 'anchorY' },
   { id: 'e-anchor-belt', source: 'bodyLayout', sourceHandle: 'waistY', target: 'beltGroup', targetHandle: 'anchorY' },

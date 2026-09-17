@@ -9,18 +9,10 @@ import { defineGroupNode } from './groupNodeFactory';
  * `bodyLayout` 共有ノードから配線される wristY)は外部ソケットのまま。
  *
  * 手袋1つぶんのジオメトリ(`profile`→`gloveGen`)と、それを ±armSpacing だけ X方向に離した
- * 左右対称ペアへまとめる処理(`mirror`)は分離している — `pantsGroupNode.ts`/
- * `bodyLimbGroupNode.ts` と同じ形(`nodes/CLAUDE.md` 参照)。以前は `glovesGenerator` という
- * 単一ノードが `armSpacing` も受け取り、内部の `buildGlovesGeometry()`
- * (`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま渡していた。プロファイル
- * 生成自体も `pantsGroupNode.ts` と同じ理由で `easedLatheProfile`→`latheGenerator` という
- * 汎用ノードの組み合わせへ展開している(`geometry/gloves.ts`/
- * `nodes/definitions/gloveGenerator.ts` は呼び出し元が無くなったため削除済み)。以前の
- * `glovesGenerator`(`defineGeneratorNode` ベース)は Segments を専用の `segmentsIn` に
- * 配線せず、型の既定値(12)へ未接続のままフォールバックさせていたが、`numberMultiply` の
- * `factor` と同じ理由(専用UIを持たない generator 系ノードの未接続ソケットは、値そのものが
- * カード上のどこにも見えなくなる)で、pants/socks と同じく専用の `segmentsIn`
- * (`numberInput`)を追加して配線している。 */
+ * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
+ * `bodyLimbGroupNode.ts` と同じ形、`nodes/CLAUDE.md` 参照)。専用の `segmentsIn`
+ * (`numberInput`)を置いているのは、未接続ソケットが型の既定値へフォールバックすると
+ * その値がカード上のどこにも見えなくなるため。 */
 defineGroupNode({
   type: 'glovesGroup',
   label: 'Gloves',

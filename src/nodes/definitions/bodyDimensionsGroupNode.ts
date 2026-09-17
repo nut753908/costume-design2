@@ -1,25 +1,12 @@
 import { defineGroupNode } from './groupNodeFactory';
 
-/** `bodyGroup`(`bodyGroupNode.ts`)/`garmentPlacement`(`garmentPlacement.ts`)の両方から
- * ネストして再利用される計算グループ — Height/Build/Shoulder スケールから
- * 各部位の半径・長さを求める9つの「基準値(`numberInput`)→ `numberMultiply`」チェーンを
- * 1枚にまとめたもの。以前はこの計算を `geometry/body.ts` の `computeBodyDimensions()` を
- * そのまま配線するだけのブラックボックスノード(`bodyDimensions.ts`、9出力)にしていたが、
- * ノードエディタを見ただけでは何を計算しているノードか分からないという問題があったため、
- * ガーメントの『体に触れる半径』(`waistRadiusIn → numberMultiply(bodyBuild) → generator`)と
- * 同じ粒度までノードグラフ上に展開した。その展開後のグラフが `bodyGroup` 直下に平積みだと
- * 今度は `bodyGroup` 自体が47ノードの塊になって見通しが悪いため、意味のあるまとまり(寸法計算/
- * 配置計算)ごとに `bodyLayoutGroupNode.ts` と対になるこのグループへ再び折りたたんだ —
- * ダブルクリックで中に入れば実際の四則演算グラフがそのまま見え、隠れた計算は無い
- * (`groupNodeFactory.ts` の多段ネスト対応により `bodyGroup` の中にこのグループを普通に
- * 置ける)。
- *
- * 以前は `geometry/body.ts` の `computeBodyDimensions()` 自体は削除せず、15ガーメント共通の
- * アンカー座標計算を担う `garmentPlacement.ts` がその関数を内部で呼び続けていたが、
- * `garmentPlacement` 自身も同じ理由でこのグループをネストして使う `defineGroupNode()`
- * ベースへ置き換わったため、`geometry/body.ts` を呼ぶ本番コードが無くなり、ファイルごと
- * 削除した(`garmentPlacement.ts` のコメント参照)。このグループの基準値は削除前の
- * `BASE_DIMENSIONS` と値を合わせてあるが、変数としては独立している。 */
+/** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyDimensions`)として
+ * ただ1組だけ存在し、`bodyGroup` と全15ガーメントへファンアウトされる計算グループ —
+ * Height/Build/Shoulder スケールから各部位の半径・長さを求める9つの「基準値
+ * (`numberInput`)→ `numberMultiply`」チェーンを1枚にまとめたもの。ガーメントの『体に
+ * 触れる半径』(`waistRadiusIn → numberMultiply(bodyBuild) → generator`)と同じ粒度まで
+ * ノードグラフ上に展開しており、ダブルクリックで中に入れば実際の四則演算グラフが
+ * そのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',

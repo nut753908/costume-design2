@@ -8,14 +8,9 @@ import { defineGroupNode } from './groupNodeFactory';
  * して保持する。
  *
  * 靴下1本ぶんのジオメトリ(`profile`→`sockGen`)と、それを ±legSpacing だけ X方向に離した
- * 左右対称ペアへまとめる処理(`mirror`)は分離している — `pantsGroupNode.ts`/
- * `bodyLimbGroupNode.ts` と同じ形(`nodes/CLAUDE.md` 参照)。以前は `socksGenerator` という
- * 単一ノードが `legSpacing` も受け取り、内部の `buildSocksGeometry()`
- * (`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま渡していた。プロファイル
- * 生成自体も `pantsGroupNode.ts` と同じ理由で `easedLatheProfile`→`latheGenerator` という
- * 汎用ノードの組み合わせへ展開している(`geometry/socks.ts`/
- * `nodes/definitions/sockGenerator.ts` は呼び出し元が無くなったため削除済み)。socks は
- * shoes/hat と同じ `direction: 'up'`(足首から上=ふくらはぎ側へ伸びる)。
+ * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
+ * `bodyLimbGroupNode.ts` と同じ形、`nodes/CLAUDE.md` 参照)。socks は shoes/hat と同じ
+ * `direction: 'up'`(足首から上=ふくらはぎ側へ伸びる)。
  *
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード

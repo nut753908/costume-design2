@@ -1,14 +1,10 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** `bodyGroup` にネストされる、胴体1パーツぶんの `gen(capsuleGenerator)→translate
- * (translateY)→sceneOut(sceneOutput)` チェーンだけを内包するグループノード。ガーメント
- * 全15種が「1グループ=1着」の粒度なのに対し、以前の `bodyGroup` は胴体/頭/腕/脚の
- * 4パーツを1枚のグループに直接まとめており粒度が揃っていなかったため、パーツごとに
- * この形へ分割した(`bodyGroupNode.ts` のコメント参照)。肌色(Material)は4パーツ間で
- * 共有される値のため、このグループの内部に `colorInput`/`toonMaterial` を持たず、
- * `bodyGroup` 側の共有 `toonMaterial` から外部ソケットとして受け取るだけ(topGroup/
- * sleeveGroup が Torso Radius/Material を共有ノードから受け取るのと同じパターン、
- * nodes/CLAUDE.md の「値が複数グループで共有される場合」参照)。
+ * (translateY)→sceneOut(sceneOutput)` チェーンだけを内包するグループノード。肌色
+ * (Material)は4パーツ間で共有される値のため、このグループの内部に `colorInput`/
+ * `toonMaterial` を持たず、`bodyGroup` 側の共有 `toonMaterial` から外部ソケットとして
+ * 受け取るだけ(nodes/CLAUDE.md の「値が複数グループで共有される場合」参照)。
  *
  * ジェネレーターは Body 専用の `bodyTorsoGenerator` ではなく、汎用プリミティブノード
  * `capsuleGenerator`(`nodes/definitions/capsuleGenerator.ts`、`geometry/primitives.ts` の

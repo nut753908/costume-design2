@@ -7,20 +7,8 @@ import { defineGroupNode } from './groupNodeFactory';
  * のため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  *
  * 脚1本ぶんのジオメトリ(`profile`→`legGen`)と、それを ±legSpacing だけ X方向に離した
- * 左右対称ペアへまとめる処理(`mirror`)は分離している — `bodyLimbGroupNode.ts` の
- * `cylinderGenerator`→`mirrorPair` と同じ形(`nodes/CLAUDE.md` 参照)。以前は `pantsGenerator`
- * という単一ノードが `legSpacing` も受け取り、内部の `buildPantsGeometry()`
- * (`buildMirroredPairGeometry()` を呼ぶブラックボックス)へそのまま渡していた。
- *
- * 脚のプロファイル生成自体も、Body 専用ではなく汎用プリミティブノードへ切り出した
- * `capsuleGenerator` 等と同じ理由で、`pantsLegGenerator` という Pants 専用のジェネレーター
- * 型ではなく `easedLatheProfile`(`nodes/definitions/easedLatheProfile.ts`、
- * `geometry/latheProfile.ts` の `buildEasedLatheProfile()` をラップした汎用ノード)→
- * `legGen`(`latheGenerator`、生の `THREE.LatheGeometry` ラッパー)というノードグラフへ
- * 展開している(`geometry/pants.ts`/`nodes/definitions/pantsLegGenerator.ts` は呼び出し元が
- * 無くなったため削除済み)。`profile` の `direction`(`'down'`)/`steps`(`10`)は
- * `capsuleGenerator` の `capSegments`/`radialSegments` と同じくソケット化せず `data` に
- * 固定している(`easedLatheProfile.ts` 参照)。
+ * 左右対称ペアへまとめる処理(`mirror`)は分離している(`bodyLimbGroupNode.ts` の
+ * `cylinderGenerator`→`mirrorPair` と同じ形、`nodes/CLAUDE.md` 参照)。
  *
  * Leg Spacing(`pantsLegSpacing`)は shoesGroup/socksGroup からも直接再引きされる外部の
  * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build(半径

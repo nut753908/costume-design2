@@ -19,11 +19,9 @@ export const FORWARD_DEPTH = 0.14;
 const TEMPLE_BACK_DEPTH = FORWARD_DEPTH - 0.02;
 
 /** 丸メガネのフレーム(ブリッジ+左右テンプル)だけを構築する。左右のレンズ(TorusGeometry)は
- * 以前この関数の中で組み立てていたが、`.translate(x,y,z)` だけの単純な配置だったため
- * `glassesGroupNode.ts` 側で `torusGenerator`→`translateX`/`translateZ` というノードグラフへ
- * 切り出した(`bag.ts` のバッグ本体と同じ考え方)。ブリッジ/テンプルは `alignedBox.ts`
- * (2点間に整列させる回転+平行移動)を使っており、こちらをノード化する汎用の「2点間整列」
- * ノードはまだ無いため、この関数にコードとして残っている(`geometry/CLAUDE.md` 参照)。 */
+ * 単純な軸並行移動で配置できるため `glassesGroupNode.ts` 側のノードグラフで組み立てるが、
+ * ブリッジ/テンプルは `alignedBox.ts` による2点間整列が必要で、それをノード化する汎用ノードが
+ * まだ無いためこの関数にコードとして残っている(`geometry/CLAUDE.md` 参照)。 */
 export function buildGlassesFrameGeometry(params: GlassesFrameParams): THREE.BufferGeometry {
   const { lensRadius, bridgeThickness, lensSpacing, templeLength, templeThickness } = params;
 

@@ -1,20 +1,14 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
- * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている(新規ノード型は
- * 追加していない)。旧 `geometry/scarf.ts` の `buildScarfGeometry()` は「首元の輪(`band`)は
- * `belt.ts` の `buildBeltGeometry()` を固定の `bulge=1.05` で呼ぶだけ」「タイ(`tail`)は
- * 単純な `BoxGeometry`+`.translate(0, y, z)`」という2パーツの組み合わせだったため、
- * `bandGen` にはガーメント専用の新型を作らず、そのまま既存の `beltGenerator` ノードを
- * ネストして再利用している(`bulgeIn` は固定値1.05の `numberInput`)。`tailGen`
- * (`boxGenerator`)の配置も `bagGroupNode.ts`/`glassesGroupNode.ts` と同じ理由で
- * `translateY`/`translateZ` へ展開しており、Y座標(`tailCenterY = (0 - bandThickness) -
- * tailLength × 0.5`)/Z座標(`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、
- * 固定値0.9)はどちらも可視の四則演算チェーンで導出する(`zeroIn`/`halfIn` は
- * `bodyLayoutGroupNode.ts` の `halfIn`/`feetYIn` と同じ「常に一定の値を持つ
- * `numberInput`」のイディオム)。`band`/`tail` は最後に `mergeGeometry` で1つにまとめる。
- * `geometry/scarf.ts`/`nodes/definitions/scarfGenerator.ts` は呼び出し元が無くなったため
- * 削除済み(`geometry/CLAUDE.md` 参照)。
+ * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている。首元の輪
+ * (`band`)は既存の `beltGenerator` ノードを `bulge=1.05` 固定でそのままネストして再利用し
+ * (`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translateY`/`translateZ`
+ * で配置する。Y座標(`tailCenterY = (0 - bandThickness) - tailLength × 0.5`)/Z座標
+ * (`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、固定値0.9)はどちらも可視の
+ * 四則演算チェーンで導出する(`zeroIn`/`halfIn` は `bodyLayoutGroupNode.ts` の
+ * `halfIn`/`feetYIn` と同じ「常に一定の値を持つ `numberInput`」のイディオム)。`band`/`tail`
+ * は最後に `mergeGeometry` で1つにまとめる。
  *
  * Neck Radius/Band Thickness/Tail Width/Tail Length/Segments/Color は他のガーメントと
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ

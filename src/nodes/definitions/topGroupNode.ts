@@ -2,23 +2,14 @@ import { defineGroupNode } from './groupNodeFactory';
 
 /** topGen(topGenerator)+offsetYIn(numberInput)+placement(garmentPlacement)+
  * sceneOut(sceneOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
- * 他のガーメントと共有され
- * ない単独パラメータのため、外側の numberInput/enumInput ノードではなくグループ内部の同型
- * ノードとして保持する。
+ * 他のガーメントと共有されない単独パラメータのため、外側の numberInput/enumInput ノードでは
+ * なくグループ内部の同型ノードとして保持する。
  *
- * Torso Radius(Body Build 適用後のスケール済みの値)と Material は、sleeve の描画にも
- * そのまま必要な値のため、`bodyBuild` のように他ガーメントと共有される値と同じ扱いで
- * 外部ソケット(`torsoRadius`/`material`)として受け取る — かつてはこの2つを topGroup
- * 内部の `numberMultiply`/`toonMaterial` として計算し、`groupOutput` 経由で sleeve に
- * 再公開していたが、「本来共有すべき値がグループの中に閉じ込められている」という設計上の
- * 問題があったため、計算自体を `src/state/initialGraph.ts` 側の共有ノード(`topRadiusScale`/
- * `topMaterial`)へ引き上げ、topGroup/sleeveGroup の両方へ普通の外部ソケットとして
- * ファンアウトする形に改めた(`src/geometry/CLAUDE.md` の sleeve の節が元々説明していた
- * 「1つの Color/Material ノードから2つの Garment Output へのファンアウト」を文字通り実現)。
- * Anchor Y(取り付け位置)も同じ考え方で、ルートの `bodyLayout` 共有ノードの shoulderY を
- * sleeveGroup と同時に受け取る。
- * `groupOutput` はここでは使わない(他ガーメントへ再公開したい値が無いため省略している)—
- * geometry/material の描画は `sceneOut`(`sceneOutput`)が別途担う。 */
+ * Torso Radius(Body Build 適用後のスケール済みの値)と Material は sleeve の描画にも
+ * そのまま必要な値のため、`src/state/initialGraph.ts` 側の共有ノード(`topRadiusScale`/
+ * `topMaterial`)から topGroup/sleeveGroup の両方へ普通の外部ソケットとしてファンアウトされる
+ * (`nodes/CLAUDE.md` の「値が複数グループで共有される場合」参照)。Anchor Y(取り付け位置)も
+ * 同じくルートの `bodyLayout` 共有ノードの shoulderY を sleeveGroup と同時に受け取る。 */
 defineGroupNode({
   type: 'topGroup',
   label: 'Top',

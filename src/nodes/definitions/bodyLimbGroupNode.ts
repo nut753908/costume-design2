@@ -1,23 +1,14 @@
 import { defineGroupNode } from './groupNodeFactory';
 
 /** `bodyGroup` にネストされる、左右対称な腕1組・脚1組のどちらにも使う共通のグループノード
- * (`bodyGroup` 内に2インスタンス置く)。`bodyTorsoGroupNode.ts`/`bodyHeadGroupNode.ts` と
- * 同じ理由・同じ形(Material は共有ノードから外部ソケットで受け取るだけ)で分割した。
- *
- * ジェネレーターは Body 専用の `bodyLimbGenerator` ではなく、汎用プリミティブノード
- * `cylinderGenerator`(`nodes/definitions/cylinderGenerator.ts`、上下の半径を独立指定できる
- * テーパー円柱)と、左右対称ペアへまとめる汎用ノード `mirrorPair`
- * (`nodes/definitions/mirrorPair.ts`、`geometry/mirrorPair.ts` の
- * `buildMirroredPairGeometry()` を1つの geometry 入力向けにラップしたもの)の組み合わせで
- * 表現する。「手首/足首側を根元よりわずかに細くする」というテーパー比率(旧 `bodyParts.ts`
- * の `LIMB_TAPER_RATIO = 0.85` というコード上の固定値)は、`taperRatioIn`(`numberInput`)→
- * `taper`(`numberMultiply`)→`cylinderGen.radiusBottom` という配線そのものへ展開している —
- * `bodyLayoutGroupNode.ts` の `armTorsoOverlapRatioIn` と同じく、四則演算チェーンで使う定数は
- * `numberMultiply`/`numberAdd`/`numberSubtract` 自身の `data` にリテラルとして隠さず、必ず
- * 専用の `numberInput` ノードとして配置してから配線する(そうすることでキャンバス上で値が
- * 見え、かつ編集もできる — `numberMultiply` 等は `data.label` の編集はできても専用の値編集
- * UIを持たないため、リテラルのまま `data` に隠すと数値そのものがキャンバス上のどこにも
- * 現れなくなってしまう)。 */
+ * (`bodyGroup` 内に2インスタンス置く)。ジェネレーターは汎用プリミティブノード
+ * `cylinderGenerator`(上下の半径を独立指定できるテーパー円柱)と、左右対称ペアへまとめる
+ * 汎用ノード `mirrorPair` の組み合わせ。「手首/足首側を根元よりわずかに細くする」テーパー
+ * 比率は `taperRatioIn`(`numberInput`)→`taper`(`numberMultiply`)→
+ * `cylinderGen.radiusBottom` という配線へ展開している — `numberMultiply` 等は
+ * `data.label` の編集はできても専用の値編集UIを持たないため、四則演算チェーンで使う定数を
+ * リテラルのまま `data` に隠すとキャンバス上のどこにも現れなくなる(`nodes/CLAUDE.md` の
+ * 「グループノード」節参照)。 */
 defineGroupNode({
   type: 'bodyLimbGroup',
   label: 'Body Limb Pair',

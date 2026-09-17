@@ -9,14 +9,8 @@ import { defineGroupNode } from './groupNodeFactory';
  * して保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * headCenterY)だけが唯一の外部ソケット。
  *
- * プロファイル生成は `pantsGroupNode.ts` 等と同じ理由で `easedLatheProfile`→
- * `latheGenerator` という汎用ノードの組み合わせへ展開している(`geometry/hat.ts` は呼び出し元が
- * 無くなったため削除済み)。head は左右対称な単一パーツなので `mirrorPair` は挟まない
- * (旧 `buildHatGeometry()` のコメント参照)。hat は shoes/socks と同じ `direction: 'up'`
- * (つばから上=クラウン側へ伸びる)。以前の `hatGenerator`(`defineGeneratorNode` ベース)は
- * Segments を専用の `segmentsIn` に配線せず型の既定値(20)へ未接続のままフォールバックさせて
- * いたが、`numberMultiply` の `factor` と同じ理由で `segmentsIn`(`numberInput`)を追加して
- * 配線している。 */
+ * head は左右対称な単一パーツなので `mirrorPair` は挟まない。hat は shoes/socks と同じ
+ * `direction: 'up'`(つばから上=クラウン側へ伸びる)。 */
 defineGroupNode({
   type: 'hatGroup',
   label: 'Hat',

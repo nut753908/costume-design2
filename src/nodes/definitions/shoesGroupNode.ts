@@ -8,14 +8,10 @@ import { defineGroupNode } from './groupNodeFactory';
  * ノードとして保持する。
  *
  * 靴1本ぶんのジオメトリ(`profile`→`latheGen`→`scaleZ`)と、それを ±legSpacing だけ X方向に
- * 離した左右対称ペアへまとめる処理(`mirror`)は分離している — `pantsGroupNode.ts`/
- * `bodyLimbGroupNode.ts` と同じ形(`nodes/CLAUDE.md` 参照)。プロファイル生成自体も
- * `pantsGroupNode.ts` 等と同じ理由で `easedLatheProfile`→`latheGenerator` という汎用ノードの
- * 組み合わせへ展開している。つま先方向に伸びた靴らしい楕円形のシルエットを作る
- * `.scale(1, 1, toeLength)` も `scaleZ`(`translateX`/`translateY`/`translateZ` と対になる、
- * 1軸だけを扱う汎用の非一様スケールノード、`nodes/definitions/scaleZ.ts`)へ展開しており、
- * `geometry/shoes.ts`/`nodes/definitions/shoeGenerator.ts` は呼び出し元が無くなったため
- * 削除済み(`geometry/CLAUDE.md` 参照)。
+ * 離した左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
+ * `bodyLimbGroupNode.ts` と同じ形、`nodes/CLAUDE.md` 参照)。つま先方向に伸びた靴らしい
+ * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scaleZ`(`translateX`/`translateY`/
+ * `translateZ` と対になる、1軸だけを扱う汎用の非一様スケールノード)で表現する。
  *
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
