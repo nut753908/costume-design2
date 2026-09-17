@@ -54,10 +54,9 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     }
   });
 
-  // 以前は各グループ内部の anchorIn(enumInput のドロップダウン)で実行時に選んでいた
-  // アンカーが、bodyLayout のどの出力を anchorY へ配線するかというグラフ上の配線そのものに
-  // なった(garmentPlacement.ts のコメント参照)。各ガーメントが正しいアンカー候補に
-  // 繋がっているかをピンポイントで検証する。
+  // どのアンカーを使うかは bodyLayout のどの出力を anchorY へ配線するかというグラフ上の
+  // 配線そのものが仕様(garmentPlacement.ts のコメント参照)。各ガーメントが正しい
+  // アンカー候補に繋がっているかをピンポイントで検証する。
   it('各ガーメントの anchorY が bodyLayout の正しいアンカー候補に接続されている', () => {
     const expected: [string, string][] = [
       ['skirtGroup', 'waistY'],
