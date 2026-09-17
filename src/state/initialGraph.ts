@@ -30,7 +30,7 @@ export const initialNodes: Node[] = [
   { id: 'bodyLayout', type: 'bodyLayoutGroup', position: { x: 680, y: 134 }, data: {} },
 
   // Body(3Dモデル本体)。他15種のガーメントと同じグループノードで、胴体/頭/腕/脚を
-  // 組み立てて描画する(nodes/definitions/bodyGroupNode.ts 参照)。bodyDimensions/bodyLayout
+  // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。bodyDimensions/bodyLayout
   // が計算済みの生の値(半径・長さ・Y座標)を外部ソケットとして直接受け取るだけで、
   // 自分ではスケール計算を一切行わない。
   { id: 'bodyGroup', type: 'bodyGroup', position: { x: 1020, y: 0 }, data: {} },
@@ -43,11 +43,11 @@ export const initialNodes: Node[] = [
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetY用の
   // numberInput + garmentPlacement という一連のパイプラインを1枚の <name>Group ノード
   // (nodes/definitions/groupNodeFactory.ts の defineGroupNode() で定義、nodes/definitions/
-  // <name>GroupNode.ts)に集約している。生パラメータと Color は他のガーメントと共有されない
+  // groups/<name>GroupNode.ts)に集約している。生パラメータと Color は他のガーメントと共有されない
   // 単独パラメータのため、internalNodes に groupInput ノードと並べて直接書かれており
   // (グループの中に入って初めて編集できる)、このファイルには現れない — 詳細は
   // src/nodes/CLAUDE.md の「グループノード」節を参照。各 <name>GroupNode.ts の internalNodes
-  // は `sceneOutput`(nodes/definitions/sceneOutput.ts)ノードも内包しており、実際に
+  // は `sceneOutput`(nodes/definitions/generic/sceneOutput.ts)ノードも内包しており、実際に
   // シーンへ描画されるのはこの内部 `sceneOutput` への配線があるからである(このファイルには
   // その配線は現れない)。
   { id: 'skirtGroup', type: 'skirtGroup', position: { x: 1020, y: 781 }, data: {} },
@@ -84,7 +84,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-dims-shoulder', source: 'bodyShoulder', sourceHandle: 'value', target: 'bodyDimensions', targetHandle: 'shoulderScale' },
 
   // bodyDimensions → bodyLayout(共有の配置Y座標計算ノード)。bodyLayoutGroup が入力に
-  // 使う5個の寸法だけを配線する(nodes/definitions/bodyLayoutGroupNode.ts 参照)。
+  // 使う5個の寸法だけを配線する(nodes/definitions/groups/bodyLayoutGroupNode.ts 参照)。
   { id: 'e-body-layout-leg-height', source: 'bodyDimensions', sourceHandle: 'legHeight', target: 'bodyLayout', targetHandle: 'legHeight' },
   { id: 'e-body-layout-torso-length', source: 'bodyDimensions', sourceHandle: 'torsoLength', target: 'bodyLayout', targetHandle: 'torsoLength' },
   { id: 'e-body-layout-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'bodyLayout', targetHandle: 'torsoRadius' },
@@ -133,7 +133,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-top-material-sleeve', source: 'topMaterial', sourceHandle: 'material', target: 'sleeveGroup', targetHandle: 'material' },
 
   // garmentPlacement(取り付け位置をジオメトリへ焼き込むノード、nodes/definitions/
-  // garmentPlacement.ts 参照)の `anchorY` へ、bodyLayout が計算した5つのアンカー候補
+  // generic/garmentPlacement.ts 参照)の `anchorY` へ、bodyLayout が計算した5つのアンカー候補
   // (waistY/shoulderY/feetY/wristY/headCenterY)のうち、そのガーメントが実際に使う1つを
   // 配線する。
   { id: 'e-anchor-skirt', source: 'bodyLayout', sourceHandle: 'waistY', target: 'skirtGroup', targetHandle: 'anchorY' },

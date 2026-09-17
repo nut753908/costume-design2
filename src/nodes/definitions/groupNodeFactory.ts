@@ -3,7 +3,7 @@ import { evaluateGraph, type EvaluatedGraph } from '../evaluateGraph';
 import { computeAutoLayout } from '../autoLayout';
 import type { GraphEdge, GraphNode, GroupInternalEdge, GroupInternalNode, SocketDef, SocketValue } from '../types';
 import type { GroupIOSocket } from './groupIOSocket';
-import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from './sceneOutput';
+import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from './generic/sceneOutput';
 
 export interface GroupNodeConfig {
   type: string;

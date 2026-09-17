@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
-import type { ColorInputData } from '../../nodes/definitions/colorInput';
+import type { ColorInputData } from '../../nodes/definitions/generic/colorInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';

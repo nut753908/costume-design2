@@ -1,13 +1,13 @@
 import { useGraphStore } from '../state/graphStore';
 import { ToonMesh } from '../rendering/ToonMesh';
-import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/sceneOutput';
+import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/generic/sceneOutput';
 
 /** `bodyGroup`(Body、3Dモデル本体)も他15種のガーメントと同じ `<name>Group` パターンで
  * 実装されており、内部の `sceneOutput` を通じてこのコンポーネントが走査する
  * `rootEvaluatedResults` に現れる — Body 専用の描画コード・専用コンポーネントは無い
  * (ノードの型を一切問わないこの走査ロジックのおかげ)。
  *
- * ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/garmentPlacement.ts` が
+ * ガーメントの取り付け位置(anchor/offsetY)は `nodes/definitions/generic/garmentPlacement.ts` が
  * 評価時にジオメトリの頂点座標へ焼き込み済み(Blender の Geometry Nodes で位置をジオメトリに
  * 焼き込む考え方と同じ、`src/nodes/CLAUDE.md` の「グループノード」節参照)。そのため
  * ここでは常に原点にメッシュを置くだけでよく、アンカー座標を計算するコードは一切無い
@@ -26,7 +26,7 @@ export function Garments() {
     <>
       {Array.from(evaluated.entries()).flatMap(([nodeId, result]) =>
         // `sceneOutputGeometry<N>`/`sceneOutputMaterial<N>` は、そのノード(通常は
-        // `<name>Group`)の内部に `sceneOutput`(nodes/definitions/sceneOutput.ts)が実際に
+        // `<name>Group`)の内部に `sceneOutput`(nodes/definitions/generic/sceneOutput.ts)が実際に
         // 配線されている場合にだけ `groupNodeFactory.ts` の `evaluate()` が転送する予約キー。
         // ノードの型を問わずこのキーの有無だけを見る — `groupOutput` 経由の通常の
         // `geometry`/`material`(グループ間で値を再利用するための汎用ソケット)を直接見て

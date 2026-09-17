@@ -12,7 +12,7 @@ const BASE = {
 } as const;
 
 // バッグ本体(直方体)の配置はこのファイルの責務ではなくなったため、ストラップだけを検証する
-// (本体側は src/nodes/definitions/boxGenerator.test.ts/translateX.test.ts/translateY.test.ts/
+// (本体側は src/nodes/definitions/generic/boxGenerator.test.ts/translateX.test.ts/translateY.test.ts/
 // translateZ.test.ts が既にカバーしている)。
 describe('buildBagStrapGeometry', () => {
   it('NaN 頂点のない、妥当で退化していないジオメトリを生成する', () => {

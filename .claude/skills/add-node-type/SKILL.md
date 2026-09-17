@@ -5,7 +5,7 @@ description: ノードグラフに新しい NodeTypeDefinition(ノードタイ�
 
 # 新しいノードタイプの追加
 
-`nodes/definitions/*.ts` に `evaluate()` と `createDefaultData()` を持つ `NodeTypeDefinition` を実装するだけでよい。`registerNodeType()` を呼ぶ副作用インポートとして、そのファイルは `definitions/index.ts` の `import.meta.glob()` によって自動的に読み込まれ、`editor/NodeEditor.tsx` の `nodeTypes` にも `nodeTypeRegistry` から自動的に反映される(専用UIが要る場合だけ `NODE_VIEW_OVERRIDES` に追加する)。`index.ts` や `NodeEditor.tsx` への手動登録は不要。
+`nodes/definitions/**/*.ts` に `evaluate()` と `createDefaultData()` を持つ `NodeTypeDefinition` を実装するだけでよい(ガーメント固有のグループノード・生成ノードは `groups/`、複数ガーメントで使い回す汎用ノードは `generic/` に置く。`generatorNodeFactory.ts`/`groupNodeFactory.ts` などの共通基盤は `nodes/definitions/` 直下)。`registerNodeType()` を呼ぶ副作用インポートとして、そのファイルは `definitions/index.ts` の `import.meta.glob()` によって(サブディレクトリを含め再帰的に)自動的に読み込まれ、`editor/NodeEditor.tsx` の `nodeTypes` にも `nodeTypeRegistry` から自動的に反映される(専用UIが要る場合だけ `NODE_VIEW_OVERRIDES` に追加する)。`index.ts` や `NodeEditor.tsx` への手動登録は不要。
 
 ## ガーメントジェネレーターノード(category: 'generator')の場合
 
@@ -16,7 +16,7 @@ skirt/belt/hat/dress/... のようにフィールドの値を解決して `build
 
 ## グループノード(category: 'group')の場合
 
-複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`enumInput`/`numberInput`+`garmentPlacement` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せたい場合は、`registerNodeType()` を直接書かず `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` を使う(`nodes/definitions/skirtGroupNode.ts` 等、既存15種のガーメントグループを参照)。詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節、手順は [`add-garment-type` スキル](../add-garment-type/SKILL.md)を参照。外部から注入できる型に制限は無く、内部配線もノードインスタンスごとに独立してグラフ上で編集できる(ダブルクリックで中に入る)。
+複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`enumInput`/`numberInput`+`garmentPlacement` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せたい場合は、`registerNodeType()` を直接書かず `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` を使う(`nodes/definitions/groups/skirtGroupNode.ts` 等、既存15種のガーメントグループを参照)。詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節、手順は [`add-garment-type` スキル](../add-garment-type/SKILL.md)を参照。外部から注入できる型に制限は無く、内部配線もノードインスタンスごとに独立してグラフ上で編集できる(ダブルクリックで中に入る)。
 
 ## それ以外のノードタイプ(input/material/output)の場合
 

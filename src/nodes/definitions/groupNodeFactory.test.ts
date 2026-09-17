@@ -5,8 +5,8 @@ import type { SocketValue } from '../types';
 import { defineGroupNode } from './groupNodeFactory';
 import './groupInput';
 import './groupOutput';
-import './numberMultiply';
-import './sceneOutput';
+import './generic/numberMultiply';
+import './generic/sceneOutput';
 
 // テスト専用の中間ノード型。geometry/material のような実ノードを持ち込まずに、
 // 「groupOutput に配線されたキーだけが外部出力になり、配線されていないキーは転送されない」

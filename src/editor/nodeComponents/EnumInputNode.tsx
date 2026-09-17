@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
-import type { EnumInputData } from '../../nodes/definitions/enumInput';
+import type { EnumInputData } from '../../nodes/definitions/generic/enumInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 
