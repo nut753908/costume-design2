@@ -21,6 +21,8 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 
 手順は `add-node-type` スキルを参照してください。
 
+`defineGroupNode()` のテンプレートで存在しないノード id/ソケット id を指すエッジを書いても、`evaluateGraph` は静かに無視して評価を続けるため実行時には気づけない。`nodes/definitions/groupNodeWiring.test.ts` が登録済みの全グループ型について、内部ノードの type が登録済みであること・内部エッジの端点が実在するノードの実在するソケットを指すこと・1入力に複数エッジが接続されていないことを走査して検証するので、グループを追加/配線し直したらこのテストで確認できる。
+
 ## グループノード
 
 `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` は、複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`enumInput`/`numberInput`+`garmentPlacement` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せる「グループノード」を定義する。`category: 'group'` 固定(`NodeCategory` に追加済み、パレット/コンテキストメニューでは「Groups」セクションに表示される)。`src/state/initialGraph.ts` の全15種のガーメント(`<name>GroupNode.ts`、例: `skirtGroupNode.ts`)がこのパターンで定義されている(sleeve も `sleeveGroupNode.ts` として含む — 経緯は下記「値が複数グループで共有される場合」参照)。Body(3Dモデル本体)も `bodyGroup`(`bodyGroupNode.ts`)として同じパターンに乗っており、ガーメント/Bodyを合わせて `src/state/initialGraph.ts` 直下には計16個の `<name>Group` ノードが存在する — ただし `bodyGroup` は `garmentPlacement`(下記参照)を使わない点が他のガーメントと異なる(Body には取り付けアンカーの概念が無く、`bodyLayout` が計算した Center Y をそのまま `translateY` へ渡すだけで済むため)。
