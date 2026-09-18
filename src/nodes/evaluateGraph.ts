@@ -12,6 +12,61 @@ export class GraphCycleError extends Error {
 
 export type EvaluatedGraph = Map<string, Record<string, SocketValue>>;
 
+/** ノード単位の評価結果メモ化キャッシュ。キーは `node.data` オブジェクトそのものの参照 ——
+ * `state/graphStore.ts` の全アクション(`updateNodeData`/`composeRootGraph()` 含む)は
+ * イミュータブルな更新しか行わず、変化していないノードは常に同じ `data` 参照を保つ
+ * (`src/state/CLAUDE.md` のリアクティビティ節参照)ため、「このノードは前回と同じデータ
+ * オブジェクトか」が「このノードは編集されていないか」の安価な判定として機能する。
+ * `WeakMap` にしているのは、ノードが削除されて `data` オブジェクトがどこからも参照されなく
+ * なれば、対応するキャッシュエントリも GC に任せて自動的に回収されるようにするため(手動の
+ * 無効化・エントリ削除ロジックが不要)。
+ *
+ * `data` 参照が同じでも、上流ノードの値が変わっていれば解決後の `inputs` は変わりうるため、
+ * ヒット判定は `data` 参照の一致だけでなく解決済み `inputs` の値も見る(`sameInputs()`)。
+ * これにより、`bodyGroup`(グループノード)のように内部サブグラフをまるごと再評価する
+ * `evaluate()` も、外部から見た inputs/data がどちらも前回と同じであれば丸ごとスキップ
+ * できる —— この関数は最上位の呼び出しからグループノードの埋め込みサブグラフの中まで
+ * 再帰的に同じ実装を共有しているため、キャッシュも各階層に一様に効く(トップレベルで
+ * 1つのスライダーを動かしても、それに依存しない他のグループは内部サブグラフの評価自体が
+ * 走らない)。 */
+interface NodeEvalCacheEntry {
+  type: string;
+  inputs: Record<string, SocketValue>;
+  result: Record<string, SocketValue>;
+}
+let nodeEvalCache = new WeakMap<Record<string, unknown>, NodeEvalCacheEntry>();
+
+/** テスト専用: キャッシュを空にする。`nodeEvalCache` はモジュールレベルで永続する
+ * (プロダクションではそれ自体が目的 — 別々の `evaluateGraph()` 呼び出しをまたいで
+ * 効かせるため)が、同じ `data` オブジェクト参照(多くはノード型定義ファイル内の
+ * モジュール定数の `internalNodes`)を複数の `it()` ブロックにまたがって使い回す
+ * テストでは、前のテストの評価結果がキャッシュヒットとして紛れ込み、
+ * spy の呼び出し回数などを検証するテストが壊れる。テストランナー側の `beforeEach` から
+ * 呼んでテストを互いに独立させる(`src/testSetup.ts` 参照)。 */
+export function resetNodeEvalCacheForTests(): void {
+  nodeEvalCache = new WeakMap();
+}
+
+/** `geometry`/`material`/`points` は値比較のコストが構造そのものの再計算と大差ないため、
+ * 参照が同じ場合のみ「同じ」とみなす —— 生成元のノードもキャッシュヒットして同じ参照を
+ * 返している限り、この参照比較で連鎖的に成立する。`number`/`enum`/`color` は安価に値
+ * 比較できるため、素の値ではなく都度生成される SocketValue のラッパーオブジェクトの
+ * 参照が変わっただけで無駄にキャッシュミスしないよう、値そのものを比較する。 */
+function sameSocketValue(a: SocketValue | undefined, b: SocketValue | undefined): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.type !== b.type) return false;
+  if (a.type === 'number' && b.type === 'number') return a.value === b.value;
+  if (a.type === 'enum' && b.type === 'enum') return a.value === b.value;
+  if (a.type === 'color' && b.type === 'color') return a.value.equals(b.value);
+  return false;
+}
+
+function sameInputs(a: Record<string, SocketValue>, b: Record<string, SocketValue>): boolean {
+  const aKeys = Object.keys(a);
+  if (aKeys.length !== Object.keys(b).length) return false;
+  return aKeys.every((key) => sameSocketValue(a[key], b[key]));
+}
+
 export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): EvaluatedGraph {
   const order = topologicalSort(nodes, edges);
   const results: EvaluatedGraph = new Map();
@@ -52,7 +107,15 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
       }
     }
 
-    results.set(nodeId, def.evaluate(inputs, node.data));
+    const cached = nodeEvalCache.get(node.data);
+    if (cached && cached.type === node.type && sameInputs(cached.inputs, inputs)) {
+      results.set(nodeId, cached.result);
+      continue;
+    }
+
+    const result = def.evaluate(inputs, node.data);
+    nodeEvalCache.set(node.data, { type: node.type, inputs, result });
+    results.set(nodeId, result);
   }
 
   return results;

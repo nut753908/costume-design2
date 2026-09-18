@@ -68,7 +68,25 @@ beforeAll(() => {
       evaluate: (inputs) => ({ color: inputs.color! }),
     });
   }
+  if (!nodeTypeRegistry.has('testCounter')) {
+    registerNodeType({
+      type: 'testCounter',
+      label: 'Test Counter',
+      category: 'generator',
+      inputs: [{ id: 'a', label: 'A', type: 'number' }],
+      outputs: [{ id: 'value', label: 'Value', type: 'number' }],
+      createDefaultData: () => ({}),
+      // evaluate() が実際に呼ばれた回数を数えるためだけのノード(下記「ノード単位メモ化」節)。
+      evaluate: (inputs) => {
+        testCounterCalls++;
+        return { value: { type: 'number', value: asNumber(inputs.a, 0) * 2 } };
+      },
+    });
+  }
 });
+
+// beforeAll のクロージャから毎回インクリメントされる、testCounter ノードの evaluate() 実行回数。
+let testCounterCalls = 0;
 
 describe('evaluateGraph', () => {
   it('接続されたエッジを通じてトポロジカル順に値を伝播する', () => {
@@ -155,6 +173,92 @@ describe('evaluateGraph', () => {
 
     const result = evaluateGraph(nodes, edges);
     expect(result.get('add')?.value).toEqual({ type: 'number', value: 103 });
+  });
+});
+
+// ノード単位のメモ化キャッシュ(evaluateGraph.ts 冒頭のコメント参照)。data 参照が同じ
+// (= 編集されていない)かつ解決済み inputs も前回と同じ値なら、evaluate() を呼ばずに前回の
+// 結果オブジェクトをそのまま再利用する。src/testSetup.ts の beforeEach がテストごとに
+// キャッシュを空にするため、ここでの検証は他のテストの残骸に影響されない。
+describe('evaluateGraph のノード単位メモ化', () => {
+  it('data 参照・inputs がどちらも前回と同じなら evaluate() を呼ばず、同じ結果オブジェクトを再利用する', () => {
+    testCounterCalls = 0;
+    const nodes: GraphNode[] = [
+      { id: 'src', type: 'testSource', data: { value: 5 } },
+      { id: 'counter', type: 'testCounter', data: {} },
+    ];
+    const edges: GraphEdge[] = [{ source: 'src', sourceHandle: 'value', target: 'counter', targetHandle: 'a' }];
+
+    const first = evaluateGraph(nodes, edges);
+    const second = evaluateGraph(nodes, edges);
+
+    expect(testCounterCalls).toBe(1);
+    expect(second.get('counter')).toBe(first.get('counter'));
+  });
+
+  it('無関係なノードが増えても、data・inputs が変わらないノードは再評価されない', () => {
+    testCounterCalls = 0;
+    const srcData = { value: 5 };
+    const counterData = {};
+    const nodesV1: GraphNode[] = [
+      { id: 'src', type: 'testSource', data: srcData },
+      { id: 'counter', type: 'testCounter', data: counterData },
+    ];
+    const edges: GraphEdge[] = [{ source: 'src', sourceHandle: 'value', target: 'counter', targetHandle: 'a' }];
+    const first = evaluateGraph(nodesV1, edges);
+
+    // src/counter とは無関係な3つ目のノードを追加しただけの、実質的に無関係な変更。
+    const nodesV2: GraphNode[] = [
+      ...nodesV1,
+      { id: 'unrelated', type: 'testSource', data: { value: 999 } },
+    ];
+    const second = evaluateGraph(nodesV2, edges);
+
+    expect(testCounterCalls).toBe(1);
+    expect(second.get('counter')).toBe(first.get('counter'));
+  });
+
+  it('上流ノードの data が変わり inputs の値も変わると、キャッシュミスして再評価する', () => {
+    testCounterCalls = 0;
+    const counterData = {};
+    const edges: GraphEdge[] = [{ source: 'src', sourceHandle: 'value', target: 'counter', targetHandle: 'a' }];
+
+    const nodesV1: GraphNode[] = [
+      { id: 'src', type: 'testSource', data: { value: 5 } },
+      { id: 'counter', type: 'testCounter', data: counterData },
+    ];
+    const first = evaluateGraph(nodesV1, edges);
+
+    const nodesV2: GraphNode[] = [
+      { id: 'src', type: 'testSource', data: { value: 9 } }, // 新しい data オブジェクト、値も変わった
+      { id: 'counter', type: 'testCounter', data: counterData }, // counter 自身の data は使い回す
+    ];
+    const second = evaluateGraph(nodesV2, edges);
+
+    expect(testCounterCalls).toBe(2);
+    expect(second.get('counter')).not.toEqual(first.get('counter'));
+    expect(second.get('counter')?.value).toEqual({ type: 'number', value: 18 });
+  });
+
+  it('data 参照が同じでも(直接ミューテートされていて)literal な値が変われば再評価する', () => {
+    // グループノードの内部サブグラフが data: {} のまま(config.internalNodes に
+    // フォールバック)の場合、内部ノードの data はモジュール定数として複数回の
+    // evaluate() 呼び出しをまたいで共有されうる(nodes/definitions/groupNodeFactory.ts
+    // 参照)。data 参照の一致だけでキャッシュを信用しているわけではないことの確認として、
+    // 同じ data オブジェクトを直接ミューテートした場合でも(このアプリの実際の更新経路では
+    // 起きないが)正しく再評価されることを見る。
+    testCounterCalls = 0;
+    const counterData: { a: number } = { a: 3 };
+    const nodes: GraphNode[] = [{ id: 'counter', type: 'testCounter', data: counterData }];
+
+    const first = evaluateGraph(nodes, []);
+    expect(first.get('counter')?.value).toEqual({ type: 'number', value: 6 });
+
+    counterData.a = 7;
+    const second = evaluateGraph(nodes, []);
+    expect(second.get('counter')?.value).toEqual({ type: 'number', value: 14 });
+
+    expect(testCounterCalls).toBe(2);
   });
 });
 

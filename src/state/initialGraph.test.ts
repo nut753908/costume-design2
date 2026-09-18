@@ -169,6 +169,45 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
   });
 });
 
+// evaluateGraph.ts のノード単位メモ化キャッシュ(nodes/CLAUDE.md の「ノードグラフエンジン」節
+// 参照)が、この16グループ・数百ノードからなる実際のデフォルトグラフの上でも意図どおりに
+// 効くことを検証する — 合成テストの小さなグラフ(evaluateGraph.test.ts)だけでなく、実際に
+// 「1つのスライダーを動かすと無関係なグループは再評価されない」が成立していることの
+// 回帰テスト。
+describe('initialNodes/initialEdges でのノード単位メモ化', () => {
+  // evaluateGraph() が要求する GraphNode[]/GraphEdge[] へ変換する(上の「evaluateGraph が
+  // 例外を投げずに評価できる」テストと同じ変換)。
+  const graphNodes = initialNodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data }));
+  const graphEdges = initialEdges.map((e) => ({
+    source: e.source,
+    sourceHandle: e.sourceHandle,
+    target: e.target,
+    targetHandle: e.targetHandle,
+  }));
+
+  it('無関係なトップレベルノード(topRadius)だけを変更しても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
+    const before = evaluateGraph(graphNodes, graphEdges);
+    const changedNodes = graphNodes.map((n) =>
+      n.id === 'topRadius' ? { ...n, data: { ...n.data, value: 0.35 } } : n,
+    );
+    const after = evaluateGraph(changedNodes, graphEdges);
+
+    expect(after.get('skirtGroup')?.sceneOutputGeometry0).toBe(before.get('skirtGroup')?.sceneOutputGeometry0);
+    expect(after.get('skirtGroup')?.sceneOutputMaterial0).toBe(before.get('skirtGroup')?.sceneOutputMaterial0);
+  });
+
+  it('変更した topRadius 自身に依存する topGroup/sleeveGroup は、正しく再評価されて結果が変わる', () => {
+    const before = evaluateGraph(graphNodes, graphEdges);
+    const changedNodes = graphNodes.map((n) =>
+      n.id === 'topRadius' ? { ...n, data: { ...n.data, value: 0.35 } } : n,
+    );
+    const after = evaluateGraph(changedNodes, graphEdges);
+
+    expect(after.get('topGroup')?.sceneOutputGeometry0).not.toBe(before.get('topGroup')?.sceneOutputGeometry0);
+    expect(after.get('sleeveGroup')?.sceneOutputGeometry0).not.toBe(before.get('sleeveGroup')?.sceneOutputGeometry0);
+  });
+});
+
 function isRegistered(type: string): boolean {
   try {
     getNodeType(type);
