@@ -2,22 +2,24 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { constNumberInput } from '../constNumberInput';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
- * ストラップ(strapGen、`bagStrapGenerator`)は `alignedBox.ts`(2点間に整列させる回転+
- * 平行移動)を使う処理がまだノード化されていないためコード側に残っているが、バッグ本体
- * (直方体)は `boxGenerator`(汎用プリミティブノード)→`translateX`/`translateY`/
- * `translateZ` というノードグラフへ展開している(`geometry/bag.ts`/`geometry/CLAUDE.md`
- * 参照)。
+ * ストラップ・バッグ本体のどちらも完全にノードグラフへ展開されている。ストラップは
+ * `alignedBoxGenerator`(`nodes/definitions/generic/alignedBoxGenerator.ts`、`geometry/
+ * alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
+ * 肩付近から反対の腰側までを結ぶ2点間に整列させて作り、バッグ本体(直方体)は
+ * `boxGenerator`(汎用プリミティブノード)→`translateX`/`translateY`/`translateZ` という
+ * ノードグラフへ展開している(`geometry/CLAUDE.md` 参照)。
  *
- * バッグ本体の中心座標 `bagCenter = strapEnd + (0, -bagHeight/2, 0)`(旧コードの式)を、
- * X: `negatedHipOffset = 0 - hipOffset`、Y: `bagCenterY = (0 - drop) - bagHeight * 0.5`、
- * Z: 固定値 `bagFrontDepthIn`(`geometry/bag.ts` の `BAG_FRONT_DEPTH` と同じ数値、
- * ストラップの終端と同じ深さに置く)という可視の四則演算チェーンへ展開している
- * (`zeroIn`/`halfIn`/`bagFrontDepthIn` は `constNumberInput()` で定義する「常に一定の
- * 値を持つ `numberInput`」)。ストラップと本体は最後に `merge`
- * (`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと共有されない単独
- * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノード
- * として保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
- * shoulderY)だけが唯一の外部ソケット。 */
+ * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
+ * (0, -bagHeight/2, 0)`(旧コードの式)は同じ深さ(Z)を共有するため、
+ * X: `negatedHipOffset = 0 - hipOffset`、Y(本体側): `bagCenterY = (0 - drop) -
+ * bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算チェーンへ展開し、
+ * ストラップの `endX`/`endY`/`endZ` と本体の `translateX`/`translateY`/`translateZ` の
+ * 両方から同じ計算結果を参照する(`zeroIn`/`halfIn`/`strapStartDepthIn`/`bagFrontDepthIn`
+ * は `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。ストラップと
+ * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと
+ * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
+ * 内部の同型ノードとして保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
+ * から配線される shoulderY)だけが唯一の外部ソケット。 */
 defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
@@ -40,8 +42,9 @@ defineGroupNode({
     { id: 'colorIn', type: 'colorInput', data: { hex: '#8a4a2e', label: 'Bag Color' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('halfIn', 0.5, 'Half'),
+    constNumberInput('strapStartDepthIn', 0.05, 'Strap Start Depth'),
     constNumberInput('bagFrontDepthIn', 0.18, 'Bag Front Depth'),
-    { id: 'strapGen', type: 'bagStrapGenerator', data: {} },
+    { id: 'strapGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'boxGen', type: 'boxGenerator', data: {} },
     { id: 'negatedHipOffset', type: 'numberSubtract', data: { label: 'Negated Hip Offset' } },
     { id: 'halfBagHeight', type: 'numberMultiply', data: { label: 'Bag Height × Half' } },
@@ -57,11 +60,17 @@ defineGroupNode({
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
-    { source: 'strapWidthIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'strapWidth' },
-    { source: 'strapThicknessIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'strapThickness' },
-    { source: 'shoulderOffsetIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'shoulderOffset' },
-    { source: 'hipOffsetIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'hipOffset' },
-    { source: 'dropIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'drop' },
+    // ストラップ = alignedBoxGenerator(肩付近 → 反対の腰側)。始点は (shoulderOffset, 0,
+    // strapStartDepth)、終点はバッグ本体と共有する (negatedHipOffset, negatedDrop,
+    // bagFrontDepth)(下記参照)。
+    { source: 'strapWidthIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'width' },
+    { source: 'strapThicknessIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'thickness' },
+    { source: 'shoulderOffsetIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'startX' },
+    { source: 'zeroIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'startY' },
+    { source: 'strapStartDepthIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'startZ' },
+    { source: 'negatedHipOffset', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endX' },
+    { source: 'negatedDrop', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endY' },
+    { source: 'bagFrontDepthIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endZ' },
 
     { source: 'bagWidthIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'width' },
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'height' },

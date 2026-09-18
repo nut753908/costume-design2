@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// bagGroup の埋め込みサブグラフが参照する bagStrapGenerator/boxGenerator/numberSubtract/
+// bagGroup の埋め込みサブグラフが参照する alignedBoxGenerator/boxGenerator/numberSubtract/
 // numberMultiply/translateX/translateY/translateZ/mergeGeometry/toonMaterial/sceneOutput を
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// ストラップ(コード側の alignedBox)とバッグ本体(ノードグラフ側の boxGenerator+
-// translateX/Y/Z、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算チェーンで導出)を
-// merge で1つにまとめる、というハイブリッド構成が正しく配線されているかを検証する
-// (bagGroupNode.ts のコメント参照)。全パラメータがグループ内部の numberInput に閉じており
-// groupInput 経由では外部から注入できないため、既定値での評価結果を検証する。
+// ストラップ(ノードグラフ側の alignedBoxGenerator)とバッグ本体(ノードグラフ側の
+// boxGenerator+translateX/Y/Z、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
+// チェーンで導出)を merge で1つにまとめる配線が正しいかを検証する(bagGroupNode.ts の
+// コメント参照)。全パラメータがグループ内部の numberInput に閉じており groupInput 経由
+// では外部から注入できないため、既定値での評価結果を検証する。
 describe('bagGroup', () => {
   const DEFAULTS = { hipOffset: 0.26, drop: 0.55, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
@@ -22,7 +22,7 @@ describe('bagGroup', () => {
   it('ストラップとバッグ本体、両方ぶんの頂点を持つ(mergeGeometry が両方を正しく結合している)', () => {
     const result = getNodeType('bagGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-    // ストラップ(alignedBox = BoxGeometry)+本体(boxGenerator = BoxGeometry)は
+    // ストラップ(alignedBoxGenerator = BoxGeometry)+本体(boxGenerator = BoxGeometry)は
     // どちらも24頂点(面ごとに頂点を共有しない既定の BoxGeometry)なので、結合後は48。
     // 片方だけしか配線されていない(mergeGeometry の geometryA/geometryB を取り違えた等の)
     // 配線ミスがあれば24のままになるため、この検証だけで両方が結合されていると分かる。
@@ -41,10 +41,10 @@ describe('bagGroup', () => {
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom, 2);
   });
 
-  it('バッグ本体は bagFrontDepthIn(= geometry/bag.ts の BAG_FRONT_DEPTH と同じ0.18)の深さに置かれる', () => {
+  it('バッグ本体は bagFrontDepthIn(= 0.18、ストラップの終端 endZ と共有する固定値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
-    // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translateZ への配線と
-    // bagFrontDepthIn の値が geometry/bag.ts の BAG_FRONT_DEPTH と一致していることの検証になる。
+    // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translateZ への配線が
+    // 正しいことの検証になる。
     const result = getNodeType('bagGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();

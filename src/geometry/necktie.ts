@@ -22,8 +22,8 @@ const CROSS_SECTION: readonly [number, number][] = [
   [1, 1],
 ];
 
-/** top/jacket などの胴体の壁(半径 0.26〜0.34 程度)より前に出す深さ。bag.ts の
- * BAG_FRONT_DEPTH と同じ理由 — z=0(体の中心)付近に置くと、シャツの前面の壁より
+/** top/jacket などの胴体の壁(半径 0.26〜0.34 程度)より前に出す深さ。`bagGroupNode.ts` の
+ * `bagFrontDepthIn` と同じ理由 — z=0(体の中心)付近に置くと、シャツの前面の壁より
  * 奥(カメラから見て裏側)になり隠れて見えなくなる。 */
 const NECKTIE_FRONT_DEPTH = 0.3;
 

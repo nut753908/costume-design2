@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// glassesGroup の埋め込みサブグラフが参照する glassesFrameGenerator/torusGenerator/
-// numberSubtract/numberMultiply/translateX/translateZ/mergeGeometry/toonMaterial/
-// sceneOutput を含め、全ノードタイプを登録する。
+// glassesGroup の埋め込みサブグラフが参照する alignedBoxGenerator/torusGenerator/
+// numberAdd/numberSubtract/numberMultiply/translateX/translateZ/mergeGeometry/
+// toonMaterial/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // 左右のレンズ(ノードグラフ側の torusGenerator+translateX/translateZ、
 // negatedLensSpacing = 0 - lensSpacing を四則演算チェーンで導出)と、ブリッジ+左右テンプル
-// (コード側の alignedBox、frameGen)を mergeGeometry×2で1つにまとめる、というハイブリッド
-// 構成が正しく配線されているかを検証する(glassesGroupNode.ts のコメント参照)。全パラメータが
-// グループ内部の numberInput に閉じており groupInput 経由では外部から注入できないため、
-// 既定値での評価結果を検証する。
+// (ノードグラフ側の alignedBoxGenerator×3)を mergeGeometry で1つにまとめる配線が
+// 正しいかを検証する(glassesGroupNode.ts のコメント参照)。全パラメータがグループ内部の
+// numberInput に閉じており groupInput 経由では外部から注入できないため、既定値での
+// 評価結果を検証する。
 describe('glassesGroup', () => {
   // offsetYIn の既定値(-0.02)ぶん、garmentPlacement が最終的な geometry 全体をY方向へ
   // 平行移動する(anchorY はここでは未接続のため0にフォールバックする)。
@@ -24,9 +24,10 @@ describe('glassesGroup', () => {
 
   it('左右レンズ(トーラス2個)+フレーム(ブリッジ+テンプル、直方体3個)ぶんの頂点を持つ', () => {
     // TorusGeometry(radialSegments=8, tubularSegments=16)は既定で (8+1)*(16+1)=153頂点。
-    // BoxGeometry は既定で24頂点。2つの mergeGeometry(レンズ2つ→フレームと結合)の
-    // どちらかが片方の引数を取り違えていれば頂点数がずれるため、この検証で両方の結合が
-    // 正しく行われていると分かる。
+    // BoxGeometry は既定で24頂点。レンズ2つ→mergeLenses、ブリッジ+左右テンプルの3つを
+    // mergeBridgeLeft→mergeFrame で結合、最後に mergeLenses+mergeFrame→mergeAll という
+    // 4段の mergeGeometry のどこか1つでも取り違えていれば頂点数がずれるため、この検証で
+    // 全部が正しく結合されていると分かる。
     const result = getNodeType('glassesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     expect(geom!.getAttribute('position').count).toBe(153 * 2 + 24 * 3);
