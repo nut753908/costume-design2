@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale, latheBody } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
@@ -15,6 +16,9 @@ import { constNumberInput } from '../constNumberInput';
  * `hemFlareClamped`(`numberMax`)→`onePlusHemFlare`(`numberAdd`)→`hemRadiusCalc`
  * (`numberMultiply`)という可視の配線へ展開している。 */
 const output = garmentOutput({ color: { hex: '#4a5c3e', label: 'Jacket Color' }, offsetY: 0, geometry: 'gen' });
+
+const scale = bodyBuildScale('shoulderRadiusIn');
+const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 'lengthIn' });
 
 defineGroupNode({
   type: 'jacketGroup',
@@ -36,28 +40,22 @@ defineGroupNode({
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('oneIn', 1, 'One'),
-    { id: 'scale', type: 'numberMultiply', data: {} },
+    ...scale.nodes,
     { id: 'hemFlareClamped', type: 'numberMax', data: { label: 'Hem Flare Clamped (≥0)' } },
     { id: 'onePlusHemFlare', type: 'numberAdd', data: { label: 'Hem Scale (1 + Hem Flare)' } },
     { id: 'hemRadiusCalc', type: 'numberMultiply', data: { label: 'Hem Radius' } },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
-    { id: 'gen', type: 'latheGenerator', data: {} },
+    ...lathe.nodes,
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'shoulderRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
+    ...scale.edges,
     { source: 'hemFlareIn', sourceHandle: 'value', target: 'hemFlareClamped', targetHandle: 'a' },
     { source: 'zeroIn', sourceHandle: 'value', target: 'hemFlareClamped', targetHandle: 'b' },
     { source: 'hemFlareClamped', sourceHandle: 'value', target: 'onePlusHemFlare', targetHandle: 'a' },
     { source: 'oneIn', sourceHandle: 'value', target: 'onePlusHemFlare', targetHandle: 'b' },
     { source: 'scale', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'value' },
     { source: 'onePlusHemFlare', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'hemRadiusCalc', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'lengthIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
-    { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
+    ...lathe.edges,
     ...output.edges,
   ],
 });

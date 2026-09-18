@@ -13,6 +13,7 @@ import.meta.glob(
     '!./groupNodeFactory.ts',
     '!./constNumberInput.ts',
     '!./garmentOutput.ts',
+    '!./garmentParts.ts',
   ],
   { eager: true },
 );

@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
@@ -18,6 +19,8 @@ import { constNumberInput } from '../constNumberInput';
  * 内部の同型ノードとして保持する。Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
  * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
 const output = garmentOutput({ color: { hex: '#8a2e3a', label: 'Scarf Color' }, offsetY: 0.08, geometry: 'merge' });
+
+const scale = bodyBuildScale('neckRadiusIn');
 
 defineGroupNode({
   type: 'scarfGroup',
@@ -40,7 +43,7 @@ defineGroupNode({
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
     constNumberInput('bulgeIn', 1.05, 'Band Bulge'),
     constNumberInput('tailFrontInsetIn', 0.9, 'Tail Front Inset'),
-    { id: 'scale', type: 'numberMultiply', data: {} },
+    ...scale.nodes,
     { id: 'bandGen', type: 'beltGenerator', data: {} },
     { id: 'tailGen', type: 'boxGenerator', data: {} },
     { id: 'negatedBandThickness', type: 'numberNegate', data: { label: 'Negated Band Thickness' } },
@@ -53,8 +56,7 @@ defineGroupNode({
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'neckRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
+    ...scale.edges,
 
     { source: 'scale', sourceHandle: 'value', target: 'bandGen', targetHandle: 'radius' },
     { source: 'bandThicknessIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'thickness' },

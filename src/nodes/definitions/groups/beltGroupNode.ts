@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
@@ -29,6 +30,8 @@ import { constNumberInput } from '../constNumberInput';
  * `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして使う(`geometry/CLAUDE.md` 参照)。 */
 const output = garmentOutput({ color: { hex: '#3a2e26', label: 'Belt Color' }, offsetY: 0, geometry: 'gen' });
 
+const scale = bodyBuildScale('radiusIn');
+
 defineGroupNode({
   type: 'beltGroup',
   label: 'Belt',
@@ -48,7 +51,7 @@ defineGroupNode({
     { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01, label: 'Bulge' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
     constNumberInput('oneIn', 1, 'One'),
-    { id: 'scale', type: 'numberMultiply', data: {} },
+    ...scale.nodes,
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: { label: 'Bulge Radius' } },
     { id: 'halfCalc', type: 'numberHalf', data: { label: 'Thickness × Half' } },
     { id: 'negatedHalf', type: 'numberNegate', data: { label: 'Negated Half' } },
@@ -61,8 +64,7 @@ defineGroupNode({
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'radiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
+    ...scale.edges,
 
     { source: 'scale', sourceHandle: 'value', target: 'bulgeRadiusCalc', targetHandle: 'value' },
     { source: 'bulgeIn', sourceHandle: 'value', target: 'bulgeRadiusCalc', targetHandle: 'factor' },

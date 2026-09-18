@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale, latheBody } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 
 /** socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
@@ -17,6 +18,9 @@ import { garmentOutput } from '../garmentOutput';
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ color: { hex: '#d4a83a', label: 'Socks Color' }, offsetY: 0, geometry: 'mirror' });
+
+const scale = bodyBuildScale('ankleRadiusIn');
+const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'calfRadiusIn', distance: 'heightIn' });
 
 defineGroupNode({
   type: 'socksGroup',
@@ -37,20 +41,14 @@ defineGroupNode({
     { id: 'calfRadiusIn', type: 'numberInput', data: { value: 0.105, min: 0.05, max: 0.2, step: 0.005, label: 'Calf Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01, label: 'Height' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
-    { id: 'sockGen', type: 'latheGenerator', data: {} },
+    ...scale.nodes,
+    ...lathe.nodes,
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'ankleRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'calfRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
-    { source: 'profile', sourceHandle: 'points', target: 'sockGen', targetHandle: 'points' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'sockGen', targetHandle: 'segments' },
+    ...scale.edges,
+    ...lathe.edges,
     { source: 'sockGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
     ...output.edges,

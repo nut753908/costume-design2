@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale, latheBody } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
@@ -15,6 +16,9 @@ import { constNumberInput } from '../constNumberInput';
  * 可視の配線へ展開しており、コード側の式としては持たない(`zeroIn`/`oneIn` は
  * `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。 */
 const output = garmentOutput({ color: { hex: '#d9738c', label: 'Skirt Color' }, offsetY: 0.03, geometry: 'gen' });
+
+const scale = bodyBuildScale('waistRadiusIn');
+const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 12, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 'lengthIn' });
 
 defineGroupNode({
   type: 'skirtGroup',
@@ -36,28 +40,22 @@ defineGroupNode({
     { id: 'segmentsIn', type: 'numberInput', data: { value: 28, min: 8, max: 48, step: 1, label: 'Segments' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('oneIn', 1, 'One'),
-    { id: 'scale', type: 'numberMultiply', data: {} },
+    ...scale.nodes,
     { id: 'flareClamped', type: 'numberMax', data: { label: 'Flare Clamped (≥0)' } },
     { id: 'onePlusFlare', type: 'numberAdd', data: { label: 'Hem Scale (1 + Flare)' } },
     { id: 'hemRadiusCalc', type: 'numberMultiply', data: { label: 'Hem Radius' } },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 12 } },
-    { id: 'gen', type: 'latheGenerator', data: {} },
+    ...lathe.nodes,
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
+    ...scale.edges,
     { source: 'flareIn', sourceHandle: 'value', target: 'flareClamped', targetHandle: 'a' },
     { source: 'zeroIn', sourceHandle: 'value', target: 'flareClamped', targetHandle: 'b' },
     { source: 'flareClamped', sourceHandle: 'value', target: 'onePlusFlare', targetHandle: 'a' },
     { source: 'oneIn', sourceHandle: 'value', target: 'onePlusFlare', targetHandle: 'b' },
     { source: 'scale', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'value' },
     { source: 'onePlusFlare', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'hemRadiusCalc', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'lengthIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
-    { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
+    ...lathe.edges,
     ...output.edges,
   ],
 });

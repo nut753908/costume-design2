@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 
 /** dressTorsoScale(numberMultiply)+dressGen(dressGenerator)+dressMaterial(toonMaterial)+
@@ -9,6 +10,8 @@ import { garmentOutput } from '../garmentOutput';
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される shoulderY)は
  * 外部ソケットのまま。 */
 const output = garmentOutput({ color: { hex: '#3d7a72', label: 'Dress Color' }, offsetY: 0, geometry: 'gen' });
+
+const scale = bodyBuildScale('torsoRadiusIn');
 
 defineGroupNode({
   type: 'dressGroup',
@@ -29,13 +32,12 @@ defineGroupNode({
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.9, min: 0.4, max: 1.3, step: 0.01, label: 'Length' } },
     { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
-    { id: 'scale', type: 'numberMultiply', data: {} },
+    ...scale.nodes,
     { id: 'gen', type: 'dressGenerator', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'torsoRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
+    ...scale.edges,
     { source: 'scale', sourceHandle: 'value', target: 'gen', targetHandle: 'torsoRadius' },
     { source: 'hemRadiusIn', sourceHandle: 'value', target: 'gen', targetHandle: 'hemRadius' },
     { source: 'lengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'length' },

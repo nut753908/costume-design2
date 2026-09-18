@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { latheBody } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 
 /** hat は bodyBuild によるスケーリング対象外(headRadius が `bodyDimensionsGroup` の中で
@@ -13,6 +14,8 @@ import { garmentOutput } from '../garmentOutput';
  * head は左右対称な単一パーツなので `mirrorPair` は挟まない。hat は shoes/socks と同じ
  * `direction: 'up'`(つばから上=クラウン側へ伸びる)。 */
 const output = garmentOutput({ color: { hex: '#4a3b6b', label: 'Hat Color' }, offsetY: 0.1, geometry: 'gen' });
+
+const lathe = latheBody({ genId: 'gen', direction: 'up', steps: 10, startRadius: 'brimRadiusIn', endRadius: 'crownRadiusIn', distance: 'heightIn' });
 
 defineGroupNode({
   type: 'hatGroup',
@@ -29,16 +32,11 @@ defineGroupNode({
     { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02, min: 0, max: 0.15, step: 0.005, label: 'Crown Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01, label: 'Height' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
-    { id: 'gen', type: 'latheGenerator', data: {} },
+    ...lathe.nodes,
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'brimRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'crownRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
-    { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
+    ...lathe.edges,
     ...output.edges,
   ],
 });

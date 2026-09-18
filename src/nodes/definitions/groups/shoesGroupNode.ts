@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale, latheBody } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 
 /** shoesSoleScale(numberMultiply)+profile(easedLatheProfile)+latheGen(latheGenerator)+
@@ -18,6 +19,9 @@ import { garmentOutput } from '../garmentOutput';
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ color: { hex: '#3d3630', label: 'Shoes Color' }, offsetY: 0, geometry: 'mirror' });
+
+const scale = bodyBuildScale('soleRadiusIn');
+const lathe = latheBody({ genId: 'latheGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'cuffRadiusIn', distance: 'heightIn' });
 
 defineGroupNode({
   type: 'shoesGroup',
@@ -39,21 +43,15 @@ defineGroupNode({
     { id: 'heightIn', type: 'numberInput', data: { value: 0.12, min: 0.05, max: 0.25, step: 0.005, label: 'Height' } },
     { id: 'toeLengthIn', type: 'numberInput', data: { value: 1.5, min: 1, max: 2.5, step: 0.05, label: 'Toe Length' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
-    { id: 'latheGen', type: 'latheGenerator', data: {} },
+    ...scale.nodes,
+    ...lathe.nodes,
     { id: 'scaleZ', type: 'scaleZ', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'soleRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'cuffRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'heightIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
-    { source: 'profile', sourceHandle: 'points', target: 'latheGen', targetHandle: 'points' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'latheGen', targetHandle: 'segments' },
+    ...scale.edges,
+    ...lathe.edges,
     { source: 'latheGen', sourceHandle: 'geometry', target: 'scaleZ', targetHandle: 'geometry' },
     { source: 'toeLengthIn', sourceHandle: 'value', target: 'scaleZ', targetHandle: 'z' },
     { source: 'scaleZ', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },

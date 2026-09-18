@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { bodyBuildScale, latheBody } from '../garmentParts';
 import { garmentOutput } from '../garmentOutput';
 
 /** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
@@ -16,6 +17,9 @@ import { garmentOutput } from '../garmentOutput';
  * スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * waistY)と合わせて外部ソケットのまま。 */
 const output = garmentOutput({ color: { hex: '#9c7b4f', label: 'Pants Color' }, offsetY: 0, geometry: 'mirror' });
+
+const scale = bodyBuildScale('waistRadiusIn');
+const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusIn', distance: 'inseamIn' });
 
 defineGroupNode({
   type: 'pantsGroup',
@@ -36,20 +40,14 @@ defineGroupNode({
     { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.1, min: 0.05, max: 0.2, step: 0.005, label: 'Hem Radius' } },
     { id: 'inseamIn', type: 'numberInput', data: { value: 0.75, min: 0.3, max: 1, step: 0.01, label: 'Inseam' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'scale', type: 'numberMultiply', data: {} },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
-    { id: 'legGen', type: 'latheGenerator', data: {} },
+    ...scale.nodes,
+    ...lathe.nodes,
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
-    { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'hemRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'inseamIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
-    { source: 'profile', sourceHandle: 'points', target: 'legGen', targetHandle: 'points' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'legGen', targetHandle: 'segments' },
+    ...scale.edges,
+    ...lathe.edges,
     { source: 'legGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
     ...output.edges,
