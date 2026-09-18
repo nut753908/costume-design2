@@ -13,30 +13,22 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('bodyGroup、bodyDimensions/bodyLayout、およびそこへ配線する3つのシードノードが存在する', () => {
+  it('bodyGroup、bodyDimensions/bodyLayout、およびそこへ配線するシードノードが存在する', () => {
     // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
     // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
     // id の存在自体をここで保証する。肌色(Skin Color)は bodyGroup 内部の colorInput ノード
-    // として保持しているため、ここには現れない(bodyGroupNode.test.ts 参照)。
-    expect(
-      ['bodyHeight', 'bodyBuild', 'bodyShoulder', 'bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) =>
-        nodesById.has(id),
-      ),
-    ).toBe(true);
+    // として保持しているため、ここには現れない(bodyGroupNode.test.ts 参照)。Body Height/
+    // Body Shoulder は bodyDimensions からしか参照されない単独パラメータのため、この階層には
+    // 現れず bodyDimensionsGroup 内部の numberInput として持つ(bodyDimensionsGroupNode.test.ts
+    // 参照)。
+    expect(['bodyBuild', 'bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
   });
 
-  it('bodyHeight/bodyBuild/bodyShoulder が bodyDimensions へ配線されている', () => {
-    const cases: [string, string, string][] = [
-      ['bodyHeight', 'value', 'heightScale'],
-      ['bodyBuild', 'value', 'buildScale'],
-      ['bodyShoulder', 'value', 'shoulderScale'],
-    ];
-    for (const [source, sourceHandle, targetHandle] of cases) {
-      const edge = initialEdges.find((e) => e.target === 'bodyDimensions' && e.targetHandle === targetHandle);
-      expect(edge?.source).toBe(source);
-      expect(edge?.sourceHandle).toBe(sourceHandle);
-    }
+  it('bodyBuild が bodyDimensions へ配線されている', () => {
+    const edge = initialEdges.find((e) => e.target === 'bodyDimensions' && e.targetHandle === 'buildScale');
+    expect(edge?.source).toBe('bodyBuild');
+    expect(edge?.sourceHandle).toBe('value');
   });
 
   it('bodyDimensions/bodyLayout が計算済みの値を bodyGroup へ配線している(bodyGroup 自身は寸法を計算しない)', () => {

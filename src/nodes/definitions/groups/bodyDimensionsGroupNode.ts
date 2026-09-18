@@ -6,7 +6,10 @@ import { defineGroupNode } from '../groupNodeFactory';
  * (`numberInput`)→ `numberMultiply`」チェーンを1枚にまとめたもの。ガーメントの『体に
  * 触れる半径』(`waistRadiusIn → numberMultiply(bodyBuild) → generator`)と同じ粒度まで
  * ノードグラフ上に展開しており、ダブルクリックで中に入れば実際の四則演算グラフが
- * そのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
+ * そのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。Height/Shoulder は
+ * `bodyDimensions` からしか参照されない単独パラメータのため、`buildScale`(9ガーメントへ
+ * 直接ファンアウトする共有値、外部ソケットのまま)とは異なりグループ内部の `numberInput`
+ * (`heightScaleIn`/`shoulderScaleIn`)として持つ。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',
@@ -15,13 +18,11 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [
-          { id: 'heightScale', label: 'Height Scale', type: 'number', default: 1 },
-          { id: 'buildScale', label: 'Build Scale', type: 'number', default: 1 },
-          { id: 'shoulderScale', label: 'Shoulder Scale', type: 'number', default: 1 },
-        ],
+        sockets: [{ id: 'buildScale', label: 'Build Scale', type: 'number', default: 1 }],
       },
     },
+    { id: 'heightScaleIn', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
+    { id: 'shoulderScaleIn', type: 'numberInput', data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
     { id: 'legHeightBaseIn', type: 'numberInput', data: { value: 0.85, min: 0.5, max: 1.2, step: 0.01, label: 'Leg Height Base' } },
     { id: 'legHeightScale', type: 'numberMultiply', data: { label: 'Leg Height' } },
     { id: 'legRadiusBaseIn', type: 'numberInput', data: { value: 0.11, min: 0.05, max: 0.2, step: 0.005, label: 'Leg Radius Base' } },
@@ -61,7 +62,7 @@ defineGroupNode({
   internalEdges: [
     // legHeight = legHeightBase * heightScale
     { source: 'legHeightBaseIn', sourceHandle: 'value', target: 'legHeightScale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'heightScale', target: 'legHeightScale', targetHandle: 'factor' },
+    { source: 'heightScaleIn', sourceHandle: 'value', target: 'legHeightScale', targetHandle: 'factor' },
     { source: 'legHeightScale', sourceHandle: 'value', target: 'output', targetHandle: 'legHeight' },
     // legRadius = legRadiusBase * buildScale
     { source: 'legRadiusBaseIn', sourceHandle: 'value', target: 'legRadiusScale', targetHandle: 'value' },
@@ -73,7 +74,7 @@ defineGroupNode({
     { source: 'legSpacingScale', sourceHandle: 'value', target: 'output', targetHandle: 'legSpacing' },
     // torsoLength = torsoLengthBase * heightScale
     { source: 'torsoLengthBaseIn', sourceHandle: 'value', target: 'torsoLengthScale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'heightScale', target: 'torsoLengthScale', targetHandle: 'factor' },
+    { source: 'heightScaleIn', sourceHandle: 'value', target: 'torsoLengthScale', targetHandle: 'factor' },
     { source: 'torsoLengthScale', sourceHandle: 'value', target: 'output', targetHandle: 'torsoLength' },
     // torsoRadius = torsoRadiusBase * buildScale
     { source: 'torsoRadiusBaseIn', sourceHandle: 'value', target: 'torsoRadiusScale', targetHandle: 'value' },
@@ -83,7 +84,7 @@ defineGroupNode({
     { source: 'headRadiusBaseIn', sourceHandle: 'value', target: 'output', targetHandle: 'headRadius' },
     // armLength = armLengthBase * heightScale
     { source: 'armLengthBaseIn', sourceHandle: 'value', target: 'armLengthScale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'heightScale', target: 'armLengthScale', targetHandle: 'factor' },
+    { source: 'heightScaleIn', sourceHandle: 'value', target: 'armLengthScale', targetHandle: 'factor' },
     { source: 'armLengthScale', sourceHandle: 'value', target: 'output', targetHandle: 'armLength' },
     // armRadius = armRadiusBase * buildScale
     { source: 'armRadiusBaseIn', sourceHandle: 'value', target: 'armRadiusScale', targetHandle: 'value' },
@@ -93,7 +94,7 @@ defineGroupNode({
     { source: 'shoulderSpacingBaseIn', sourceHandle: 'value', target: 'shoulderSpacingBuildScale', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'buildScale', target: 'shoulderSpacingBuildScale', targetHandle: 'factor' },
     { source: 'shoulderSpacingBuildScale', sourceHandle: 'value', target: 'shoulderSpacingScale', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'shoulderScale', target: 'shoulderSpacingScale', targetHandle: 'factor' },
+    { source: 'shoulderScaleIn', sourceHandle: 'value', target: 'shoulderSpacingScale', targetHandle: 'factor' },
     { source: 'shoulderSpacingScale', sourceHandle: 'value', target: 'output', targetHandle: 'shoulderSpacing' },
   ],
 });
