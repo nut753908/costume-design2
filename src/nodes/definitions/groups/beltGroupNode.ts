@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** beltRadiusScale(numberMultiply)+material(toonMaterial)+offsetYIn(numberInput)+
@@ -27,6 +28,8 @@ import { constNumberInput } from '../constNumberInput';
  * `nodes/definitions/beltGenerator.ts`(`buildBeltGeometry()` をそのまま呼ぶノード)自体は
  * 削除していない — `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして再利用
  * しているため(`geometry/CLAUDE.md` 参照)。 */
+const output = garmentOutput({ color: { hex: '#3a2e26', label: 'Belt Color' }, offsetY: 0, geometry: 'gen' });
+
 defineGroupNode({
   type: 'beltGroup',
   label: 'Belt',
@@ -45,7 +48,6 @@ defineGroupNode({
     { id: 'thicknessIn', type: 'numberInput', data: { value: 0.05, min: 0.02, max: 0.12, step: 0.005, label: 'Thickness' } },
     { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01, label: 'Bulge' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#3a2e26', label: 'Belt Color' } },
     constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: { label: 'Bulge Radius' } },
@@ -57,10 +59,7 @@ defineGroupNode({
     { id: 'upperProfile', type: 'easedLatheProfile', data: { direction: 'down', steps: 6 } },
     { id: 'combined', type: 'concatPoints', data: {} },
     { id: 'gen', type: 'latheGenerator', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'radiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -88,11 +87,6 @@ defineGroupNode({
     { source: 'combined', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
 
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

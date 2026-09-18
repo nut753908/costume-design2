@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 
 /** dressTorsoScale(numberMultiply)+dressGen(dressGenerator)+dressMaterial(toonMaterial)+
  * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚に
@@ -7,6 +8,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * ノードではなくグループ内部の同型ノードとして保持する。Body Build(半径スケーリング用)と
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される shoulderY)は
  * 外部ソケットのまま。 */
+const output = garmentOutput({ color: { hex: '#3d7a72', label: 'Dress Color' }, offsetY: 0, geometry: 'gen' });
+
 defineGroupNode({
   type: 'dressGroup',
   label: 'Dress',
@@ -26,13 +29,9 @@ defineGroupNode({
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.9, min: 0.4, max: 1.3, step: 0.01, label: 'Length' } },
     { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#3d7a72', label: 'Dress Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'dressGenerator', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'torsoRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -42,11 +41,6 @@ defineGroupNode({
     { source: 'lengthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'length' },
     { source: 'necklineIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineType' },
     { source: 'necklineDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineDepth' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

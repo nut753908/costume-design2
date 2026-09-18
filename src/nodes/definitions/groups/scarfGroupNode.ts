@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
@@ -16,6 +17,8 @@ import { constNumberInput } from '../constNumberInput';
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
  * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
+const output = garmentOutput({ color: { hex: '#8a2e3a', label: 'Scarf Color' }, offsetY: 0.08, geometry: 'merge' });
+
 defineGroupNode({
   type: 'scarfGroup',
   label: 'Scarf',
@@ -35,7 +38,6 @@ defineGroupNode({
     { id: 'tailWidthIn', type: 'numberInput', data: { value: 0.09, min: 0.04, max: 0.16, step: 0.005, label: 'Tail Width' } },
     { id: 'tailLengthIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01, label: 'Tail Length' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#8a2e3a', label: 'Scarf Color' } },
     constNumberInput('bulgeIn', 1.05, 'Band Bulge'),
     constNumberInput('tailFrontInsetIn', 0.9, 'Tail Front Inset'),
     { id: 'scale', type: 'numberMultiply', data: {} },
@@ -48,10 +50,7 @@ defineGroupNode({
     { id: 'tailTranslateY', type: 'translateY', data: {} },
     { id: 'tailTranslateZ', type: 'translateZ', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0.08, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'neckRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -82,11 +81,6 @@ defineGroupNode({
     { source: 'bandGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryA' },
     { source: 'tailTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryB' },
 
-    { source: 'merge', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

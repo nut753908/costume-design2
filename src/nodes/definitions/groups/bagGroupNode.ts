@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
@@ -21,6 +22,8 @@ import { constNumberInput } from '../constNumberInput';
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される shoulderY)だけが唯一の外部ソケット。 */
+const output = garmentOutput({ color: { hex: '#8a4a2e', label: 'Bag Color' }, offsetY: 0, geometry: 'merge' });
+
 defineGroupNode({
   type: 'bagGroup',
   label: 'Bag',
@@ -40,7 +43,6 @@ defineGroupNode({
     { id: 'bagWidthIn', type: 'numberInput', data: { value: 0.16, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Width' } },
     { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Height' } },
     { id: 'bagDepthIn', type: 'numberInput', data: { value: 0.08, min: 0.02, max: 0.2, step: 0.01, label: 'Bag Depth' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#8a4a2e', label: 'Bag Color' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('strapStartDepthIn', 0.05, 'Strap Start Depth'),
     constNumberInput('bagFrontDepthIn', 0.18, 'Bag Front Depth'),
@@ -54,10 +56,7 @@ defineGroupNode({
     { id: 'bodyTranslateY', type: 'translateY', data: {} },
     { id: 'bodyTranslateZ', type: 'translateZ', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     // ストラップ = alignedBoxGenerator(肩付近 → 反対の腰側)。始点は (shoulderOffset, 0,
@@ -93,11 +92,6 @@ defineGroupNode({
     { source: 'strapGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryA' },
     { source: 'bodyTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryB' },
 
-    { source: 'merge', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 
 /** socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
  * mirror(mirrorPair)+socksMaterial(toonMaterial)+offsetYIn(numberInput)+
@@ -15,6 +16,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
+const output = garmentOutput({ color: { hex: '#d4a83a', label: 'Socks Color' }, offsetY: 0, geometry: 'mirror' });
+
 defineGroupNode({
   type: 'socksGroup',
   label: 'Socks',
@@ -34,15 +37,11 @@ defineGroupNode({
     { id: 'calfRadiusIn', type: 'numberInput', data: { value: 0.105, min: 0.05, max: 0.2, step: 0.005, label: 'Calf Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01, label: 'Height' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#d4a83a', label: 'Socks Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
     { id: 'sockGen', type: 'latheGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'ankleRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -54,11 +53,6 @@ defineGroupNode({
     { source: 'segmentsIn', sourceHandle: 'value', target: 'sockGen', targetHandle: 'segments' },
     { source: 'sockGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
-    { source: 'mirror', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

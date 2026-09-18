@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** skirtWaistScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
@@ -13,6 +14,8 @@ import { constNumberInput } from '../constNumberInput';
  * (`numberMax`)→`onePlusFlare`(`numberAdd`)→`hemRadiusCalc`(`numberMultiply`)という
  * 可視の配線へ展開しており、コード側の式としては持たない(`zeroIn`/`oneIn` は
  * `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。 */
+const output = garmentOutput({ color: { hex: '#d9738c', label: 'Skirt Color' }, offsetY: 0.03, geometry: 'gen' });
+
 defineGroupNode({
   type: 'skirtGroup',
   label: 'Skirt',
@@ -31,7 +34,6 @@ defineGroupNode({
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.55, min: 0.2, max: 1, step: 0.01, label: 'Length' } },
     { id: 'flareIn', type: 'numberInput', data: { value: 0.7, min: 0, max: 2.5, step: 0.05, label: 'Flare' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 28, min: 8, max: 48, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#d9738c', label: 'Skirt Color' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
@@ -40,10 +42,7 @@ defineGroupNode({
     { id: 'hemRadiusCalc', type: 'numberMultiply', data: { label: 'Hem Radius' } },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 12 } },
     { id: 'gen', type: 'latheGenerator', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0.03, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -59,11 +58,6 @@ defineGroupNode({
     { source: 'lengthIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
     { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

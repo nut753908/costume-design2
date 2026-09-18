@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 
 /** glovesWristScale(numberMultiply)+profile(easedLatheProfile)+gloveGen(latheGenerator)+
  * mirror(mirrorPair)+glovesMaterial(toonMaterial)+offsetYIn(numberInput)+
@@ -13,6 +14,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * `bodyGroupNode.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。専用の `segmentsIn`
  * (`numberInput`)を置いているのは、未接続ソケットが型の既定値へフォールバックすると
  * その値がカード上のどこにも見えなくなるため。 */
+const output = garmentOutput({ color: { hex: '#b0413e', label: 'Gloves Color' }, offsetY: 0, geometry: 'mirror' });
+
 defineGroupNode({
   type: 'glovesGroup',
   label: 'Gloves',
@@ -32,15 +35,11 @@ defineGroupNode({
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Length' } },
     { id: 'armSpacingIn', type: 'numberInput', data: { value: 0.34, min: 0.2, max: 0.5, step: 0.01, label: 'Arm Spacing' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 12, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#b0413e', label: 'Gloves Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
     { id: 'gloveGen', type: 'latheGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'wristRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -52,11 +51,6 @@ defineGroupNode({
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gloveGen', targetHandle: 'segments' },
     { source: 'gloveGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'armSpacingIn', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
-    { source: 'mirror', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

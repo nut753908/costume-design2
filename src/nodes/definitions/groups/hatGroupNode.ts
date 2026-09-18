@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 
 /** hat は bodyBuild によるスケーリング対象外(headRadius が `bodyDimensionsGroup` の中で
  * buildScale の影響を受けないため)なので Body Build 入力は無く、
@@ -11,6 +12,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * head は左右対称な単一パーツなので `mirrorPair` は挟まない。hat は shoes/socks と同じ
  * `direction: 'up'`(つばから上=クラウン側へ伸びる)。 */
+const output = garmentOutput({ color: { hex: '#4a3b6b', label: 'Hat Color' }, offsetY: 0.1, geometry: 'gen' });
+
 defineGroupNode({
   type: 'hatGroup',
   label: 'Hat',
@@ -26,13 +29,9 @@ defineGroupNode({
     { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02, min: 0, max: 0.15, step: 0.005, label: 'Crown Radius' } },
     { id: 'heightIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01, label: 'Height' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#4a3b6b', label: 'Hat Color' } },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'up', steps: 10 } },
     { id: 'gen', type: 'latheGenerator', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0.1, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'brimRadiusIn', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
@@ -40,11 +39,6 @@ defineGroupNode({
     { source: 'heightIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
     { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

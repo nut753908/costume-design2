@@ -12,6 +12,7 @@ import.meta.glob(
     '!./generatorNodeFactory.ts',
     '!./groupNodeFactory.ts',
     '!./constNumberInput.ts',
+    '!./garmentOutput.ts',
   ],
   { eager: true },
 );

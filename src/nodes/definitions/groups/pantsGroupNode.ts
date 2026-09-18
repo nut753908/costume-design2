@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 
 /** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
  * mirror(mirrorPair)+pantsMaterial(toonMaterial)+offsetYIn(numberInput)+
@@ -14,6 +15,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build(半径
  * スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * waistY)と合わせて外部ソケットのまま。 */
+const output = garmentOutput({ color: { hex: '#9c7b4f', label: 'Pants Color' }, offsetY: 0, geometry: 'mirror' });
+
 defineGroupNode({
   type: 'pantsGroup',
   label: 'Pants',
@@ -33,15 +36,11 @@ defineGroupNode({
     { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.1, min: 0.05, max: 0.2, step: 0.005, label: 'Hem Radius' } },
     { id: 'inseamIn', type: 'numberInput', data: { value: 0.75, min: 0.3, max: 1, step: 0.01, label: 'Inseam' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#9c7b4f', label: 'Pants Color' } },
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
     { id: 'legGen', type: 'latheGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'waistRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -53,11 +52,6 @@ defineGroupNode({
     { source: 'segmentsIn', sourceHandle: 'value', target: 'legGen', targetHandle: 'segments' },
     { source: 'legGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
-    { source: 'mirror', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });

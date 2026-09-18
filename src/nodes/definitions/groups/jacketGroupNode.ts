@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** jacketShoulderScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
@@ -14,6 +15,8 @@ import { constNumberInput } from '../constNumberInput';
  * `hemFlareClamped`(`numberMax`)→`onePlusHemFlare`(`numberAdd`)→`hemRadiusCalc`
  * (`numberMultiply`)という可視の配線へ展開している(`geometry/jacket.ts`/
  * `nodes/definitions/jacketGenerator.ts` は呼び出し元が無くなったため削除済み)。 */
+const output = garmentOutput({ color: { hex: '#4a5c3e', label: 'Jacket Color' }, offsetY: 0, geometry: 'gen' });
+
 defineGroupNode({
   type: 'jacketGroup',
   label: 'Jacket',
@@ -32,7 +35,6 @@ defineGroupNode({
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.42, min: 0.2, max: 0.8, step: 0.01, label: 'Length' } },
     { id: 'hemFlareIn', type: 'numberInput', data: { value: 0.15, min: 0, max: 1.5, step: 0.05, label: 'Hem Flare' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#4a5c3e', label: 'Jacket Color' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
@@ -41,10 +43,7 @@ defineGroupNode({
     { id: 'hemRadiusCalc', type: 'numberMultiply', data: { label: 'Hem Radius' } },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
     { id: 'gen', type: 'latheGenerator', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    ...output.nodes,
   ],
   internalEdges: [
     { source: 'shoulderRadiusIn', sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
@@ -60,11 +59,6 @@ defineGroupNode({
     { source: 'lengthIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
     { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'segmentsIn', sourceHandle: 'value', target: 'gen', targetHandle: 'segments' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    ...output.edges,
   ],
 });
