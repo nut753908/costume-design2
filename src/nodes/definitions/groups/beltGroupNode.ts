@@ -14,7 +14,7 @@ import { constNumberInput } from '../constNumberInput';
  *   - `bulgeRadiusCalc`(`numberMultiply`、`radius(スケール後) × bulge`)
  *   - `halfCalc`(`numberMultiply`、`thickness × 0.5`)
  *   - `lowerProfile`(`easedLatheProfile`、`bulgeRadius → radius` を `half` の距離でイージング)
- *   - `negatedHalf`(`numberSubtract`、`0 - half`)
+ *   - `negatedHalf`(`numberNegate`、`-half`)
  *   - `lowerShifted`(`translatePointsY`、`lowerProfile` を `negatedHalf` ぶんY方向にシフト)
  *   - `lowerSliced`(`slicePoints`、`dropEnd=1` で末尾の1点(`upperProfile` の始点と重複する
  *     接続点)を間引く)
@@ -22,8 +22,7 @@ import { constNumberInput } from '../constNumberInput';
  *     イージング)
  *   - `combined`(`concatPoints`、`lowerSliced` + `upperProfile` を連結)
  *   - `gen`(`latheGenerator`、`combined` の points を Lathe 化)
- * `zeroIn`/`halfIn`/`oneIn` は `constNumberInput()` で定義する「常に一定の値を持つ
- * `numberInput`」。
+ * `halfIn`/`oneIn` は `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」。
  *
  * `nodes/definitions/beltGenerator.ts`(`buildBeltGeometry()` をそのまま呼ぶノード)自体は
  * 削除していない — `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして再利用
@@ -47,13 +46,12 @@ defineGroupNode({
     { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01, label: 'Bulge' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#3a2e26', label: 'Belt Color' } },
-    constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('halfIn', 0.5, 'Half'),
     constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: { label: 'Bulge Radius' } },
     { id: 'halfCalc', type: 'numberMultiply', data: { label: 'Thickness × Half' } },
-    { id: 'negatedHalf', type: 'numberSubtract', data: { label: 'Negated Half' } },
+    { id: 'negatedHalf', type: 'numberNegate', data: { label: 'Negated Half' } },
     { id: 'lowerProfile', type: 'easedLatheProfile', data: { direction: 'down', steps: 6 } },
     { id: 'lowerShifted', type: 'translatePointsY', data: {} },
     { id: 'lowerSliced', type: 'slicePoints', data: {} },
@@ -73,8 +71,7 @@ defineGroupNode({
     { source: 'bulgeIn', sourceHandle: 'value', target: 'bulgeRadiusCalc', targetHandle: 'factor' },
     { source: 'thicknessIn', sourceHandle: 'value', target: 'halfCalc', targetHandle: 'value' },
     { source: 'halfIn', sourceHandle: 'value', target: 'halfCalc', targetHandle: 'factor' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedHalf', targetHandle: 'a' },
-    { source: 'halfCalc', sourceHandle: 'value', target: 'negatedHalf', targetHandle: 'b' },
+    { source: 'halfCalc', sourceHandle: 'value', target: 'negatedHalf', targetHandle: 'value' },
 
     { source: 'bulgeRadiusCalc', sourceHandle: 'value', target: 'lowerProfile', targetHandle: 'startRadius' },
     { source: 'scale', sourceHandle: 'value', target: 'lowerProfile', targetHandle: 'endRadius' },

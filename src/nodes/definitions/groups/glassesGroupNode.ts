@@ -8,16 +8,16 @@ import { constNumberInput } from '../constNumberInput';
  * 整列させて作り、左右のレンズ(トーラス)は `torusGenerator`(汎用プリミティブノード)→
  * `translateX`/`translateZ` というノードグラフへ展開している(`geometry/CLAUDE.md` 参照)。
  * 左レンズは `lensSpacingIn` をそのまま、右レンズは `negatedLensSpacing`
- * (`0 - lensSpacing`)を X座標として使う(旧コードの `leftCenter`/`rightCenter` の式)。
- * Z座標は固定値 `forwardDepthIn`(ブリッジ/テンプルの前面側 `startZ` とも共有する)。
+ * (`numberNegate`)を X座標として使う。Z座標は固定値 `forwardDepthIn`(ブリッジ/テンプルの
+ * 前面側 `startZ` とも共有する)。
  * トーラスの管の太さ(`tube`)は `frameThicknessHalf`(`frameThickness × 0.5`)として渡す
  * (`zeroIn`/`halfIn`/`forwardDepthIn`/`templeBackOffsetIn` は `constNumberInput()` で
  * 定義する「常に一定の値を持つ `numberInput`」)。
  *
  * ブリッジは `bridgeXOffset = lensSpacing - lensRadius` の ± を両端(`endX` は
- * `negatedBridgeXOffset = 0 - bridgeXOffset`)に置き、Y=0・Z=`forwardDepthIn` は
+ * `negatedBridgeXOffset`、`numberNegate`)に置き、Y=0・Z=`forwardDepthIn` は
  * 両端で共通。左右テンプルは `templeXOffset = lensSpacing + lensRadius`(右は
- * `negatedTempleXOffset = 0 - templeXOffset`)を X として使い、Z だけ `forwardDepthIn`
+ * `negatedTempleXOffset`、同じく `numberNegate`)を X として使い、Z だけ `forwardDepthIn`
  * (前面)から `templeBackZ = (forwardDepthIn - templeBackOffsetIn) - templeLength`
  * (後方、旧コードの `TEMPLE_BACK_DEPTH - templeLength`)まで伸ばす(旧コードの
  * `bridgeStart`/`bridgeEnd`/`leftTempleStart`/`leftTempleEnd`/`rightTempleStart`/
@@ -50,16 +50,16 @@ defineGroupNode({
     constNumberInput('forwardDepthIn', 0.14, 'Forward Depth'),
     constNumberInput('templeBackOffsetIn', 0.02, 'Temple Back Offset'),
     { id: 'frameThicknessHalf', type: 'numberMultiply', data: { label: 'Frame Thickness × Half' } },
-    { id: 'negatedLensSpacing', type: 'numberSubtract', data: { label: 'Negated Lens Spacing' } },
+    { id: 'negatedLensSpacing', type: 'numberNegate', data: { label: 'Negated Lens Spacing' } },
 
     // ブリッジ(bridgeXOffset の ± を両端の X に)。
     { id: 'bridgeXOffset', type: 'numberSubtract', data: { label: 'Lens Spacing − Lens Radius' } },
-    { id: 'negatedBridgeXOffset', type: 'numberSubtract', data: { label: 'Negated Bridge X Offset' } },
+    { id: 'negatedBridgeXOffset', type: 'numberNegate', data: { label: 'Negated Bridge X Offset' } },
     { id: 'bridgeGen', type: 'alignedBoxGenerator', data: {} },
 
     // 左右テンプル(templeXOffset の ± を X に、前面から後方まで Z 方向に伸ばす)。
     { id: 'templeXOffset', type: 'numberAdd', data: { label: 'Lens Spacing + Lens Radius' } },
-    { id: 'negatedTempleXOffset', type: 'numberSubtract', data: { label: 'Negated Temple X Offset' } },
+    { id: 'negatedTempleXOffset', type: 'numberNegate', data: { label: 'Negated Temple X Offset' } },
     { id: 'templeBackDepth', type: 'numberSubtract', data: { label: 'Temple Back Depth' } },
     { id: 'templeBackZ', type: 'numberSubtract', data: { label: 'Temple Back Z' } },
     { id: 'leftTempleGen', type: 'alignedBoxGenerator', data: {} },
@@ -84,8 +84,7 @@ defineGroupNode({
     // ブリッジ = alignedBoxGenerator(± bridgeXOffset、Y=0・Z=forwardDepth は両端で共通)。
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'bridgeXOffset', targetHandle: 'a' },
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'bridgeXOffset', targetHandle: 'b' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedBridgeXOffset', targetHandle: 'a' },
-    { source: 'bridgeXOffset', sourceHandle: 'value', target: 'negatedBridgeXOffset', targetHandle: 'b' },
+    { source: 'bridgeXOffset', sourceHandle: 'value', target: 'negatedBridgeXOffset', targetHandle: 'value' },
     { source: 'bridgeThicknessIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'width' },
     { source: 'bridgeThicknessIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'thickness' },
     { source: 'bridgeXOffset', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'startX' },
@@ -99,8 +98,7 @@ defineGroupNode({
     // 後方 templeBackZ まで Z 方向に伸ばす)。
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'templeXOffset', targetHandle: 'a' },
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'templeXOffset', targetHandle: 'b' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedTempleXOffset', targetHandle: 'a' },
-    { source: 'templeXOffset', sourceHandle: 'value', target: 'negatedTempleXOffset', targetHandle: 'b' },
+    { source: 'templeXOffset', sourceHandle: 'value', target: 'negatedTempleXOffset', targetHandle: 'value' },
     { source: 'forwardDepthIn', sourceHandle: 'value', target: 'templeBackDepth', targetHandle: 'a' },
     { source: 'templeBackOffsetIn', sourceHandle: 'value', target: 'templeBackDepth', targetHandle: 'b' },
     { source: 'templeBackDepth', sourceHandle: 'value', target: 'templeBackZ', targetHandle: 'a' },
@@ -131,8 +129,7 @@ defineGroupNode({
 
     { source: 'frameThicknessIn', sourceHandle: 'value', target: 'frameThicknessHalf', targetHandle: 'value' },
     { source: 'halfIn', sourceHandle: 'value', target: 'frameThicknessHalf', targetHandle: 'factor' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedLensSpacing', targetHandle: 'a' },
-    { source: 'lensSpacingIn', sourceHandle: 'value', target: 'negatedLensSpacing', targetHandle: 'b' },
+    { source: 'lensSpacingIn', sourceHandle: 'value', target: 'negatedLensSpacing', targetHandle: 'value' },
 
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'leftTorusGen', targetHandle: 'radius' },
     { source: 'frameThicknessHalf', sourceHandle: 'value', target: 'leftTorusGen', targetHandle: 'tube' },

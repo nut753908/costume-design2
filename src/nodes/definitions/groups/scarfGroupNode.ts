@@ -7,8 +7,9 @@ import { constNumberInput } from '../constNumberInput';
  * (`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translateY`/`translateZ`
  * で配置する。Y座標(`tailCenterY = (0 - bandThickness) - tailLength × 0.5`)/Z座標
  * (`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、固定値0.9)はどちらも可視の
- * 四則演算チェーンで導出する(`zeroIn`/`halfIn`/`bulgeIn`/`tailFrontInsetIn` は
- * `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。`band`/`tail`
+ * 四則演算チェーンで導出する(`bandThickness` の符号反転は `numberNegate`、`halfIn`/
+ * `bulgeIn`/`tailFrontInsetIn` は `constNumberInput()` で定義する「常に一定の値を持つ
+ * `numberInput`」)。`band`/`tail`
  * は最後に `mergeGeometry` で1つにまとめる。
  *
  * Neck Radius/Band Thickness/Tail Width/Tail Length/Segments/Color は他のガーメントと
@@ -35,14 +36,13 @@ defineGroupNode({
     { id: 'tailLengthIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01, label: 'Tail Length' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#8a2e3a', label: 'Scarf Color' } },
-    constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('halfIn', 0.5, 'Half'),
     constNumberInput('bulgeIn', 1.05, 'Band Bulge'),
     constNumberInput('tailFrontInsetIn', 0.9, 'Tail Front Inset'),
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'bandGen', type: 'beltGenerator', data: {} },
     { id: 'tailGen', type: 'boxGenerator', data: {} },
-    { id: 'negatedBandThickness', type: 'numberSubtract', data: { label: 'Negated Band Thickness' } },
+    { id: 'negatedBandThickness', type: 'numberNegate', data: { label: 'Negated Band Thickness' } },
     { id: 'halfTailLength', type: 'numberMultiply', data: { label: 'Tail Length × Half' } },
     { id: 'tailCenterY', type: 'numberSubtract', data: { label: 'Tail Center Y' } },
     { id: 'tailCenterZ', type: 'numberMultiply', data: { label: 'Tail Center Z' } },
@@ -67,8 +67,7 @@ defineGroupNode({
     { source: 'tailLengthIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'height' },
     { source: 'bandThicknessIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'depth' },
 
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedBandThickness', targetHandle: 'a' },
-    { source: 'bandThicknessIn', sourceHandle: 'value', target: 'negatedBandThickness', targetHandle: 'b' },
+    { source: 'bandThicknessIn', sourceHandle: 'value', target: 'negatedBandThickness', targetHandle: 'value' },
     { source: 'tailLengthIn', sourceHandle: 'value', target: 'halfTailLength', targetHandle: 'value' },
     { source: 'halfIn', sourceHandle: 'value', target: 'halfTailLength', targetHandle: 'factor' },
     { source: 'negatedBandThickness', sourceHandle: 'value', target: 'tailCenterY', targetHandle: 'a' },

@@ -11,11 +11,12 @@ import { constNumberInput } from '../constNumberInput';
  *
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
  * (0, -bagHeight/2, 0)`(旧コードの式)は同じ深さ(Z)を共有するため、
- * X: `negatedHipOffset = 0 - hipOffset`、Y(本体側): `bagCenterY = (0 - drop) -
- * bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算チェーンへ展開し、
- * ストラップの `endX`/`endY`/`endZ` と本体の `translateX`/`translateY`/`translateZ` の
- * 両方から同じ計算結果を参照する(`zeroIn`/`halfIn`/`strapStartDepthIn`/`bagFrontDepthIn`
- * は `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。ストラップと
+ * X: `negatedHipOffset = -hipOffset`(`numberNegate`)、Y(本体側): `bagCenterY =
+ * negatedDrop - bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算
+ * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
+ * `translateX`/`translateY`/`translateZ` の両方から同じ計算結果を参照する
+ * (`zeroIn`/`halfIn`/`strapStartDepthIn`/`bagFrontDepthIn` は `constNumberInput()` で
+ * 定義する「常に一定の値を持つ `numberInput`」)。ストラップと
  * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
@@ -46,9 +47,9 @@ defineGroupNode({
     constNumberInput('bagFrontDepthIn', 0.18, 'Bag Front Depth'),
     { id: 'strapGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'boxGen', type: 'boxGenerator', data: {} },
-    { id: 'negatedHipOffset', type: 'numberSubtract', data: { label: 'Negated Hip Offset' } },
+    { id: 'negatedHipOffset', type: 'numberNegate', data: { label: 'Negated Hip Offset' } },
     { id: 'halfBagHeight', type: 'numberMultiply', data: { label: 'Bag Height × Half' } },
-    { id: 'negatedDrop', type: 'numberSubtract', data: { label: 'Negated Drop' } },
+    { id: 'negatedDrop', type: 'numberNegate', data: { label: 'Negated Drop' } },
     { id: 'bagCenterY', type: 'numberSubtract', data: { label: 'Bag Center Y' } },
     { id: 'bodyTranslateX', type: 'translateX', data: {} },
     { id: 'bodyTranslateY', type: 'translateY', data: {} },
@@ -76,13 +77,11 @@ defineGroupNode({
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'height' },
     { source: 'bagDepthIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'depth' },
 
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'a' },
-    { source: 'hipOffsetIn', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'b' },
+    { source: 'hipOffsetIn', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'value' },
 
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'halfBagHeight', targetHandle: 'value' },
     { source: 'halfIn', sourceHandle: 'value', target: 'halfBagHeight', targetHandle: 'factor' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'negatedDrop', targetHandle: 'a' },
-    { source: 'dropIn', sourceHandle: 'value', target: 'negatedDrop', targetHandle: 'b' },
+    { source: 'dropIn', sourceHandle: 'value', target: 'negatedDrop', targetHandle: 'value' },
     { source: 'negatedDrop', sourceHandle: 'value', target: 'bagCenterY', targetHandle: 'a' },
     { source: 'halfBagHeight', sourceHandle: 'value', target: 'bagCenterY', targetHandle: 'b' },
 
