@@ -1,29 +1,30 @@
 ---
 name: add-garment-type
-description: 新しいガーメント種(skirt/belt/hat のような衣装アイテム)を追加する際の手順。新しい build*Geometry とそれを配線するジェネレーターノードの実装が必要なときに使用する。
+description: 新しいガーメント種(skirt/belt/hat のような衣装アイテム)を追加する際の手順。新しい <name>GroupNode.ts(と、必要な場合だけ専用のジオメトリ関数+ジェネレーターノード)の実装が必要なときに使用する。
 ---
 
 # 新しいガーメント種の追加
 
-ガーメント1種の追加には3ファイルが要る(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線は現在サポートしていない)。
+ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
 
-1. `src/geometry/<name>.ts` — `build<Name>Geometry(params) -> THREE.BufferGeometry` という純粋関数。
-2. `src/nodes/definitions/groups/<name>Generator.ts` — 1のジオメトリ関数をノードグラフに配線するノードタイプ。ノードタイプ自体の登録は `import.meta.glob` により自動化されているので、これ以外にレジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
-3. `src/nodes/definitions/groups/<name>GroupNode.ts` — 2のジェネレーターノードを含む数ノードを1枚のグループノードに集約する(下記4節参照)。
+1. **ノードグラフだけで組む(既定)**: 汎用ノード(`easedLatheProfile`+`latheGenerator`、`capsuleGenerator`/`boxGenerator`/`torusGenerator` などのプリミティブ、`alignedBoxGenerator`、`translateX/Y/Z`、`scaleZ`、`mergeGeometry`、`mirrorPair` など、一覧は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「汎用ノード一覧」)の組み合わせだけで形状を作る。専用の `geometry/*.ts` も `*Generator.ts` も要らない。skirt/jacket/hat/gloves/pants/shoes/socks(Lathe 系)・scarf・bag・glasses が実例。
+2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノードでは表現しきれない形状(ネックラインの彫り込み、手組みのチューブなど)の場合のみ。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。top/dress/sleeve/necktie が実例。
 
-## 1. ジオメトリ実装(src/geometry/)
+ノードタイプ自体の登録は `import.meta.glob` により自動化されており、レジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
 
-放射対称な回転体なら `latheProfile.ts` の `buildEasedLatheProfile()` を `THREE.LatheGeometry` に渡すだけで大半は足りる(skirt/pants/shoes/gloves/hat/belt/jacket/socks が実例)。それ以外の形状(左右対称パーツ、ネックラインのような非対称の落ち込み、剛体プリミティブの組み合わせなど)は既存の共有ヘルパー(`mirrorPair.ts`/`neckline.ts`/`alignedBox.ts`)や手組み `BufferGeometry` の実例を参照。詳細な技法一覧・共有ヘルパーの使い分けは [`src/geometry/CLAUDE.md`](../../../src/geometry/CLAUDE.md) の「カスタムガーメントジオメトリ」節にまとまっているので、実装前に必ず読むこと。
+## 1. 形状の設計
+
+既存のガーメントの `<name>GroupNode.ts` を実例として読むのが早い(Lathe 系なら `hatGroupNode.ts`/`skirtGroupNode.ts`、複数プリミティブの結合なら `bagGroupNode.ts`/`glassesGroupNode.ts`/`scarfGroupNode.ts`、左右対称ペアなら `pantsGroupNode.ts`/`shoesGroupNode.ts`)。技法一覧・共有ヘルパーの使い分けは [`src/geometry/CLAUDE.md`](../../../src/geometry/CLAUDE.md) の「カスタムガーメントジオメトリ」節にまとまっているので、実装前に必ず読むこと。座標を求める四則演算は `numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax`/`numberNegate`(符号反転)/`numberHalf`(半分)のノードで可視の配線として展開し、コード側の式としては持たない。定数(0/1/固定値)は `nodes/definitions/constNumberInput.ts` の `constNumberInput(id, value, label)` で `min=max=value` の固定 `numberInput` として置く(`numberMultiply` 等の `data` にリテラルを隠さない — 値を編集する UI が無く、キャンバス上で見えなくなるため)。
 
 **同じファイルに書かれている「すでに一度踏んだ落とし穴」も実装前に必ず読むこと**(同 CLAUDE.md 末尾):
 
 - 三角形の巻き順が逆だと、症状は「裏返る」ではなく**真っ黒なシルエット**になる。目視ではなく `windingTestHelpers.ts` の `expectOutwardWinding()` で検証する。単純な放射対称形状(Y軸中心)でなければ、形状に応じた `axisPoint` を渡す必要がある(箱なら自身の中心点、鏡像ペアなら centroid ではなく index 位置で左右判定、など)。
 - `mergeGeometries()` は結合する全ジオメトリが同じ頂点属性(名前・itemSize)を持つことを要求する。標準プリミティブ(position/normal/uv)と手組み `BufferGeometry`(position のみ)を混ぜると `null` を返して後段が `Cannot read properties of null` で落ちる。手組み側にダミー属性を足すか、混ぜないこと。
-- アンカーは体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`*_DEPTH` 定数のパターンを参照)。また複数の出力ノードが同じアンカーを共有すると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
+- アンカーは体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`bagGroupNode.ts`/`glassesGroupNode.ts` の `bagFrontDepthIn`/`forwardDepthIn` のような固定 `numberInput`、`necktie.ts` の `NECKTIE_FRONT_DEPTH` を参照)。また複数の出力ノードが同じアンカーを共有すると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
 
-## 2. ノード登録(src/nodes/definitions/groups/)
+## 2. (方式2のみ)ジオメトリ関数とジェネレーターノード
 
-「フィールドの値を解決して `build*Geometry` にそのまま渡すだけ」という形(既存15種すべてがこれ)なら、`registerNodeType()` を直接書かず `generatorNodeFactory.ts` の `defineGeneratorNode()` を使う。
+`src/geometry/<name>.ts` に純粋関数 `build<Name>Geometry(params)` を書き、`src/nodes/definitions/groups/<name>Generator.ts` で `defineGeneratorNode()`(`generatorNodeFactory.ts`)を使ってノード化する。
 
 ```ts
 import { buildXxxGeometry } from '../../../geometry/xxx';
@@ -45,8 +46,6 @@ defineGeneratorNode({
 - `fields` の `default` は `DEFAULTS`/`inputs`/`createDefaultData` に自動展開されるので、リテラル値を複数箇所に書く必要はない。
 - `build*Geometry` が受け取るがソケット化しない固定値(角度分割数など)は `fields` ではなく `extra` で渡す。
 
-`fields` を解決するだけで済まない形(独自の入力ソケット構成が要る、他ノードの出力に依存するなど)の場合のみ `registerNodeType()` を直接呼ぶ。その場合の既定値の扱いは [`add-node-type` スキル](../add-node-type/SKILL.md)の「それ以外のノードタイプ」節を参照。
-
 ## 3. 配置(anchorY 用の外部ソケット + offsetY 用の numberInput / garmentPlacement)
 
 ガーメント自体はどこにも取り付かない。取り付け位置は次の連携で決まる:
@@ -57,18 +56,26 @@ defineGeneratorNode({
 
 `garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `sceneOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。
 
-Scene 側の登録は不要 — `Garments.tsx` は全ノードの評価結果を走査し `geometry`+`material` を持つものを自動的にレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
+Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `sceneOutput` が転送する予約キー(`sceneOutputGeometry<N>`/`sceneOutputMaterial<N>`)を持つ評価結果を走査してレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
 ## 4. グループノードの定義(src/nodes/definitions/groups/\<name\>GroupNode.ts)
 
-既存15種すべてが「numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetYIn(numberInput) + garmentPlacement + sceneOutput」を1枚の `<name>Group` ノードに集約している(`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()`、詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節を参照)。新しいガーメントも同じ形にすること — `skirtGroupNode.ts` を実例として参照するのが早い。
+`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(色・`offsetY`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
-外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput`/`groupOutput` ノード(Blender の Geometry Nodes における Group Input/Output ノード相当)自身が定義する。`config` に `inputs`/`outputs` フィールドは無く、`internalNodes` 内の `groupInput` ノードの `data.sockets` から `defineGroupNode()` が登録時に自動導出する。
+- `garmentOutput({ color, offsetY, geometry })`(`garmentOutput.ts`)— `colorIn`(colorInput)→`material`(toonMaterial)→`sceneOut` と `offsetYIn`+`input.anchorY`→`placement`(garmentPlacement)→`sceneOut` のノード5個・エッジ6本。`geometry` には最終的な geometry を出力するノードの id を渡す。Material を共有ノードから受け取るガーメント(top/sleeve)は `color` を省略し、`input.material` ソケットを `sceneOut` へ直接配線させる。
+- `bodyBuildScale(rawId)`(`garmentParts.ts`)— 「体に触れる半径」(`rawId` の `value`)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
+- `latheBody({ genId, direction, steps, startRadius, endRadius, distance })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。グループ内に `segmentsIn`(numberInput)が必要。
 
-**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `pantsLegSpacing` のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など、他のガーメントから参照されないもの)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput`/`enumInput` ノードとして書き、内部の消費先ノードへ直接配線する:
+外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `pantsLegSpacing` のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput`/`enumInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
+import { garmentOutput } from '../garmentOutput';
+import { bodyBuildScale, latheBody } from '../garmentParts';
+
+const output = garmentOutput({ color: { hex: '#cccccc', label: 'Xxx Color' }, offsetY: 0, geometry: 'gen' });
+const scale = bodyBuildScale('radiusIn');
+const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'endRadiusIn', distance: 'lengthIn' });
 
 defineGroupNode({
   type: 'xxxGroup',
@@ -78,46 +85,26 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        // anchorY は全ガーメント共通で必須(garmentPlacement 用)。bodyBuild は半径スケーリングに
-        // 使う場合だけ追加する。それ以外は他ガーメントと共有される値だけをここに書く。
+        // anchorY は全ガーメント共通で必須。bodyBuild は半径スケーリングに使う場合だけ。
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
         ],
       },
     },
-    // ガーメント固有の生パラメータは internalNodes に直接、通常の numberInput/colorInput/
-    // enumInput ノードとして持たせる。
     { id: 'radiusIn', type: 'numberInput', data: { value: 0.3, min: 0.1, max: 0.5, step: 0.01, label: 'Radius' } },
-    // ...
-    { id: 'colorIn', type: 'colorInput', data: { hex: '#cccccc', label: 'Xxx Color' } },
-    { id: 'scale', type: 'numberMultiply', data: {} }, // 体に触れる半径が無ければ省略(input.bodyBuild も省略)
-    { id: 'gen', type: 'xxxGenerator', data: {} },
-    { id: 'material', type: 'toonMaterial', data: {} },
-    { id: 'offsetYIn', type: 'numberInput', data: { value: 0, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
-    { id: 'placement', type: 'garmentPlacement', data: {} },
-    // sceneOutput が唯一の描画経路 — geometry は placement(garmentPlacement)から、
-    // material は material(toonMaterial)から直接ここへ配線する(anchorY/offsetY は
-    // garmentPlacement が内部で消費するため、ここまで出てこない)。groupOutput は
-    // 使わない(既存15種のガーメントはどれも含めていない — 他ガーメントへ値を再公開
-    // したい場合だけ別途追加する、下記参照)。
-    { id: 'sceneOut', type: 'sceneOutput', data: {} },
+    { id: 'endRadiusIn', type: 'numberInput', data: { value: 0.2, min: 0.1, max: 0.5, step: 0.01, label: 'End Radius' } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5, min: 0.1, max: 1, step: 0.01, label: 'Length' } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
+    ...scale.nodes,
+    ...lathe.nodes,
+    ...output.nodes,
   ],
-  internalEdges: [
-    // ... radiusIn.value -> scale.value, input.bodyBuild -> scale.factor, scale -> gen.radius,
-    // colorIn.color -> material.color, ...
-    { source: 'gen', sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
-    { source: 'offsetYIn', sourceHandle: 'value', target: 'placement', targetHandle: 'offsetY' },
-    { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
-    { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
-    { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
-  ],
+  internalEdges: [...scale.edges, ...lathe.edges, ...output.edges],
 });
 ```
 
-外部から注入できる型に制限は無い(`groupInput` ノードの出力ソケットとしてそのまま流し込まれるだけなので geometry/material も注入できる)。他ガーメントの内部値を再引きしたい場合、`groupOutput` ノードを追加して配線する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
-
-`groupInput` はガーメント固有の外部ソケットが1つも無ければ省略できるが、`anchorY` が常に必要なため、実質すべてのガーメントで必要になる。`groupOutput` は省略可能で、既存15種のガーメントはどれも含めていない — geometry/material の描画は `sceneOutput` が専任で担うため出番が無い。
+`groupOutput` は省略可能で、既存15種のガーメントはどれも含めていない(描画は `sceneOutput` が専任で担う)。他ガーメントの内部値を再引きしたい場合に `groupOutput` で公開する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
 
 ## 5. initialGraph.ts への配線(慣例)
 
@@ -125,12 +112,14 @@ defineGroupNode({
 
 新しいガーメントが pants/shoes/socks の Leg Spacing や topGroup/sleeveGroup の Torso Radius/Material のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing`、`topRadiusScale → topGroup.torsoRadius`/`sleeveGroup.attachRadius` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(実際に topGroup/sleeveGroup で踏んだ落とし穴、`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 
-ノードの `position` は `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使う汎用アルゴリズム)ではなく、`src/state/initialGraph.ts` 冒頭のコメントに書かれている手作業の列テンプレートに従って配置すること。汎用アルゴリズムは全ガーメントの入力ノードを1つの巨大な層にまとめてしまい、エッジがノード上を大量に横切る見づらいレイアウトになるため、初期グラフでは採用していない。グループ化されたガーメント1つ分は x=260 のグループノード1つのみ(生パラメータは内部に埋め込まれているため、このファイル側にはもう列を持たない)。新しいガーメントは、関連の薄い既存ガーメント2つの間ではなく、末尾(または `top`+`sleeve`・`pants`+`shoes`+`socks` のように依存関係のあるガーメントに隣接させる場合はそのすぐ下)に追加する。`<name>GroupNode.ts` の `internalNodes` 自体の座標は `nodes/autoLayout.ts` の `computeAutoLayout()` が自動算出するため、手作業での配置は不要。
+ノードの `position` は `src/state/initialGraph.ts` 冒頭のコメントのとおり、`nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使うのと同じ関数)を `initialNodes`/`initialEdges` に適用して機械的に算出した静的な座標として埋め込んでいる。ガーメントを追加したら、変更と同じコミットで座標を再計算し直すこと(アプリを起動してトップレベルで「Arrange」を押し、Export JSON の座標を書き戻す。手順は同ファイル冒頭のコメント参照)。`<name>GroupNode.ts` の `internalNodes` 自体の座標は `computeAutoLayout()` が自動算出するため、手作業での配置は不要。
 
 ## 6. テスト
 
-- **ジオメトリ**(`src/geometry/<name>.test.ts`): 妥当性(index が3の倍数・NaN無し)、パラメータを変えたときの効果(半径を上げたら bounding box が広がる、など)、`expectOutwardWinding()` による巻き順検証。`belt.test.ts`/`bag.test.ts`/`glasses.test.ts` を実例として参照(後者2つは Y軸以外の `axisPoint` を渡す例)。
-- **ノード**(`src/nodes/definitions/groups/<name>Generator.test.ts`): `testHelpers.ts` の `expectGeneratorForwardsData()` で、フィールド名の取り違え(例: width と height の入れ替わり)が無いか検証する。既存の `*Generator.test.ts` を参照。
+- **グループの配線**: `src/nodes/definitions/groupNodeWiring.test.ts` が登録済みの全グループ型について、内部ノードの type が登録済みか・内部エッジの端点が実在するノードの実在するソケットか・1入力に複数エッジが無いかを自動で走査するので、新しいグループも追加するだけで対象になる(タイポの検知はこれで足りる)。
+- **グループの挙動**: `src/nodes/definitions/groups/<name>GroupNode.test.ts` に、既定値での出力(`sceneOutputGeometry0`/`sceneOutputMaterial0` が出る)、Body Build によるスケール、`anchorY` の加算、主なパラメータの効果を bounding box で検証する。Lathe 系は `direction` に応じたプロファイルの半径が単調に変化することを使って `LatheGeometry` の bounding box から期待値を計算できる(`skirtGroupNode.test.ts`/`pantsGroupNode.test.ts` 参照)。専用のジオメトリ関数を呼ぶ形(方式2)は `topGroupNode.test.ts`/`dressGroupNode.test.ts` のように `vi.spyOn` で呼び出し引数を検証する。
+- **(方式2のみ)ジオメトリ**(`src/geometry/<name>.test.ts`): 妥当性(index が3の倍数・NaN無し)、パラメータを変えたときの効果、`expectOutwardWinding()` による巻き順検証。`belt.test.ts`/`dress.test.ts`/`alignedBox.test.ts` を参照。
+- **(方式2のみ)ジェネレーター**(`groups/<name>Generator.test.ts`): `testHelpers.ts` の `expectGeneratorForwardsData()` で、フィールド名の取り違えが無いか検証する。
 
 ## 7. 見た目の確認
 
@@ -138,4 +127,4 @@ defineGroupNode({
 
 ## 8. ドキュメント更新
 
-`src/geometry/CLAUDE.md` の「カスタムガーメントジオメトリ」冒頭にあるガーメント一覧(現在15種)に追加したガーメントを足す。新しい構築技法・共有ヘルパーを導入した場合や、新しい落とし穴を踏んだ場合はその節も追記する。pre-commit フックがステージ内容と対応する `CLAUDE.md` の有無をリマインドするが、機械判定なので実際に更新が必要かは都度判断すること。
+`src/geometry/CLAUDE.md` の「カスタムガーメントジオメトリ」冒頭にあるガーメント一覧(現在15種、専用の `build*Geometry()` を持たない種類の一覧を含む)に追加したガーメントを足す。新しい構築技法・共有ヘルパーを導入した場合や、新しい落とし穴を踏んだ場合はその節も追記する。pre-commit フックがステージ内容と対応する `CLAUDE.md` の有無をリマインドするが、機械判定なので実際に更新が必要かは都度判断すること。
