@@ -168,11 +168,16 @@ function topologicalOrder(nodeIds: string[], edges: { source: string; target: st
     dependents.get(edge.source)!.push(edge.target);
   }
 
+  // 配列+読み取り位置ポインタによるキュー。Array.shift() は毎回残り要素を前方へ詰め直す
+  // ため O(n) で、ノード数が多いグラフではキュー処理全体が O(n²) に近づく。末尾への
+  // push と head のインクリメントだけで済む O(1) の dequeue に置き換えている
+  // (処理順序は shift() を使った場合と変わらない FIFO のまま)。
   const queue = nodeIds.filter((id) => inDegree.get(id) === 0);
+  let head = 0;
   const order: string[] = [];
 
-  while (queue.length > 0) {
-    const id = queue.shift()!;
+  while (head < queue.length) {
+    const id = queue[head++];
     order.push(id);
     for (const dependent of dependents.get(id) ?? []) {
       const remaining = (inDegree.get(dependent) ?? 0) - 1;
@@ -190,7 +195,11 @@ function topologicalSort(nodes: GraphNode[], edges: GraphEdge[]): string[] {
     edges,
   );
   if (order.length !== nodes.length) {
-    const remaining = nodes.map((n) => n.id).filter((id) => !order.includes(id));
+    // Array.includes() を毎回の filter 呼び出しの中で使うと O(n²) になるため、
+    // Set の O(1) 判定に置き換える(循環検知時のみ通る経路だが、コストは同じくらい
+    // 小さく書けるため揃えている)。
+    const ordered = new Set(order);
+    const remaining = nodes.map((n) => n.id).filter((id) => !ordered.has(id));
     throw new GraphCycleError(remaining);
   }
   return order;
