@@ -29,10 +29,8 @@ defineGroupNode({
         ],
       },
     },
-    // 四則演算チェーンで使い回す定数。0.5 は「半分」、2 は「カプセルの両端ぶん」、0.4 は
-    // 腕を胴体にわずかに食い込ませる ARM_TORSO_OVERLAP_RATIO(geometry/body.ts の同名定数)に
-    // それぞれ対応する。
-    { id: 'halfIn', type: 'numberInput', data: { value: 0.5, min: 0, max: 1, step: 0.01, label: 'Half' } },
+    // 四則演算チェーンで使い回す調整可能な比率。2 は「カプセルの両端ぶん」、0.4 は腕を胴体に
+    // わずかに食い込ませる割合。「半分」は `numberHalf` ノードで表す。
     { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2, min: 1, max: 3, step: 0.1, label: 'Torso Cap Ends (x2)' } },
     { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4, min: 0, max: 1, step: 0.01, label: 'Arm-Torso Overlap Ratio' } },
     // feetY は常に0固定(地面の高さ)。
@@ -40,15 +38,15 @@ defineGroupNode({
 
     { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: { label: 'Torso Radius × 2' } },
     { id: 'torsoCapsuleHeight', type: 'numberAdd', data: { label: 'Torso Capsule Height' } },
-    { id: 'torsoCapsuleHeightHalf', type: 'numberMultiply', data: { label: 'Torso Capsule Height × Half' } },
+    { id: 'torsoCapsuleHeightHalf', type: 'numberHalf', data: { label: 'Torso Capsule Height × Half' } },
     { id: 'torsoCenterYCalc', type: 'numberAdd', data: { label: 'Torso Center Y' } },
     { id: 'shoulderYCalc', type: 'numberAdd', data: { label: 'Shoulder Y' } },
     { id: 'headCenterYCalc', type: 'numberAdd', data: { label: 'Head Center Y' } },
-    { id: 'armLengthHalf', type: 'numberMultiply', data: { label: 'Arm Length × Half' } },
+    { id: 'armLengthHalf', type: 'numberHalf', data: { label: 'Arm Length × Half' } },
     { id: 'armTorsoOverlap', type: 'numberMultiply', data: { label: 'Arm-Torso Overlap' } },
     { id: 'armCenterYStep1', type: 'numberSubtract', data: { label: 'Shoulder Y − Arm Half' } },
     { id: 'armCenterYCalc', type: 'numberSubtract', data: { label: 'Arm Center Y' } },
-    { id: 'legCenterYCalc', type: 'numberMultiply', data: { label: 'Leg Center Y' } },
+    { id: 'legCenterYCalc', type: 'numberHalf', data: { label: 'Leg Center Y' } },
     { id: 'wristYCalc', type: 'numberSubtract', data: { label: 'Wrist Y' } },
 
     {
@@ -71,7 +69,6 @@ defineGroupNode({
   internalEdges: [
     // legCenterY = legHeight * half (= feetY + legHeight/2, feetY=0 のため省略)
     { source: 'input', sourceHandle: 'legHeight', target: 'legCenterYCalc', targetHandle: 'value' },
-    { source: 'halfIn', sourceHandle: 'value', target: 'legCenterYCalc', targetHandle: 'factor' },
     { source: 'legCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'legCenterY' },
 
     // torsoCapsuleHeight = torsoLength + torsoRadius * capEndsFactor(2)
@@ -82,7 +79,6 @@ defineGroupNode({
 
     // torsoCenterY = waistY(=legHeight) + torsoCapsuleHeight * half
     { source: 'torsoCapsuleHeight', sourceHandle: 'value', target: 'torsoCapsuleHeightHalf', targetHandle: 'value' },
-    { source: 'halfIn', sourceHandle: 'value', target: 'torsoCapsuleHeightHalf', targetHandle: 'factor' },
     { source: 'input', sourceHandle: 'legHeight', target: 'torsoCenterYCalc', targetHandle: 'a' },
     { source: 'torsoCapsuleHeightHalf', sourceHandle: 'value', target: 'torsoCenterYCalc', targetHandle: 'b' },
     { source: 'torsoCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'torsoCenterY' },
@@ -98,7 +94,6 @@ defineGroupNode({
 
     // armCenterY = shoulderY - armLength * half - torsoRadius * armTorsoOverlapRatio(0.4)
     { source: 'input', sourceHandle: 'armLength', target: 'armLengthHalf', targetHandle: 'value' },
-    { source: 'halfIn', sourceHandle: 'value', target: 'armLengthHalf', targetHandle: 'factor' },
     { source: 'input', sourceHandle: 'torsoRadius', target: 'armTorsoOverlap', targetHandle: 'value' },
     { source: 'armTorsoOverlapRatioIn', sourceHandle: 'value', target: 'armTorsoOverlap', targetHandle: 'factor' },
     { source: 'shoulderYCalc', sourceHandle: 'value', target: 'armCenterYStep1', targetHandle: 'a' },
