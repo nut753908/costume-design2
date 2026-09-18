@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** glasses は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
  * ブリッジ+左右テンプル(frameGen、`glassesFrameGenerator`)は `alignedBox.ts`(2点間に
@@ -9,8 +10,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * (`0 - lensSpacing`)を X座標として使う(旧コードの `leftCenter`/`rightCenter` の式)。
  * Z座標は固定値 `forwardDepthIn`(`geometry/glasses.ts` の `FORWARD_DEPTH` と同じ数値)。
  * トーラスの管の太さ(`tube`)は `frameThicknessHalf`(`frameThickness × 0.5`)として渡す
- * (`zeroIn`/`halfIn` は `bodyLayoutGroupNode.ts` の `halfIn`/`feetYIn` と同じ「常に一定の
- * 値を持つ `numberInput`」のイディオム)。左右のレンズと frameGen は `mergeGeometry` を2回
+ * (`zeroIn`/`halfIn`/`forwardDepthIn` は `constNumberInput()` で定義する「常に一定の
+ * 値を持つ `numberInput`」)。左右のレンズと frameGen は `mergeGeometry` を2回
  * 経由して1つにまとめる。全パラメータが他のガーメントと共有されない単独パラメータのため、
  * 外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される headCenterY)だけが
@@ -33,9 +34,9 @@ defineGroupNode({
     { id: 'templeLengthIn', type: 'numberInput', data: { value: 0.12, min: 0.05, max: 0.2, step: 0.01, label: 'Temple Length' } },
     { id: 'templeThicknessIn', type: 'numberInput', data: { value: 0.006, min: 0.003, max: 0.015, step: 0.001, label: 'Temple Thickness' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#2a2a2a', label: 'Glasses Color' } },
-    { id: 'zeroIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Zero' } },
-    { id: 'halfIn', type: 'numberInput', data: { value: 0.5, min: 0.5, max: 0.5, step: 0.01, label: 'Half' } },
-    { id: 'forwardDepthIn', type: 'numberInput', data: { value: 0.14, min: 0.14, max: 0.14, step: 0.01, label: 'Forward Depth' } },
+    constNumberInput('zeroIn', 0, 'Zero'),
+    constNumberInput('halfIn', 0.5, 'Half'),
+    constNumberInput('forwardDepthIn', 0.14, 'Forward Depth'),
     { id: 'frameThicknessHalf', type: 'numberMultiply', data: { label: 'Frame Thickness × Half' } },
     { id: 'negatedLensSpacing', type: 'numberSubtract', data: { label: 'Negated Lens Spacing' } },
     { id: 'frameGen', type: 'glassesFrameGenerator', data: {} },

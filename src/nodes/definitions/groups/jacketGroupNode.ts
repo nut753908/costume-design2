@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** jacketShoulderScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
  * jacketMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
@@ -32,8 +33,8 @@ defineGroupNode({
     { id: 'hemFlareIn', type: 'numberInput', data: { value: 0.15, min: 0, max: 1.5, step: 0.05, label: 'Hem Flare' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#4a5c3e', label: 'Jacket Color' } },
-    { id: 'zeroIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Zero' } },
-    { id: 'oneIn', type: 'numberInput', data: { value: 1, min: 1, max: 1, step: 0.01, label: 'One' } },
+    constNumberInput('zeroIn', 0, 'Zero'),
+    constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'hemFlareClamped', type: 'numberMax', data: { label: 'Hem Flare Clamped (≥0)' } },
     { id: 'onePlusHemFlare', type: 'numberAdd', data: { label: 'Hem Scale (1 + Hem Flare)' } },

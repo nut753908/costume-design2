@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
  * ストラップ(strapGen、`bagStrapGenerator`)は `alignedBox.ts`(2点間に整列させる回転+
@@ -11,8 +12,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * X: `negatedHipOffset = 0 - hipOffset`、Y: `bagCenterY = (0 - drop) - bagHeight * 0.5`、
  * Z: 固定値 `bagFrontDepthIn`(`geometry/bag.ts` の `BAG_FRONT_DEPTH` と同じ数値、
  * ストラップの終端と同じ深さに置く)という可視の四則演算チェーンへ展開している
- * (`zeroIn`/`halfIn` は `bodyLayoutGroupNode.ts` の `halfIn`/`feetYIn` と同じ「常に一定の
- * 値を持つ `numberInput`」のイディオム)。ストラップと本体は最後に `merge`
+ * (`zeroIn`/`halfIn`/`bagFrontDepthIn` は `constNumberInput()` で定義する「常に一定の
+ * 値を持つ `numberInput`」)。ストラップと本体は最後に `merge`
  * (`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと共有されない単独
  * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノード
  * として保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
@@ -37,9 +38,9 @@ defineGroupNode({
     { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.3, step: 0.01, label: 'Bag Height' } },
     { id: 'bagDepthIn', type: 'numberInput', data: { value: 0.08, min: 0.02, max: 0.2, step: 0.01, label: 'Bag Depth' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#8a4a2e', label: 'Bag Color' } },
-    { id: 'zeroIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Zero' } },
-    { id: 'halfIn', type: 'numberInput', data: { value: 0.5, min: 0.5, max: 0.5, step: 0.01, label: 'Half' } },
-    { id: 'bagFrontDepthIn', type: 'numberInput', data: { value: 0.18, min: 0.18, max: 0.18, step: 0.01, label: 'Bag Front Depth' } },
+    constNumberInput('zeroIn', 0, 'Zero'),
+    constNumberInput('halfIn', 0.5, 'Half'),
+    constNumberInput('bagFrontDepthIn', 0.18, 'Bag Front Depth'),
     { id: 'strapGen', type: 'bagStrapGenerator', data: {} },
     { id: 'boxGen', type: 'boxGenerator', data: {} },
     { id: 'negatedHipOffset', type: 'numberSubtract', data: { label: 'Negated Hip Offset' } },

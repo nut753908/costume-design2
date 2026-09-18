@@ -11,6 +11,7 @@ import.meta.glob(
     '!./index.ts',
     '!./generatorNodeFactory.ts',
     '!./groupNodeFactory.ts',
+    '!./constNumberInput.ts',
   ],
   { eager: true },
 );

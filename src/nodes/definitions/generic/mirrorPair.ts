@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** 受け取った1つの geometry を、±offset だけ X方向に離した左右対称なペアへまとめる
  * グループノード。`bodyGroupNode.ts`(腕/脚1組)/`pantsGroupNode.ts`(左右2脚)/
@@ -8,8 +9,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * `offset` は片方の `translateX` へはそのまま、もう片方へは `negate`(`numberMultiply`)
  * を経由して符号反転してから渡すことで、+offset/-offset それぞれへ平行移動した2つの
  * コピーを作る。符号反転に使う `-1` は `negate` の `data` にリテラルとして隠さず、
- * 「常に一定の値を持つ `numberInput`」のイディオムで `negativeOneIn` として配置してから
- * 配線する(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
+ * `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」として `negativeOneIn`
+ * を配置してから配線する(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 defineGroupNode({
   type: 'mirrorPair',
   label: 'Mirror Pair',
@@ -24,7 +25,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'negativeOneIn', type: 'numberInput', data: { value: -1, min: -1, max: -1, step: 0.01, label: 'Negative One' } },
+    constNumberInput('negativeOneIn', -1, 'Negative One'),
     { id: 'negate', type: 'numberMultiply', data: { label: 'Negate Offset' } },
     { id: 'translateNeg', type: 'translateX', data: {} },
     { id: 'translatePos', type: 'translateX', data: {} },

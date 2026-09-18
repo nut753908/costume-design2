@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** skirtWaistScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
  * skirtMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
@@ -11,8 +12,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 裾半径(`hemRadius = waistRadius * (1 + Math.max(0, flare))`)は `flareClamped`
  * (`numberMax`)→`onePlusFlare`(`numberAdd`)→`hemRadiusCalc`(`numberMultiply`)という
  * 可視の配線へ展開しており、コード側の式としては持たない(`zeroIn`/`oneIn` は
- * `bodyLayoutGroupNode.ts` の `feetYIn` と同じ「常に一定の値を持つ `numberInput`」の
- * イディオム)。 */
+ * `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。 */
 defineGroupNode({
   type: 'skirtGroup',
   label: 'Skirt',
@@ -32,8 +32,8 @@ defineGroupNode({
     { id: 'flareIn', type: 'numberInput', data: { value: 0.7, min: 0, max: 2.5, step: 0.05, label: 'Flare' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 28, min: 8, max: 48, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#d9738c', label: 'Skirt Color' } },
-    { id: 'zeroIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Zero' } },
-    { id: 'oneIn', type: 'numberInput', data: { value: 1, min: 1, max: 1, step: 0.01, label: 'One' } },
+    constNumberInput('zeroIn', 0, 'Zero'),
+    constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'flareClamped', type: 'numberMax', data: { label: 'Flare Clamped (≥0)' } },
     { id: 'onePlusFlare', type: 'numberAdd', data: { label: 'Hem Scale (1 + Flare)' } },

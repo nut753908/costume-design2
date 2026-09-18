@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** beltRadiusScale(numberMultiply)+material(toonMaterial)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)に加え、山なりのバックル部分の
@@ -21,8 +22,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  *     イージング)
  *   - `combined`(`concatPoints`、`lowerSliced` + `upperProfile` を連結)
  *   - `gen`(`latheGenerator`、`combined` の points を Lathe 化)
- * `zeroIn`/`halfIn`/`oneIn` は `bodyLayoutGroupNode.ts` の `halfIn`/`feetYIn` と同じ「常に
- * 一定の値を持つ `numberInput`」のイディオム。
+ * `zeroIn`/`halfIn`/`oneIn` は `constNumberInput()` で定義する「常に一定の値を持つ
+ * `numberInput`」。
  *
  * `nodes/definitions/beltGenerator.ts`(`buildBeltGeometry()` をそのまま呼ぶノード)自体は
  * 削除していない — `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして再利用
@@ -46,9 +47,9 @@ defineGroupNode({
     { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01, label: 'Bulge' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#3a2e26', label: 'Belt Color' } },
-    { id: 'zeroIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Zero' } },
-    { id: 'halfIn', type: 'numberInput', data: { value: 0.5, min: 0.5, max: 0.5, step: 0.01, label: 'Half' } },
-    { id: 'oneIn', type: 'numberInput', data: { value: 1, min: 1, max: 1, step: 0.01, label: 'One' } },
+    constNumberInput('zeroIn', 0, 'Zero'),
+    constNumberInput('halfIn', 0.5, 'Half'),
+    constNumberInput('oneIn', 1, 'One'),
     { id: 'scale', type: 'numberMultiply', data: {} },
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: { label: 'Bulge Radius' } },
     { id: 'halfCalc', type: 'numberMultiply', data: { label: 'Thickness × Half' } },

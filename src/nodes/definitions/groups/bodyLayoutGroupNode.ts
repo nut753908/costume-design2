@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { constNumberInput } from '../constNumberInput';
 
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyLayout`)としてただ1組
  * だけ存在し、`bodyGroup` と全15ガーメントへファンアウトされる計算グループ —
@@ -35,7 +36,7 @@ defineGroupNode({
     { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2, min: 1, max: 3, step: 0.1, label: 'Torso Cap Ends (x2)' } },
     { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4, min: 0, max: 1, step: 0.01, label: 'Arm-Torso Overlap Ratio' } },
     // feetY は常に0固定(地面の高さ)。
-    { id: 'feetYIn', type: 'numberInput', data: { value: 0, min: 0, max: 0, step: 0.01, label: 'Feet Y' } },
+    constNumberInput('feetYIn', 0, 'Feet Y'),
 
     { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: { label: 'Torso Radius × 2' } },
     { id: 'torsoCapsuleHeight', type: 'numberAdd', data: { label: 'Torso Capsule Height' } },
