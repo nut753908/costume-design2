@@ -62,7 +62,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(色・`offsetY`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
-- `garmentOutput({ color, offsetY, geometry })`(`garmentOutput.ts`)— `colorIn`(colorInput)→`material`(toonMaterial)→`sceneOut` と `offsetYIn`+`input.anchorY`→`placement`(garmentPlacement)→`sceneOut` のノード5個・エッジ6本。`geometry` には最終的な geometry を出力するノードの id を渡す。Material を共有ノードから受け取るガーメント(top/sleeve)は `color` を省略し、`input.material` ソケットを `sceneOut` へ直接配線させる。
+- `anchorYSocket`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY` ソケット定義。`garmentOutput({ color, offsetY, geometry })`(同ファイル)— `colorIn`(colorInput)→`material`(toonMaterial)→`sceneOut` と `offsetYIn`+`input.anchorY`→`placement`(garmentPlacement)→`sceneOut` のノード5個・エッジ6本。`geometry` には最終的な geometry を出力するノードの id を渡す。Material を共有ノードから受け取るガーメント(top/sleeve)は `color` を省略し、`input.material` ソケットを `sceneOut` へ直接配線させる。
 - `bodyBuildScale(rawId)`(`garmentParts.ts`)— 「体に触れる半径」(`rawId` の `value`)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。グループ内に `segmentsIn`(numberInput)が必要。
 
@@ -70,7 +70,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 
 const output = garmentOutput({ color: { hex: '#cccccc', label: 'Xxx Color' }, offsetY: 0, geometry: 'gen' });
@@ -88,7 +88,7 @@ defineGroupNode({
         // anchorY は全ガーメント共通で必須。bodyBuild は半径スケーリングに使う場合だけ。
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
+          anchorYSocket,
         ],
       },
     },

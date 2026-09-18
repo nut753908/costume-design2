@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** glasses は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
@@ -36,7 +36,7 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [{ id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 }],
+        sockets: [anchorYSocket],
       },
     },
     { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045, min: 0.02, max: 0.07, step: 0.005, label: 'Lens Radius' } },

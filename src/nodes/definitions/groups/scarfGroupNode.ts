@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale } from '../garmentParts';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
@@ -32,7 +32,7 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
+          anchorYSocket,
         ],
       },
     },

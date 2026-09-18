@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale } from '../garmentParts';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** dressTorsoScale(numberMultiply)+dressGen(dressGenerator)+dressMaterial(toonMaterial)+
  * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) の6ノードを1枚に
@@ -23,7 +23,7 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
+          anchorYSocket,
         ],
       },
     },

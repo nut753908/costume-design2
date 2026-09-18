@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
  * mirror(mirrorPair)+pantsMaterial(toonMaterial)+offsetYIn(numberInput)+
@@ -32,7 +32,7 @@ defineGroupNode({
         sockets: [
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.14 },
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
-          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
+          anchorYSocket,
         ],
       },
     },

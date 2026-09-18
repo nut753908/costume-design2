@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** necktie は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つため、
  * necktieGen(necktieGenerator)+necktieMaterial(toonMaterial)+
@@ -17,7 +17,7 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [{ id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 }],
+        sockets: [anchorYSocket],
       },
     },
     { id: 'knotWidthIn', type: 'numberInput', data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005, label: 'Knot Width' } },

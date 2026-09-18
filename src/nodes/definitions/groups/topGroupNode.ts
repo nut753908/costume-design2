@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** topGen(topGenerator)+offsetYIn(numberInput)+placement(garmentPlacement)+
  * sceneOut(sceneOutput) を1枚にまとめたグループノード。Length/Neckline/Neckline Depth は
@@ -24,7 +24,7 @@ defineGroupNode({
         sockets: [
           { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.29 },
           { id: 'material', label: 'Material', type: 'material' },
-          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
+          anchorYSocket,
         ],
       },
     },

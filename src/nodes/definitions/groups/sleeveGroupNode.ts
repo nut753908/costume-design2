@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** sleeveGen(sleeveGenerator)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput) を1枚にまとめたグループノード。Sleeve Radius/Sleeve Length は sleeve 固有の単独パラメータ
@@ -24,7 +24,7 @@ defineGroupNode({
         sockets: [
           { id: 'attachRadius', label: 'Attach Radius', type: 'number', default: 0.29 },
           { id: 'material', label: 'Material', type: 'material' },
-          { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 },
+          anchorYSocket,
         ],
       },
     },

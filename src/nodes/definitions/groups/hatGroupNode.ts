@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { latheBody } from '../garmentParts';
-import { garmentOutput } from '../garmentOutput';
+import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** hat は bodyBuild によるスケーリング対象外(headRadius が `bodyDimensionsGroup` の中で
  * buildScale の影響を受けないため)なので Body Build 入力は無く、
@@ -25,7 +25,7 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [{ id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 }],
+        sockets: [anchorYSocket],
       },
     },
     { id: 'brimRadiusIn', type: 'numberInput', data: { value: 0.2, min: 0.15, max: 0.3, step: 0.01, label: 'Brim Radius' } },
