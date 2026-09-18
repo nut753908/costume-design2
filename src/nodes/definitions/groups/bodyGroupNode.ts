@@ -19,12 +19,10 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 腕/脚とも手首/足首側を根元よりわずかに細くするテーパー比率を持つが、値は左右独立ではなく
  * 部位ごと(腕1本の左右ペアで共通、脚1本の左右ペアで共通)で、`armTaperRatioIn`/
- * `legTaperRatioIn` という別々の `numberInput` として持つ(以前は同一グループ型の2インスタンス
- * だったため見分けが付きにくかったが、ラベルで明示的に区別できる)。
+ * `legTaperRatioIn` という別々の `numberInput` として持つ(ラベルで腕用/脚用を区別できる)。
  *
  * 肌色(`skinColorIn`)は4パーツすべてで共有される値のため、`skinColorIn`→`material`
- * (`toonMaterial`)から `sceneOut` の `material` へ1本配線するだけでよい(パーツごとに
- * Material を持ち回る必要が無くなった)。 */
+ * (`toonMaterial`)から `sceneOut` の `material` へ1本配線するだけでよい。 */
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',

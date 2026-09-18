@@ -20,9 +20,7 @@ import { constNumberInput } from '../constNumberInput';
  * 両端で共通。左右テンプルは `templeXOffset = lensSpacing + lensRadius`(右は
  * `negatedTempleXOffset`、同じく `numberNegate`)を X として使い、Z だけ `forwardDepthIn`
  * (前面)から `templeBackZ = (forwardDepthIn - templeBackOffsetIn) - templeLength`
- * (後方、旧コードの `TEMPLE_BACK_DEPTH - templeLength`)まで伸ばす(旧コードの
- * `bridgeStart`/`bridgeEnd`/`leftTempleStart`/`leftTempleEnd`/`rightTempleStart`/
- * `rightTempleEnd` の式)。ブリッジ・左テンプル・右テンプルは `mergeGeometry` を2回
+ * (後方)まで伸ばす。ブリッジ・左テンプル・右テンプルは `mergeGeometry` を2回
  * 経由してフレーム1つにまとめ、左右のレンズと合わせてさらに `mergeGeometry` で結合する。
  * 全パラメータが他のガーメントと共有されない単独パラメータのため、外側の
  * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。

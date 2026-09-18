@@ -25,9 +25,8 @@ import { constNumberInput } from '../constNumberInput';
  *   - `gen`(`latheGenerator`、`combined` の points を Lathe 化)
  * `oneIn` は `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」。
  *
- * `nodes/definitions/beltGenerator.ts`(`buildBeltGeometry()` をそのまま呼ぶノード)自体は
- * 削除していない — `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして再利用
- * しているため(`geometry/CLAUDE.md` 参照)。 */
+ * `groups/beltGenerator.ts`(`buildBeltGeometry()` をそのまま呼ぶノード)は
+ * `scarfGroupNode.ts` が首元の輪を `bulge=1.05` 固定でネストして使う(`geometry/CLAUDE.md` 参照)。 */
 const output = garmentOutput({ color: { hex: '#3a2e26', label: 'Belt Color' }, offsetY: 0, geometry: 'gen' });
 
 defineGroupNode({

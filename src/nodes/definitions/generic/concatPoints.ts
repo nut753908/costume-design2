@@ -2,8 +2,8 @@ import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
 
 /** 2つの `points`(`easedLatheProfile` 等が出力する点列)を1つに連結する汎用ノード。
- * `geometry` の `mergeGeometry` に対応する points 版 — `belt.ts` が `[...lower.slice(0, -1),
- * ...upper]` としていた連結を、`beltGroupNode.ts` 側のノードグラフへ展開する際に使う。 */
+ * `geometry` の `mergeGeometry` に対応する points 版 — `beltGroupNode.ts` が上半分・下半分の
+ * プロファイルを連結するのに使う。 */
 registerNodeType({
   type: 'concatPoints',
   label: 'Concat Points',

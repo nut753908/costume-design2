@@ -11,7 +11,7 @@ import { constNumberInput } from '../constNumberInput';
  * ノードグラフへ展開している(`geometry/CLAUDE.md` 参照)。
  *
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
- * (0, -bagHeight/2, 0)`(旧コードの式)は同じ深さ(Z)を共有するため、
+ * (0, -bagHeight/2, 0)`は同じ深さ(Z)を共有するため、
  * X: `negatedHipOffset = -hipOffset`(`numberNegate`)、Y(本体側): `bagCenterY =
  * negatedDrop - bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の

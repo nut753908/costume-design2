@@ -13,8 +13,7 @@ import { constNumberInput } from '../constNumberInput';
  * `skirtGroupNode.ts` と全く同じ理由・同じ形で、プロファイル生成を `easedLatheProfile`→
  * `latheGenerator` へ、裾半径(`hemRadius = shoulderRadius * (1 + Math.max(0, hemFlare))`)を
  * `hemFlareClamped`(`numberMax`)→`onePlusHemFlare`(`numberAdd`)→`hemRadiusCalc`
- * (`numberMultiply`)という可視の配線へ展開している(`geometry/jacket.ts`/
- * `nodes/definitions/jacketGenerator.ts` は呼び出し元が無くなったため削除済み)。 */
+ * (`numberMultiply`)という可視の配線へ展開している。 */
 const output = garmentOutput({ color: { hex: '#4a5c3e', label: 'Jacket Color' }, offsetY: 0, geometry: 'gen' });
 
 defineGroupNode({

@@ -6,11 +6,11 @@ import { buildBeltGeometry } from '../../../geometry/belt';
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// beltGroup 自身はもう beltGenerator(geometry/belt.ts の buildBeltGeometry() をそのまま
-// 呼ぶブラックボックス)を使わず、プロファイル生成+連結+Lathe化をすべて可視のノードグラフへ
-// 展開している(beltGroupNode.ts のコメント参照)。geometry/belt.ts 自身は scarfGroupNode.ts
-// が beltGenerator 経由で引き続き使うため削除していない — この独立した buildBeltGeometry()
-// 呼び出しを「正解」として、ノードグラフ側の評価結果と一致することを検証する。
+// beltGroup 自身は beltGenerator(geometry/belt.ts の buildBeltGeometry() をそのまま呼ぶ
+// ブラックボックス)を使わず、プロファイル生成+連結+Lathe化をすべて可視のノードグラフへ
+// 展開している(beltGroupNode.ts のコメント参照)。geometry/belt.ts は scarfGroupNode.ts が
+// beltGenerator 経由で使う — この独立した buildBeltGeometry() 呼び出しを「正解」として、
+// ノードグラフ側の評価結果と一致することを検証する。
 describe('beltGroup', () => {
   const DEFAULTS = { radius: 0.32, thickness: 0.05, bulge: 1.15, segments: 24 };
 
