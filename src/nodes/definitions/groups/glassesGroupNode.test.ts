@@ -43,7 +43,7 @@ describe('glassesGroup', () => {
   it('レンズの半径+管の太さ(frameThickness × Half)ぶんY方向に広がる', () => {
     // フレーム側(ブリッジ/テンプル)の Y方向の広がりは frameThickness よりずっと薄いため、
     // 全体の bounding box の Y方向の広がりはレンズ(トーラス)側で決まる。これは
-    // frameThicknessHalf(numberMultiply)の計算と leftTorusGen/rightTorusGen への配線が
+    // frameThicknessHalf(numberHalf)の計算と leftTorusGen/rightTorusGen への配線が
     // 正しいことの検証になる。
     const result = getNodeType('glassesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;

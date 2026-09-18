@@ -15,7 +15,7 @@ import { constNumberInput } from '../constNumberInput';
  * negatedDrop - bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
  * `translateX`/`translateY`/`translateZ` の両方から同じ計算結果を参照する
- * (`zeroIn`/`halfIn`/`strapStartDepthIn`/`bagFrontDepthIn` は `constNumberInput()` で
+ * (`zeroIn`/`strapStartDepthIn`/`bagFrontDepthIn` は `constNumberInput()` で
  * 定義する「常に一定の値を持つ `numberInput`」)。ストラップと
  * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
@@ -42,13 +42,12 @@ defineGroupNode({
     { id: 'bagDepthIn', type: 'numberInput', data: { value: 0.08, min: 0.02, max: 0.2, step: 0.01, label: 'Bag Depth' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#8a4a2e', label: 'Bag Color' } },
     constNumberInput('zeroIn', 0, 'Zero'),
-    constNumberInput('halfIn', 0.5, 'Half'),
     constNumberInput('strapStartDepthIn', 0.05, 'Strap Start Depth'),
     constNumberInput('bagFrontDepthIn', 0.18, 'Bag Front Depth'),
     { id: 'strapGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'boxGen', type: 'boxGenerator', data: {} },
     { id: 'negatedHipOffset', type: 'numberNegate', data: { label: 'Negated Hip Offset' } },
-    { id: 'halfBagHeight', type: 'numberMultiply', data: { label: 'Bag Height × Half' } },
+    { id: 'halfBagHeight', type: 'numberHalf', data: { label: 'Bag Height × Half' } },
     { id: 'negatedDrop', type: 'numberNegate', data: { label: 'Negated Drop' } },
     { id: 'bagCenterY', type: 'numberSubtract', data: { label: 'Bag Center Y' } },
     { id: 'bodyTranslateX', type: 'translateX', data: {} },
@@ -80,7 +79,6 @@ defineGroupNode({
     { source: 'hipOffsetIn', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'value' },
 
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'halfBagHeight', targetHandle: 'value' },
-    { source: 'halfIn', sourceHandle: 'value', target: 'halfBagHeight', targetHandle: 'factor' },
     { source: 'dropIn', sourceHandle: 'value', target: 'negatedDrop', targetHandle: 'value' },
     { source: 'negatedDrop', sourceHandle: 'value', target: 'bagCenterY', targetHandle: 'a' },
     { source: 'halfBagHeight', sourceHandle: 'value', target: 'bagCenterY', targetHandle: 'b' },

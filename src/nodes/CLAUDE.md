@@ -56,7 +56,7 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 
 新しいノードを書く前に、近い処理をする汎用ノードが既に無いか確認すること — 同じ処理を専用ノードとして重複実装し、後から統合し直す手戻りがこのプロジェクトで何度も発生している(例: pants/shoes/gloves/socks がそれぞれ独立に左右対称ペア化ロジックを持っていたのを後から `mirrorPair` へ統一)。
 
-- **数値演算**: `numberAdd`(A+B)/`numberSubtract`(A-B)/`numberMultiply`(A×factor)/`numberMax`(`Math.max(a,b)`)/`numberNegate`(`-value`、符号反転専用の単項演算ノード)。`numberDisplay` は評価値をノードカード上で確認するためだけの終端ノード(`outputs: []` としながら `value` を返す)。
+- **数値演算**: `numberAdd`(A+B)/`numberSubtract`(A-B)/`numberMultiply`(A×factor)/`numberMax`(`Math.max(a,b)`)/`numberNegate`(`-value`、符号反転専用の単項演算ノード)/`numberHalf`(`value × 0.5`、半分にする専用の単項演算ノード)。`numberDisplay` は評価値をノードカード上で確認するためだけの終端ノード(`outputs: []` としながら `value` を返す)。
 - **geometry の変換**: `translateX`/`translateY`/`translateZ`(各軸方向へ平行移動)、`scaleZ`(Z方向のみ非一様スケール)、`mergeGeometry`(2つの geometry を結合)、`mirrorPair`(1つの geometry を ±offset の左右対称ペアへまとめるグループノード、内部は `translateX`×2+`mergeGeometry`)。
 - **points の生成/変換**(Lathe用、`points` は `easedLatheProfile`/`latheGenerator` の間を流れる `THREE.Vector2[]` の専用ソケット型): `easedLatheProfile`(半径を smoothstep でイージングしながら結ぶプロファイル点列を生成)→`latheGenerator`(points から `THREE.LatheGeometry` を生成)。`translatePointsY`(points をY方向へ平行移動)/`slicePoints`(points の末尾から指定個数を取り除く)/`concatPoints`(2つの points を連結) — belt のようにプロファイルを2回呼んで連結する場合に使う。
 - **プリミティブ生成**: `capsuleGenerator`/`sphereGenerator`/`cylinderGenerator`(上下の半径を独立指定できるテーパー円柱)/`torusGenerator`/`boxGenerator` — いずれも `geometry/primitives.ts` の `build*Geometry()` を THREE.js 標準プリミティブへ薄くラップしただけ。`alignedBoxGenerator` — `geometry/alignedBox.ts` の `buildAlignedBox()`(2点間を結ぶよう回転+平行移動した `THREE.BoxGeometry` を作る、剛体変換のみなので巻き順がそのまま保たれる)を薄くラップしたもの。始点・終点をそれぞれ X/Y/Z の3ソケットに分解している(bag のストラップ、glasses のブリッジ/テンプルが使う)。

@@ -11,7 +11,7 @@ import { constNumberInput } from '../constNumberInput';
  * (`numberNegate`)を X座標として使う。Z座標は固定値 `forwardDepthIn`(ブリッジ/テンプルの
  * 前面側 `startZ` とも共有する)。
  * トーラスの管の太さ(`tube`)は `frameThicknessHalf`(`frameThickness × 0.5`)として渡す
- * (`zeroIn`/`halfIn`/`forwardDepthIn`/`templeBackOffsetIn` は `constNumberInput()` で
+ * (`zeroIn`/`forwardDepthIn`/`templeBackOffsetIn` は `constNumberInput()` で
  * 定義する「常に一定の値を持つ `numberInput`」)。
  *
  * ブリッジは `bridgeXOffset = lensSpacing - lensRadius` の ± を両端(`endX` は
@@ -46,10 +46,9 @@ defineGroupNode({
     { id: 'templeThicknessIn', type: 'numberInput', data: { value: 0.006, min: 0.003, max: 0.015, step: 0.001, label: 'Temple Thickness' } },
     { id: 'colorIn', type: 'colorInput', data: { hex: '#2a2a2a', label: 'Glasses Color' } },
     constNumberInput('zeroIn', 0, 'Zero'),
-    constNumberInput('halfIn', 0.5, 'Half'),
     constNumberInput('forwardDepthIn', 0.14, 'Forward Depth'),
     constNumberInput('templeBackOffsetIn', 0.02, 'Temple Back Offset'),
-    { id: 'frameThicknessHalf', type: 'numberMultiply', data: { label: 'Frame Thickness × Half' } },
+    { id: 'frameThicknessHalf', type: 'numberHalf', data: { label: 'Frame Thickness × Half' } },
     { id: 'negatedLensSpacing', type: 'numberNegate', data: { label: 'Negated Lens Spacing' } },
 
     // ブリッジ(bridgeXOffset の ± を両端の X に)。
@@ -128,7 +127,6 @@ defineGroupNode({
     { source: 'rightTempleGen', sourceHandle: 'geometry', target: 'mergeFrame', targetHandle: 'geometryB' },
 
     { source: 'frameThicknessIn', sourceHandle: 'value', target: 'frameThicknessHalf', targetHandle: 'value' },
-    { source: 'halfIn', sourceHandle: 'value', target: 'frameThicknessHalf', targetHandle: 'factor' },
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'negatedLensSpacing', targetHandle: 'value' },
 
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'leftTorusGen', targetHandle: 'radius' },

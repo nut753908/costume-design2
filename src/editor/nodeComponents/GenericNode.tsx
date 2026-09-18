@@ -13,11 +13,11 @@ function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type
 
 /** ラベルを直接編集できる `GenericNode.tsx` 系ノードの type 名。出力が number 型で
  * 統一されておりソケット色だけでは互いに判別できない numberAdd/numberMultiply/
- * numberSubtract/numberMax/numberNegate は、意味的な名前を付けて見分ける必要性が他の
+ * numberSubtract/numberMax/numberNegate/numberHalf は、意味的な名前を付けて見分ける必要性が他の
  * generator 系ノードより高いため、numberInput などの専用UIノードと同じくラベルをカード上で
  * 直接編集可能にしている(元の type 名は編集後もサブタイトルとして残るため判別性は失われない、
  * 下記 typeName 参照)。 */
-const EDITABLE_LABEL_TYPES = new Set(['numberAdd', 'numberSubtract', 'numberMultiply', 'numberMax', 'numberNegate']);
+const EDITABLE_LABEL_TYPES = new Set(['numberAdd', 'numberSubtract', 'numberMultiply', 'numberMax', 'numberNegate', 'numberHalf']);
 
 /** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
  * 入出力ソケットの行、(終端ノードの場合は)リアルタイムの評価値を表示する。
