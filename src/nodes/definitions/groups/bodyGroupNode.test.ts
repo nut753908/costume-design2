@@ -1,25 +1,25 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// bodyGroup の埋め込みサブグラフがネストする bodyTorsoGroup/bodyHeadGroup/bodyLimbGroup
-// (内部で使う capsuleGenerator/sphereGenerator/cylinderGenerator/mirrorPair/translateY/
-// toonMaterial/sceneOutput を含む)を含め、全ノードタイプを登録する。
+// bodyGroup の埋め込みサブグラフが参照する capsuleGenerator/sphereGenerator/
+// cylinderGenerator/mirrorPair/translateY/mergeGeometry/toonMaterial/sceneOutput を
+// 含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // bodyGroup は寸法・配置の計算(bodyDimensionsGroup/bodyLayoutGroup)を内部に持たず、
 // state/initialGraph.ts 側のトップレベル共有ノードが計算済みの生の値(半径・長さ・Y座標)を
 // 外部ソケットとして直接受け取るだけになっている(bodyGroupNode.ts のコメント参照)。
+// 胴体/頭/腕/脚の4パーツは mergeGeometry で1つのジオメトリへ結合してから単一の
+// sceneOutput へ配線しているため、描画対象は常に1パーツ(インデックス0)だけになる。
 describe('bodyGroup', () => {
-  it('未接続でも(groupInput ソケット自身のデフォルトにより)胴体/頭/腕/脚の4パーツが描画対象として出力される', () => {
+  it('未接続でも(groupInput ソケット自身のデフォルトにより)結合済みの1パーツが描画対象として出力される', () => {
     const result = getNodeType('bodyGroup').evaluate({}, {});
-    for (let i = 0; i < 4; i++) {
-      expect(result[`sceneOutputGeometry${i}`]?.type).toBe('geometry');
-      expect(result[`sceneOutputMaterial${i}`]?.type).toBe('material');
-    }
-    expect(result.sceneOutputGeometry4).toBeUndefined();
+    expect(result.sceneOutputGeometry0?.type).toBe('geometry');
+    expect(result.sceneOutputMaterial0?.type).toBe('material');
+    expect(result.sceneOutputGeometry1).toBeUndefined();
   });
 
-  it('torsoRadius が大きくなるほど胴体(パーツ0)のジオメトリが外側に広がる', () => {
+  it('torsoRadius が大きくなるほど結合済みジオメトリ全体が外側に広がる', () => {
     const narrow = getNodeType('bodyGroup').evaluate({ torsoRadius: { type: 'number', value: 0.2 } }, {});
     const wide = getNodeType('bodyGroup').evaluate({ torsoRadius: { type: 'number', value: 0.3 } }, {});
     const narrowGeom = narrow.sceneOutputGeometry0?.type === 'geometry' ? narrow.sceneOutputGeometry0.value : undefined;
@@ -29,26 +29,24 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
-  it('headCenterY が大きくなるほど頭(パーツ1)の中心Yが上がる', () => {
+  it('headCenterY が大きくなるほど結合済みジオメトリの上端(頭)が上がる', () => {
     const lowResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 1.5 } }, {});
     const highResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 2.0 } }, {});
-    const lowGeom = lowResult.sceneOutputGeometry1?.type === 'geometry' ? lowResult.sceneOutputGeometry1.value : undefined;
-    const highGeom = highResult.sceneOutputGeometry1?.type === 'geometry' ? highResult.sceneOutputGeometry1.value : undefined;
+    const lowGeom = lowResult.sceneOutputGeometry0?.type === 'geometry' ? lowResult.sceneOutputGeometry0.value : undefined;
+    const highGeom = highResult.sceneOutputGeometry0?.type === 'geometry' ? highResult.sceneOutputGeometry0.value : undefined;
     lowGeom!.computeBoundingBox();
     highGeom!.computeBoundingBox();
     expect(highGeom!.boundingBox!.max.y).toBeGreaterThan(lowGeom!.boundingBox!.max.y);
   });
 
-  it('内部の skinColorIn(デフォルト #f2c9a0)が4パーツすべてのマテリアルへファンアウトされる', () => {
+  it('内部の skinColorIn(デフォルト #f2c9a0)が結合済みメッシュのマテリアルに使われる', () => {
     // Skin Color は bodyGroup 以外と共有されない単独パラメータのため groupInput の外部
     // ソケットではなく内部の colorInput ノード(skinColorIn)として保持している
     // (bodyGroupNode.ts 参照)。外部からは注入できないため、既定値がそのまま使われることを
     // 検証する。
     const result = getNodeType('bodyGroup').evaluate({}, {});
-    for (let i = 0; i < 4; i++) {
-      const material = result[`sceneOutputMaterial${i}`];
-      const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;
-      expect(color?.getHexString()).toBe(new THREE.Color('#f2c9a0').getHexString());
-    }
+    const material = result.sceneOutputMaterial0;
+    const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;
+    expect(color?.getHexString()).toBe(new THREE.Color('#f2c9a0').getHexString());
   });
 });

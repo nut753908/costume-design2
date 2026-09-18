@@ -2,7 +2,7 @@ import { buildSphereGeometry } from '../../../geometry/primitives';
 import { defineGeneratorNode } from '../generatorNodeFactory';
 
 /** 球を生成する汎用プリミティブノード。特定のガーメント/パーツに紐付かない
- * (`bodyHeadGroupNode.ts` が頭部として使っているが、それに限らない)。 */
+ * (`bodyGroupNode.ts` が頭部として使っているが、それに限らない)。 */
 defineGeneratorNode({
   type: 'sphereGenerator',
   label: 'Sphere',

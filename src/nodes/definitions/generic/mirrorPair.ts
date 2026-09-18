@@ -1,7 +1,7 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
 /** 受け取った1つの geometry を、±offset だけ X方向に離した左右対称なペアへまとめる
- * グループノード。`bodyLimbGroupNode.ts`(腕/脚1組)/`pantsGroupNode.ts`(左右2脚)/
+ * グループノード。`bodyGroupNode.ts`(腕/脚1組)/`pantsGroupNode.ts`(左右2脚)/
  * `shoesGroupNode.ts`(左右2本)/`glovesGroupNode.ts`(左右2つ)/`socksGroupNode.ts`
  * (左右2本)が使う、全ガーメント共通の左右対称ペア化ノード。
  *

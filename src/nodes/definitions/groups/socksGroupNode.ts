@@ -9,7 +9,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 靴下1本ぶんのジオメトリ(`profile`→`sockGen`)と、それを ±legSpacing だけ X方向に離した
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
- * `bodyLimbGroupNode.ts` と同じ形、`nodes/CLAUDE.md` 参照)。socks は shoes/hat と同じ
+ * `bodyGroupNode.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。socks は shoes/hat と同じ
  * `direction: 'up'`(足首から上=ふくらはぎ側へ伸びる)。
  *
  * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、

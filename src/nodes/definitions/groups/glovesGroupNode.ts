@@ -10,7 +10,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 手袋1つぶんのジオメトリ(`profile`→`gloveGen`)と、それを ±armSpacing だけ X方向に離した
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
- * `bodyLimbGroupNode.ts` と同じ形、`nodes/CLAUDE.md` 参照)。専用の `segmentsIn`
+ * `bodyGroupNode.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。専用の `segmentsIn`
  * (`numberInput`)を置いているのは、未接続ソケットが型の既定値へフォールバックすると
  * その値がカード上のどこにも見えなくなるため。 */
 defineGroupNode({
