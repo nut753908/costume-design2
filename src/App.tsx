@@ -1,3 +1,4 @@
+import { getNodeEvalCacheStats } from './nodes/evaluateGraph';
 import { useCallback, useRef, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import './nodes/definitions';
 import { NodeEditor } from './editor/NodeEditor';
@@ -12,6 +13,7 @@ const DIVIDER_WIDTH = 6;
 
 function App() {
   const { evaluationCount } = useEvaluatedGraph();
+  const cacheStats = getNodeEvalCacheStats();
   useRootEvaluatedGraph();
   useParentScopeEvaluatedGraph();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -67,7 +69,7 @@ function App() {
             opacity: 0.5,
           }}
         >
-          evaluations: {evaluationCount}
+          evaluations: {evaluationCount} · node cache: {cacheStats.hits} hit / {cacheStats.misses} miss
         </div>
       </div>
     </div>

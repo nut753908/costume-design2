@@ -36,6 +36,15 @@ interface NodeEvalCacheEntry {
 }
 let nodeEvalCache = new WeakMap<Record<string, unknown>, NodeEvalCacheEntry>();
 
+/** キャッシュのヒット/ミスの累計(グループノードの内部サブグラフ評価の分も含む)。
+ * `App.tsx` の右下の `evaluations` カウンターの隣に表示し、メモ化が実際に効いているかを
+ * 開発中に目視できるようにするための計測用で、評価そのものには影響しない。 */
+const nodeEvalCacheStats = { hits: 0, misses: 0 };
+
+export function getNodeEvalCacheStats(): Readonly<{ hits: number; misses: number }> {
+  return nodeEvalCacheStats;
+}
+
 /** テスト専用: キャッシュを空にする。`nodeEvalCache` はモジュールレベルで永続する
  * (プロダクションではそれ自体が目的 — 別々の `evaluateGraph()` 呼び出しをまたいで
  * 効かせるため)が、同じ `data` オブジェクト参照(多くはノード型定義ファイル内の
@@ -45,6 +54,8 @@ let nodeEvalCache = new WeakMap<Record<string, unknown>, NodeEvalCacheEntry>();
  * 呼んでテストを互いに独立させる(`src/testSetup.ts` 参照)。 */
 export function resetNodeEvalCacheForTests(): void {
   nodeEvalCache = new WeakMap();
+  nodeEvalCacheStats.hits = 0;
+  nodeEvalCacheStats.misses = 0;
 }
 
 /** `geometry`/`material`/`points` は値比較のコストが構造そのものの再計算と大差ないため、
@@ -109,10 +120,12 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
 
     const cached = nodeEvalCache.get(node.data);
     if (cached && cached.type === node.type && sameInputs(cached.inputs, inputs)) {
+      nodeEvalCacheStats.hits += 1;
       results.set(nodeId, cached.result);
       continue;
     }
 
+    nodeEvalCacheStats.misses += 1;
     const result = def.evaluate(inputs, node.data);
     nodeEvalCache.set(node.data, { type: node.type, inputs, result });
     results.set(nodeId, result);

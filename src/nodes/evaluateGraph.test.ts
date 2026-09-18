@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import * as THREE from 'three';
-import { evaluateGraph, GraphCycleError, hasCycle, resolveIncomingValue } from './evaluateGraph';
+import { evaluateGraph, getNodeEvalCacheStats, GraphCycleError, hasCycle, resolveIncomingValue } from './evaluateGraph';
 import { registerNodeType, nodeTypeRegistry } from './registry';
 import type { GraphEdge, GraphNode, SocketValue } from './types';
 
@@ -194,6 +194,13 @@ describe('evaluateGraph のノード単位メモ化', () => {
 
     expect(testCounterCalls).toBe(1);
     expect(second.get('counter')).toBe(first.get('counter'));
+  });
+
+  it('getNodeEvalCacheStats はキャッシュのヒット/ミスを数える', () => {
+    const nodes: GraphNode[] = [{ id: 'src', type: 'testSource', data: { value: 1 } }];
+    evaluateGraph(nodes, []);
+    evaluateGraph(nodes, []);
+    expect(getNodeEvalCacheStats()).toEqual({ hits: 1, misses: 1 });
   });
 
   it('無関係なノードが増えても、data・inputs が変わらないノードは再評価されない', () => {
