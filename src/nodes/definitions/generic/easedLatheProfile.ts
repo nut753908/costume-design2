@@ -25,7 +25,7 @@ export interface EasedLatheProfileData extends Record<string, unknown> {
  * (`capsuleGenerator` 等と同じ「汎用プリミティブノード」への切り出し、`geometry/CLAUDE.md`
  * 参照)。専用の `build*Geometry()` を今も持つのは、この2ノードだけでは表現しきれない
  * 追加のロジック(`alignedBox.ts` を使う bag/glasses のストラップ/ブリッジ・テンプル、
- * リンググリッドを手組みする top/dress、手組みチューブの sleeve/necktie)を持つガーメントに
+ * 手組みチューブの sleeve/necktie)を持つガーメントに
  * 限られる。 */
 registerNodeType<EasedLatheProfileData>({
   type: 'easedLatheProfile',

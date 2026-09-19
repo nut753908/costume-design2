@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
-import * as topGeometry from '../../../geometry/top';
+import * as ringGridGeometry from '../../../geometry/ringGrid';
 import * as sleeveGeometry from '../../../geometry/sleeve';
 // topGroup の埋め込みサブグラフが参照する numberInput/enumInput/
-// garmentPlacement/topGenerator/sleeveGenerator を含め、全ノードタイプを登録する。
+// garmentPlacement/easedLatheProfile/ringGridGenerator/sleeveGenerator を含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // topGroup は Top 本体と袖を1つのガーメントとして持つ。Torso Radius(`topRadiusIn`)は
 // Body Build でスケールされ、その値が Top の胴体半径と袖の付け根半径の両方に渡る。
 describe('topGroup', () => {
   it('torsoRadius(0.29)が bodyBuild でスケールされて Top の胴体半径と袖の付け根半径の両方へ渡る', () => {
-    const topSpy = vi.spyOn(topGeometry, 'buildTopGeometry');
+    const topSpy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     const sleeveSpy = vi.spyOn(sleeveGeometry, 'buildSleeveGeometry');
     try {
       getNodeType('topGroup').evaluate({ bodyBuild: { type: 'number', value: 1.2 } }, {});
-      expect(topSpy).toHaveBeenCalledWith(expect.objectContaining({ torsoRadius: 0.29 * 1.2 }));
+      expect(firstRowRadius(topSpy)).toBeCloseTo(0.29 * 1.2, 10);
       expect(sleeveSpy).toHaveBeenCalledWith(expect.objectContaining({ attachRadius: 0.29 * 1.2 }));
     } finally {
       topSpy.mockRestore();
@@ -23,10 +23,10 @@ describe('topGroup', () => {
   });
 
   it('未接続なら bodyBuild は groupInput ソケット自身のデフォルト(1)で、半径はスケールされない', () => {
-    const spy = vi.spyOn(topGeometry, 'buildTopGeometry');
+    const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({}, {});
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ torsoRadius: 0.29 }));
+      expect(firstRowRadius(spy)).toBeCloseTo(0.29, 10);
     } finally {
       spy.mockRestore();
     }
@@ -71,8 +71,13 @@ describe('topGroup', () => {
   });
 });
 
+/** 直近の buildRingGridGeometry() 呼び出しの最上段(肩)の半径。 */
+function firstRowRadius(spy: { mock: { calls: unknown[][] } }): number {
+  const rows = spy.mock.calls[0][0] as { radius: number }[];
+  return rows[0].radius;
+}
+
+/** angleSegments=24、heightSegments=10 のリンググリッドの頂点数。 */
 function buildTopOnlyVertexCount(): number {
-  return topGeometry
-    .buildTopGeometry({ torsoRadius: 0.29, length: 0.5, necklineType: 'round', necklineDepth: 0.12, angleSegments: 24, heightSegments: 10 })
-    .getAttribute('position').count;
+  return (24 + 1) * (10 + 1);
 }
