@@ -77,4 +77,16 @@ describe('presetStore', () => {
 
     expect(usePresetStore.getState().presets).toHaveLength(1);
   });
+
+  it('同名でも scope が違えば別のプリセットとして保存され、scope が同じなら上書きされる', () => {
+    usePresetStore.getState().savePreset('foo', nodesA, edges);
+    usePresetStore.getState().savePreset('foo', nodesB, edges, 'skirtGroup');
+    expect(usePresetStore.getState().presets).toHaveLength(2);
+
+    usePresetStore.getState().savePreset('foo', nodesA, edges, 'skirtGroup');
+    const { presets } = usePresetStore.getState();
+    expect(presets).toHaveLength(2);
+    expect(presets.find((p) => p.scope === 'skirtGroup')?.nodes).toEqual(nodesA);
+    expect(presets.find((p) => p.scope === undefined)?.scope).toBeUndefined();
+  });
 });

@@ -8,29 +8,33 @@ export interface Preset {
   savedAt: number;
   nodes: Node[];
   edges: Edge[];
+  /** プリセットが対象とする階層。省略(または undefined)ならトップレベルのグラフ全体、
+   * グループノードの型名(`skirtGroup` など)ならそのグループの内部グラフだけ。 */
+  scope?: string;
 }
 
 interface PresetState {
   presets: Preset[];
-  savePreset: (name: string, nodes: Node[], edges: Edge[]) => void;
+  savePreset: (name: string, nodes: Node[], edges: Edge[], scope?: string) => void;
   deletePreset: (id: string) => void;
 }
 
 /** GraphIO の JSON エクスポート/インポート(ファイル単位の共有・バックアップ)とは別に、
  * ブラウザ内で名前付きスナップショットを複数保持し、すぐに切り替えられるようにする。
- * 同名で保存すると既存のプリセットを上書きする。 */
+ * 同名で保存すると、同じ階層(`scope`)の既存のプリセットを上書きする。 */
 export const usePresetStore = create<PresetState>()(
   persist(
     (set, get) => ({
       presets: [],
-      savePreset: (name, nodes, edges) => {
-        const existing = get().presets.find((p) => p.name === name);
+      savePreset: (name, nodes, edges, scope) => {
+        const existing = get().presets.find((p) => p.name === name && p.scope === scope);
         const preset: Preset = {
           id: existing?.id ?? Math.random().toString(36).slice(2, 9),
           name,
           savedAt: Date.now(),
           nodes,
           edges,
+          ...(scope !== undefined ? { scope } : {}),
         };
         set({
           presets: existing
