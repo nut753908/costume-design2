@@ -8,7 +8,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
 
 1. **ノードグラフだけで組む(既定)**: 汎用ノード(`easedLatheProfile`+`latheGenerator`、`capsuleGenerator`/`boxGenerator`/`torusGenerator` などのプリミティブ、`alignedBoxGenerator`、`translateX/Y/Z`、`scaleZ`、`mergeGeometry`、`mirrorPair` など、一覧は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「汎用ノード一覧」)の組み合わせだけで形状を作る。専用の `geometry/*.ts` も `*Generator.ts` も要らない。skirt/jacket/hat/gloves/pants/shoes/socks(Lathe 系)・scarf・bag・glasses が実例。
-2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノードでは表現しきれない形状(ネックラインの彫り込み、手組みのチューブなど)の場合のみ。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。top(袖も同じグループ内)/dress/necktie が実例。
+2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノードでは表現しきれない形状(ネックラインの彫り込み、手組みのチューブなど)の場合のみ。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。top(袖も同じグループ内)の袖が実例。
 
 ノードタイプ自体の登録は `import.meta.glob` により自動化されており、レジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
 
@@ -20,7 +20,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 - 三角形の巻き順が逆だと、症状は「裏返る」ではなく**真っ黒なシルエット**になる。目視ではなく `windingTestHelpers.ts` の `expectOutwardWinding()` で検証する。単純な放射対称形状(Y軸中心)でなければ、形状に応じた `axisPoint` を渡す必要がある(箱なら自身の中心点、鏡像ペアなら centroid ではなく index 位置で左右判定、など)。
 - `mergeGeometries()` は結合する全ジオメトリが同じ頂点属性(名前・itemSize)を持つことを要求する。標準プリミティブ(position/normal/uv)と手組み `BufferGeometry`(position のみ)を混ぜると `null` を返して後段が `Cannot read properties of null` で落ちる。手組み側にダミー属性を足すか、混ぜないこと。
-- アンカーは体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`bagGroupNode.ts`/`glassesGroupNode.ts` の `bagFrontDepthIn`/`forwardDepthIn` のような固定 `numberInput`、`necktie.ts` の `NECKTIE_FRONT_DEPTH` を参照)。また複数の出力ノードが同じアンカーを共有すると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
+- アンカーは体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`bagGroupNode.ts`/`glassesGroupNode.ts` の `bagFrontDepthIn`/`forwardDepthIn` のような固定 `numberInput`、`necktieGroupNode.ts` の `frontDepthIn` を参照)。また複数の出力ノードが同じアンカーを共有すると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
 
 ## 2. (方式2のみ)ジオメトリ関数とジェネレーターノード
 
