@@ -57,6 +57,33 @@ export function isGroupInstanceStale(type: string, data: GroupInstanceData): boo
   return stored !== current;
 }
 
+/** グループのカード上に露出できる(`data.exposed === true` で露出させる)内部ノードの型。 */
+export const EXPOSABLE_INPUT_TYPES = ['numberInput', 'colorInput', 'enumInput'];
+
+const templateExposedCache = new Map<string, GraphNode[]>();
+
+/** グループ型のテンプレートで、`data.exposed` が true の内部ノード(実体化前のインスタンスが
+ * カード上に出す既定の露出パラメータ)。型ごとに1回だけ計算して使い回す。 */
+function getTemplateExposedNodes(type: string): GraphNode[] {
+  let cached = templateExposedCache.get(type);
+  if (!cached) {
+    const template = getNodeType(type).createDefaultData() as { nodes?: GraphNode[] };
+    cached = (template.nodes ?? []).filter((n) => EXPOSABLE_INPUT_TYPES.includes(n.type) && n.data.exposed === true);
+    templateExposedCache.set(type, cached);
+  }
+  return cached;
+}
+
+/** グループノードのカード上に出す露出パラメータ(`exposed: true` の `numberInput`/`colorInput`/
+ * `enumInput`)を、内部ノードの並び順で返す。編集済み(実体化済み)なら `data.nodes` から、
+ * 実体化前ならテンプレートから。 */
+export function listExposedParams(type: string, data: GroupInstanceData): GraphNode[] {
+  if (data.nodes) {
+    return data.nodes.filter((n) => EXPOSABLE_INPUT_TYPES.includes(n.type) && n.data.exposed === true);
+  }
+  return getTemplateExposedNodes(type);
+}
+
 const VALUE_KEY_BY_INPUT_TYPE: Record<string, string> = {
   numberInput: 'value',
   enumInput: 'value',
@@ -80,7 +107,9 @@ export function migrateGroupToTemplate(
     const key = VALUE_KEY_BY_INPUT_TYPE[node.type];
     const old = oldById.get(node.id);
     if (!key || !old || old.type !== node.type || old.data[key] === undefined) return node;
-    return { ...node, data: { ...node.data, [key]: old.data[key] } };
+    // 値のほか、ユーザーがカード上に露出させるか(exposed)も引き継ぐ。
+    const carried = { [key]: old.data[key], ...(old.data.exposed !== undefined ? { exposed: old.data.exposed } : {}) };
+    return { ...node, data: { ...node.data, ...carried } };
   });
   return { nodes, edges: template.edges, templateFingerprint: template.templateFingerprint };
 }

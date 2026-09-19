@@ -85,8 +85,8 @@ defineGroupNode({
         sockets: [{ id: 'buildScale', label: 'Build Scale', type: 'number', default: 1 }],
       },
     },
-    { id: 'heightScaleIn', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height' } },
-    { id: 'shoulderScaleIn', type: 'numberInput', data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder' } },
+    { id: 'heightScaleIn', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height', exposed: true } },
+    { id: 'shoulderScaleIn', type: 'numberInput', data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder', exposed: true } },
     // headRadius はスケール無し(基準値がそのまま出力になる)。
     { id: 'headRadiusBaseIn', type: 'numberInput', data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005, label: 'Head Radius Base' } },
     ...dimensions.flatMap((d) => d.nodes),

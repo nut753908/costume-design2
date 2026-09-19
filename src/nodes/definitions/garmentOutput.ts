@@ -22,7 +22,7 @@ export function garmentOutput(config: {
     nodes: [
       ...(config.color
         ? [
-            { id: 'colorIn', type: 'colorInput', data: { hex: config.color.hex, label: config.color.label } },
+            { id: 'colorIn', type: 'colorInput', data: { hex: config.color.hex, label: config.color.label, exposed: true } },
             { id: 'material', type: 'toonMaterial', data: {} },
           ]
         : []),

@@ -1,5 +1,6 @@
 import { getNodeType, nodeTypeRegistry } from './registry';
 import { resolveNodeSockets } from './resolveNodeSockets';
+import { listExposedParams } from './groupTemplate';
 import type { GraphEdge, GraphNode } from './types';
 
 export interface LayoutPosition {
@@ -47,6 +48,19 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
 /** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: 選択肢3個で153px、
  * 5個で199px、傾き23pxは CARD_ROW_HEIGHT と一致したため、切片だけを定数として持つ)。 */
 const ENUM_INPUT_BASE_HEIGHT = 84;
+/** グループノードのカード上に並ぶ露出パラメータ(`ExposedParams.tsx`)1行あたりの高さ(行間の
+ * gap 3px を含む)。`run-costume-design2` スキルで実カードの `.rf-node__exposed` を実測して較正した
+ * 値(number: 52+3、color: 43+3。全体には下端の余白 4px と gap の差の 1px が加わる)。enumInput は
+ * color と同じ高さで近似している。 */
+const EXPOSED_NUMBER_ROW_HEIGHT = 55;
+const EXPOSED_OTHER_ROW_HEIGHT = 46;
+
+function exposedParamsHeight(type: string, data: unknown): number {
+  const params = listExposedParams(type, (data as Record<string, unknown>) ?? {});
+  if (params.length === 0) return 0;
+  return params.reduce((sum, p) => sum + (p.type === 'numberInput' ? EXPOSED_NUMBER_ROW_HEIGHT : EXPOSED_OTHER_ROW_HEIGHT), 1);
+}
+
 /** `data.label` で独自の名前が付けられた generator 系ノード(今のところ
  * numberAdd/numberMultiply/numberSubtract のみ、`NodeTitleBar.tsx` の `rf-node__type-subtitle`
  * 参照)がタイトルの下に追加で表示する、元の type 名(例: "numberAdd")のサブタイトル行が
@@ -102,7 +116,7 @@ export function estimateNodeHeight(type: string, data: unknown): number {
   return (
     CARD_BASE_HEIGHT +
     rows * CARD_ROW_HEIGHT +
-    (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0) +
+    (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0) +
     (hasTypeNameSubtitle ? TYPE_NAME_SUBTITLE_HEIGHT : 0)
   );
 }

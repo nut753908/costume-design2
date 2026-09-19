@@ -92,6 +92,11 @@ interface GraphState {
    * テンプレートの読み込み用)。`templateFingerprint` は差し替えた内容の元になったテンプレートの
    * 指紋で、親ノードの `data` に記録して「テンプレートが古い」判定(`isGroupInstanceStale`)に使う。 */
   loadGroupGraph: (nodes: Node[], edges: Edge[], templateFingerprint: string | undefined) => void;
+  /** 今開いている階層にあるグループノード(`groupId`)の内部ノード(`internalNodeId`)の `data` を
+   * 更新する。グループのカード上に露出したパラメータ(`data.exposed`)を、中に入らずに編集する
+   * ために使う。まだ実体化していない(`data.nodes` が無い)インスタンスは、更新前に
+   * `createDefaultData()` で実体化する。 */
+  updateGroupInternalNodeData: (groupId: string, internalNodeId: string, patch: Record<string, unknown>) => void;
   /** 今開いているグループの内部を最新のテンプレートへ更新する。同じ id・同じ型の
    * `numberInput`/`enumInput`/`colorInput` の値は引き継ぐ(`migrateGroupToTemplate`)。 */
   migrateCurrentGroupToTemplate: () => void;
@@ -212,6 +217,21 @@ export const useGraphStore = create<GraphState>()(
               : f,
           );
           set({ nodes, edges, scopeStack, past: [], future: [], _historyKey: null });
+        },
+        updateGroupInternalNodeData: (groupId, internalNodeId, patch) => {
+          const state = get();
+          const group = state.nodes.find((n) => n.id === groupId);
+          if (!group?.type) return;
+          const def = getNodeType(group.type);
+          if (def.category !== 'group') return;
+          const existing = group.data as GroupNodeDataShape;
+          const materialized: GroupNodeDataShape = existing.nodes ? existing : { ...existing, ...(def.createDefaultData() as GroupNodeDataShape) };
+          pushHistory(`gdata:${groupId}:${internalNodeId}`, COALESCE_MS);
+          const nextData = {
+            ...materialized,
+            nodes: (materialized.nodes ?? []).map((n) => (n.id === internalNodeId ? { ...n, data: { ...n.data, ...patch } } : n)),
+          };
+          set({ nodes: state.nodes.map((n) => (n.id === groupId ? { ...n, data: nextData } : n)) });
         },
         migrateCurrentGroupToTemplate: () => {
           const state = get();

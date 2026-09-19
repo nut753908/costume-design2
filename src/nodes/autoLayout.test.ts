@@ -8,6 +8,7 @@ import {
   ROW_SPACING,
   type LayoutPosition,
 } from './autoLayout';
+import './definitions';
 import { registerNodeType } from './registry';
 import type { GraphEdge, GraphNode, NodeTypeDefinition } from './types';
 
@@ -468,5 +469,14 @@ describe('estimateNodeHeight', () => {
     // 現在は静的な outputs 宣言(または内部の groupOutput ノードの sockets)として通常の
     // ソケット行の計算にそのまま乗るため、ここでは特殊扱いしない。
     expect(groupHeight - generatorHeight).toBe(14);
+  });
+});
+
+describe('estimateNodeHeight(グループカードの露出パラメータ)', () => {
+  it('露出パラメータの行数ぶんだけ高さが増える', () => {
+    const base = estimateNodeHeight('skirtGroup', { nodes: [], edges: [] });
+    const withExposed = estimateNodeHeight('skirtGroup', {});
+    expect(withExposed).toBeGreaterThan(base);
+    expect(estimateNodeHeight('bodyDimensionsGroup', {})).toBeGreaterThan(withExposed);
   });
 });

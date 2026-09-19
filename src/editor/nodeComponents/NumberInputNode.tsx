@@ -4,6 +4,7 @@ import { useGraphStore } from '../../state/graphStore';
 import type { NumberInputData } from '../../nodes/definitions/generic/numberInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { ExposeToggle } from './ExposeToggle';
 import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
 function NumberInputNodeViewImpl({ id, data }: NodeProps) {
@@ -60,6 +61,7 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
           />
         </label>
       </div>
+      <ExposeToggle id={id} exposed={nodeData.exposed === true} />
       <Handle type="source" position={Position.Right} id="value" style={{ background: SOCKET_COLORS.number }} />
     </div>
   );

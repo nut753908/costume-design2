@@ -4,6 +4,7 @@ import { useGraphStore } from '../../state/graphStore';
 import type { ColorInputData } from '../../nodes/definitions/generic/colorInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { ExposeToggle } from './ExposeToggle';
 import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
 // カラーピッカーは常に完全な6桁hexを返すが、テキスト欄は入力途中で不完全な文字列
@@ -51,6 +52,7 @@ function ColorInputNodeViewImpl({ id, data }: NodeProps) {
           if (HEX_PATTERN.test(hex)) throttledUpdate({ hex });
         }}
       />
+      <ExposeToggle id={id} exposed={nodeData.exposed === true} />
       <Handle type="source" position={Position.Right} id="color" style={{ background: SOCKET_COLORS.color }} />
     </div>
   );

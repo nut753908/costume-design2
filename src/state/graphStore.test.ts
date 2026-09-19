@@ -572,3 +572,26 @@ describe('graphStore の removeGroupIOSocket', () => {
     expect((inputNode.data as { sockets: unknown[] }).sockets).toEqual([{ id: 'value' }]);
   });
 });
+
+describe('graphStore の updateGroupInternalNodeData', () => {
+  it('未実体化のグループでも内部ノードの data を実体化してからパッチし、Undo で戻せる', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().updateGroupInternalNodeData('g', 'inner-a', { value: 5 });
+
+    const internal = (useGraphStore.getState().nodes[0].data as { nodes: Node[] }).nodes;
+    expect(internal.find((n) => n.id === 'inner-a')?.data).toMatchObject({ value: 5 });
+    expect(internal.find((n) => n.id === 'inner-b')?.data).toEqual({});
+
+    useGraphStore.getState().undo();
+    const restored = (useGraphStore.getState().nodes[0].data as { nodes?: Node[] }).nodes;
+    expect(restored).toBeUndefined();
+  });
+
+  it('同じ内部ノードへの連続更新は1回の Undo にまとまる', () => {
+    resetStore([makeGroupNode('g')]);
+    const { updateGroupInternalNodeData } = useGraphStore.getState();
+    updateGroupInternalNodeData('g', 'inner-a', { value: 1 });
+    updateGroupInternalNodeData('g', 'inner-a', { value: 2 });
+    expect(useGraphStore.getState().past).toHaveLength(1);
+  });
+});

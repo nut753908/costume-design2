@@ -4,6 +4,7 @@ import { useGraphStore } from '../../state/graphStore';
 import type { EnumInputData } from '../../nodes/definitions/generic/enumInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { ExposeToggle } from './ExposeToggle';
 
 function uniqueOptionLabel(options: string[]): string {
   const taken = new Set(options);
@@ -82,6 +83,7 @@ function EnumInputNodeViewImpl({ id, data }: NodeProps) {
           + Add
         </button>
       </div>
+      <ExposeToggle id={id} exposed={(nodeData as { exposed?: boolean }).exposed === true} />
       <Handle type="source" position={Position.Right} id="value" style={{ background: SOCKET_COLORS.enum }} />
     </div>
   );

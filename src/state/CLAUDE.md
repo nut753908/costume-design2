@@ -54,3 +54,5 @@
 プリセット(`state/presetStore.ts`)は `scope` を持ち、`PresetPanel.tsx` は今開いている階層に合うものだけを一覧に出す。トップレベルでは `scope` なし(グラフ全体)、グループの中に入っている間は今開いているグループの型名(`scopeStack` の最後のフレームの親ノードの `type`、例: `skirtGroup`)で、同じ型のグループの内部グラフだけを保存・読み込みできる(同名は同じ `scope` 内でだけ上書き)。グループの中では「初期状態(デフォルト)」がそのグループ型のテンプレート(`createDefaultData()`)になり、内部編集を捨ててテンプレートへ戻す用途を兼ねる。ストアの `nodes`/`edges` が「今開いている階層」の内部グラフに差し替わる仕組み(上記)のため、保存・読み込みのロジック自体は階層によらず同じ。
 
 `editor/PresetPanel.tsx` はこの `initialNodes`/`initialEdges` を、`usePresetStore` に保存されたユーザープリセットとは別に「初期状態(デフォルト)」という擬似プリセット(固定ID `__initial__`、常にドロップダウン先頭に表示、削除不可)としてロード可能にしています。上記の「リロード後は Undo で戻せない」問題への対処として、ユーザーはこのプリセットを選んで Load することでいつでも初期グラフに戻せます。
+
+- `updateGroupInternalNodeData(groupId, internalNodeId, patch)`: グループに入らずに、親グループの `data.nodes` 内の1ノードの data をパッチする(未実体化なら実体化してから)。Undo は `gdata:<groupId>:<internalNodeId>` キーで連続更新をまとめる。グループカードの露出パラメータ(`editor/nodeComponents/ExposedParams.tsx`)が使う。
