@@ -6,7 +6,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * まとめたグループノード。袖は Top と同じ生地・同じ胴体半径で縫い付ける必要があるため、
  * Torso Radius(`topRadiusIn` × Body Build)と Color(`colorIn`→`material`)は topGen/sleeveGen で
  * 共有し、袖の付け根(`attachRadius`)にはスケール済みの Torso Radius をそのまま渡す。
- * 袖なしにしたい場合は Sleeve Length を 0 にする。
+ * 袖なしにしたい場合は `sleeveGen → merge` の配線を切る(`mergeGeometry` は片側だけでも通す)。
+ * Sleeve Length を 0 にするとチューブが根元で潰れるだけで頂点が残るため、min は 0 にしない。
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
  * 配線される shoulderY)は外部ソケットのまま。 */
 const output = garmentOutput({ color: { hex: '#5b8fa8', label: 'Top Color' }, offsetY: 0, geometry: 'merge' });
@@ -32,7 +33,7 @@ defineGroupNode({
     { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
     { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
     { id: 'sleeveRadiusIn', type: 'numberInput', data: { value: 0.085, min: 0.05, max: 0.14, step: 0.005, label: 'Sleeve Radius' } },
-    { id: 'sleeveLengthIn', type: 'numberInput', data: { value: 0.22, min: 0, max: 0.4, step: 0.01, label: 'Sleeve Length' } },
+    { id: 'sleeveLengthIn', type: 'numberInput', data: { value: 0.22, min: 0.01, max: 0.4, step: 0.01, label: 'Sleeve Length' } },
     ...scale.nodes,
     { id: 'gen', type: 'topGenerator', data: {} },
     { id: 'sleeveGen', type: 'sleeveGenerator', data: {} },
