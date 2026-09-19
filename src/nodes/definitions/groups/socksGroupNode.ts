@@ -2,7 +2,10 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
-/** socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
+/** 足首半径(`ankleRadiusIn`)とふくらはぎ半径(`calfRadiusIn`)はどちらも Body Build を掛けてから
+ * lathe へ渡す(`scale`/`calfScale`)。体の脚の半径がすべて Body Build でスケールされるため、
+ * ふくらはぎ側を固定にすると Body Build を上げたとき靴下が脚の内側に埋まる。
+ * socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
  * mirror(mirrorPair)+socksMaterial(toonMaterial)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Ankle Radius/Calf Radius/Height/Segments/Color は他のガーメントと共有されない単独
@@ -20,7 +23,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 const output = garmentOutput({ color: { hex: '#d4a83a', label: 'Socks Color' }, offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('ankleRadiusIn');
-const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'calfRadiusIn', distance: 'heightIn' });
+const calfScale = bodyBuildScale('calfRadiusIn', 'calfScale');
+const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'calfScale', distance: 'heightIn' });
 
 defineGroupNode({
   type: 'socksGroup',
@@ -42,12 +46,14 @@ defineGroupNode({
     { id: 'heightIn', type: 'numberInput', data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01, label: 'Height' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
     ...scale.nodes,
+    ...calfScale.nodes,
     ...lathe.nodes,
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
     ...scale.edges,
+    ...calfScale.edges,
     ...lathe.edges,
     { source: 'sockGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },

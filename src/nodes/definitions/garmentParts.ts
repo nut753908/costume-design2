@@ -2,14 +2,15 @@ import type { GraphEdge, GraphNode } from '../types';
 
 /** 「体に触れる半径」を Body Build でスケールする定型: 生パラメータ(`rawId`、`value` 出力を持つ
  * ノードの id)× 外部ソケット `input.bodyBuild` を `scale`(`numberMultiply`)で掛ける。
- * 出力は `scale.value`。`input`(groupInput、`bodyBuild` ソケットを持つ)が別途
+ * 出力は `scale.value`。1つのグループで複数の半径をスケールする場合は、`scaleId` で
+ * 別々の id を付ける。`input`(groupInput、`bodyBuild` ソケットを持つ)が別途
  * `internalNodes` に存在することを前提にする(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
-export function bodyBuildScale(rawId: string): { nodes: GraphNode[]; edges: GraphEdge[] } {
+export function bodyBuildScale(rawId: string, scaleId = 'scale'): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
-    nodes: [{ id: 'scale', type: 'numberMultiply', data: {} }],
+    nodes: [{ id: scaleId, type: 'numberMultiply', data: {} }],
     edges: [
-      { source: rawId, sourceHandle: 'value', target: 'scale', targetHandle: 'value' },
-      { source: 'input', sourceHandle: 'bodyBuild', target: 'scale', targetHandle: 'factor' },
+      { source: rawId, sourceHandle: 'value', target: scaleId, targetHandle: 'value' },
+      { source: 'input', sourceHandle: 'bodyBuild', target: scaleId, targetHandle: 'factor' },
     ],
   };
 }
