@@ -1,9 +1,11 @@
+import { useEffect } from 'react';
+import { useThree } from '@react-three/fiber';
 import { useGraphStore } from '../state/graphStore';
 import { isMeshVisible, sceneMeshKey, useViewStore } from '../state/viewStore';
 import { ToonMesh } from '../rendering/ToonMesh';
 import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/generic/sceneOutput';
 
-/** `bodyGroup`(Body、3Dモデル本体)も他15種のガーメントと同じ `<name>Group` パターンで
+/** `bodyGroup`(Body、3Dモデル本体)も他14種のガーメントと同じ `<name>Group` パターンで
  * 実装されており、内部の `sceneOutput` を通じてこのコンポーネントが走査する
  * `rootEvaluatedResults` に現れる — Body 専用の描画コード・専用コンポーネントは無い
  * (ノードの型を一切問わないこの走査ロジックのおかげ)。
@@ -20,6 +22,12 @@ export function Garments() {
   const evaluated = useGraphStore((s) => s.rootEvaluatedResults);
   const hidden = useViewStore((s) => s.hidden);
   const solo = useViewStore((s) => s.solo);
+  // Canvas は frameloop="demand" のため、表示/非表示の切り替えで描画対象が変わったときに
+  // 明示的に再描画を要求する(要求しないと次にカメラ操作などが起きるまで画面が更新されない)。
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    invalidate();
+  }, [hidden, solo, invalidate]);
 
   if (!evaluated) return null;
 

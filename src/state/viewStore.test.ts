@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { isMeshVisible, sceneMeshKey, sceneMeshKeys, useViewStore } from './viewStore';
+import type { SocketValue } from '../nodes/types';
+import '../nodes/definitions';
+import { isMeshVisible, listSceneOutputs, sceneMeshKey, sceneMeshKeys, useViewStore } from './viewStore';
 
 const view = () => useViewStore.getState();
 
@@ -52,5 +54,25 @@ describe('viewStore', () => {
       sceneMeshKeys('g', { sceneOutputGeometry0: geometry, sceneOutputMaterial0: geometry, sceneOutputGeometry1: geometry, value: geometry }),
     ).toEqual([sceneMeshKey('g', 0), sceneMeshKey('g', 1)]);
     expect(sceneMeshKeys('g', undefined)).toEqual([]);
+  });
+
+  it('listSceneOutputs はトップレベルのノード順に、描画されているメッシュだけを一覧する', () => {
+    const geometry = { type: 'number', value: 0 } as const;
+    const results = new Map<string, Record<string, SocketValue>>([
+      ['b', { sceneOutputGeometry0: geometry, sceneOutputMaterial0: geometry }],
+      ['a', { sceneOutputGeometry0: geometry, sceneOutputGeometry1: geometry }],
+      ['c', { value: geometry }],
+    ]);
+    const nodes = [
+      { id: 'a', type: 'topGroup', data: {} },
+      { id: 'b', type: 'skirtGroup', data: { label: 'My Skirt' } },
+      { id: 'c', type: 'numberInput', data: {} },
+    ];
+    expect(listSceneOutputs(nodes, results)).toEqual([
+      { key: 'a:0', nodeId: 'a', label: 'Top #0' },
+      { key: 'a:1', nodeId: 'a', label: 'Top #1' },
+      { key: 'b:0', nodeId: 'b', label: 'My Skirt' },
+    ]);
+    expect(listSceneOutputs(nodes, null)).toEqual([]);
   });
 });

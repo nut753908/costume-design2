@@ -1,5 +1,7 @@
 import { create } from 'zustand';
-import type { SocketValue } from '../nodes/types';
+import type { GraphNode, SocketValue } from '../nodes/types';
+import type { EvaluatedGraph } from '../nodes/evaluateGraph';
+import { getNodeType } from '../nodes/registry';
 import { matchSceneOutputGeometryIndex } from '../nodes/definitions/generic/sceneOutput';
 
 /** 3Dビューに描画される1つのメッシュ(= `Garments.tsx` がマウントする1つの `ToonMesh`)の識別子。
@@ -51,4 +53,27 @@ export const useViewStore = create<ViewState>((set) => ({
 
 export function isMeshVisible(view: Pick<ViewState, 'hidden' | 'solo'>, key: string): boolean {
   return view.solo.size > 0 ? view.solo.has(key) : !view.hidden.has(key);
+}
+
+export interface SceneOutputRow {
+  key: string;
+  nodeId: string;
+  label: string;
+}
+
+/** 3Dビューに描画されているメッシュ(`sceneOutput`)を、トップレベルのノード順に一覧にする。
+ * ラベルはノードの `data.label`(無ければ型のラベル)で、1つのノードが複数のメッシュを持つ場合だけ
+ * 通し番号を添える。 */
+export function listSceneOutputs(nodes: GraphNode[], results: EvaluatedGraph | null): SceneOutputRow[] {
+  if (!results) return [];
+  return nodes.flatMap((node) => {
+    const keys = sceneMeshKeys(node.id, results.get(node.id));
+    const customLabel = (node.data as { label?: unknown }).label;
+    const base = typeof customLabel === 'string' ? customLabel : getNodeType(node.type).label;
+    return keys.map((key, i) => ({
+      key,
+      nodeId: node.id,
+      label: keys.length > 1 ? `${base} #${i}` : base,
+    }));
+  });
 }
