@@ -12,7 +12,7 @@ function num(v: number) {
 // pants は脚1本ぶんのジオメトリ(direction='down' の easedLatheProfile、始点=Waist Radius
 // (bodyBuild でスケール)、終点=Hem Radius(スケール対象外))を mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing は
-// pantsLegSpacing(initialGraph.ts の共有ノード)を再引きする外部ソケットのまま。
+// bodyDimensions(initialGraph.ts の共有ノード)の legSpacing を受け取る外部ソケットのまま。
 describe('pantsGroup', () => {
   const DEFAULTS = { waistRadius: 0.16, hemRadius: 0.1, inseam: 0.75, legSpacing: 0.14, offsetY: 0 };
   const maxRadius = (bodyBuild: number) => Math.max(DEFAULTS.waistRadius * bodyBuild, DEFAULTS.hemRadius);
@@ -37,7 +37,7 @@ describe('pantsGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(2), 5);
   });
 
-  it('legSpacing を注入すると左右の間隔がそのまま最大Xへ反映される(pantsLegSpacing の再引き配線)', () => {
+  it('legSpacing を注入すると左右の間隔がそのまま最大Xへ反映される(bodyDimensions.legSpacing の配線)', () => {
     const result = getNodeType('pantsGroup').evaluate({ legSpacing: num(0.3) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();

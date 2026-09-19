@@ -14,7 +14,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * `bodyGroupNode.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。socks は shoes/hat と同じ
  * `direction: 'up'`(足首から上=ふくらはぎ側へ伸びる)。
  *
- * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
+ * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ color: { hex: '#d4a83a', label: 'Socks Color' }, offsetY: 0, geometry: 'mirror' });

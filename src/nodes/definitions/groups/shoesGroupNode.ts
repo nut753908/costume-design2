@@ -15,7 +15,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scaleZ`(`translateX`/`translateY`/
  * `translateZ` と対になる、1軸だけを扱う汎用の非一様スケールノード)で表現する。
  *
- * Leg Spacing は pants の生パラメータノード(`pantsLegSpacing`)を再引きする外部入力として、
+ * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ color: { hex: '#3d3630', label: 'Shoes Color' }, offsetY: 0, geometry: 'mirror' });

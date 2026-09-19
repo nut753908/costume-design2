@@ -86,7 +86,7 @@ page.locator('.react-flow__node[data-id="<ノードID>"] select')               
 ```
 
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
-`bodyBuild`・`pantsLegSpacing`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
+`bodyBuild`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
 (Body の `skinColorIn` を含む)は対応するグループの中に `waistRadiusIn`/`colorIn`/
 `torsoRadiusIn` のような `<socketId>In` という id で埋め込まれているため、上のステップ5と同様に
 まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。

@@ -33,10 +33,6 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // 自分ではスケール計算を一切行わない。
   { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 
-  // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
-  // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
-
   // 全14種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetY用の
   // numberInput + garmentPlacement という一連のパイプラインを1枚の <name>Group ノード
@@ -101,14 +97,14 @@ export const initialEdges: Edge[] = [
   // はあくまで各ガーメントの半径スケーリング専用。
   { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyBuild' },
   { id: 'e-pants-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-pants-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'legSpacing' },
-  { id: 'e-shoes-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'shoesGroup', targetHandle: 'legSpacing' },
+  { id: 'e-pants-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'pantsGroup', targetHandle: 'legSpacing' },
+  { id: 'e-shoes-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'shoesGroup', targetHandle: 'legSpacing' },
   { id: 'e-shoes-sole-build', source: 'bodyBuild', sourceHandle: 'value', target: 'shoesGroup', targetHandle: 'bodyBuild' },
   { id: 'e-gloves-wrist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'glovesGroup', targetHandle: 'bodyBuild' },
   { id: 'e-belt-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'beltGroup', targetHandle: 'bodyBuild' },
   { id: 'e-scarf-neck-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'scarfGroup', targetHandle: 'bodyBuild' },
   { id: 'e-jacket-shoulder-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'jacketGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-socks-leg-spacing', source: 'pantsLegSpacing', sourceHandle: 'value', target: 'socksGroup', targetHandle: 'legSpacing' },
+  { id: 'e-socks-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'socksGroup', targetHandle: 'legSpacing' },
   { id: 'e-socks-ankle-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'socksGroup', targetHandle: 'bodyBuild' },
   { id: 'e-top-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'topGroup', targetHandle: 'bodyBuild' },
   { id: 'e-dress-torso-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'dressGroup', targetHandle: 'bodyBuild' },

@@ -12,10 +12,10 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`bodyGroupNode.ts` の腕/脚の
  * `cylinderGenerator`→`mirrorPair` と同じ形、`nodes/CLAUDE.md` 参照)。
  *
- * Leg Spacing(`pantsLegSpacing`)は shoesGroup/socksGroup からも直接再引きされる外部の
- * numberInput ノードのまま残す(pantsGroup 内部には取り込まない)ため、Body Build(半径
- * スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
- * waistY)と合わせて外部ソケットのまま。 */
+ * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` が Body Build でスケールして計算する
+ * `legSpacing`)を shoesGroup/socksGroup と共に受け取るため、Body Build(半径スケーリング用)・
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)と合わせて
+ * 外部ソケットのまま。 */
 const output = garmentOutput({ color: { hex: '#9c7b4f', label: 'Pants Color' }, offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('waistRadiusIn');

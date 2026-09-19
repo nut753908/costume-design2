@@ -66,7 +66,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 - `bodyBuildScale(rawId)`(`garmentParts.ts`)— 「体に触れる半径」(`rawId` の `value`)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。グループ内に `segmentsIn`(numberInput)が必要。
 
-外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `pantsLegSpacing` のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput`/`enumInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
+外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `legSpacing`(`bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput`/`enumInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
@@ -110,7 +110,7 @@ defineGroupNode({
 
 既存14種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。**`anchorY` は、`garmentPlacement` の取り付け座標計算のために必ず配線すること** — トップレベルの共有ノード `bodyLayout`(`bodyLayoutGroup`)の5つのアンカー候補出力(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に取り付く1つを選び、`bodyLayout → xxxGroup.anchorY` という形で配線する(既存の `e-anchor-*` エッジを参照)。これを省くと、`garmentPlacement` は既定値(0)にフォールバックするため、そのガーメントが原点付近に張り付いたまま描画される。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`bodyBuild → xxxGroup.bodyBuild` という別のエッジ(半径スケーリング専用、`bodyDimensions`/`bodyLayout` を経由しない)も配線すること。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、半径スケーリングの対象外でよい(ただし `anchorY` 配線は省略しない)。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
 
-新しいガーメントが pants/shoes/socks の Leg Spacing のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
+新しいガーメントが pants/shoes/socks の Leg Spacing(`bodyDimensions.legSpacing` を bodyGroup と共有)のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`bodyDimensions.legSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 
 ノードの `position` は `initialGraph.ts` には書かず、モジュール読み込み時に `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンと同じ関数)で自動算出される。ガーメントを追加しても座標を手で更新する必要は無い(グループ内部の `internalNodes` の座標も同じく自動算出)。
 

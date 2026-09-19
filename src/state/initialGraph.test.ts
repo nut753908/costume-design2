@@ -134,16 +134,13 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     expect(() => evaluateGraph(graphNodes, graphEdges)).not.toThrow();
   });
 
-  // shoes/socks は、複数ガーメントで共有される脚の間隔をトップレベルの共有ノードから
-  // 引いている。このエッジが将来の再改修で静かに外れないよう、接続関係をピンポイントで検証する。
-  it('shoesGroup/socksGroup.legSpacing が pantsLegSpacing に接続されている', () => {
-    for (const [target, targetHandle] of [
-      ['shoesGroup', 'legSpacing'],
-      ['socksGroup', 'legSpacing'],
-    ]) {
-      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === targetHandle);
-      expect(edge?.source).toBe('pantsLegSpacing');
-      expect(edge?.sourceHandle).toBe('value');
+  // pants/shoes/socks の脚の間隔が bodyGroup の脚と食い違うと、Body Build を変えたときに体だけ
+  // 脚が広がる。このエッジが静かに外れないよう、接続関係をピンポイントで検証する。
+  it('pantsGroup/shoesGroup/socksGroup.legSpacing が bodyGroup と同じ bodyDimensions.legSpacing に接続されている', () => {
+    for (const target of ['pantsGroup', 'shoesGroup', 'socksGroup']) {
+      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'legSpacing');
+      expect(edge?.source).toBe('bodyDimensions');
+      expect(edge?.sourceHandle).toBe('legSpacing');
     }
   });
 });
@@ -164,10 +161,10 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     targetHandle: e.targetHandle,
   }));
 
-  it('無関係なトップレベルノード(pantsLegSpacing)だけを変更しても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
+  it('無関係なトップレベルノード(hatGroup)の data だけを差し替えても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'pantsLegSpacing' ? { ...n, data: { ...n.data, value: 0.2 } } : n,
+      n.id === 'hatGroup' ? { ...n, data: { ...n.data, label: 'changed' } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
@@ -175,10 +172,10 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     expect(after.get('skirtGroup')?.sceneOutputMaterial0).toBe(before.get('skirtGroup')?.sceneOutputMaterial0);
   });
 
-  it('変更した pantsLegSpacing に依存する pantsGroup は、正しく再評価されて結果が変わる', () => {
+  it('変更した bodyBuild に依存する pantsGroup は、正しく再評価されて結果が変わる', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'pantsLegSpacing' ? { ...n, data: { ...n.data, value: 0.2 } } : n,
+      n.id === 'bodyBuild' ? { ...n, data: { ...n.data, value: 1.2 } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
