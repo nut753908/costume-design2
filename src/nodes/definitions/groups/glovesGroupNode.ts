@@ -2,7 +2,9 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
-/** glovesWristScale(numberMultiply)+profile(easedLatheProfile)+gloveGen(latheGenerator)+
+/** 手首半径(`wristRadiusIn`)と手の半径(`handRadiusIn`)はどちらも Body Build を掛けてから
+ * lathe へ渡す(`scale`/`handScale`)。手袋全体の大きさを体の大きさに揃えるため。
+ * glovesWristScale(numberMultiply)+profile(easedLatheProfile)+gloveGen(latheGenerator)+
  * mirror(mirrorPair)+glovesMaterial(toonMaterial)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Wrist Radius/Hand Radius/Length/Color は他のガーメントと共有されない単独
@@ -19,7 +21,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 const output = garmentOutput({ color: { hex: '#b0413e', label: 'Gloves Color' }, offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('wristRadiusIn');
-const lathe = latheBody({ genId: 'gloveGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'handRadiusIn', distance: 'lengthIn' });
+const handScale = bodyBuildScale('handRadiusIn', 'handScale');
+const lathe = latheBody({ genId: 'gloveGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'handScale', distance: 'lengthIn' });
 
 defineGroupNode({
   type: 'glovesGroup',
@@ -41,12 +44,14 @@ defineGroupNode({
     { id: 'lengthIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Length' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 12, min: 8, max: 32, step: 1, label: 'Segments' } },
     ...scale.nodes,
+    ...handScale.nodes,
     ...lathe.nodes,
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
     ...scale.edges,
+    ...handScale.edges,
     ...lathe.edges,
     { source: 'gloveGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'armSpacing', target: 'mirror', targetHandle: 'offset' },
