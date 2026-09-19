@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 import { buildBeltGeometry } from '../../../geometry/belt';
 // scarfGroup の埋め込みサブグラフが参照する beltGenerator/boxGenerator/numberSubtract/
-// numberMultiply/translateY/translateZ/mergeGeometry/toonMaterial/sceneOutput を含め、
+// numberMultiply/translate/mergeGeometry/toonMaterial/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
 
 // scarf は専用の build*Geometry() を持たず、既存の beltGenerator(帯)+boxGenerator(タイ)
-// +translateY/translateZ+mergeGeometry という既存ノードの組み合わせだけで完全にノードグラフ
+// +translate+mergeGeometry という既存ノードの組み合わせだけで完全にノードグラフ
 // 上に表現されている(scarfGroupNode.ts のコメント参照)。全パラメータがグループ内部の
 // numberInput に閉じており groupInput 経由では外部から注入できないため、既定値での評価結果を
 // 検証する。
@@ -47,7 +47,7 @@ describe('scarfGroup', () => {
   it('タイは tailCenterY(= (0 - bandThickness) - tailLength × 0.5)の高さまで垂れ下がる', () => {
     // 帯自身のY方向の広がり(厚み ±bandThickness/2 程度)より、タイの下端の方がずっと低いため、
     // 全体の bounding box の下端はタイ側で決まる。negatedBandThickness/halfTailLength/
-    // tailCenterY の四則演算チェーンと translateY への配線、さらに garmentPlacement の
+    // tailCenterY の四則演算チェーンと translate の Y への配線、さらに garmentPlacement の
     // offsetY(既定0.08)ぶんの平行移動が正しいことの検証になる。
     const result = getNodeType('scarfGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;

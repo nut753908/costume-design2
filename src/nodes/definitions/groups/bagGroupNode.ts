@@ -7,7 +7,7 @@ import { constNumberInput } from '../constNumberInput';
  * `alignedBoxGenerator`(`nodes/definitions/generic/alignedBoxGenerator.ts`、`geometry/
  * alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
  * 肩付近から反対の腰側までを結ぶ2点間に整列させて作り、バッグ本体(直方体)は
- * `boxGenerator`(汎用プリミティブノード)→`translateX`/`translateY`/`translateZ` という
+ * `boxGenerator`(汎用プリミティブノード)→`translate`(`generic/translate.ts`、X/Y/Z 軸の平行移動)という
  * ノードグラフへ展開している(`geometry/CLAUDE.md` 参照)。
  *
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
@@ -15,7 +15,7 @@ import { constNumberInput } from '../constNumberInput';
  * X: `negatedHipOffset = -hipOffset`(`numberNegate`)、Y(本体側): `bagCenterY =
  * negatedDrop - bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
- * `translateX`/`translateY`/`translateZ` の両方から同じ計算結果を参照する
+ * `translate` の両方から同じ計算結果を参照する
  * (`zeroIn`/`strapStartDepthIn`/`bagFrontDepthIn` は `constNumberInput()` で
  * 定義する「常に一定の値を持つ `numberInput`」)。ストラップと
  * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと
@@ -52,9 +52,7 @@ defineGroupNode({
     { id: 'halfBagHeight', type: 'numberHalf', data: { label: 'Bag Height × Half' } },
     { id: 'negatedDrop', type: 'numberNegate', data: { label: 'Negated Drop' } },
     { id: 'bagCenterY', type: 'numberSubtract', data: { label: 'Bag Center Y' } },
-    { id: 'bodyTranslateX', type: 'translateX', data: {} },
-    { id: 'bodyTranslateY', type: 'translateY', data: {} },
-    { id: 'bodyTranslateZ', type: 'translateZ', data: {} },
+    { id: 'bodyTranslate', type: 'translate', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,
   ],
@@ -82,15 +80,13 @@ defineGroupNode({
     { source: 'negatedDrop', sourceHandle: 'value', target: 'bagCenterY', targetHandle: 'a' },
     { source: 'halfBagHeight', sourceHandle: 'value', target: 'bagCenterY', targetHandle: 'b' },
 
-    { source: 'boxGen', sourceHandle: 'geometry', target: 'bodyTranslateX', targetHandle: 'geometry' },
-    { source: 'negatedHipOffset', sourceHandle: 'value', target: 'bodyTranslateX', targetHandle: 'x' },
-    { source: 'bodyTranslateX', sourceHandle: 'geometry', target: 'bodyTranslateY', targetHandle: 'geometry' },
-    { source: 'bagCenterY', sourceHandle: 'value', target: 'bodyTranslateY', targetHandle: 'y' },
-    { source: 'bodyTranslateY', sourceHandle: 'geometry', target: 'bodyTranslateZ', targetHandle: 'geometry' },
-    { source: 'bagFrontDepthIn', sourceHandle: 'value', target: 'bodyTranslateZ', targetHandle: 'z' },
+    { source: 'boxGen', sourceHandle: 'geometry', target: 'bodyTranslate', targetHandle: 'geometry' },
+    { source: 'negatedHipOffset', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'x' },
+    { source: 'bagCenterY', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'y' },
+    { source: 'bagFrontDepthIn', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'z' },
 
     { source: 'strapGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'bodyTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'bodyTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     ...output.edges,
   ],

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // bagGroup の埋め込みサブグラフが参照する alignedBoxGenerator/boxGenerator/numberSubtract/
-// numberMultiply/translateX/translateY/translateZ/mergeGeometry/toonMaterial/sceneOutput を
+// numberMultiply/translate/mergeGeometry/toonMaterial/sceneOutput を
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // ストラップ(ノードグラフ側の alignedBoxGenerator)とバッグ本体(ノードグラフ側の
-// boxGenerator+translateX/Y/Z、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
+// boxGenerator+translate、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
 // チェーンで導出)を merge で1つにまとめる配線が正しいかを検証する(bagGroupNode.ts の
 // コメント参照)。全パラメータがグループ内部の numberInput に閉じており groupInput 経由
 // では外部から注入できないため、既定値での評価結果を検証する。
@@ -33,7 +33,7 @@ describe('bagGroup', () => {
     // ストラップ自身の最下点(y = -drop = -0.55)より、バッグ本体の底(bagCenterY -
     // bagHeight/2 = -0.69)の方が低いため、全体の bounding box の下端はバッグ本体側で決まる。
     // これは negatedDrop/halfBagHeight/bagCenterY の四則演算チェーンが正しい値を計算し、
-    // translateY へ正しく配線されていることの検証になる。
+    // translate の Y へ正しく配線されていることの検証になる。
     const result = getNodeType('bagGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
@@ -43,7 +43,7 @@ describe('bagGroup', () => {
 
   it('バッグ本体は bagFrontDepthIn(= 0.18、ストラップの終端 endZ と共有する固定値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
-    // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translateZ への配線が
+    // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translate の Z への配線が
     // 正しいことの検証になる。
     const result = getNodeType('bagGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;

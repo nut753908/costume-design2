@@ -6,8 +6,8 @@ import { constNumberInput } from '../constNumberInput';
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
  * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている。首元の輪
  * (`band`)は既存の `beltGenerator` ノードを `bulge=1.05` 固定でそのままネストして再利用し
- * (`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translateY`/`translateZ`
- * で配置する。Y座標(`tailCenterY = (0 - bandThickness) - tailLength × 0.5`)/Z座標
+ * (`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translate`(`generic/translate.ts`、
+ * X/Y/Z 軸の平行移動)で配置する。Y座標(`tailCenterY = (0 - bandThickness) - tailLength × 0.5`)/Z座標
  * (`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、固定値0.9)はどちらも可視の
  * 四則演算チェーンで導出する(`bandThickness` の符号反転は `numberNegate`、
  * `bulgeIn`/`tailFrontInsetIn` は `constNumberInput()` で定義する「常に一定の値を持つ
@@ -50,8 +50,7 @@ defineGroupNode({
     { id: 'halfTailLength', type: 'numberHalf', data: { label: 'Tail Length × Half' } },
     { id: 'tailCenterY', type: 'numberSubtract', data: { label: 'Tail Center Y' } },
     { id: 'tailCenterZ', type: 'numberMultiply', data: { label: 'Tail Center Z' } },
-    { id: 'tailTranslateY', type: 'translateY', data: {} },
-    { id: 'tailTranslateZ', type: 'translateZ', data: {} },
+    { id: 'tailTranslate', type: 'translate', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,
   ],
@@ -75,13 +74,12 @@ defineGroupNode({
     { source: 'scale', sourceHandle: 'value', target: 'tailCenterZ', targetHandle: 'value' },
     { source: 'tailFrontInsetIn', sourceHandle: 'value', target: 'tailCenterZ', targetHandle: 'factor' },
 
-    { source: 'tailGen', sourceHandle: 'geometry', target: 'tailTranslateY', targetHandle: 'geometry' },
-    { source: 'tailCenterY', sourceHandle: 'value', target: 'tailTranslateY', targetHandle: 'y' },
-    { source: 'tailTranslateY', sourceHandle: 'geometry', target: 'tailTranslateZ', targetHandle: 'geometry' },
-    { source: 'tailCenterZ', sourceHandle: 'value', target: 'tailTranslateZ', targetHandle: 'z' },
+    { source: 'tailGen', sourceHandle: 'geometry', target: 'tailTranslate', targetHandle: 'geometry' },
+    { source: 'tailCenterY', sourceHandle: 'value', target: 'tailTranslate', targetHandle: 'y' },
+    { source: 'tailCenterZ', sourceHandle: 'value', target: 'tailTranslate', targetHandle: 'z' },
 
     { source: 'bandGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'tailTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'tailTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     ...output.edges,
   ],
