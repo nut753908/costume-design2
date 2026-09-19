@@ -100,6 +100,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-pants-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'pantsGroup', targetHandle: 'legSpacing' },
   { id: 'e-shoes-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'shoesGroup', targetHandle: 'legSpacing' },
   { id: 'e-shoes-sole-build', source: 'bodyBuild', sourceHandle: 'value', target: 'shoesGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-gloves-arm-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'glovesGroup', targetHandle: 'armSpacing' },
   { id: 'e-gloves-wrist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'glovesGroup', targetHandle: 'bodyBuild' },
   { id: 'e-belt-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'beltGroup', targetHandle: 'bodyBuild' },
   { id: 'e-scarf-neck-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'scarfGroup', targetHandle: 'bodyBuild' },

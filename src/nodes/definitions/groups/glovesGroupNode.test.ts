@@ -39,6 +39,13 @@ describe('glovesGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + maxRadius(3), 5);
   });
 
+  it('外部から注入された armSpacing が左右の間隔になる(bodyDimensions.shoulderSpacing の配線)', () => {
+    const result = getNodeType('glovesGroup').evaluate({ armSpacing: num(0.5) }, {});
+    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+    geom!.computeBoundingBox();
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.5 + maxRadius(1), 5);
+  });
+
   it('Length ぶん下(-Y)に伸びる(Wrist側が anchor=0)', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;

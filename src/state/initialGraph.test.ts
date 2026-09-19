@@ -136,6 +136,12 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
 
   // pants/shoes/socks の脚の間隔が bodyGroup の脚と食い違うと、Body Build を変えたときに体だけ
   // 脚が広がる。このエッジが静かに外れないよう、接続関係をピンポイントで検証する。
+  it('glovesGroup.armSpacing が bodyGroup の腕と同じ bodyDimensions.shoulderSpacing に接続されている', () => {
+    const edge = initialEdges.find((e) => e.target === 'glovesGroup' && e.targetHandle === 'armSpacing');
+    expect(edge?.source).toBe('bodyDimensions');
+    expect(edge?.sourceHandle).toBe('shoulderSpacing');
+  });
+
   it('pantsGroup/shoesGroup/socksGroup.legSpacing が bodyGroup と同じ bodyDimensions.legSpacing に接続されている', () => {
     for (const target of ['pantsGroup', 'shoesGroup', 'socksGroup']) {
       const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'legSpacing');
