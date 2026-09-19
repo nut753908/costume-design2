@@ -80,8 +80,8 @@ defineGroupNode({
     { source: 'tailTranslateY', sourceHandle: 'geometry', target: 'tailTranslateZ', targetHandle: 'geometry' },
     { source: 'tailCenterZ', sourceHandle: 'value', target: 'tailTranslateZ', targetHandle: 'z' },
 
-    { source: 'bandGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryA' },
-    { source: 'tailTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryB' },
+    { source: 'bandGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'tailTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     ...output.edges,
   ],

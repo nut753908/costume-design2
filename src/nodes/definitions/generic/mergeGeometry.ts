@@ -2,28 +2,25 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
 
-/** 2つの geometry を1つの BufferGeometry へ結合する汎用ノード。`geometry/mirrorPair.ts` の
- * `buildMirroredPairGeometry()` が内部で行っていた `mergeGeometries()`+`computeVertexNormals()`
- * を、左右対称ペア専用の関数から切り離し、単独のノードとして表現したもの。`mirrorPair`
- * (グループノード、`mirrorPair.ts`)が、X方向へ ± にそれぞれ平行移動した2つの `translateX`
- * の出力を結合するのに使う。片方だけ接続されているときはもう一方をそのまま出力する(配線を
- * 切るだけで、結合するパーツを外せる)。両方とも未接続なら何も出力しない。 */
+/** 複数の geometry を1つの BufferGeometry へ結合する汎用ノード。`geometries` は複数接続できる
+ * 入力ソケット(`SocketDef.multiple`)で、繋いだすべての geometry を結合する — 結合するパーツを
+ * 増減するには配線を足す/切るだけでよい(Blender の Join Geometry と同じ形)。1つだけなら
+ * そのまま出力し、何も接続されていないか、頂点属性が揃わず結合できない場合は何も出力しない。 */
 registerNodeType({
   type: 'mergeGeometry',
   label: 'Merge Geometry',
   category: 'generator',
-  inputs: [
-    { id: 'geometryA', label: 'Geometry A', type: 'geometry' },
-    { id: 'geometryB', label: 'Geometry B', type: 'geometry' },
-  ],
+  inputs: [{ id: 'geometries', label: 'Geometries', type: 'geometry', multiple: true }],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({}),
   evaluate: (inputs): Record<string, SocketValue> => {
-    const a = inputs.geometryA?.type === 'geometry' ? inputs.geometryA.value : undefined;
-    const b = inputs.geometryB?.type === 'geometry' ? inputs.geometryB.value : undefined;
-    if (!a && !b) return {};
-    if (!a || !b) return { geometry: { type: 'geometry', value: (a ?? b)! } };
-    const merged = mergeGeometries([a, b])!;
+    const list = inputs.geometries?.type === 'geometries' ? inputs.geometries.value : [];
+    if (list.length === 0) return {};
+    if (list.length === 1) return { geometry: { type: 'geometry', value: list[0] } };
+    // 頂点属性(uv の有無など)が揃っていない geometry 同士は結合できず null が返る。
+    // 例外にするとエディタ全体が落ちてしまうため、出力なし(未接続と同じ扱い)にする。
+    const merged = mergeGeometries(list);
+    if (!merged) return {};
     merged.computeVertexNormals();
     return { geometry: { type: 'geometry', value: merged } };
   },

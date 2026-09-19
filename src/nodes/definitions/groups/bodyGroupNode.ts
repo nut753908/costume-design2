@@ -10,7 +10,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 胴体(`capsuleGenerator`)・頭(`sphereGenerator`)をそれぞれ `translateY` で配置し、
  * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
- * `mergeGeometry` を3回チェーンして1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
+ * 4つを `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
  * 形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。トゥーンのアウトライン
  * (`rendering/Outline.tsx`)はワールド原点基準の一様スケール複製のため、4パーツを個別の
@@ -66,9 +66,7 @@ defineGroupNode({
     { id: 'legPair', type: 'limbPair', data: {} },
 
     // 4パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
-    { id: 'mergeTorsoHead', type: 'mergeGeometry', data: {} },
-    { id: 'mergeArm', type: 'mergeGeometry', data: {} },
-    { id: 'mergeLeg', type: 'mergeGeometry', data: {} },
+    { id: 'merge', type: 'mergeGeometry', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
@@ -95,14 +93,12 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
     { source: 'legTaperRatioIn', sourceHandle: 'value', target: 'legPair', targetHandle: 'taperRatio' },
 
-    { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'mergeTorsoHead', targetHandle: 'geometryA' },
-    { source: 'headTranslate', sourceHandle: 'geometry', target: 'mergeTorsoHead', targetHandle: 'geometryB' },
-    { source: 'mergeTorsoHead', sourceHandle: 'geometry', target: 'mergeArm', targetHandle: 'geometryA' },
-    { source: 'armPair', sourceHandle: 'geometry', target: 'mergeArm', targetHandle: 'geometryB' },
-    { source: 'mergeArm', sourceHandle: 'geometry', target: 'mergeLeg', targetHandle: 'geometryA' },
-    { source: 'legPair', sourceHandle: 'geometry', target: 'mergeLeg', targetHandle: 'geometryB' },
+    { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'armPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'legPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
-    { source: 'mergeLeg', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    { source: 'merge', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
   ],
 });

@@ -47,9 +47,9 @@ function materializeInternalNodes(config: GroupNodeConfig): GroupInternalNode[] 
 function materializeInternalEdges(config: GroupNodeConfig): GroupInternalEdge[] {
   return config.internalEdges.map((edge) => ({
     ...structuredClone(edge),
-    // 1つの入力ソケットには常に最大1本(state/CLAUDE.md 参照)というこのアプリの規約により、
-    // target+targetHandle の組は埋め込みサブグラフ内で一意になる。
-    id: `${edge.target}.${edge.targetHandle}`,
+    // 複数接続できる入力ソケット(`SocketDef.multiple`)には同じ target+targetHandle へ複数の
+    // エッジが入るため、接続元も含めて一意にする。
+    id: `${edge.source}.${edge.sourceHandle}>${edge.target}.${edge.targetHandle}`,
   }));
 }
 

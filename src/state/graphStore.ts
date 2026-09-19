@@ -12,6 +12,7 @@ import {
 } from '@xyflow/react';
 import type { EvaluatedGraph } from '../nodes/evaluateGraph';
 import { getNodeType } from '../nodes/registry';
+import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
 import { computeAutoLayout } from '../nodes/autoLayout';
 import { initialNodes, initialEdges } from './initialGraph';
 import { composeRootGraph, type ScopeFrame } from './composeRootGraph';
@@ -182,9 +183,16 @@ export const useGraphStore = create<GraphState>()(
           // 後でそのエッジが消えた瞬間に見た目の値が突然変わる)。それを避けるため、
           // 新しい接続を追加する前に、同じ target/targetHandle への既存の接続を
           // 置き換える(繋ぎ直す一般的なノードエディタの挙動)。
-          const edges = get().edges.filter(
-            (e) => !(e.target === connection.target && (e.targetHandle ?? null) === (connection.targetHandle ?? null)),
-          );
+          // ただし複数接続できるソケット(`SocketDef.multiple`)は置き換えず、そのまま追加する。
+          const targetNode = get().nodes.find((n) => n.id === connection.target);
+          const targetSocket = targetNode
+            ? resolveNodeSockets(targetNode.type ?? '', targetNode.data).inputs.find((s) => s.id === connection.targetHandle)
+            : undefined;
+          const edges = targetSocket?.multiple
+            ? get().edges
+            : get().edges.filter(
+                (e) => !(e.target === connection.target && (e.targetHandle ?? null) === (connection.targetHandle ?? null)),
+              );
           set({ edges: addEdge(connection, edges) });
         },
         updateNodeData: (id, data) => {

@@ -40,8 +40,8 @@ defineGroupNode({
     { source: 'negate', sourceHandle: 'value', target: 'translateNeg', targetHandle: 'x' },
     { source: 'input', sourceHandle: 'geometry', target: 'translatePos', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'offset', target: 'translatePos', targetHandle: 'x' },
-    { source: 'translateNeg', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryA' },
-    { source: 'translatePos', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryB' },
+    { source: 'translateNeg', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'translatePos', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'merge', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

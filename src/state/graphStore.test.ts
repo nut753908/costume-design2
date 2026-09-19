@@ -17,6 +17,18 @@ beforeAll(() => {
       }),
     });
   }
+  // 複数接続できる入力ソケット(`SocketDef.multiple`)を持つノード(onConnect のテスト用)。
+  if (!nodeTypeRegistry.has('testMultiSink')) {
+    registerNodeType({
+      type: 'testMultiSink',
+      label: 'Test Multi Sink',
+      category: 'generator',
+      inputs: [{ id: 'items', label: 'Items', type: 'geometry', multiple: true }],
+      outputs: [],
+      createDefaultData: () => ({}),
+      evaluate: () => ({}),
+    });
+  }
   // removeGroupIOSocket のテスト用(nodes/definitions/groupInput.ts/groupOutput.ts を
   // 模した最小限のスタブ)。
   if (!nodeTypeRegistry.has('groupInput')) {
@@ -190,6 +202,14 @@ describe('graphStore の Undo/Redo', () => {
     const { edges } = useGraphStore.getState();
     expect(edges).toHaveLength(1);
     expect(edges[0].source).toBe('b');
+  });
+
+  it('onConnect は複数接続できる入力ソケット(multiple)への既存の接続を置き換えず、追加する', () => {
+    resetStore([makeNode('a'), makeNode('b'), makeNode('m', { type: 'testMultiSink' })]);
+    useGraphStore.getState().onConnect({ source: 'a', sourceHandle: 'value', target: 'm', targetHandle: 'items' });
+    useGraphStore.getState().onConnect({ source: 'b', sourceHandle: 'value', target: 'm', targetHandle: 'items' });
+
+    expect(useGraphStore.getState().edges.map((e) => e.source)).toEqual(['a', 'b']);
   });
 
   it('異なる入力ソケットへの接続は置き換えられず両方残る', () => {

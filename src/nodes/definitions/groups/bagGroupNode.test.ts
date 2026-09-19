@@ -24,7 +24,7 @@ describe('bagGroup', () => {
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     // ストラップ(alignedBoxGenerator = BoxGeometry)+本体(boxGenerator = BoxGeometry)は
     // どちらも24頂点(面ごとに頂点を共有しない既定の BoxGeometry)なので、結合後は48。
-    // 片方だけしか配線されていない(mergeGeometry の geometryA/geometryB を取り違えた等の)
+    // 片方だけしか配線されていない(mergeGeometry の geometries へ片方を繋ぎ忘れた等の)
     // 配線ミスがあれば24のままになるため、この検証だけで両方が結合されていると分かる。
     expect(geom!.getAttribute('position').count).toBe(48);
   });

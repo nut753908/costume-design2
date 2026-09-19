@@ -20,8 +20,8 @@ import { constNumberInput } from '../constNumberInput';
  * ブリッジは1本の箱で、`bridgeXOffset = lensSpacing - lensRadius` の ± を両端(`endX` は
  * `negatedBridgeXOffset`、`numberNegate`)に置き、Y=0・Z=`forwardDepthIn` は両端で共通。
  * テンプルは Z だけ `forwardDepthIn`(前面)から `templeBackZ = (forwardDepthIn -
- * templeBackOffsetIn) - templeLength`(後方)まで伸ばす。ブリッジ+テンプルペアは
- * `mergeFrame` でフレームにまとめ、レンズペアと合わせてさらに `mergeAll` で結合する。
+ * templeBackOffsetIn) - templeLength`(後方)まで伸ばす。ブリッジ・テンプルペア・レンズペアの
+ * 3つは `mergeAll`(`mergeGeometry`)で結合する。
  * 全パラメータが他のガーメントと共有されない単独パラメータのため、外側の
  * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される headCenterY)だけが
@@ -61,7 +61,6 @@ defineGroupNode({
     { id: 'templeBackZ', type: 'numberSubtract', data: { label: 'Temple Back Z' } },
     { id: 'templeGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'templeMirror', type: 'mirrorPair', data: {} },
-    { id: 'mergeFrame', type: 'mergeGeometry', data: {} },
 
     // レンズ1つ(X=0 基準)を ±lensSpacing へ複製する。
     { id: 'lensGen', type: 'torusGenerator', data: {} },
@@ -104,9 +103,6 @@ defineGroupNode({
     { source: 'templeGen', sourceHandle: 'geometry', target: 'templeMirror', targetHandle: 'geometry' },
     { source: 'templeXOffset', sourceHandle: 'value', target: 'templeMirror', targetHandle: 'offset' },
 
-    { source: 'bridgeGen', sourceHandle: 'geometry', target: 'mergeFrame', targetHandle: 'geometryA' },
-    { source: 'templeMirror', sourceHandle: 'geometry', target: 'mergeFrame', targetHandle: 'geometryB' },
-
     // レンズ = torusGenerator(X=0)を translateZ で前面へ置き、mirrorPair で ± lensSpacing へ。
     { source: 'frameThicknessIn', sourceHandle: 'value', target: 'frameThicknessHalf', targetHandle: 'value' },
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'lensGen', targetHandle: 'radius' },
@@ -116,8 +112,9 @@ defineGroupNode({
     { source: 'lensTranslateZ', sourceHandle: 'geometry', target: 'lensMirror', targetHandle: 'geometry' },
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'lensMirror', targetHandle: 'offset' },
 
-    { source: 'lensMirror', sourceHandle: 'geometry', target: 'mergeAll', targetHandle: 'geometryA' },
-    { source: 'mergeFrame', sourceHandle: 'geometry', target: 'mergeAll', targetHandle: 'geometryB' },
+    { source: 'bridgeGen', sourceHandle: 'geometry', target: 'mergeAll', targetHandle: 'geometries' },
+    { source: 'templeMirror', sourceHandle: 'geometry', target: 'mergeAll', targetHandle: 'geometries' },
+    { source: 'lensMirror', sourceHandle: 'geometry', target: 'mergeAll', targetHandle: 'geometries' },
 
     ...output.edges,
   ],

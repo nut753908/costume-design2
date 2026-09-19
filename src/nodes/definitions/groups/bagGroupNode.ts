@@ -89,8 +89,8 @@ defineGroupNode({
     { source: 'bodyTranslateY', sourceHandle: 'geometry', target: 'bodyTranslateZ', targetHandle: 'geometry' },
     { source: 'bagFrontDepthIn', sourceHandle: 'value', target: 'bodyTranslateZ', targetHandle: 'z' },
 
-    { source: 'strapGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryA' },
-    { source: 'bodyTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometryB' },
+    { source: 'strapGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'bodyTranslateZ', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     ...output.edges,
   ],

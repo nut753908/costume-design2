@@ -23,8 +23,8 @@ describe('glassesGroup', () => {
 
   it('左右レンズ(トーラス2個)+フレーム(ブリッジ+テンプル、直方体3個)ぶんの頂点を持つ', () => {
     // TorusGeometry(radialSegments=8, tubularSegments=16)は既定で (8+1)*(16+1)=153頂点。
-    // BoxGeometry は既定で24頂点。レンズペア(lensMirror)とブリッジ+テンプルペア(mergeFrame)を
-    // 最後に mergeAll で結合する。mirrorPair/mergeGeometry のどこか1つでも取り違えていれば
+    // BoxGeometry は既定で24頂点。ブリッジ・テンプルペア(templeMirror)・レンズペア(lensMirror)を
+    // mergeAll で結合する。mirrorPair/mergeGeometry のどこか1つでも取り違えていれば
     // 頂点数がずれるため、この検証で全部が正しく結合されていると分かる。
     const result = getNodeType('glassesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;

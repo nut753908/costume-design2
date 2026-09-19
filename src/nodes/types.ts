@@ -8,12 +8,20 @@ export type SocketValue =
   | { type: 'enum'; value: string }
   | { type: 'geometry'; value: THREE.BufferGeometry }
   | { type: 'material'; value: THREE.Material }
-  | { type: 'points'; value: THREE.Vector2[] };
+  | { type: 'points'; value: THREE.Vector2[] }
+  /** 複数接続できる入力ソケット(`SocketDef.multiple`)へ、接続されたすべての geometry を
+   * 配線順に集めて渡すための値。ソケット自身の型は `geometry` のまま。 */
+  | { type: 'geometries'; value: THREE.BufferGeometry[] };
 
 export interface SocketDef {
   id: string;
   label: string;
   type: SocketType;
+  /** 入力ソケットにだけ意味を持つ。true なら同じソケットへ複数のエッジを接続でき(他の入力
+   * ソケットは最大1本、`state/graphStore.ts` の `onConnect` 参照)、`evaluate()` には接続された
+   * 値がエッジの並び順で集められて渡される。現在は `geometry` 型の `mergeGeometry` だけが使い、
+   * 渡される値は `{ type: 'geometries' }`。1本も接続されていなければ入力に現れない。 */
+  multiple?: boolean;
 }
 
 export type NodeCategory = 'input' | 'generator' | 'material' | 'output' | 'group' | 'group-io';

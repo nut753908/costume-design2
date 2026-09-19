@@ -45,8 +45,17 @@ describe('全グループノードの内部配線', () => {
       expect(problems).toEqual([]);
     });
 
-    it('同じ入力ソケットに複数のエッジが接続されていない(1入力につき最大1本)', () => {
-      const keys = edges.map((e) => `${e.target}.${e.targetHandle}`);
+    it('内部エッジの id が重複しない(複数接続できるソケットへ繋がる複数のエッジも区別できる)', () => {
+      const ids = edges.map((e) => e.id);
+      expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([]);
+    });
+
+    it('複数接続できないソケット(`SocketDef.multiple` でない入力)に複数のエッジが接続されていない(1入力につき最大1本)', () => {
+      const isMultiple = (e: GroupInternalEdge) => {
+        const target = nodesById.get(e.target);
+        return !!target && resolveNodeSockets(target.type, target.data).inputs.find((s) => s.id === e.targetHandle)?.multiple === true;
+      };
+      const keys = edges.filter((e) => !isMultiple(e)).map((e) => `${e.target}.${e.targetHandle}`);
       expect(keys.filter((k, i) => keys.indexOf(k) !== i)).toEqual([]);
     });
   });

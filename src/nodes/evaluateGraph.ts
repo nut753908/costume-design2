@@ -73,6 +73,9 @@ function sameSocketValue(a: SocketValue | undefined, b: SocketValue | undefined)
   if (a.type === 'number' && b.type === 'number') return a.value === b.value;
   if (a.type === 'enum' && b.type === 'enum') return a.value === b.value;
   if (a.type === 'color' && b.type === 'color') return a.value.equals(b.value);
+  if (a.type === 'geometries' && b.type === 'geometries') {
+    return a.value.length === b.value.length && a.value.every((g, i) => g === b.value[i]);
+  }
   return false;
 }
 
@@ -110,6 +113,15 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
     // ソケット構成を動的に上書きできる(nodes/resolveNodeSockets.ts 参照)ため、型の静的な
     // def.inputs ではなくこちら経由で未接続ソケットのフォールバック解決を行う。
     for (const socket of resolveNodeSockets(node.type, node.data).inputs) {
+      // 複数接続できるソケットは、接続されたすべての値をエッジの並び順で配列に集める。
+      if (socket.multiple) {
+        const values = incomingEdges
+          .filter((e) => (e.targetHandle ?? undefined) === socket.id)
+          .map((e) => results.get(e.source)?.[e.sourceHandle ?? ''])
+          .filter((v): v is Extract<SocketValue, { type: 'geometry' }> => v?.type === 'geometry');
+        if (values.length > 0) inputs[socket.id] = { type: 'geometries', value: values.map((v) => v.value) };
+        continue;
+      }
       const incoming = incomingEdges.find((e) => (e.targetHandle ?? undefined) === socket.id);
       const upstreamValue = incoming
         ? results.get(incoming.source)?.[incoming.sourceHandle ?? '']
