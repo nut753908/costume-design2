@@ -95,7 +95,7 @@ describe('evaluateScopeChain', () => {
       {
         parentId: 'innerGroup',
         nodes: [
-          makeNode('input', 'groupInput', { sockets: [{ id: 'bodyBuild', default: 1 }] }),
+          makeNode('input', 'groupInput', { sockets: [{ id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }] }),
           makeNode('innerGroup', 'testPassthrough', {}),
         ],
         edges: [makeEdge('e2', 'input', 'bodyBuild', 'innerGroup', 'value')],
@@ -122,7 +122,7 @@ describe('evaluateScopeChain', () => {
       {
         parentId: 'innerGroup',
         nodes: [
-          makeNode('input', 'groupInput', { sockets: [{ id: 'bodyBuild', default: 1 }] }),
+          makeNode('input', 'groupInput', { sockets: [{ id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 }] }),
           makeNode('innerGroup', 'testPassthrough', {}),
         ],
         edges: [makeEdge('e2', 'input', 'bodyBuild', 'innerGroup', 'value')],

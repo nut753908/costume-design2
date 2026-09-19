@@ -49,4 +49,6 @@
 
 `bodyBuild`(`bodyDimensions` への配線に加え、半径スケーリングに使う9グループ — skirt/pants/belt/gloves/scarf/jacket/socks/shoes/dress — へも直接配線される)、`pantsLegSpacing`(pants/shoes/socks の3グループへ配線、脚回りのガーメント間で共有される脚の間隔)、そして `topGroup`/`sleeveGroup` の両方が必要とする Torso Radius(Body Build 適用後)/Material(`topRadiusScale`/`topMaterial` という2つの共有ノードから両グループへファンアウト — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要があるため)は、複数グループにまたがって配線される「共有ノード」としてトップレベルに残っています(パターンの詳細は [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。それ以外の各ガーメント固有のパラメータ(半径・長さ・色など)は、対応する `<name>GroupNode.ts` のテンプレート内に `numberInput`/`colorInput`/`enumInput` ノードとして直接組み込まれており、そのガーメントのグループの中に入って初めて編集できます。
 
+`initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
+
 `editor/PresetPanel.tsx` はこの `initialNodes`/`initialEdges` を、`usePresetStore` に保存されたユーザープリセットとは別に「初期状態(デフォルト)」という擬似プリセット(固定ID `__initial__`、常にドロップダウン先頭に表示、削除不可)としてロード可能にしています。上記の「リロード後は Undo で戻せない」問題への対処として、ユーザーはこのプリセットを選んで Load することでいつでも初期グラフに戻せます。

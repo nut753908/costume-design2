@@ -112,7 +112,7 @@ defineGroupNode({
 
 新しいガーメントが pants/shoes/socks の Leg Spacing や topGroup/sleeveGroup の Torso Radius/Material のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing`、`topRadiusScale → topGroup.torsoRadius`/`sleeveGroup.attachRadius` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(実際に topGroup/sleeveGroup で踏んだ落とし穴、`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 
-ノードの `position` は `src/state/initialGraph.ts` 冒頭のコメントのとおり、`nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンが使うのと同じ関数)を `initialNodes`/`initialEdges` に適用して機械的に算出した静的な座標として埋め込んでいる。ガーメントを追加したら、変更と同じコミットで座標を再計算し直すこと(アプリを起動してトップレベルで「Arrange」を押し、Export JSON の座標を書き戻す。手順は同ファイル冒頭のコメント参照)。`<name>GroupNode.ts` の `internalNodes` 自体の座標は `computeAutoLayout()` が自動算出するため、手作業での配置は不要。
+ノードの `position` は `initialGraph.ts` には書かず、モジュール読み込み時に `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンと同じ関数)で自動算出される。ガーメントを追加しても座標を手で更新する必要は無い(グループ内部の `internalNodes` の座標も同じく自動算出)。
 
 ## 6. テスト
 

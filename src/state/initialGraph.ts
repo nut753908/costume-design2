@@ -1,43 +1,41 @@
 import type { Node, Edge } from '@xyflow/react';
+import '../nodes/definitions';
+import { computeAutoLayout } from '../nodes/autoLayout';
 
 // initialNodes/initialEdges は GraphIO の Export/Import・ユーザープリセット(usePresetStore)と
 // 同じ { nodes, edges } 形状。PresetPanel.tsx はこれを「初期状態(デフォルト)」という固定の
 // 擬似プリセットとして扱い、通常のプリセットと同じ読み込み経路(loadGraph)でいつでも復帰できる
 // ようにしている(詳細は src/state/CLAUDE.md の「初期状態への復帰」節)。
 //
-// ノードの position は nodes/autoLayout.ts の computeAutoLayout()(GraphIO.tsx の
-// 「Arrange」ボタンが呼ぶのと同じ関数)を initialNodes/initialEdges 自身に適用して機械的に
-// 算出し、静的な座標として埋め込んだもの — 初回ロード時から「Arrange」を1度押した後の状態に
-// なっている。
-//
-// ノード/エッジの構成(特にどのノードが何に接続されているか)を変更した場合、この座標は
-// 古くなりうるため、変更と同じコミットで次のように再計算し直すこと:
-//   1. アプリを起動し、初期状態のまま(もしくは変更後の構成で)トップレベルで「Arrange」を押す
-//   2. 各ノードの新しい座標を Export JSON で取り出し、対応する position をここへ書き戻す
-// 新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
-export const initialNodes: Node[] = [
+// ノードの position は、下記のノード定義自体には持たせず、モジュール読み込み時に
+// nodes/autoLayout.ts の computeAutoLayout()(GraphIO.tsx の「Arrange」ボタンが呼ぶのと同じ
+// 関数)を適用して算出する — 初回ロード時から「Arrange」を1度押した後の状態になり、ノード/
+// エッジの構成を変えても座標を手で更新する必要は無い。computeAutoLayout() はノードタイプの
+// 登録内容(カードの高さの見積もり)に依存するため、ここで definitions を読み込んでから
+// 計算する。新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
+const initialNodeDefs: Omit<Node, 'position'>[] = [
   // bodyBuild は慣例的な id を持つシードノード。`bodyDimensions`(下記)への配線に加え、
   // ガーメント自身の半径スケーリング用に各ガーメントへも直接配線される(下記参照)。
   // Height/Shoulder は `bodyDimensions` からしか参照されない単独パラメータのため、
   // `bodyDimensionsGroup` 内部の `numberInput`(`heightScaleIn`/`shoulderScaleIn`)として
   // 持ち、この階層には現れない(nodes/CLAUDE.md の「グループノード」節参照)。
-  { id: 'bodyBuild', type: 'numberInput', position: { x: 0, y: 749 }, data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyBuild', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
 
   // ボディの寸法(9個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
   // アンカー候補)を計算する2つの共有ノード。bodyGroup と全15ガーメントへ普通の外部
   // ソケットとしてファンアウトする(nodes/CLAUDE.md の「グループノード」節参照)。
-  { id: 'bodyDimensions', type: 'bodyDimensionsGroup', position: { x: 340, y: 0 }, data: {} },
-  { id: 'bodyLayout', type: 'bodyLayoutGroup', position: { x: 680, y: 86 }, data: {} },
+  { id: 'bodyDimensions', type: 'bodyDimensionsGroup', data: {} },
+  { id: 'bodyLayout', type: 'bodyLayoutGroup', data: {} },
 
   // Body(3Dモデル本体)。他15種のガーメントと同じグループノードで、胴体/頭/腕/脚を
   // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。bodyDimensions/bodyLayout
   // が計算済みの生の値(半径・長さ・Y座標)を外部ソケットとして直接受け取るだけで、
   // 自分ではスケール計算を一切行わない。
-  { id: 'bodyGroup', type: 'bodyGroup', position: { x: 1020, y: 0 }, data: {} },
+  { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 
   // pantsLegSpacing は pants/shoes/socks の3グループに共有されるため、他のガーメント固有の
   // 生パラメータとは違いグループの内部には取り込まず、外部ノードのまま残している。
-  { id: 'pantsLegSpacing', type: 'numberInput', position: { x: 680, y: 647 }, data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
+  { id: 'pantsLegSpacing', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Leg Spacing' } },
 
   // 全15種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetY用の
@@ -50,31 +48,31 @@ export const initialNodes: Node[] = [
   // は `sceneOutput`(nodes/definitions/generic/sceneOutput.ts)ノードも内包しており、実際に
   // シーンへ描画されるのはこの内部 `sceneOutput` への配線があるからである(このファイルには
   // その配線は現れない)。
-  { id: 'skirtGroup', type: 'skirtGroup', position: { x: 1020, y: 377 }, data: {} },
+  { id: 'skirtGroup', type: 'skirtGroup', data: {} },
 
   // topGroup/sleeveGroup が共有する Torso Radius(Body Build 適用後のスケール済みの値)と
   // Material — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要がある
   // ため、この2つの値はどちらのグループの内部にも置かず、このファイル側の共有ノードとして
   // 両方へファンアウトしている。
-  { id: 'topRadius', type: 'numberInput', position: { x: 340, y: 712 }, data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
-  { id: 'topColor', type: 'colorInput', position: { x: 340, y: 868 }, data: { hex: '#5b8fa8', label: 'Top Color' } },
-  { id: 'topRadiusScale', type: 'numberMultiply', position: { x: 680, y: 798 }, data: {} },
-  { id: 'topMaterial', type: 'toonMaterial', position: { x: 680, y: 954 }, data: {} },
-  { id: 'topGroup', type: 'topGroup', position: { x: 1360, y: 725 }, data: {} },
-  { id: 'sleeveGroup', type: 'sleeveGroup', position: { x: 1360, y: 872 }, data: {} },
+  { id: 'topRadius', type: 'numberInput', data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
+  { id: 'topColor', type: 'colorInput', data: { hex: '#5b8fa8', label: 'Top Color' } },
+  { id: 'topRadiusScale', type: 'numberMultiply', data: {} },
+  { id: 'topMaterial', type: 'toonMaterial', data: {} },
+  { id: 'topGroup', type: 'topGroup', data: {} },
+  { id: 'sleeveGroup', type: 'sleeveGroup', data: {} },
 
-  { id: 'pantsGroup', type: 'pantsGroup', position: { x: 1020, y: 1323 }, data: {} },
-  { id: 'shoesGroup', type: 'shoesGroup', position: { x: 1020, y: 1470 }, data: {} },
-  { id: 'socksGroup', type: 'socksGroup', position: { x: 1020, y: 1617 }, data: {} },
-  { id: 'glovesGroup', type: 'glovesGroup', position: { x: 1020, y: 501 }, data: {} },
-  { id: 'beltGroup', type: 'beltGroup', position: { x: 1020, y: 625 }, data: {} },
-  { id: 'scarfGroup', type: 'scarfGroup', position: { x: 1020, y: 749 }, data: {} },
-  { id: 'jacketGroup', type: 'jacketGroup', position: { x: 1020, y: 873 }, data: {} },
-  { id: 'dressGroup', type: 'dressGroup', position: { x: 1020, y: 997 }, data: {} },
-  { id: 'hatGroup', type: 'hatGroup', position: { x: 1020, y: 1121 }, data: {} },
-  { id: 'bagGroup', type: 'bagGroup', position: { x: 1020, y: 1764 }, data: {} },
-  { id: 'necktieGroup', type: 'necktieGroup', position: { x: 1020, y: 1865 }, data: {} },
-  { id: 'glassesGroup', type: 'glassesGroup', position: { x: 1020, y: 1222 }, data: {} },
+  { id: 'pantsGroup', type: 'pantsGroup', data: {} },
+  { id: 'shoesGroup', type: 'shoesGroup', data: {} },
+  { id: 'socksGroup', type: 'socksGroup', data: {} },
+  { id: 'glovesGroup', type: 'glovesGroup', data: {} },
+  { id: 'beltGroup', type: 'beltGroup', data: {} },
+  { id: 'scarfGroup', type: 'scarfGroup', data: {} },
+  { id: 'jacketGroup', type: 'jacketGroup', data: {} },
+  { id: 'dressGroup', type: 'dressGroup', data: {} },
+  { id: 'hatGroup', type: 'hatGroup', data: {} },
+  { id: 'bagGroup', type: 'bagGroup', data: {} },
+  { id: 'necktieGroup', type: 'necktieGroup', data: {} },
+  { id: 'glassesGroup', type: 'glassesGroup', data: {} },
 ];
 
 export const initialEdges: Edge[] = [
@@ -150,3 +148,18 @@ export const initialEdges: Edge[] = [
   { id: 'e-anchor-hat', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'hatGroup', targetHandle: 'anchorY' },
   { id: 'e-anchor-glasses', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'glassesGroup', targetHandle: 'anchorY' },
 ];
+
+const initialPositions = computeAutoLayout(
+  initialNodeDefs.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data })),
+  initialEdges.map((e) => ({
+    source: e.source,
+    sourceHandle: e.sourceHandle,
+    target: e.target,
+    targetHandle: e.targetHandle,
+  })),
+);
+
+export const initialNodes: Node[] = initialNodeDefs.map((n) => ({
+  ...n,
+  position: initialPositions.get(n.id) ?? { x: 0, y: 0 },
+}));
