@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
-/** Body を他15種のガーメントと同じ「`<name>Group` ノード」パターンで表現する。
+/** Body を他14種のガーメントと同じ「`<name>Group` ノード」パターンで表現する。
  * `Garments.tsx` はノードの型を問わず内部の `sceneOutput` だけを見て描画するため、
  * `bodyGroup` もガーメントと全く同じ経路でシーンへ描画される(ルート CLAUDE.md 参照)。
  *

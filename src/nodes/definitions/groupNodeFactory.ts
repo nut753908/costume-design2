@@ -10,7 +10,7 @@ export interface GroupNodeConfig {
   type: string;
   label: string;
   /** `type: 'groupInput'`/`type: 'groupOutput'` ノードはどちらも省略可 — 省略すると
-   *  外部から見た入出力ソケットはそれぞれ0個になる(既存15種のガーメントは `groupOutput`
+   *  外部から見た入出力ソケットはそれぞれ0個になる(既存14種のガーメントは `groupOutput`
    *  を全て省略している。描画は `sceneOutput` が別途担うため出番が無い)。 */
   internalNodes: GraphNode[];
   internalEdges: GraphEdge[];

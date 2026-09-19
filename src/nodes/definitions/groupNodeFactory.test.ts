@@ -385,7 +385,7 @@ describe('defineGroupNode', () => {
     expect(result.sceneOutputMaterial0).toEqual({ type: 'material', value: {} });
   });
 
-  it('groupOutput ノードも groupInput と同様に省略でき、外部出力は0個になる(既存15種のガーメントの実例)', () => {
+  it('groupOutput ノードも groupInput と同様に省略でき、外部出力は0個になる(既存14種のガーメントの実例)', () => {
     const { internalNodes, internalEdges } = buildInternalGraph();
     const withoutOutput = {
       internalNodes: internalNodes.filter((n) => n.type !== 'groupOutput'),

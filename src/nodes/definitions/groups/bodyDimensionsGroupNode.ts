@@ -65,7 +65,7 @@ const dimensions = [
 ];
 
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyDimensions`)として
- * ただ1組だけ存在し、`bodyGroup` と全15ガーメントへファンアウトされる計算グループ —
+ * ただ1組だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
  * Height/Build/Shoulder スケールから各部位の半径・長さを求める9つの「基準値
  * (`numberInput`)→ `numberMultiply`」チェーンを1枚にまとめたもの。ガーメントの『体に
  * 触れる半径』(`waistRadiusIn → numberMultiply(bodyBuild) → generator`)と同じ粒度まで

@@ -2,7 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { constNumberInput } from '../constNumberInput';
 
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyLayout`)としてただ1組
- * だけ存在し、`bodyGroup` と全15ガーメントへファンアウトされる計算グループ —
+ * だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
  * `bodyDimensionsGroupNode.ts` が求めた各部位の半径・長さから、胴体/頭/腕/脚をどのY座標に
  * 置けば継ぎ目なく積み上がるかを numberAdd/numberSubtract/numberMultiply の四則演算
  * チェーンで求める。
@@ -10,7 +10,7 @@ import { constNumberInput } from '../constNumberInput';
  * 地面のY座標 `feetY` は常に0固定(`+feetY` は常に no-op)なので、加算ノードを置かずに
  * `legHeight` をそのまま `waistY`(= `feetY + legHeight`)として使い回している。
  * `feetY`/`waistY`/`shoulderY`/`wristY`/`headCenterY` は `bodyGroup` 自身のメッシュ配置には
- * 使わないが、15ガーメント共通のアンカー候補として `garmentPlacement.ts` の `anchorY` へ
+ * 使わないが、14ガーメント共通のアンカー候補として `garmentPlacement.ts` の `anchorY` へ
  * 配線されるため出力に含めている。 */
 defineGroupNode({
   type: 'bodyLayoutGroup',
