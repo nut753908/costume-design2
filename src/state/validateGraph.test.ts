@@ -22,6 +22,32 @@ function node(id: string, type = 'validateGraphTestNode'): Node {
 }
 
 describe('validateGraph', () => {
+  it('グループノードの埋め込みサブグラフ(data.nodes/edges)に未登録の型があれば unknown-node-type を返す', () => {
+    const group: Node = {
+      id: 'g',
+      type: 'validateGraphTestNode',
+      position: { x: 0, y: 0 },
+      data: { nodes: [node('x', 'removedNodeType')], edges: [] },
+    };
+    expect(validateGraph([group], [])).toBe('unknown-node-type');
+  });
+
+  it('グループノードの埋め込みサブグラフ内の循環は cycle を返す', () => {
+    const group: Node = {
+      id: 'g',
+      type: 'validateGraphTestNode',
+      position: { x: 0, y: 0 },
+      data: {
+        nodes: [node('a'), node('b')],
+        edges: [
+          { id: 'e1', source: 'a', target: 'b' },
+          { id: 'e2', source: 'b', target: 'a' },
+        ],
+      },
+    };
+    expect(validateGraph([group], [])).toBe('cycle');
+  });
+
   it('登録済みのノードタイプのみで循環も無ければ null(有効)を返す', () => {
     const nodes = [node('a'), node('b')];
     const edges: Edge[] = [{ id: 'e1', source: 'a', target: 'b' }];

@@ -15,10 +15,14 @@ import { getNodeType } from '../nodes/registry';
 import { computeAutoLayout } from '../nodes/autoLayout';
 import { initialNodes, initialEdges } from './initialGraph';
 import { composeRootGraph, type ScopeFrame } from './composeRootGraph';
+import { validateGraph } from './validateGraph';
 
 /** localStorage の永続化キー。persist の name とErrorBoundaryのリセット処理(main.tsx)の
  * 両方から参照するため、値のドリフトを避けて1箇所にまとめる。 */
 export const GRAPH_STORAGE_KEY = 'costume-design-graph';
+
+/** 復元時の検証に失敗した保存データの退避先(`persist` の `merge` 参照)。 */
+export const GRAPH_BACKUP_STORAGE_KEY = 'costume-design-graph-invalid-backup';
 
 interface HistorySnapshot {
   nodes: Node[];
@@ -389,6 +393,20 @@ export const useGraphStore = create<GraphState>()(
       // だけが残り、他の全ガーメントの設計が失われる)。scopeStack 自体(ナビゲーション位置)は
       // 永続化しない — リロードするとトップレベル表示に戻る、という割り切り。
       partialize: (state) => composeRootGraph(state.scopeStack, state.nodes, state.edges),
+      // 復元した保存データが現在のノードタイプ/循環の基準を満たさない場合(過去のバージョンで
+      // 削除されたノードタイプを含むなど)は、そのまま評価すると例外になるため復元せず初期状態を
+      // 使う。壊れたデータは `GRAPH_BACKUP_STORAGE_KEY` に退避して消えないようにする。
+      merge: (persisted, current) => {
+        const saved = persisted as { nodes?: Node[]; edges?: Edge[] } | undefined;
+        if (!saved?.nodes || !saved.edges) return current;
+        if (validateGraph(saved.nodes, saved.edges) === null) return { ...current, nodes: saved.nodes, edges: saved.edges };
+        try {
+          localStorage.setItem(GRAPH_BACKUP_STORAGE_KEY, JSON.stringify(saved));
+        } catch {
+          // 退避に失敗しても初期状態への復帰は続ける。
+        }
+        return current;
+      },
     },
   ),
 );
