@@ -9,7 +9,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * のため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  *
  * 脚1本ぶんのジオメトリ(`profile`→`legGen`)と、それを ±legSpacing だけ X方向に離した
- * 左右対称ペアへまとめる処理(`mirror`)は分離している(`bodyGroupNode.ts` の腕/脚の
+ * 左右対称ペアへまとめる処理(`mirror`)は分離している(`limbPair.ts` の腕/脚の
  * `cylinderGenerator`→`mirrorPair` と同じ形、`nodes/CLAUDE.md` 参照)。
  *
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` が Body Build でスケールして計算する
