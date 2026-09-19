@@ -247,6 +247,17 @@ describe('evaluateGraph のノード単位メモ化', () => {
     expect(second.get('counter')?.value).toEqual({ type: 'number', value: 18 });
   });
 
+  it('data 参照が同じでも、ソケットに現れないフィールドが直接ミューテートされていれば再評価する', () => {
+    // testSource は data.value を直接読む(入力ソケットを持たない)ため、inputs の比較だけでは
+    // ミューテートを検知できない。data のトップレベルの浅いスナップショットとの比較で検知する。
+    const data = { value: 1 };
+    const nodes: GraphNode[] = [{ id: 'src', type: 'testSource', data }];
+
+    expect(evaluateGraph(nodes, []).get('src')?.value).toEqual({ type: 'number', value: 1 });
+    data.value = 2;
+    expect(evaluateGraph(nodes, []).get('src')?.value).toEqual({ type: 'number', value: 2 });
+  });
+
   it('data 参照が同じでも(直接ミューテートされていて)literal な値が変われば再評価する', () => {
     // グループノードの内部サブグラフが data: {} のまま(config.internalNodes に
     // フォールバック)の場合、内部ノードの data はモジュール定数として複数回の

@@ -31,6 +31,10 @@ export type EvaluatedGraph = Map<string, Record<string, SocketValue>>;
  * 走らない)。 */
 interface NodeEvalCacheEntry {
   type: string;
+  /** キャッシュ登録時点の `node.data` のトップレベルの浅いコピー。`data` の参照が同じでも、
+   * 誰かが直接ミューテートして中身が変わっていれば(このアプリの更新経路では起きないが、
+   * 起きると古い結果を静かに返し続けてしまう)ヒットさせない。 */
+  dataSnapshot: Record<string, unknown>;
   inputs: Record<string, SocketValue>;
   result: Record<string, SocketValue>;
 }
@@ -70,6 +74,12 @@ function sameSocketValue(a: SocketValue | undefined, b: SocketValue | undefined)
   if (a.type === 'enum' && b.type === 'enum') return a.value === b.value;
   if (a.type === 'color' && b.type === 'color') return a.value.equals(b.value);
   return false;
+}
+
+function sameShallow(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  const aKeys = Object.keys(a);
+  if (aKeys.length !== Object.keys(b).length) return false;
+  return aKeys.every((key) => Object.hasOwn(b, key) && Object.is(a[key], b[key]));
 }
 
 function sameInputs(a: Record<string, SocketValue>, b: Record<string, SocketValue>): boolean {
@@ -119,7 +129,7 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
     }
 
     const cached = nodeEvalCache.get(node.data);
-    if (cached && cached.type === node.type && sameInputs(cached.inputs, inputs)) {
+    if (cached && cached.type === node.type && sameShallow(cached.dataSnapshot, node.data) && sameInputs(cached.inputs, inputs)) {
       nodeEvalCacheStats.hits += 1;
       results.set(nodeId, cached.result);
       continue;
@@ -127,7 +137,7 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
 
     nodeEvalCacheStats.misses += 1;
     const result = def.evaluate(inputs, node.data);
-    nodeEvalCache.set(node.data, { type: node.type, inputs, result });
+    nodeEvalCache.set(node.data, { type: node.type, dataSnapshot: { ...node.data }, inputs, result });
     results.set(nodeId, result);
   }
 
