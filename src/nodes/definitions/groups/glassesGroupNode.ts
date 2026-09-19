@@ -22,10 +22,12 @@ import { constNumberInput } from '../constNumberInput';
  * テンプルは Z だけ `forwardDepthIn`(前面)から `templeBackZ = (forwardDepthIn -
  * templeBackOffsetIn) - templeLength`(後方)まで伸ばす。ブリッジ・テンプルペア・レンズペアの
  * 3つは `mergeAll`(`mergeGeometry`)で結合する。
- * 全パラメータが他のガーメントと共有されない単独パラメータのため、外側の
- * numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される headCenterY)だけが
- * 唯一の外部ソケット。 */
+ * 顔の前面の深さ `forwardDepthIn` は、頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と
+ * 同じ値)に `forwardDepthRatioIn` を掛けて求めるため、頭の大きさを変えると追従する。
+ * レンズの大きさ・間隔などそれ以外のパラメータは他のガーメントと共有されない単独パラメータの
+ * ため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+ * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
+ * headCenterY)は外部ソケット。 */
 const output = garmentOutput({ color: { hex: '#2a2a2a', label: 'Glasses Color' }, offsetY: -0.02, geometry: 'mergeAll' });
 
 defineGroupNode({
@@ -36,7 +38,10 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [anchorYSocket],
+        sockets: [
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.16 },
+          anchorYSocket,
+        ],
       },
     },
     { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045, min: 0.02, max: 0.07, step: 0.005, label: 'Lens Radius' } },
@@ -46,7 +51,8 @@ defineGroupNode({
     { id: 'templeLengthIn', type: 'numberInput', data: { value: 0.12, min: 0.05, max: 0.2, step: 0.01, label: 'Temple Length' } },
     { id: 'templeThicknessIn', type: 'numberInput', data: { value: 0.006, min: 0.003, max: 0.015, step: 0.001, label: 'Temple Thickness' } },
     constNumberInput('zeroIn', 0, 'Zero'),
-    constNumberInput('forwardDepthIn', 0.14, 'Forward Depth'),
+    constNumberInput('forwardDepthRatioIn', 0.875, 'Forward Depth Ratio'),
+    { id: 'forwardDepthIn', type: 'numberMultiply', data: { label: 'Forward Depth' } },
     constNumberInput('templeBackOffsetIn', 0.02, 'Temple Back Offset'),
     { id: 'frameThicknessHalf', type: 'numberHalf', data: { label: 'Frame Thickness × Half' } },
 
@@ -70,6 +76,9 @@ defineGroupNode({
     ...output.nodes,
   ],
   internalEdges: [
+    { source: 'input', sourceHandle: 'headRadius', target: 'forwardDepthIn', targetHandle: 'value' },
+    { source: 'forwardDepthRatioIn', sourceHandle: 'value', target: 'forwardDepthIn', targetHandle: 'factor' },
+
     // ブリッジ = alignedBoxGenerator(± bridgeXOffset、Y=0・Z=forwardDepth は両端で共通)。
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'bridgeXOffset', targetHandle: 'a' },
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'bridgeXOffset', targetHandle: 'b' },

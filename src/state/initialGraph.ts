@@ -126,6 +126,8 @@ export const initialEdges: Edge[] = [
   { id: 'e-anchor-socks', source: 'bodyLayout', sourceHandle: 'feetY', target: 'socksGroup', targetHandle: 'anchorY' },
   { id: 'e-anchor-shoes', source: 'bodyLayout', sourceHandle: 'feetY', target: 'shoesGroup', targetHandle: 'anchorY' },
   { id: 'e-anchor-gloves', source: 'bodyLayout', sourceHandle: 'wristY', target: 'glovesGroup', targetHandle: 'anchorY' },
+  { id: 'e-head-radius-hat', source: 'bodyDimensions', sourceHandle: 'headRadius', target: 'hatGroup', targetHandle: 'headRadius' },
+  { id: 'e-head-radius-glasses', source: 'bodyDimensions', sourceHandle: 'headRadius', target: 'glassesGroup', targetHandle: 'headRadius' },
   { id: 'e-anchor-hat', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'hatGroup', targetHandle: 'anchorY' },
   { id: 'e-anchor-glasses', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'glassesGroup', targetHandle: 'anchorY' },
 ];

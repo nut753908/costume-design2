@@ -9,7 +9,8 @@ function num(v: number) {
 }
 
 // hat は headRadius が bodyDimensionsGroup の中で buildScale の影響を受けないため、他の
-// ガーメントと違い Body Build 入力を持たない(hatGroupNode.ts のコメント参照)。
+// ガーメントと違い Body Build 入力を持たない。つばの半径は headRadius × Brim Ratio(既定 1.25、
+// 既定の headRadius 0.16 で 0.2)で決まる(hatGroupNode.ts のコメント参照)。
 // direction='up' の easedLatheProfile は始点(つば=brimRadius、y=0)→終点(クラウン=
 // crownRadius、y=height)まで半径が単調に変化するため、bounding box の X/Z 半径は必ず
 // max(brimRadius, crownRadius) に一致する(既定値では brim の方が大きい)。
@@ -27,6 +28,13 @@ describe('hatGroup', () => {
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.brimRadius, 5);
+  });
+
+  it('外部から注入された headRadius に Brim Ratio(1.25)を掛けた値がつばの半径になる', () => {
+    const result = getNodeType('hatGroup').evaluate({ headRadius: num(0.24) }, {});
+    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+    geom!.computeBoundingBox();
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.24 * 1.25, 5);
   });
 
   it('つば(y=0)から Height ぶん上(+Y)に伸び、Offset Y(既定0.1)だけ全体が押し上げられる', () => {

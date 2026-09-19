@@ -49,6 +49,17 @@ describe('glassesGroup', () => {
     expect(geom!.boundingBox!.max.y).toBeCloseTo(expectedMaxY, 2);
   });
 
+  it('顔の前面の深さが headRadius × Forward Depth Ratio(0.875)に追従する', () => {
+    const maxZ = (headRadius?: number) => {
+      const result = getNodeType('glassesGroup').evaluate(headRadius === undefined ? {} : { headRadius: { type: 'number', value: headRadius } }, {});
+      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+      geom!.computeBoundingBox();
+      return geom!.boundingBox!.max.z;
+    };
+    // 既定の headRadius(0.16)から 0.32 へ 0.16 増やすと、前面(=最大Z)が 0.16 × 0.875 だけ前へ出る。
+    expect(maxZ(0.32) - maxZ()).toBeCloseTo(0.16 * 0.875, 5);
+  });
+
   it('テンプルが前面(Z=forwardDepth)から後方 templeBackZ(=0)まで伸びる', () => {
     // レンズは Z=forwardDepth(0.14)付近だけにあるため、全体の最小 Z はテンプルの後端
     // (templeBackZ = (0.14 - 0.02) - 0.12 = 0)で決まる。alignedBox の太さは軸に垂直な方向にだけ

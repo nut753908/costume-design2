@@ -142,6 +142,14 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     expect(edge?.sourceHandle).toBe('shoulderSpacing');
   });
 
+  it('hatGroup/glassesGroup.headRadius が bodyGroup の頭と同じ bodyDimensions.headRadius に接続されている', () => {
+    for (const target of ['hatGroup', 'glassesGroup']) {
+      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'headRadius');
+      expect(edge?.source).toBe('bodyDimensions');
+      expect(edge?.sourceHandle).toBe('headRadius');
+    }
+  });
+
   it('pantsGroup/shoesGroup/socksGroup.legSpacing が bodyGroup と同じ bodyDimensions.legSpacing に接続されている', () => {
     for (const target of ['pantsGroup', 'shoesGroup', 'socksGroup']) {
       const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'legSpacing');
