@@ -11,6 +11,7 @@ const BASE = {
   bladeBottomWidth: 0.06,
   bladeThickness: 0.008,
   bladeLength: 0.4,
+  frontDepth: 0.3,
 } as const;
 
 describe('buildNecktieGeometry', () => {
@@ -56,12 +57,11 @@ describe('buildNecktieGeometry', () => {
     // 結び目(BoxGeometry)は上面・下面を持つため、Y軸基準の放射方向では底面/上面の判定が
     // 意味を持たない(法線がほぼ ±Y なのに対して放射方向はほぼ XZ 平面内になる)。
     // bag.test.ts と同様、結び目は自身の中心点を基準に判定する。
-    const NECKTIE_FRONT_DEPTH = 0.3; // geometry/necktie.ts の同名定数と合わせる
-    const knotCenter = new THREE.Vector3(0, -BASE.knotHeight / 2, NECKTIE_FRONT_DEPTH);
+    const knotCenter = new THREE.Vector3(0, -BASE.knotHeight / 2, BASE.frontDepth);
     const KNOT_INDEX_COUNT = 36; // BoxGeometry は既定で6面×2三角形×3 = 36 indices
 
     expectOutwardWinding(buildNecktieGeometry(BASE), (centroid, i) =>
-      i < KNOT_INDEX_COUNT ? knotCenter : new THREE.Vector3(0, centroid.y, NECKTIE_FRONT_DEPTH),
+      i < KNOT_INDEX_COUNT ? knotCenter : new THREE.Vector3(0, centroid.y, BASE.frontDepth),
     );
   });
 

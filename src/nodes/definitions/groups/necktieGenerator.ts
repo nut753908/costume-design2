@@ -13,5 +13,6 @@ defineGeneratorNode({
     { id: 'bladeBottomWidth', label: 'Blade Bottom Width', default: 0.06 },
     { id: 'bladeThickness', label: 'Blade Thickness', default: 0.008 },
     { id: 'bladeLength', label: 'Blade Length', default: 0.4 },
+    { id: 'frontDepth', label: 'Front Depth', default: 0.3 },
   ],
 });

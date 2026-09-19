@@ -6,9 +6,8 @@ import * as necktieGeometry from '../../../geometry/necktie';
 // toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// necktie は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持ち、
-// 全パラメータがグループ内部の numberInput/colorInput に閉じている(necktieGroupNode.ts の
-// コメント参照)。geometry/necktie.ts の buildNecktieGeometry() をそのまま呼ぶ necktieGenerator
+// necktie の寸法はグループ内部の numberInput/colorInput に閉じ、前面の深さ(Front Depth)だけが
+// Body Build でスケールされる(necktieGroupNode.ts のコメント参照)。geometry/necktie.ts の buildNecktieGeometry() をそのまま呼ぶ necktieGenerator
 // への配線が正しいことを、その呼び出し引数を spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('necktieGroup', () => {
   const DEFAULTS = {
@@ -19,6 +18,7 @@ describe('necktieGroup', () => {
     bladeBottomWidth: 0.06,
     bladeThickness: 0.008,
     bladeLength: 0.4,
+    frontDepth: 0.3,
   };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -32,6 +32,16 @@ describe('necktieGroup', () => {
     try {
       getNodeType('necktieGroup').evaluate({}, {});
       expect(spy).toHaveBeenCalledWith(expect.objectContaining(DEFAULTS));
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('bodyBuild を掛けた Front Depth が buildNecktieGeometry() へ渡る(胴体の壁の拡大に追従する)', () => {
+    const spy = vi.spyOn(necktieGeometry, 'buildNecktieGeometry');
+    try {
+      getNodeType('necktieGroup').evaluate({ bodyBuild: { type: 'number', value: 1.2 } }, {});
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ frontDepth: 0.3 * 1.2 }));
     } finally {
       spy.mockRestore();
     }

@@ -14,6 +14,7 @@ describe('necktieGenerator', () => {
       bladeBottomWidth: 0.063,
       bladeThickness: 0.009,
       bladeLength: 0.44,
+      frontDepth: 0.33,
     });
   });
 
@@ -26,6 +27,7 @@ describe('necktieGenerator', () => {
       bladeBottomWidth: 0.06,
       bladeThickness: 0.008,
       bladeLength: 0.4,
+      frontDepth: 0.3,
     });
   });
 });

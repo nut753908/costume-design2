@@ -142,6 +142,12 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     expect(edge?.sourceHandle).toBe('shoulderSpacing');
   });
 
+  it('necktieGroup.bodyBuild が bodyBuild に接続されている(前面の深さが胴体の壁の拡大に追従する)', () => {
+    const edge = initialEdges.find((e) => e.target === 'necktieGroup' && e.targetHandle === 'bodyBuild');
+    expect(edge?.source).toBe('bodyBuild');
+    expect(edge?.sourceHandle).toBe('value');
+  });
+
   it('hatGroup/glassesGroup.headRadius が bodyGroup の頭と同じ bodyDimensions.headRadius に接続されている', () => {
     for (const target of ['hatGroup', 'glassesGroup']) {
       const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'headRadius');

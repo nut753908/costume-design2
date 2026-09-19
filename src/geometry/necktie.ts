@@ -9,6 +9,10 @@ export interface NecktieParams {
   bladeBottomWidth: number;
   bladeThickness: number;
   bladeLength: number;
+  /** 結び目とブレードを置く前面の深さ(Z)。top/jacket などの胴体の壁(半径 0.26〜0.34 程度、
+   * Body Build でスケールされる)より前に出す必要がある — z=0(体の中心)付近に置くと、
+   * シャツの前面の壁より奥(カメラから見て裏側)になり隠れて見えなくなる。 */
+  frontDepth: number;
 }
 
 // 矩形断面の4隅(x,z の単位オフセット)。最初の頂点を末尾に複製して周を閉じているのは
@@ -22,23 +26,18 @@ const CROSS_SECTION: readonly [number, number][] = [
   [1, 1],
 ];
 
-/** top/jacket などの胴体の壁(半径 0.26〜0.34 程度)より前に出す深さ。`bagGroupNode.ts` の
- * `bagFrontDepthIn` と同じ理由 — z=0(体の中心)付近に置くと、シャツの前面の壁より
- * 奥(カメラから見て裏側)になり隠れて見えなくなる。 */
-const NECKTIE_FRONT_DEPTH = 0.3;
-
 /** 首元の結び目(小さな箱)と、そこから前面中央に垂れ下がるブレード(下ほど幅広になる
  * テーパー形状)を組み合わせたネクタイ。ブレードは sleeve.ts のチューブ構築(行=長さ方向、
  * 列=断面の周)と同じ考え方を、円形断面ではなく矩形の4隅に置き換えて使う。sleeve.ts と
  * 同様、チューブの両端にキャップは付けない(上端は結び目の陰、下端は先細りの点に近い)。 */
 export function buildNecktieGeometry(params: NecktieParams): THREE.BufferGeometry {
-  const { knotWidth, knotHeight, knotThickness, bladeTopWidth, bladeBottomWidth, bladeThickness, bladeLength } =
+  const { knotWidth, knotHeight, knotThickness, bladeTopWidth, bladeBottomWidth, bladeThickness, bladeLength, frontDepth } =
     params;
 
   const knot = new THREE.BoxGeometry(knotWidth, knotHeight, knotThickness).translate(
     0,
     -knotHeight / 2,
-    NECKTIE_FRONT_DEPTH,
+    frontDepth,
   );
   const blade = buildTaperedBlade(
     bladeTopWidth,
@@ -46,7 +45,7 @@ export function buildNecktieGeometry(params: NecktieParams): THREE.BufferGeometr
     bladeThickness,
     bladeLength,
     -knotHeight,
-    NECKTIE_FRONT_DEPTH,
+    frontDepth,
   );
 
   const merged = mergeGeometries([knot, blade])!;
