@@ -1,4 +1,5 @@
 import { useGraphStore } from '../state/graphStore';
+import { isMeshVisible, sceneMeshKey, useViewStore } from '../state/viewStore';
 import { ToonMesh } from '../rendering/ToonMesh';
 import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/generic/sceneOutput';
 
@@ -17,6 +18,8 @@ export function Garments() {
   // いる間も s.nodes は「今開いている階層」の内部ノードだけになるため、s.nodes を
   // 走査する実装だと他の全ガーメントが3Dビューから消えてしまう。
   const evaluated = useGraphStore((s) => s.rootEvaluatedResults);
+  const hidden = useViewStore((s) => s.hidden);
+  const solo = useViewStore((s) => s.solo);
 
   if (!evaluated) return null;
 
@@ -39,7 +42,12 @@ export function Garments() {
           const material = result[sceneOutputMaterialKey(index)];
           if (!geometry || geometry.type !== 'geometry' || !material || material.type !== 'material') return [];
 
-          return [<ToonMesh key={`${nodeId}:${index}`} geometry={geometry.value} material={material.value} />];
+          // 表示/非表示・単独表示は確認用の UI 状態(`state/viewStore.ts`)で、グラフの評価結果や
+          // 内容には影響しない。
+          const meshKey = sceneMeshKey(nodeId, index);
+          if (!isMeshVisible({ hidden, solo }, meshKey)) return [];
+
+          return [<ToonMesh key={meshKey} geometry={geometry.value} material={material.value} />];
         }),
       )}
     </>

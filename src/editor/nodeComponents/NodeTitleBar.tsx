@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
 /** すべてのノードカードの先頭に表示するタイトル行。ラベルと、そのノード単体を削除する
@@ -22,11 +23,14 @@ export function NodeTitleBar({
   label,
   onLabelChange,
   typeName,
+  actions,
 }: {
   id: string;
   label: string;
   onLabelChange?: (label: string) => void;
   typeName?: string;
+  /** 削除ボタンの左に並べる追加のボタン(グループの Solo/Hide など)。 */
+  actions?: ReactNode;
 }) {
   const { deleteElements } = useReactFlow();
 
@@ -44,6 +48,7 @@ export function NodeTitleBar({
         ) : (
           <span id={`${id}-label`}>{label}</span>
         )}
+        {actions}
         <button
           type="button"
           className="rf-node__delete nodrag"

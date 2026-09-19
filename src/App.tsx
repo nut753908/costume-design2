@@ -3,6 +3,7 @@ import { useCallback, useRef, useState, type MouseEvent as ReactMouseEvent } fro
 import './nodes/definitions';
 import { NodeEditor } from './editor/NodeEditor';
 import { Scene } from './scene/Scene';
+import { ViewIndicator } from './scene/ViewIndicator';
 import { useEvaluatedGraph } from './state/useEvaluatedGraph';
 import { useRootEvaluatedGraph } from './state/useRootEvaluatedGraph';
 import { useParentScopeEvaluatedGraph } from './state/useParentScopeEvaluatedGraph';
@@ -59,6 +60,7 @@ function App() {
       />
       <div style={{ flex: `${1 - leftRatio} 0 0`, height: '100%', position: 'relative', minWidth: 0 }}>
         <Scene />
+        <ViewIndicator />
         <div
           style={{
             position: 'absolute',
