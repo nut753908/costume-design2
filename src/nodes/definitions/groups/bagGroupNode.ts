@@ -2,7 +2,9 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
 import { constNumberInput } from '../constNumberInput';
 
-/** bag は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
+/** bag の寸法の大半は独立したスタイル寄りの値だが、体の側面の位置(Hip Offset、胴体半径と
+ * 同程度)と前面の深さ(`bagFrontDepthIn`)だけは、胴体の壁(Body Build でスケールされる)の
+ * 外側に置く必要があるため、Body Build を掛けてから使う(`hipOffsetScaled`/`bagFrontDepthIn`)。
  * ストラップ・バッグ本体のどちらも完全にノードグラフへ展開されている。ストラップは
  * `alignedBoxGenerator`(`nodes/definitions/generic/alignedBoxGenerator.ts`、`geometry/
  * alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
@@ -12,16 +14,16 @@ import { constNumberInput } from '../constNumberInput';
  *
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
  * (0, -bagHeight/2, 0)`は同じ深さ(Z)を共有するため、
- * X: `negatedHipOffset = -hipOffset`(`numberNegate`)、Y(本体側): `bagCenterY =
- * negatedDrop - bagHeight * 0.5`、Z: 固定値 `bagFrontDepthIn` という可視の四則演算
+ * X: `negatedHipOffset = -(hipOffset × bodyBuild)`(`numberNegate`)、Y(本体側): `bagCenterY =
+ * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthIn = bagFrontDepthBaseIn × bodyBuild` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
  * `translate` の両方から同じ計算結果を参照する
- * (`zeroIn`/`strapStartDepthIn`/`bagFrontDepthIn` は `constNumberInput()` で
+ * (`zeroIn`/`strapStartDepthIn`/`bagFrontDepthBaseIn` は `constNumberInput()` で
  * 定義する「常に一定の値を持つ `numberInput`」)。ストラップと
  * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。全パラメータが他のガーメントと
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される shoulderY)だけが唯一の外部ソケット。 */
+ * から配線される shoulderY)と Body Build は外部ソケット。 */
 const output = garmentOutput({ color: { hex: '#8a4a2e', label: 'Bag Color' }, offsetY: 0, geometry: 'merge' });
 
 defineGroupNode({
@@ -32,7 +34,10 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [anchorYSocket],
+        sockets: [
+          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
+          anchorYSocket,
+        ],
       },
     },
     { id: 'strapWidthIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.08, step: 0.005, label: 'Strap Width' } },
@@ -45,7 +50,9 @@ defineGroupNode({
     { id: 'bagDepthIn', type: 'numberInput', data: { value: 0.08, min: 0.02, max: 0.2, step: 0.01, label: 'Bag Depth' } },
     constNumberInput('zeroIn', 0, 'Zero'),
     constNumberInput('strapStartDepthIn', 0.05, 'Strap Start Depth'),
-    constNumberInput('bagFrontDepthIn', 0.18, 'Bag Front Depth'),
+    constNumberInput('bagFrontDepthBaseIn', 0.18, 'Bag Front Depth'),
+    { id: 'bagFrontDepthIn', type: 'numberMultiply', data: { label: 'Bag Front Depth × Build' } },
+    { id: 'hipOffsetScaled', type: 'numberMultiply', data: { label: 'Hip Offset × Build' } },
     { id: 'strapGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'boxGen', type: 'boxGenerator', data: {} },
     { id: 'negatedHipOffset', type: 'numberNegate', data: { label: 'Negated Hip Offset' } },
@@ -73,7 +80,11 @@ defineGroupNode({
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'height' },
     { source: 'bagDepthIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'depth' },
 
-    { source: 'hipOffsetIn', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'value' },
+    { source: 'bagFrontDepthBaseIn', sourceHandle: 'value', target: 'bagFrontDepthIn', targetHandle: 'value' },
+    { source: 'input', sourceHandle: 'bodyBuild', target: 'bagFrontDepthIn', targetHandle: 'factor' },
+    { source: 'hipOffsetIn', sourceHandle: 'value', target: 'hipOffsetScaled', targetHandle: 'value' },
+    { source: 'input', sourceHandle: 'bodyBuild', target: 'hipOffsetScaled', targetHandle: 'factor' },
+    { source: 'hipOffsetScaled', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'value' },
 
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'halfBagHeight', targetHandle: 'value' },
     { source: 'dropIn', sourceHandle: 'value', target: 'negatedDrop', targetHandle: 'value' },

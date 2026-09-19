@@ -8,8 +8,8 @@ import '../../definitions';
 // ストラップ(ノードグラフ側の alignedBoxGenerator)とバッグ本体(ノードグラフ側の
 // boxGenerator+translate、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
 // チェーンで導出)を merge で1つにまとめる配線が正しいかを検証する(bagGroupNode.ts の
-// コメント参照)。全パラメータがグループ内部の numberInput に閉じており groupInput 経由
-// では外部から注入できないため、既定値での評価結果を検証する。
+// コメント参照)。寸法パラメータはグループ内部の numberInput に閉じており、外部から注入できる
+// のは bodyBuild だけ(体の側面の位置と前面の深さに掛かる)。それ以外は既定値での評価結果を検証する。
 describe('bagGroup', () => {
   const DEFAULTS = { hipOffset: 0.26, drop: 0.55, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
@@ -51,5 +51,19 @@ describe('bagGroup', () => {
     const bagFrontDepth = 0.18;
     const expectedMaxZ = bagFrontDepth + DEFAULTS.bagDepth / 2;
     expect(geom!.boundingBox!.max.z).toBeCloseTo(expectedMaxZ, 2);
+  });
+
+  it('bodyBuild を掛けた分だけ、体の側面の位置(Hip Offset)と前面の深さ(Bag Front Depth)が外へ動く', () => {
+    const bounds = (bodyBuild?: number) => {
+      const result = getNodeType('bagGroup').evaluate(bodyBuild === undefined ? {} : { bodyBuild: { type: 'number', value: bodyBuild } }, {});
+      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+      geom!.computeBoundingBox();
+      return geom!.boundingBox!;
+    };
+    const base = bounds();
+    const wide = bounds(1.3);
+    // バッグ本体は x = -hipOffset × build、z = 0.18 × build を中心に置かれる(幅・奥行きは不変)。
+    expect(wide.min.x - base.min.x).toBeCloseTo(-DEFAULTS.hipOffset * 0.3, 2);
+    expect(wide.max.z - base.max.z).toBeCloseTo(0.18 * 0.3, 2);
   });
 });

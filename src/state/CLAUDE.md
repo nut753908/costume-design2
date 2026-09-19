@@ -49,7 +49,7 @@
 
 `state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、bodyBuild 乗算、socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
 
-`bodyBuild`(`bodyDimensions` への配線に加え、半径スケーリングに使う11グループ — skirt/pants/belt/gloves/scarf/jacket/socks/shoes/dress/top/necktie — へも直接配線される)は、複数グループにまたがって配線される「共有ノード」としてトップレベルに残っています(pants/shoes/socks の脚の間隔は bodyGroup の脚と同じ `bodyDimensions.legSpacing` を、gloves の腕の間隔は bodyGroup の腕と同じ `bodyDimensions.shoulderSpacing` を、hat のつばと glasses の前面の深さは bodyGroup の頭と同じ `bodyDimensions.headRadius`(に倍率を掛けたもの)を受け取ります)(パターンの詳細は [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。それ以外の各ガーメント固有のパラメータ(半径・長さ・色など)は、対応する `<name>GroupNode.ts` のテンプレート内に `numberInput`/`colorInput`/`enumInput` ノードとして直接組み込まれており、そのガーメントのグループの中に入って初めて編集できます。
+`bodyBuild`(`bodyDimensions` への配線に加え、半径スケーリングに使う12グループ — skirt/pants/belt/gloves/scarf/jacket/socks/shoes/dress/top/necktie/bag — へも直接配線される)は、複数グループにまたがって配線される「共有ノード」としてトップレベルに残っています(pants/shoes/socks の脚の間隔は bodyGroup の脚と同じ `bodyDimensions.legSpacing` を、gloves の腕の間隔は bodyGroup の腕と同じ `bodyDimensions.shoulderSpacing` を、hat のつばと glasses の前面の深さは bodyGroup の頭と同じ `bodyDimensions.headRadius`(に倍率を掛けたもの)を受け取ります)(パターンの詳細は [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。それ以外の各ガーメント固有のパラメータ(半径・長さ・色など)は、対応する `<name>GroupNode.ts` のテンプレート内に `numberInput`/`colorInput`/`enumInput` ノードとして直接組み込まれており、そのガーメントのグループの中に入って初めて編集できます。
 
 `initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
 

@@ -92,7 +92,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },
   { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
 
-  // ガーメント自身の「体に触れる半径」を bodyBuild でスケールするグループ(11種)への配線。
+  // ガーメント自身の「体に触れる半径」を bodyBuild でスケールするグループ(12種)への配線。
   // アンカー座標の計算は下記の bodyLayout → anchorY の配線が別途担うため、ここでの bodyBuild
   // はあくまで各ガーメントの半径スケーリング専用。
   { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyBuild' },
@@ -108,6 +108,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-socks-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'socksGroup', targetHandle: 'legSpacing' },
   { id: 'e-socks-ankle-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'socksGroup', targetHandle: 'bodyBuild' },
   { id: 'e-top-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'topGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-bag-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bagGroup', targetHandle: 'bodyBuild' },
   { id: 'e-necktie-front-depth-build', source: 'bodyBuild', sourceHandle: 'value', target: 'necktieGroup', targetHandle: 'bodyBuild' },
   { id: 'e-dress-torso-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'dressGroup', targetHandle: 'bodyBuild' },
 
