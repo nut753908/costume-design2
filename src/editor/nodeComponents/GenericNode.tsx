@@ -6,6 +6,7 @@ import { resolveNodeSockets } from '../../nodes/resolveNodeSockets';
 import type { SocketValue } from '../../nodes/types';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { isGroupInstanceStale } from '../../nodes/groupTemplate';
 
 function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type: 'number' | 'enum' }> {
   return value.type === 'number' || value.type === 'enum';
@@ -50,6 +51,9 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
     <div className="rf-node" onDoubleClick={isGroup ? () => enterGroup(id) : undefined}>
       <NodeTitleBar id={id} label={label} typeName={typeName} onLabelChange={onLabelChange} />
       {isGroup && <div className="rf-node__group-hint">ダブルクリックで中に入る</div>}
+      {isGroup && isGroupInstanceStale(type ?? '', data as Record<string, never>) && (
+        <div className="rf-node__group-hint rf-node__group-hint--stale">テンプレート更新あり(中で更新)</div>
+      )}
       {inputs.map((socket) => (
         <div key={socket.id} className="rf-node__socket-row">
           <Handle

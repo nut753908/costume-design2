@@ -16,6 +16,7 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 import { initialNodes, initialEdges } from './initialGraph';
 import { composeRootGraph, type ScopeFrame } from './composeRootGraph';
 import { validateGraph } from './validateGraph';
+import { migrateGroupToTemplate } from '../nodes/groupTemplate';
 
 /** localStorage の永続化キー。persist の name とErrorBoundaryのリセット処理(main.tsx)の
  * 両方から参照するため、値のドリフトを避けて1箇所にまとめる。 */
@@ -87,6 +88,13 @@ interface GraphState {
   setParentScopeEvaluatedResults: (results: EvaluatedGraph | null) => void;
   addNode: (type: string, position: { x: number; y: number }) => void;
   loadGraph: (nodes: Node[], edges: Edge[]) => void;
+  /** グループの中に入っている間、今開いているグループの内部グラフを差し替える(プリセット/
+   * テンプレートの読み込み用)。`templateFingerprint` は差し替えた内容の元になったテンプレートの
+   * 指紋で、親ノードの `data` に記録して「テンプレートが古い」判定(`isGroupInstanceStale`)に使う。 */
+  loadGroupGraph: (nodes: Node[], edges: Edge[], templateFingerprint: string | undefined) => void;
+  /** 今開いているグループの内部を最新のテンプレートへ更新する。同じ id・同じ型の
+   * `numberInput`/`enumInput`/`colorInput` の値は引き継ぐ(`migrateGroupToTemplate`)。 */
+  migrateCurrentGroupToTemplate: () => void;
   undo: () => void;
   redo: () => void;
   copySelected: () => void;
@@ -191,6 +199,31 @@ export const useGraphStore = create<GraphState>()(
           set({ nodes: [...get().nodes, newNode] });
         },
         loadGraph: (nodes, edges) => set({ nodes, edges, past: [], future: [], _historyKey: null }),
+        loadGroupGraph: (nodes, edges, templateFingerprint) => {
+          const state = get();
+          const frame = state.scopeStack.at(-1);
+          if (!frame) return;
+          const scopeStack = state.scopeStack.map((f, i) =>
+            i === state.scopeStack.length - 1
+              ? {
+                  ...f,
+                  nodes: f.nodes.map((n) => (n.id === f.parentId ? { ...n, data: { ...n.data, templateFingerprint } } : n)),
+                }
+              : f,
+          );
+          set({ nodes, edges, scopeStack, past: [], future: [], _historyKey: null });
+        },
+        migrateCurrentGroupToTemplate: () => {
+          const state = get();
+          const frame = state.scopeStack.at(-1);
+          const parentType = frame?.nodes.find((n) => n.id === frame.parentId)?.type;
+          if (!frame || !parentType) return;
+          const migrated = migrateGroupToTemplate(
+            parentType,
+            state.nodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data })),
+          );
+          get().loadGroupGraph(migrated.nodes as unknown as Node[], migrated.edges as unknown as Edge[], migrated.templateFingerprint);
+        },
         undo: () => {
           const { past, nodes, edges, future } = get();
           if (past.length === 0) return;

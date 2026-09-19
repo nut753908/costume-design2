@@ -152,6 +152,11 @@
   opacity: 0.5;
 }
 
+.rf-node__group-hint--stale {
+  color: #b3541e;
+  opacity: 1;
+}
+
 .rf-node__socket-row {
   position: relative;
   padding: 3px 0 3px 10px;
@@ -369,6 +374,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.preset-panel__stale {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #b3541e;
 }
 
 .preset-panel__input,

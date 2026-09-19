@@ -11,11 +11,14 @@ export interface Preset {
   /** プリセットが対象とする階層。省略(または undefined)ならトップレベルのグラフ全体、
    * グループノードの型名(`skirtGroup` など)ならそのグループの内部グラフだけ。 */
   scope?: string;
+  /** グループの内部グラフのプリセット(`scope` あり)を保存した時点の、元のテンプレートの構造の
+   * 指紋(`nodes/groupTemplate.ts`)。読み込み時に現在のテンプレートと比べて古さを検知する。 */
+  templateFingerprint?: string;
 }
 
 interface PresetState {
   presets: Preset[];
-  savePreset: (name: string, nodes: Node[], edges: Edge[], scope?: string) => void;
+  savePreset: (name: string, nodes: Node[], edges: Edge[], scope?: string, templateFingerprint?: string) => void;
   deletePreset: (id: string) => void;
 }
 
@@ -26,7 +29,7 @@ export const usePresetStore = create<PresetState>()(
   persist(
     (set, get) => ({
       presets: [],
-      savePreset: (name, nodes, edges, scope) => {
+      savePreset: (name, nodes, edges, scope, templateFingerprint) => {
         const existing = get().presets.find((p) => p.name === name && p.scope === scope);
         const preset: Preset = {
           id: existing?.id ?? Math.random().toString(36).slice(2, 9),
@@ -35,6 +38,7 @@ export const usePresetStore = create<PresetState>()(
           nodes,
           edges,
           ...(scope !== undefined ? { scope } : {}),
+          ...(templateFingerprint !== undefined ? { templateFingerprint } : {}),
         };
         set({
           presets: existing

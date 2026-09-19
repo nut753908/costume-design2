@@ -3,6 +3,7 @@ import { evaluateGraph, type EvaluatedGraph } from '../evaluateGraph';
 import { computeAutoLayout } from '../autoLayout';
 import type { GraphEdge, GraphNode, GroupInternalEdge, GroupInternalNode, SocketDef, SocketValue } from '../types';
 import type { GroupIOSocket } from './groupIOSocket';
+import { fingerprintGroupStructure, registerGroupTemplateFingerprint } from '../groupTemplate';
 import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from './generic/sceneOutput';
 
 export interface GroupNodeConfig {
@@ -23,6 +24,8 @@ export interface GroupNodeConfig {
 export interface GroupNodeData extends Record<string, unknown> {
   nodes?: GroupInternalNode[];
   edges?: GroupInternalEdge[];
+  /** 実体化した時点のテンプレートの構造の指紋(`nodes/groupTemplate.ts` 参照)。 */
+  templateFingerprint?: string;
 }
 
 function toSocketDefs(sockets: GroupIOSocket[] | undefined): SocketDef[] {
@@ -95,6 +98,9 @@ function findResolvedSceneOutputs(
  * 独立して編集できる(詳細・編集UXは `nodes/CLAUDE.md` の「グループノード」節参照)。
  */
 export function defineGroupNode(config: GroupNodeConfig): void {
+  const templateFingerprint = fingerprintGroupStructure(config.internalNodes, config.internalEdges);
+  registerGroupTemplateFingerprint(config.type, templateFingerprint);
+
   const templateInputNode = config.internalNodes.find((n) => n.type === 'groupInput');
   const templateOutputNode = config.internalNodes.find((n) => n.type === 'groupOutput');
 
@@ -113,6 +119,7 @@ export function defineGroupNode(config: GroupNodeConfig): void {
     createDefaultData: () => ({
       nodes: materializeInternalNodes(config),
       edges: materializeInternalEdges(config),
+      templateFingerprint,
     }),
     evaluate: (inputs, data): Record<string, SocketValue> => {
       const internalNodes = data.nodes ?? config.internalNodes;
