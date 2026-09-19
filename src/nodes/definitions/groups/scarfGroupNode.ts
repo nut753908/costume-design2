@@ -5,8 +5,8 @@ import { constNumberInput } from '../constNumberInput';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
  * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている。首元の輪
- * (`band`)は既存の `beltGenerator` ノードを `bulge=1.05` 固定でそのままネストして再利用し
- * (`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translate`(`generic/translate.ts`、
+ * (`band`)は belt と共有する `bulgedBand`(`generic/bulgedBand.ts`)を `bulge=1.05` 固定で
+ * ネストして再利用し(`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translate`(`generic/translate.ts`、
  * X/Y/Z 軸の平行移動)で配置する。Y座標(`tailCenterY = (0 - bandThickness) - tailLength × 0.5`)/Z座標
  * (`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、固定値0.9)はどちらも可視の
  * 四則演算チェーンで導出する(`bandThickness` の符号反転は `numberNegate`、
@@ -44,7 +44,7 @@ defineGroupNode({
     constNumberInput('bulgeIn', 1.05, 'Band Bulge'),
     constNumberInput('tailFrontInsetIn', 0.9, 'Tail Front Inset'),
     ...scale.nodes,
-    { id: 'bandGen', type: 'beltGenerator', data: {} },
+    { id: 'bandGen', type: 'bulgedBand', data: {} },
     { id: 'tailGen', type: 'boxGenerator', data: {} },
     { id: 'negatedBandThickness', type: 'numberNegate', data: { label: 'Negated Band Thickness' } },
     { id: 'halfTailLength', type: 'numberHalf', data: { label: 'Tail Length × Half' } },
