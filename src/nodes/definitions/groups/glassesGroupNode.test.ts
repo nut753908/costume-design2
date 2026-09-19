@@ -49,15 +49,15 @@ describe('glassesGroup', () => {
     expect(geom!.boundingBox!.max.y).toBeCloseTo(expectedMaxY, 2);
   });
 
-  it('顔の前面の深さが headRadius × Forward Depth Ratio(0.875)に追従する', () => {
+  it('顔の前面の深さが headRadius − Forward Depth Inset(0.02)に追従する', () => {
     const maxZ = (headRadius?: number) => {
       const result = getNodeType('glassesGroup').evaluate(headRadius === undefined ? {} : { headRadius: { type: 'number', value: headRadius } }, {});
       const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
       geom!.computeBoundingBox();
       return geom!.boundingBox!.max.z;
     };
-    // 既定の headRadius(0.16)から 0.32 へ 0.16 増やすと、前面(=最大Z)が 0.16 × 0.875 だけ前へ出る。
-    expect(maxZ(0.32) - maxZ()).toBeCloseTo(0.16 * 0.875, 5);
+    // 既定の headRadius(0.16)から 0.32 へ 0.16 増やすと、前面(=最大Z)が同じ 0.16 だけ前へ出る。
+    expect(maxZ(0.32) - maxZ()).toBeCloseTo(0.16, 5);
   });
 
   it('テンプルが前面(Z=forwardDepth)から後方 templeBackZ(=0)まで伸びる', () => {
