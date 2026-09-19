@@ -32,7 +32,7 @@
 
 - `state/selectors.ts` の `useRootGraphLite()` — `useNodesLite`/`useEdgesLite` と同じ参照安定化パターンで、合成後のグラフを返す。
 - `state/useRootEvaluatedGraph.ts` — 上記を `evaluateGraph()` に渡し、結果をストアの `rootEvaluatedResults`(`evaluatedResults` とは別フィールド)に書き込む。`App.tsx` で `useEvaluatedGraph()` と並行して常時マウントする。
-- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body も他15種のガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
+- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
 - `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
 
 一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GenericNodeView` のノードカード上のリアルタイム値表示を駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
@@ -45,9 +45,9 @@
 
 ## 初期状態への復帰: initialGraph.ts と「初期状態(デフォルト)」プリセット
 
-`state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、bodyBuild 乗算、sleeve/socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
+`state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、bodyBuild 乗算、socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
 
-`bodyBuild`(`bodyDimensions` への配線に加え、半径スケーリングに使う9グループ — skirt/pants/belt/gloves/scarf/jacket/socks/shoes/dress — へも直接配線される)、`pantsLegSpacing`(pants/shoes/socks の3グループへ配線、脚回りのガーメント間で共有される脚の間隔)、そして `topGroup`/`sleeveGroup` の両方が必要とする Torso Radius(Body Build 適用後)/Material(`topRadiusScale`/`topMaterial` という2つの共有ノードから両グループへファンアウト — sleeve は Top と同じ生地・同じ太さで縫い付けられているように見せる必要があるため)は、複数グループにまたがって配線される「共有ノード」としてトップレベルに残っています(パターンの詳細は [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。それ以外の各ガーメント固有のパラメータ(半径・長さ・色など)は、対応する `<name>GroupNode.ts` のテンプレート内に `numberInput`/`colorInput`/`enumInput` ノードとして直接組み込まれており、そのガーメントのグループの中に入って初めて編集できます。
+`bodyBuild`(`bodyDimensions` への配線に加え、半径スケーリングに使う10グループ — skirt/pants/belt/gloves/scarf/jacket/socks/shoes/dress/top — へも直接配線される)、`pantsLegSpacing`(pants/shoes/socks の3グループへ配線、脚回りのガーメント間で共有される脚の間隔)は、複数グループにまたがって配線される「共有ノード」としてトップレベルに残っています(パターンの詳細は [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。それ以外の各ガーメント固有のパラメータ(半径・長さ・色など)は、対応する `<name>GroupNode.ts` のテンプレート内に `numberInput`/`colorInput`/`enumInput` ノードとして直接組み込まれており、そのガーメントのグループの中に入って初めて編集できます。
 
 `initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
 

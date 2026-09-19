@@ -58,7 +58,6 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
       ['necktieGroup', 'shoulderY'],
       ['bagGroup', 'shoulderY'],
       ['jacketGroup', 'shoulderY'],
-      ['sleeveGroup', 'shoulderY'],
       ['topGroup', 'shoulderY'],
       ['scarfGroup', 'shoulderY'],
       ['socksGroup', 'feetY'],
@@ -135,28 +134,8 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     expect(() => evaluateGraph(graphNodes, graphEdges)).not.toThrow();
   });
 
-  // sleeve/shoes/socks は、複数ガーメントで共有される値をトップレベルの共有ノードから
-  // 再引きしている(ルート CLAUDE.md の「ボディスケールはソケットグラフを迂回して直接
-  // 読み取られる」節参照)。これらのエッジが将来の再改修で静かに外れないよう、
-  // 接続関係をピンポイントで検証する。
-  it('topGroup.material と sleeveGroup.material がどちらも共有ノード topMaterial に接続されている', () => {
-    for (const target of ['topGroup', 'sleeveGroup']) {
-      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'material');
-      expect(edge?.source).toBe('topMaterial');
-      expect(edge?.sourceHandle).toBe('material');
-    }
-  });
-
-  it('topGroup.torsoRadius と sleeveGroup.attachRadius がどちらも共有ノード topRadiusScale に接続されている', () => {
-    const topEdge = initialEdges.find((e) => e.target === 'topGroup' && e.targetHandle === 'torsoRadius');
-    expect(topEdge?.source).toBe('topRadiusScale');
-    expect(topEdge?.sourceHandle).toBe('value');
-
-    const sleeveEdge = initialEdges.find((e) => e.target === 'sleeveGroup' && e.targetHandle === 'attachRadius');
-    expect(sleeveEdge?.source).toBe('topRadiusScale');
-    expect(sleeveEdge?.sourceHandle).toBe('value');
-  });
-
+  // shoes/socks は、複数ガーメントで共有される脚の間隔をトップレベルの共有ノードから
+  // 引いている。このエッジが将来の再改修で静かに外れないよう、接続関係をピンポイントで検証する。
   it('shoesGroup/socksGroup.legSpacing が pantsLegSpacing に接続されている', () => {
     for (const [target, targetHandle] of [
       ['shoesGroup', 'legSpacing'],
@@ -170,7 +149,7 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
 });
 
 // evaluateGraph.ts のノード単位メモ化キャッシュ(nodes/CLAUDE.md の「ノードグラフエンジン」節
-// 参照)が、この16グループ・数百ノードからなる実際のデフォルトグラフの上でも意図どおりに
+// 参照)が、この15グループ・数百ノードからなる実際のデフォルトグラフの上でも意図どおりに
 // 効くことを検証する — 合成テストの小さなグラフ(evaluateGraph.test.ts)だけでなく、実際に
 // 「1つのスライダーを動かすと無関係なグループは再評価されない」が成立していることの
 // 回帰テスト。
@@ -185,10 +164,10 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     targetHandle: e.targetHandle,
   }));
 
-  it('無関係なトップレベルノード(topRadius)だけを変更しても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
+  it('無関係なトップレベルノード(pantsLegSpacing)だけを変更しても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'topRadius' ? { ...n, data: { ...n.data, value: 0.35 } } : n,
+      n.id === 'pantsLegSpacing' ? { ...n, data: { ...n.data, value: 0.2 } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
@@ -196,15 +175,14 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     expect(after.get('skirtGroup')?.sceneOutputMaterial0).toBe(before.get('skirtGroup')?.sceneOutputMaterial0);
   });
 
-  it('変更した topRadius 自身に依存する topGroup/sleeveGroup は、正しく再評価されて結果が変わる', () => {
+  it('変更した pantsLegSpacing に依存する pantsGroup は、正しく再評価されて結果が変わる', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'topRadius' ? { ...n, data: { ...n.data, value: 0.35 } } : n,
+      n.id === 'pantsLegSpacing' ? { ...n, data: { ...n.data, value: 0.2 } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
-    expect(after.get('topGroup')?.sceneOutputGeometry0).not.toBe(before.get('topGroup')?.sceneOutputGeometry0);
-    expect(after.get('sleeveGroup')?.sceneOutputGeometry0).not.toBe(before.get('sleeveGroup')?.sceneOutputGeometry0);
+    expect(after.get('pantsGroup')?.sceneOutputGeometry0).not.toBe(before.get('pantsGroup')?.sceneOutputGeometry0);
   });
 });
 

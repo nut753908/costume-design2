@@ -8,7 +8,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
 
 1. **ノードグラフだけで組む(既定)**: 汎用ノード(`easedLatheProfile`+`latheGenerator`、`capsuleGenerator`/`boxGenerator`/`torusGenerator` などのプリミティブ、`alignedBoxGenerator`、`translateX/Y/Z`、`scaleZ`、`mergeGeometry`、`mirrorPair` など、一覧は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「汎用ノード一覧」)の組み合わせだけで形状を作る。専用の `geometry/*.ts` も `*Generator.ts` も要らない。skirt/jacket/hat/gloves/pants/shoes/socks(Lathe 系)・scarf・bag・glasses が実例。
-2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノードでは表現しきれない形状(ネックラインの彫り込み、手組みのチューブなど)の場合のみ。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。top/dress/sleeve/necktie が実例。
+2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノードでは表現しきれない形状(ネックラインの彫り込み、手組みのチューブなど)の場合のみ。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。top(袖も同じグループ内)/dress/necktie が実例。
 
 ノードタイプ自体の登録は `import.meta.glob` により自動化されており、レジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
 
@@ -62,7 +62,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(色・`offsetY`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
-- `anchorYSocket`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY` ソケット定義。`garmentOutput({ color, offsetY, geometry })`(同ファイル)— `colorIn`(colorInput)→`material`(toonMaterial)→`sceneOut` と `offsetYIn`+`input.anchorY`→`placement`(garmentPlacement)→`sceneOut` のノード5個・エッジ6本。`geometry` には最終的な geometry を出力するノードの id を渡す。Material を共有ノードから受け取るガーメント(top/sleeve)は `color` を省略し、`input.material` ソケットを `sceneOut` へ直接配線させる。
+- `anchorYSocket`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY` ソケット定義。`garmentOutput({ color, offsetY, geometry })`(同ファイル)— `colorIn`(colorInput)→`material`(toonMaterial)→`sceneOut` と `offsetYIn`+`input.anchorY`→`placement`(garmentPlacement)→`sceneOut` のノード5個・エッジ6本。`geometry` には最終的な geometry を出力するノードの id を渡す。
 - `bodyBuildScale(rawId)`(`garmentParts.ts`)— 「体に触れる半径」(`rawId` の `value`)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。グループ内に `segmentsIn`(numberInput)が必要。
 
@@ -104,13 +104,13 @@ defineGroupNode({
 });
 ```
 
-`groupOutput` は省略可能で、既存15種のガーメントはどれも含めていない(描画は `sceneOutput` が専任で担う)。他ガーメントの内部値を再引きしたい場合に `groupOutput` で公開する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
+`groupOutput` は省略可能で、既存14種のガーメントはどれも含めていない(描画は `sceneOutput` が専任で担う)。他ガーメントの内部値を再引きしたい場合に `groupOutput` で公開する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
 
 ## 5. initialGraph.ts への配線(慣例)
 
-既存15種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。**`anchorY` は、`garmentPlacement` の取り付け座標計算のために必ず配線すること** — トップレベルの共有ノード `bodyLayout`(`bodyLayoutGroup`)の5つのアンカー候補出力(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に取り付く1つを選び、`bodyLayout → xxxGroup.anchorY` という形で配線する(既存の `e-anchor-*` エッジを参照)。これを省くと、`garmentPlacement` は既定値(0)にフォールバックするため、そのガーメントが原点付近に張り付いたまま描画される。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`bodyBuild → xxxGroup.bodyBuild` という別のエッジ(半径スケーリング専用、`bodyDimensions`/`bodyLayout` を経由しない)も配線すること。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、半径スケーリングの対象外でよい(ただし `anchorY` 配線は省略しない)。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他15種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
+既存14種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。**`anchorY` は、`garmentPlacement` の取り付け座標計算のために必ず配線すること** — トップレベルの共有ノード `bodyLayout`(`bodyLayoutGroup`)の5つのアンカー候補出力(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に取り付く1つを選び、`bodyLayout → xxxGroup.anchorY` という形で配線する(既存の `e-anchor-*` エッジを参照)。これを省くと、`garmentPlacement` は既定値(0)にフォールバックするため、そのガーメントが原点付近に張り付いたまま描画される。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`bodyBuild → xxxGroup.bodyBuild` という別のエッジ(半径スケーリング専用、`bodyDimensions`/`bodyLayout` を経由しない)も配線すること。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、半径スケーリングの対象外でよい(ただし `anchorY` 配線は省略しない)。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
 
-新しいガーメントが pants/shoes/socks の Leg Spacing や topGroup/sleeveGroup の Torso Radius/Material のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing`、`topRadiusScale → topGroup.torsoRadius`/`sleeveGroup.attachRadius` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(実際に topGroup/sleeveGroup で踏んだ落とし穴、`src/nodes/CLAUDE.md` の「グループノード」節参照)。
+新しいガーメントが pants/shoes/socks の Leg Spacing のように**複数ガーメントで共有される値**を必要とする場合のみ、その値は生パラメータのグループへの内包を見送り、`src/state/initialGraph.ts` 側に外部の共有ノードとして残し、関係する各グループの `groupInput` ソケットへファンアウトすること(`pantsLegSpacing → pantsGroup.legSpacing`/`shoesGroup.legSpacing`/`socksGroup.legSpacing` の実例を参照)。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 
 ノードの `position` は `initialGraph.ts` には書かず、モジュール読み込み時に `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンと同じ関数)で自動算出される。ガーメントを追加しても座標を手で更新する必要は無い(グループ内部の `internalNodes` の座標も同じく自動算出)。
 
@@ -127,4 +127,4 @@ defineGroupNode({
 
 ## 8. ドキュメント更新
 
-`src/geometry/CLAUDE.md` の「カスタムガーメントジオメトリ」冒頭にあるガーメント一覧(現在15種、専用の `build*Geometry()` を持たない種類の一覧を含む)に追加したガーメントを足す。新しい構築技法・共有ヘルパーを導入した場合や、新しい落とし穴を踏んだ場合はその節も追記する。pre-commit フックがステージ内容と対応する `CLAUDE.md` の有無をリマインドするが、機械判定なので実際に更新が必要かは都度判断すること。
+`src/geometry/CLAUDE.md` の「カスタムガーメントジオメトリ」冒頭にあるガーメント一覧(現在14種、専用の `build*Geometry()` を持たない種類の一覧を含む)に追加したガーメントを足す。新しい構築技法・共有ヘルパーを導入した場合や、新しい落とし穴を踏んだ場合はその節も追記する。pre-commit フックがステージ内容と対応する `CLAUDE.md` の有無をリマインドするが、機械判定なので実際に更新が必要かは都度判断すること。
