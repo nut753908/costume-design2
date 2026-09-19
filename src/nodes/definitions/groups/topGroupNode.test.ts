@@ -59,6 +59,16 @@ describe('topGroup', () => {
     const topOnly = buildTopOnlyVertexCount();
     expect(withSleeves).toBeGreaterThan(topOnly);
   });
+
+  it('内部の sleeveGen → merge の配線を切ると、Top 本体だけが描画される', () => {
+    const def = getNodeType('topGroup');
+    const data = def.createDefaultData() as { nodes: unknown[]; edges: { source: string; target: string }[] };
+    const withoutSleeves = { ...data, edges: data.edges.filter((e) => e.source !== 'sleeveGen') };
+    const result = def.evaluate({}, withoutSleeves);
+    expect(result.sceneOutputGeometry0?.type).toBe('geometry');
+    const count = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value.getAttribute('position').count : 0;
+    expect(count).toBe(buildTopOnlyVertexCount());
+  });
 });
 
 function buildTopOnlyVertexCount(): number {

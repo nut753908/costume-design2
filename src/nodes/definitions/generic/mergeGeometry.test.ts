@@ -18,15 +18,20 @@ describe('mergeGeometry', () => {
     expect(merged!.boundingBox!.max.x).toBeCloseTo(0.25, 5);
   });
 
-  it('geometryA が未接続なら何も返さない', () => {
+  it('geometryA が未接続なら geometryB をそのまま返す', () => {
     const b = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     const result = getNodeType('mergeGeometry').evaluate({ geometryB: { type: 'geometry', value: b } }, {});
-    expect(result.geometry).toBeUndefined();
+    expect(result.geometry).toEqual({ type: 'geometry', value: b });
   });
 
-  it('geometryB が未接続なら何も返さない', () => {
+  it('geometryB が未接続なら geometryA をそのまま返す', () => {
     const a = new THREE.BoxGeometry(0.1, 0.1, 0.1);
     const result = getNodeType('mergeGeometry').evaluate({ geometryA: { type: 'geometry', value: a } }, {});
+    expect(result.geometry).toEqual({ type: 'geometry', value: a });
+  });
+
+  it('両方とも未接続なら何も返さない', () => {
+    const result = getNodeType('mergeGeometry').evaluate({}, {});
     expect(result.geometry).toBeUndefined();
   });
 });
