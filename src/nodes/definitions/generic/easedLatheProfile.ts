@@ -23,10 +23,7 @@ export interface EasedLatheProfileData extends Record<string, unknown> {
  * Lathe」という形状生成ロジックは、すべてこの2ノードの組み合わせ(+ 必要に応じて
  * `numberMax`/`scaleZ`/`translatePointsY`/`slicePoints`/`concatPoints` 等)へ置き換わった
  * (`capsuleGenerator` 等と同じ「汎用プリミティブノード」への切り出し、`geometry/CLAUDE.md`
- * 参照)。専用の `build*Geometry()` を今も持つのは、この2ノードだけでは表現しきれない
- * 追加のロジック(`alignedBox.ts` を使う bag/glasses のストラップ/ブリッジ・テンプル、
- * 手組みチューブの sleeve)を持つガーメントに
- * 限られる。 */
+ * 参照)。 */
 registerNodeType<EasedLatheProfileData>({
   type: 'easedLatheProfile',
   label: 'Eased Lathe Profile',

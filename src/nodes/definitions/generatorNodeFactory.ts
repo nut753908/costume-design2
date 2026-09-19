@@ -50,7 +50,7 @@ type DataFromFields<F extends readonly FieldSpec[]> = Partial<ParamsFromFields<F
  * 機械的に組み立てて registerNodeType を呼ぶ。
  *
  * segments のように整数丸め+下限クランプが要るフィールドは `round: true`、
- * top/dress の angleSegments/heightSegments や sleeve の segments のように
+ * capsuleGenerator の capSegments/radialSegments のように
  * ソケット化せずビルド関数へ渡すだけの固定値は `extra` を使う。
  */
 export function defineGeneratorNode<

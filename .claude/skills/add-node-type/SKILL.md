@@ -9,7 +9,7 @@ description: ノードグラフに新しい NodeTypeDefinition(ノードタイ�
 
 ## ガーメントジェネレーターノード(category: 'generator')の場合
 
-sleeve のようにフィールドの値を解決して `build*Geometry()` にそのまま渡すだけのノードは、`registerNodeType()` を直接書かず `nodes/definitions/generatorNodeFactory.ts` の `defineGeneratorNode()` を使う(既存の generator 系 definition ファイル全てを参照)。フィールド仕様(`id`/`label`/`default`、必要なら `round: true` や `type: 'enum'`)を渡すだけで interface 型・`DEFAULTS`・`inputs` 配列・`createDefaultData`・`evaluate` を機械的に組み立ててくれる。`build*Geometry` が受け取らない固定値(ソケット化しない `angleSegments` など)は `extra` で渡す。
+capsuleGenerator/boxGenerator のようにフィールドの値を解決して `build*Geometry()` にそのまま渡すだけのノードは、`registerNodeType()` を直接書かず `nodes/definitions/generatorNodeFactory.ts` の `defineGeneratorNode()` を使う(既存の generator 系 definition ファイル全てを参照)。フィールド仕様(`id`/`label`/`default`、必要なら `round: true` や `type: 'enum'`)を渡すだけで interface 型・`DEFAULTS`・`inputs` 配列・`createDefaultData`・`evaluate` を機械的に組み立ててくれる。`build*Geometry` が受け取らない固定値(ソケット化しない `angleSegments` など)は `extra` で渡す。
 
 - `build` に渡す関数は `build: buildXxxGeometry` のように値としてそのまま渡さず、必ず `build: (params) => buildXxxGeometry(params)` とアロー関数で包むこと。値として直接渡すと ESM のライブバインディングが切れ、`vi.spyOn(module, 'buildXxxGeometry')` を使うテスト(`testHelpers.ts` の `expectGeneratorForwardsData`)が呼び出しを検出できなくなる。
 - `fields` の `default` は `defineGeneratorNode` 内部で `DEFAULTS`/`inputs`/`createDefaultData` に自動展開されるため、リテラル値を複数箇所に書く必要はない。

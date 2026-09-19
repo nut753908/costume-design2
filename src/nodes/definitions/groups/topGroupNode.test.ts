@@ -1,25 +1,34 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
-import * as sleeveGeometry from '../../../geometry/sleeve';
 // topGroup の埋め込みサブグラフが参照する numberInput/enumInput/
-// garmentPlacement/easedLatheProfile/ringGridGenerator/sleeveGenerator を含め、全ノードタイプを登録する。
+// garmentPlacement/easedLatheProfile/ringGridGenerator/sleevePair を含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // topGroup は Top 本体と袖を1つのガーメントとして持つ。Torso Radius(`topRadiusIn`)は
 // Body Build でスケールされ、その値が Top の胴体半径と袖の付け根半径の両方に渡る。
 describe('topGroup', () => {
-  it('torsoRadius(0.29)が bodyBuild でスケールされて Top の胴体半径と袖の付け根半径の両方へ渡る', () => {
-    const topSpy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
-    const sleeveSpy = vi.spyOn(sleeveGeometry, 'buildSleeveGeometry');
+  /** 内部の gen → merge の配線を切り、袖だけを描画させたときのジオメトリ。 */
+  const sleevesOnly = (bodyBuild: number) => {
+    const def = getNodeType('topGroup');
+    const data = def.createDefaultData() as { nodes: unknown[]; edges: { source: string; target: string }[] };
+    const edges = data.edges.filter((e) => !(e.source === 'gen' && e.target === 'merge'));
+    const result = def.evaluate({ bodyBuild: { type: 'number', value: bodyBuild } }, { ...data, edges });
+    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+    geom!.computeBoundingBox();
+    return geom!.boundingBox!;
+  };
+
+  it('torsoRadius(0.29)が bodyBuild でスケールされて Top の胴体半径と袖の付け根位置の両方へ渡る', () => {
+    const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({ bodyBuild: { type: 'number', value: 1.2 } }, {});
-      expect(firstRowRadius(topSpy)).toBeCloseTo(0.29 * 1.2, 10);
-      expect(sleeveSpy).toHaveBeenCalledWith(expect.objectContaining({ attachRadius: 0.29 * 1.2 }));
+      expect(firstRowRadius(spy)).toBeCloseTo(0.29 * 1.2, 10);
     } finally {
-      topSpy.mockRestore();
-      sleeveSpy.mockRestore();
+      spy.mockRestore();
     }
+    // 袖の付け根は胴体半径の0.75倍の位置(sleevePair の Attach Inset)。
+    expect(sleevesOnly(1.2).max.x - sleevesOnly(1).max.x).toBeCloseTo(0.29 * 0.2 * 0.75, 5);
   });
 
   it('未接続なら bodyBuild は groupInput ソケット自身のデフォルト(1)で、半径はスケールされない', () => {
@@ -33,13 +42,8 @@ describe('topGroup', () => {
   });
 
   it('sleeveRadius/sleeveLength は内部ノードのデフォルト値のまま bodyBuild から独立している', () => {
-    const spy = vi.spyOn(sleeveGeometry, 'buildSleeveGeometry');
-    try {
-      getNodeType('topGroup').evaluate({ bodyBuild: { type: 'number', value: 1.2 } }, {});
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ sleeveRadius: 0.085, sleeveLength: 0.22 }));
-    } finally {
-      spy.mockRestore();
-    }
+    // 袖の下端(Y)は袖の長さだけで決まり、bodyBuild では動かない。
+    expect(sleevesOnly(1.2).min.y).toBeCloseTo(sleevesOnly(1).min.y, 6);
   });
 
   it('Top と袖は1つのジオメトリへ結合され、sceneOutputGeometry0/sceneOutputMaterial0 の1組だけが出力される(anchor/offsetY は含まれない — garmentPlacement が内部で消費し座標へ焼き込む)', () => {
