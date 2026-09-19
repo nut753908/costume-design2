@@ -10,14 +10,14 @@ function num(v: number) {
 }
 
 // shoes は靴1本ぶんのジオメトリ(direction='up' の easedLatheProfile、始点=Sole Radius
-// (bodyBuild でスケール、y=0)、終点=Cuff Radius(スケール対象外、y=Height))に `scaleZ` で
+// (bodyBuild でスケール、y=0)、終点=Cuff Radius(y=Height)、どちらも bodyBuild でスケール)に `scaleZ` で
 // つま先方向(Z)だけ Toe Length 倍のスケールを掛けてから、mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(shoesGroupNode.ts のコメント参照)。scaleZ は
 // `.scale(1, 1, z)` で Z軸だけを拡大するため(X軸は不変)、mirror 後の最大Xは
 // scaleZ の影響を受けない。
 describe('shoesGroup', () => {
   const DEFAULTS = { soleRadius: 0.13, cuffRadius: 0.1, height: 0.12, toeLength: 1.5, legSpacing: 0.14, offsetY: 0 };
-  const maxRadius = (bodyBuild: number) => Math.max(DEFAULTS.soleRadius * bodyBuild, DEFAULTS.cuffRadius);
+  const maxRadius = (bodyBuild: number) => Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius) * bodyBuild;
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('shoesGroup').evaluate({}, {});
@@ -32,11 +32,26 @@ describe('shoesGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(1), 5);
   });
 
-  it('bodyBuild が大きくなるほど Sole Radius がスケールし最大Xを押し広げる(Cuff Radius はスケール対象外)', () => {
+  it('bodyBuild が大きくなるほど Sole Radius がスケールし最大Xを押し広げる', () => {
     const result = getNodeType('shoesGroup').evaluate({ bodyBuild: num(2) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(2), 5);
+  });
+
+  it('bodyBuild を掛けた Cuff Radius が、履き口(最上端)の半径になる', () => {
+    const result = getNodeType('shoesGroup').evaluate({ bodyBuild: num(1.3) }, {});
+    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+    const position = geom!.getAttribute('position');
+    let maxY = -Infinity;
+    for (let i = 0; i < position.count; i++) maxY = Math.max(maxY, position.getY(i));
+    // 最上端の頂点のうち右脚(x > 0)の、脚の中心(x = +legSpacing)からの X 方向の最大の距離が履き口の半径
+    // (scaleZ は Z 方向だけを伸ばすので、X 方向の広がりには影響しない)。
+    let cuff = 0;
+    for (let i = 0; i < position.count; i++) {
+      if (position.getX(i) > 0 && Math.abs(position.getY(i) - maxY) < 1e-6) cuff = Math.max(cuff, Math.abs(position.getX(i) - DEFAULTS.legSpacing));
+    }
+    expect(cuff).toBeCloseTo(DEFAULTS.cuffRadius * 1.3, 4);
   });
 
   it('Toe Length ぶんつま先方向(Z)だけ最大半径が伸びる(scaleZ は X には影響しない)', () => {

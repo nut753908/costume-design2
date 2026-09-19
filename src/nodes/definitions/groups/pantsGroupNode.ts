@@ -5,6 +5,9 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 /** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
  * mirror(mirrorPair)+pantsMaterial(toonMaterial)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
+ * Waist Radius と Hem Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/
+ * `hemScale`)。体の脚の半径がすべて Body Build でスケールされるため、裾を固定にすると
+ * Body Build を上げたとき裾が脚の内側に入る。
  * Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有されない単独パラメータ
  * のため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  *
@@ -19,7 +22,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 const output = garmentOutput({ color: { hex: '#9c7b4f', label: 'Pants Color' }, offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('waistRadiusIn');
-const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusIn', distance: 'inseamIn' });
+const hemScale = bodyBuildScale('hemRadiusIn', 'hemScale');
+const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemScale', distance: 'inseamIn' });
 
 defineGroupNode({
   type: 'pantsGroup',
@@ -41,12 +45,14 @@ defineGroupNode({
     { id: 'inseamIn', type: 'numberInput', data: { value: 0.75, min: 0.3, max: 1, step: 0.01, label: 'Inseam' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
     ...scale.nodes,
+    ...hemScale.nodes,
     ...lathe.nodes,
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],
   internalEdges: [
     ...scale.edges,
+    ...hemScale.edges,
     ...lathe.edges,
     { source: 'legGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },

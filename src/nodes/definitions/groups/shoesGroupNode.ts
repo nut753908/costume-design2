@@ -5,6 +5,9 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 /** shoesSoleScale(numberMultiply)+profile(easedLatheProfile)+latheGen(latheGenerator)+
  * scaleZ(scaleZ)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+offsetYIn(numberInput)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の9ノードを1枚にまとめたグループノード。
+ * Sole Radius と Cuff Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/
+ * `cuffScale`)。体の脚の半径がすべて Body Build でスケールされるため、履き口を固定にすると
+ * Body Build を上げたとき履き口が脚の内側に入る。
  * Sole Radius/Cuff Radius/Height/Toe Length/Segments/Color は他のガーメントと共有されない
  * 単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型
  * ノードとして保持する。
@@ -21,7 +24,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 const output = garmentOutput({ color: { hex: '#3d3630', label: 'Shoes Color' }, offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('soleRadiusIn');
-const lathe = latheBody({ genId: 'latheGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'cuffRadiusIn', distance: 'heightIn' });
+const cuffScale = bodyBuildScale('cuffRadiusIn', 'cuffScale');
+const lathe = latheBody({ genId: 'latheGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'cuffScale', distance: 'heightIn' });
 
 defineGroupNode({
   type: 'shoesGroup',
@@ -44,6 +48,7 @@ defineGroupNode({
     { id: 'toeLengthIn', type: 'numberInput', data: { value: 1.5, min: 1, max: 2.5, step: 0.05, label: 'Toe Length' } },
     { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
     ...scale.nodes,
+    ...cuffScale.nodes,
     ...lathe.nodes,
     { id: 'scaleZ', type: 'scaleZ', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
@@ -51,6 +56,7 @@ defineGroupNode({
   ],
   internalEdges: [
     ...scale.edges,
+    ...cuffScale.edges,
     ...lathe.edges,
     { source: 'latheGen', sourceHandle: 'geometry', target: 'scaleZ', targetHandle: 'geometry' },
     { source: 'toeLengthIn', sourceHandle: 'value', target: 'scaleZ', targetHandle: 'z' },
