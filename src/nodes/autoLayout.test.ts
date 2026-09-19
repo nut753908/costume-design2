@@ -431,6 +431,21 @@ describe('estimateNodeHeight', () => {
     expect(estimateNodeHeight('colorInput', {})).toBe(90);
   });
 
+  it('グループの中(inGroup)では、入力系ノードに「グループに表示」チェックボックス行(23px)が加わる', () => {
+    expect(estimateNodeHeight('numberInput', {}, true)).toBe(127 + 23);
+    expect(estimateNodeHeight('colorInput', {}, true)).toBe(90 + 23);
+    expect(estimateNodeHeight('enumInput', { options: ['a'] }, true)).toBe(84 + 23 + 23);
+  });
+
+  it('groupInput/groupOutput は、ソケット行に加えて末尾の追加行(26px)を持つ', () => {
+    expect(estimateNodeHeight('groupInput', { sockets: [{}, {}] })).toBe(40 + 2 * 23 + 26);
+    expect(estimateNodeHeight('groupOutput', { sockets: [{}] })).toBe(40 + 23 + 26);
+  });
+
+  it('data.label を持つノードにはタイトル下のサブタイトル行(15px)が加わる', () => {
+    expect(estimateNodeHeight('numberAdd', { label: 'x' }) - estimateNodeHeight('numberAdd', {})).toBe(15);
+  });
+
   it('enumInputは選択肢の数に比例して高さが増える', () => {
     expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c'] })).toBe(84 + 3 * 23);
     expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c', 'd', 'e'] })).toBe(84 + 5 * 23);
@@ -457,7 +472,7 @@ describe('estimateNodeHeight', () => {
     registerTestType({ type: '__height_test_number_out__', outputs: [{ id: 'out', label: 'Out', type: 'number' }] });
     const geometryOutHeight = estimateNodeHeight('__height_test_geometry_out__', {});
     const numberOutHeight = estimateNodeHeight('__height_test_number_out__', {});
-    expect(numberOutHeight - geometryOutHeight).toBe(23); // 値表示行1行ぶん
+    expect(numberOutHeight - geometryOutHeight).toBe(22); // 値表示行1行ぶん(行 20.6 + 末尾 1.4)
   });
 
   it('group カテゴリのノードは、ダブルクリックヒント行の分だけ高さが増える', () => {
@@ -465,10 +480,10 @@ describe('estimateNodeHeight', () => {
     registerTestType({ type: '__height_test_generator_same_inputs__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
     const groupHeight = estimateNodeHeight('__height_test_group__', {});
     const generatorHeight = estimateNodeHeight('__height_test_generator_same_inputs__', {});
-    // group はヒント行(14)ぶんだけ高い。geometry のような garmentPlacement 相当の出力は
+    // group はヒント行(18)ぶんだけ高い。geometry のような garmentPlacement 相当の出力は
     // 現在は静的な outputs 宣言(または内部の groupOutput ノードの sockets)として通常の
     // ソケット行の計算にそのまま乗るため、ここでは特殊扱いしない。
-    expect(groupHeight - generatorHeight).toBe(14);
+    expect(groupHeight - generatorHeight).toBe(18);
   });
 });
 

@@ -33,9 +33,20 @@ const FALLBACK_NODE_HEIGHT = ROW_SPACING - NODE_GAP;
  * 実測246px)。 */
 const CARD_BASE_HEIGHT = 40;
 const CARD_ROW_HEIGHT = 23;
+/** 評価値の表示行(`GenericNode.tsx` の `rf-node__value`、数値/enum型の出力ごとに1行)の高さ。
+ * ソケット行より少し低く、値表示行を1つでも持つカードにはさらに末尾に少しの余白
+ * (`VALUE_ROWS_TRAILING_HEIGHT`)が加わる(実測: numberMultiply は 40 + 3*23 + 22 = 131、
+ * 値表示行が8個の bodyLayoutGroup は 8*20.6 + 1.4 と合う)。 */
+const VALUE_ROW_HEIGHT = 20.6;
+const VALUE_ROWS_TRAILING_HEIGHT = 1.4;
 /** category が `'group'` のノードだけ追加で表示される「ダブルクリックで中に入る」の
  * ヒント行の高さ。 */
-const CARD_GROUP_HINT_HEIGHT = 14;
+const CARD_GROUP_HINT_HEIGHT = 18;
+/** グループの中に入っている間だけ numberInput/colorInput/enumInput のカードに追加で出る
+ * 「グループに表示」チェックボックス行(`ExposeToggle.tsx`)の高さ。 */
+const EXPOSE_TOGGLE_HEIGHT = 23;
+/** `groupInput`/`groupOutput` の末尾の「追加」行(型セレクタ+「+ Add」ボタン)の高さ。 */
+const GROUP_IO_ADD_ROW_HEIGHT = 26;
 /** スライダー/カラーピッカーなど専用UIを持つ入力系ノードのうち、ノード固有設定
  * (ラベル名・min/max/step・カラーコードのテキスト欄)の行数が固定な2種は、ソケット数に
  * よらずほぼ固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの。enumInput は
@@ -53,7 +64,7 @@ const ENUM_INPUT_BASE_HEIGHT = 84;
  * 値(number: 52+3、color: 43+3。全体には下端の余白 4px と gap の差の 1px が加わる)。enumInput は
  * color と同じ高さで近似している。 */
 const EXPOSED_NUMBER_ROW_HEIGHT = 55;
-const EXPOSED_OTHER_ROW_HEIGHT = 46;
+const EXPOSED_OTHER_ROW_HEIGHT = 47;
 
 function exposedParamsHeight(type: string, data: unknown): number {
   const params = listExposedParams(type, (data as Record<string, unknown>) ?? {});
@@ -67,7 +78,7 @@ function exposedParamsHeight(type: string, data: unknown): number {
  * 占める高さ。`run-costume-design2` スキルで bodyLayoutGroup 内の numberAdd ノード
  * (rows=4: a/b/value(出力ソケット行)/value(数値表示行)、`shoulderYCalc`)の実測
  * offsetHeight=145px から逆算して較正した値(145 = 40 + 4*23 + 13、誤差0px)。 */
-const TYPE_NAME_SUBTITLE_HEIGHT = 13;
+const TYPE_NAME_SUBTITLE_HEIGHT = 15;
 
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
@@ -84,7 +95,10 @@ const TYPE_NAME_SUBTITLE_HEIGHT = 13;
  *   `CARD_GROUP_HINT_HEIGHT`)。行数は `resolveNodeSockets()` の入力+出力の合計に、
  *   数値/enum型の出力ソケットの分だけ加える — `GenericNode.tsx` は評価結果のうち
  *   数値/enum型の出力を「ソケット行」とは別にもう一度「値表示行」として描画する
- *   ため(例: numberMultiply の "Value" 出力はソケット行1つ+値表示行1つの計2行分)。
+ *   ため(例: numberMultiply の "Value" 出力はソケット行1つ+値表示行1つ、値表示行の高さは
+ *   ソケット行とは異なる、`VALUE_ROW_HEIGHT` 参照)。
+ * - numberInput/colorInput/enumInput は、グループの中に入っている間(`inGroup`)だけ
+ *   「グループに表示」チェックボックス行(`EXPOSE_TOGGLE_HEIGHT`)が加わる。
  *   `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
  *   (`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の特殊扱いは不要で、
  *   この一般式にそのまま乗る。
@@ -92,32 +106,34 @@ const TYPE_NAME_SUBTITLE_HEIGHT = 13;
  *   `FALLBACK_NODE_HEIGHT` を返す。
  *
  * テストからも直接検証できるよう export している。 */
-export function estimateNodeHeight(type: string, data: unknown): number {
+export function estimateNodeHeight(type: string, data: unknown, inGroup = false): number {
+  const exposeToggle = inGroup ? EXPOSE_TOGGLE_HEIGHT : 0;
   const bespoke = BESPOKE_NODE_HEIGHTS[type];
-  if (bespoke !== undefined) return bespoke;
+  if (bespoke !== undefined) return bespoke + exposeToggle;
 
   if (type === 'enumInput') {
     const options = (data as { options?: unknown[] } | undefined)?.options ?? [];
-    return ENUM_INPUT_BASE_HEIGHT + options.length * CARD_ROW_HEIGHT;
+    return ENUM_INPUT_BASE_HEIGHT + options.length * CARD_ROW_HEIGHT + exposeToggle;
   }
 
   if (type === 'groupInput' || type === 'groupOutput') {
     const sockets = (data as { sockets?: unknown[] } | undefined)?.sockets ?? [];
-    return CARD_BASE_HEIGHT + sockets.length * CARD_ROW_HEIGHT + CARD_ROW_HEIGHT; // + 末尾の追加行
+    return CARD_BASE_HEIGHT + sockets.length * CARD_ROW_HEIGHT + GROUP_IO_ADD_ROW_HEIGHT;
   }
 
   if (!nodeTypeRegistry.has(type)) return FALLBACK_NODE_HEIGHT;
 
   const def = getNodeType(type);
   const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
-  const extraValueRows = outputs.filter((o) => o.type === 'number' || o.type === 'enum').length;
-  const rows = inputs.length + outputs.length + extraValueRows;
+  const valueRows = outputs.filter((o) => o.type === 'number' || o.type === 'enum').length;
+  const socketRows = inputs.length + outputs.length;
   const hasTypeNameSubtitle = (data as { label?: string } | undefined)?.label !== undefined;
-  return (
+  return Math.round(
     CARD_BASE_HEIGHT +
-    rows * CARD_ROW_HEIGHT +
-    (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0) +
-    (hasTypeNameSubtitle ? TYPE_NAME_SUBTITLE_HEIGHT : 0)
+      socketRows * CARD_ROW_HEIGHT +
+      (valueRows > 0 ? valueRows * VALUE_ROW_HEIGHT + VALUE_ROWS_TRAILING_HEIGHT : 0) +
+      (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0) +
+      (hasTypeNameSubtitle ? TYPE_NAME_SUBTITLE_HEIGHT : 0),
   );
 }
 
@@ -210,9 +226,13 @@ export function isotonicRegression(values: number[]): number[] {
  * グラフの実行可能性を問わずいつでも安全に使えるべきなので、循環に巻き込まれた
  * ノードは layer 0 にフォールバックし(層バランス調整の対象からも除外され)、決して
  * 例外を投げない。 */
-export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<string, LayoutPosition> {
+export function computeAutoLayout(
+  nodes: GraphNode[],
+  edges: GraphEdge[],
+  options: { inGroup?: boolean } = {},
+): Map<string, LayoutPosition> {
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
-  const nodeHeight = new Map(nodes.map((n) => [n.id, estimateNodeHeight(n.type, n.data)]));
+  const nodeHeight = new Map(nodes.map((n) => [n.id, estimateNodeHeight(n.type, n.data, options.inGroup)]));
   const nodeIds = new Set(nodes.map((n) => n.id));
   const inDegree = new Map<string, number>();
   const dependents = new Map<string, string[]>();
