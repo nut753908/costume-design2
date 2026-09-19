@@ -17,9 +17,20 @@ registerNodeType({
     const list = inputs.geometries?.type === 'geometries' ? inputs.geometries.value : [];
     if (list.length === 0) return {};
     if (list.length === 1) return { geometry: { type: 'geometry', value: list[0] } };
-    // 頂点属性(uv の有無など)が揃っていない geometry 同士は結合できず null が返る。
-    // 例外にするとエディタ全体が落ちてしまうため、出力なし(未接続と同じ扱い)にする。
-    const merged = mergeGeometries(list);
+    // 頂点属性が揃っていない geometry 同士は結合できず null が返る。例外にするとエディタ全体が
+    // 落ちてしまうため、出力なし(未接続と同じ扱い)にする。ただし uv の有無だけの違い
+    // (標準プリミティブは持ち、手組みのチューブ/リンググリッドは持たない)はトゥーン
+    // シェーディングでは uv を使わないため、入力を clone して uv を外してから結合し直す
+    // (入力の geometry は評価キャッシュと共有されるため直接は変更しない)。
+    const merged =
+      mergeGeometries(list) ??
+      mergeGeometries(
+        list.map((g) => {
+          const copy = g.clone();
+          copy.deleteAttribute('uv');
+          return copy;
+        }),
+      );
     if (!merged) return {};
     merged.computeVertexNormals();
     return { geometry: { type: 'geometry', value: merged } };

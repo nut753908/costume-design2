@@ -34,10 +34,20 @@ describe('mergeGeometry', () => {
     expect(getNodeType('mergeGeometry').evaluate({}, {}).geometry).toBeUndefined();
   });
 
-  it('頂点属性(uv の有無)が揃わず結合できない場合は、例外を投げず何も返さない', () => {
+  it('uv の有無だけが違う geometry は、uv を外して結合する(入力の geometry は変更しない)', () => {
     const withoutUv = box(0.2);
     withoutUv.deleteAttribute('uv');
-    const result = getNodeType('mergeGeometry').evaluate({ geometries: list(box(-0.2), withoutUv) }, {});
+    const withUv = box(-0.2);
+    const result = getNodeType('mergeGeometry').evaluate({ geometries: list(withUv, withoutUv) }, {});
+    const merged = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    expect(merged!.getAttribute('position').count).toBe(48);
+    expect(merged!.getAttribute('uv')).toBeUndefined();
+    expect(withUv.getAttribute('uv')).toBeDefined();
+  });
+
+  it('それ以外の頂点属性/インデックスの違いで結合できない場合は、例外を投げず何も返さない', () => {
+    const nonIndexed = box(0.2).toNonIndexed();
+    const result = getNodeType('mergeGeometry').evaluate({ geometries: list(box(-0.2), nonIndexed) }, {});
     expect(result.geometry).toBeUndefined();
   });
 
