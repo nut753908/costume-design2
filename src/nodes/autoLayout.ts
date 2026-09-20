@@ -1,4 +1,4 @@
-import { getNodeType, nodeTypeRegistry } from './registry';
+import { nodeTypeRegistry } from './registry';
 import { resolveNodeSockets } from './resolveNodeSockets';
 import type { GraphEdge, GraphNode } from './types';
 
@@ -36,9 +36,6 @@ const CARD_ROW_HEIGHT = 22.8;
 const IO_ROW_HEIGHT = 23;
 /** `groupInput`/`groupOutput` の、ソケット行を持たない土台(パディング+枠線+タイトル行+間隔)の高さ。 */
 const GROUP_IO_BASE_HEIGHT = 40;
-/** category が `'group'` のノードだけ追加で表示される「ダブルクリックで中に入る」の
- * ヒント行の高さ。 */
-const CARD_GROUP_HINT_HEIGHT = 18;
 /** `groupInput`/`groupOutput` の末尾の「追加」行(型セレクタ+「+ Add」ボタン)の高さ。 */
 const GROUP_IO_ADD_ROW_HEIGHT = 26;
 /** 数値入力欄/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
@@ -57,8 +54,8 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
  * - `groupInput`/`groupOutput` は `editor/nodeComponents/` の専用UI(ソケットごとの
  *   行 + 末尾の追加行)を持ち、`GROUP_IO_BASE_HEIGHT + ソケット数 * IO_ROW_HEIGHT` に追加行の分を足す。
  * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
- *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT` (+ category が `'group'` なら
- *   `CARD_GROUP_HINT_HEIGHT`)。行数は `resolveNodeSockets()` の入力+出力の合計。
+ *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT`。行数は `resolveNodeSockets()` の入力+出力の合計
+ *   (group の「中に入る」ボタンはタイトル行に収まるので高さに影響しない)。
  * - `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
  *   (`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の特殊扱いは不要で、
  *   この一般式にそのまま乗る。
@@ -77,14 +74,9 @@ export function estimateNodeHeight(type: string, data: unknown): number {
 
   if (!nodeTypeRegistry.has(type)) return FALLBACK_NODE_HEIGHT;
 
-  const def = getNodeType(type);
   const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
   const socketRows = inputs.length + outputs.length;
-  return Math.round(
-    CARD_BASE_HEIGHT +
-      socketRows * CARD_ROW_HEIGHT +
-      (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0),
-  );
+  return Math.round(CARD_BASE_HEIGHT + socketRows * CARD_ROW_HEIGHT);
 }
 
 /** ソケット `socketId` が、そのノードの中で描画される行の何番目か(0=先頭)を、

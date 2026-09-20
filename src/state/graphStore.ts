@@ -102,7 +102,7 @@ interface GraphState {
   pasteClipboard: () => void;
   duplicateSelected: () => void;
   autoLayout: () => void;
-  /** グループノードをダブルクリックした際に呼ぶ。そのノードが `category: 'group'` でなければ
+  /** グループノードの「中に入る」ボタンを押した際に呼ぶ。そのノードが `category: 'group'` でなければ
    * 何もしない。`data.nodes`/`edges` が未実体化(旧データモデルの `data: {}`)なら
    * `createDefaultData()` でこのインスタンス自身に実体化してから中に入る。 */
   enterGroup: (nodeId: string) => void;

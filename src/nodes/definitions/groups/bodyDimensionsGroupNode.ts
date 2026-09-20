@@ -68,7 +68,7 @@ const dimensions = [
  * Height/Build/Shoulder スケール(外部ソケット `heightScale`/`buildScale`/`shoulderScale`)から
  * 各部位の半径・長さを求める9つの「基準値 × スケール」の `numberMultiply`(基準値は `Value` 入力欄
  * の値)を1枚にまとめたもの。ガーメントの『体に触れる半径』(`bodyBuildScale()` の
- * `numberMultiply`)と同じ粒度までノードグラフ上に展開しており、ダブルクリックで中に入れば
+ * `numberMultiply`)と同じ粒度までノードグラフ上に展開しており、「→」ボタンで中に入れば
  * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
  * Height/Shoulder スケールは、`bodyBuild` のようにルートで配線するのではなく、グループカードの
  * 入力欄(未接続時の既定値 1)から調整する。`headRadius` は `groupOutput` の入力ソケットが入力欄を

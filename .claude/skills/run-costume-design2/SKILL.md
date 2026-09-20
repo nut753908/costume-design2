@@ -46,7 +46,7 @@ node .claude/skills/run-costume-design2/driver.mjs
 3. 初期状態のスクリーンショットを撮る。
 4. `OrbitControls` でカメラをドラッグ操作し、再描画されることを確認するスクリーンショットを撮る
    (`frameloop="demand"` でもカメラ操作時に再描画されるかの検証を兼ねる)。
-5. `skirtGroup` をダブルクリックして中に入り(ガーメント固有の生パラメータは
+5. `skirtGroup` のタイトル行右上の「→」(グループの中に入る)ボタンを押して中に入り(ガーメント固有の生パラメータは
    `<name>GroupNode.ts` の `internalNodes` に埋め込まれているため、中に入らないと操作できない
    — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`scale`(numberMultiplyノード)の Value 入力欄
    (未接続の数値入力ソケットの欄)に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが

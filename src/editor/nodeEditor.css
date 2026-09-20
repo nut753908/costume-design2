@@ -17,6 +17,7 @@
   margin-bottom: 6px;
 }
 
+.rf-node__enter-group,
 .rf-node__view-toggle {
   flex-shrink: 0;
   width: 16px;
@@ -59,12 +60,7 @@
 .rf-node__group-hint {
   margin-bottom: 4px;
   font-size: 10px;
-  opacity: 0.5;
-}
-
-.rf-node__group-hint--stale {
   color: #b3541e;
-  opacity: 1;
 }
 
 .rf-node__socket-row {

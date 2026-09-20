@@ -97,15 +97,13 @@ async function main() {
 
     // skirt の生パラメータ(`scale` の Value 入力欄/`material` の Color 入力欄)は skirtGroup の
     // internalNodes に埋め込まれているため、中に入ってから操作する(nodes/CLAUDE.md の「グループノード」節参照)。
-    // 実ポインタでの dblclick() ではなく、対象要素へ直接 dblclick イベントを dispatch する
+    // 実ポインタでの click() ではなく、「中に入る」ボタンへ直接 click を実行する
     // ("Gotchas" の number/color input と同じ考え方) — グラフが育つと `computeAutoLayout()`
     // の出力(ノード数・全体の高さ)が変わって初期ズーム/パンも変わるため、この固定
     // ビューポート(1600x1000)では NodePalette パネル(左上の固定オーバーレイ)の下に
     // skirtGroup が重なることがあり、実ポインタクリックだと座標上は最前面のパネルへ吸われて
     // タイムアウトする。要素へ直接 dispatch すればこの重なりに影響されない。
-    await page.locator('.react-flow__node[data-id="skirtGroup"] .rf-node').evaluate((el) => {
-      el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window }));
-    });
+    await page.locator('.react-flow__node[data-id="skirtGroup"] button[aria-label="グループの中に入る"]').evaluate((el) => el.click());
     await page.waitForSelector('.react-flow__node[data-id="scale"]', { timeout: 5000 });
 
     // `scale`(numberMultiply)の Value 入力欄(未接続の数値入力ソケットの欄)を高頻度 input で連続操作 → 間引き & ジオメトリ追従の確認

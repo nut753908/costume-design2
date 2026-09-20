@@ -18,11 +18,26 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const connectedInputs = new Set(useNodeConnections({ handleType: 'target' }).map((c) => c.targetHandle));
 
   return (
-    <div className="rf-node" onDoubleClick={isGroup ? () => enterGroup(id) : undefined}>
-      <NodeTitleBar id={id} label={def.label} />
-      {isGroup && <div className="rf-node__group-hint">ダブルクリックで中に入る</div>}
+    <div className="rf-node">
+      <NodeTitleBar
+        id={id}
+        label={def.label}
+        action={
+          isGroup && (
+            <button
+              type="button"
+              className="rf-node__enter-group nodrag"
+              title="グループの中に入る"
+              aria-label="グループの中に入る"
+              onClick={() => enterGroup(id)}
+            >
+              →
+            </button>
+          )
+        }
+      />
       {isGroup && isGroupInstanceStale(type ?? '', data as Record<string, never>) && (
-        <div className="rf-node__group-hint rf-node__group-hint--stale">テンプレート更新あり(中で更新)</div>
+        <div className="rf-node__group-hint">テンプレート更新あり(中で更新)</div>
       )}
       {inputs.map((socket) => {
         const hasField = socket.default !== undefined && !connectedInputs.has(socket.id);

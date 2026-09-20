@@ -464,14 +464,9 @@ describe('estimateNodeHeight', () => {
     expect(heights).toEqual([86, 109, 155, 246, 337]);
   });
 
-  it('group カテゴリのノードは、ダブルクリックヒント行の分だけ高さが増える', () => {
+  it('group カテゴリのノードも、同じソケット数の他のノードと同じ高さになる(「中に入る」ボタンはタイトル行に収まる)', () => {
     registerTestType({ type: '__height_test_group__', category: 'group', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
     registerTestType({ type: '__height_test_generator_same_inputs__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
-    const groupHeight = estimateNodeHeight('__height_test_group__', {});
-    const generatorHeight = estimateNodeHeight('__height_test_generator_same_inputs__', {});
-    // group はヒント行(18)ぶんだけ高い。geometry のような garmentPlacement 相当の出力は
-    // 現在は静的な outputs 宣言(または内部の groupOutput ノードの sockets)として通常の
-    // ソケット行の計算にそのまま乗るため、ここでは特殊扱いしない。
-    expect(groupHeight - generatorHeight).toBe(18);
+    expect(estimateNodeHeight('__height_test_group__', {})).toBe(estimateNodeHeight('__height_test_generator_same_inputs__', {}));
   });
 });
