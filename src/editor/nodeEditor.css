@@ -17,20 +17,6 @@
   margin-bottom: 6px;
 }
 
-.rf-node__delete {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  line-height: 1;
-  border: 1px solid #999;
-  border-radius: 3px;
-  background: #fff;
-  color: #666;
-  font-size: 11px;
-  cursor: pointer;
-}
-
 /* numberAdd/numberMultiply/numberSubtract を、data.label の記述内容に頼らずノードの
    type(例: "numberAdd")から判別できるようにするサブタイトル(NodeTitleBar.tsx 参照)。
    タイトル行に横並びで足すとカードが横長になるため、あえて別行にしている
@@ -61,12 +47,6 @@
   background: #ffe9a8;
   border-color: #b8860b;
   color: #6b4e00;
-}
-
-.rf-node__delete:hover {
-  background: #f3d4d4;
-  border-color: #b0413e;
-  color: #b0413e;
 }
 
 /* 固定幅(旧: 100px)だと "Torso Capsule Height × Half" のような長いラベル(GenericNode.tsx
