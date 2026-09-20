@@ -48,10 +48,10 @@ node .claude/skills/run-costume-design2/driver.mjs
    (`frameloop="demand"` でもカメラ操作時に再描画されるかの検証を兼ねる)。
 5. `skirtGroup` をダブルクリックして中に入り(ガーメント固有の生パラメータは
    `<name>GroupNode.ts` の `internalNodes` に埋め込まれているため、中に入らないと操作できない
-   — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`waistRadiusIn`(numberInputノード)の
-   数値入力欄に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが
+   — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`scale`(numberMultiplyノード)の Value 入力欄
+   (未接続の数値入力ソケットの欄)に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが
    追従して変化した後のスクリーンショットを撮る。
-6. 同じく中にいる `colorIn`(colorInputノード)の色を変更し、トップレベルへ戻ってから
+6. 同じく中にいる `material`(toonMaterialノード)の Color 入力欄の色を変更し、トップレベルへ戻ってから
    ガーメントの色が変わった後のスクリーンショットを撮る(3Dシーンは `rootEvaluatedResults` 経由
    でスコープに関わらず常に最新なので、戻る前の変更もすでに反映されている)。
 7. コンソールエラー/ページエラーを収集し、1件でもあれば非ゼロ終了。
@@ -80,14 +80,14 @@ npm run dev
 付与する属性、値はグラフ内のノードID)でセレクタを組み立てる:
 
 ```js
-page.locator('.react-flow__node[data-id="<ノードID>"] input[type="number"]')  // numberInput
-page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  // colorInput
+page.locator('.react-flow__node[data-id="<ノードID>"] input[type="number"]')  // numberInput、または未接続の数値入力ソケットの欄
+page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  // colorInput、または未接続の色入力ソケットの欄
 ```
 
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
 `bodyBuild`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
-(Body の `skinColorIn` を含む)は対応するグループの中に `waistRadiusIn`/`colorIn`/
-`torsoRadiusIn` のような `<socketId>In` という id で埋め込まれているため、上のステップ5と同様に
+(Body の肌色を含む)は対応するグループの中のノード(`scale`/`material` など)の入力欄として
+埋め込まれているため、上のステップ5と同様に
 まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。
 
 number/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
@@ -127,4 +127,4 @@ onChangeが発火しない。ネイティブの value setter 経由で値をセ�
 |---|---|
 | `Chromium 実行ファイルが見つかりません` | `~/.cache/ms-playwright` にキャッシュが無い。`cd .claude/skills/run-costume-design2 && npm install && npx playwright-core install chromium` |
 | `dev server が30秒以内に応答しませんでした` | ポート5173が塞がっている可能性。`lsof -ti:5173 -sTCP:LISTEN \| xargs -r kill` してから再実行 |
-| `.react-flow__node[data-id="skirtGroup"]`/`waistRadiusIn`/`colorIn` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された、または対象ノードがグループの中に埋め込まれた)。`src/state/graphStore.ts` の `initialNodes` や該当する `<name>GroupNode.ts` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |
+| `.react-flow__node[data-id="skirtGroup"]`/`scale`/`material` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された、または対象ノードがグループの中に埋め込まれた)。`src/state/graphStore.ts` の `initialNodes` や該当する `<name>GroupNode.ts` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |

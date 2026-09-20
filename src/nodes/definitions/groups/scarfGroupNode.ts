@@ -1,26 +1,25 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale } from '../garmentParts';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
-import { constNumberInput } from '../constNumberInput';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
  * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている。首元の輪
  * (`band`)は belt と共有する `bulgedBand`(`generic/bulgedBand.ts`)を `bulge=1.05` 固定で
  * ネストして再利用し(`geometry/CLAUDE.md` 参照)、タイ(`tail`、`boxGenerator`)は `translate`(`generic/translate.ts`、
  * X/Y/Z 軸の平行移動)で配置する。Y座標(`tailCenterY = (0 - bandThickness) - tailLength × 0.5`)/Z座標
- * (`tailCenterZ = neckRadius(スケール後) × tailFrontInsetIn`、固定値0.9)はどちらも可視の
+ * (`tailCenterZ = neckRadius(スケール後) × 固定値0.9)はどちらも可視の
  * 四則演算チェーンで導出する(`bandThickness` の符号反転は `numberNegate`、
- * `bulgeIn`/`tailFrontInsetIn` は `constNumberInput()` で定義する「常に一定の値を持つ
- * `numberInput`」)。`band`/`tail`
+ * 定数は各ノードの入力欄の値)。`band`/`tail`
  * は最後に `mergeGeometry` で1つにまとめる。
  *
- * Neck Radius/Band Thickness/Tail Width/Tail Length/Segments/Color は他のガーメントと
- * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
- * 内部の同型ノードとして保持する。Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
+ * Neck Radius/Tail Width/Segments/Color は他のガーメントと共有されない単独パラメータで、
+ * 複数のノードが同じ値を使う Band Thickness/Tail Length(`bandThicknessIn`/`tailLengthIn`)だけ
+ * `numberInput` を置いて配線し、他は numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
+ * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
  * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
 const output = garmentOutput({ color: '#8a2e3a', offsetY: 0.08, geometry: 'merge' });
 
-const scale = bodyBuildScale('neckRadiusIn');
+const scale = bodyBuildScale(0.19);
 
 defineGroupNode({
   type: 'scarfGroup',
@@ -36,20 +35,15 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'neckRadiusIn', type: 'numberInput', data: { value: 0.19} },
     { id: 'bandThicknessIn', type: 'numberInput', data: { value: 0.05} },
-    { id: 'tailWidthIn', type: 'numberInput', data: { value: 0.09} },
     { id: 'tailLengthIn', type: 'numberInput', data: { value: 0.35} },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 20} },
-    constNumberInput('bulgeIn', 1.05),
-    constNumberInput('tailFrontInsetIn', 0.9),
     ...scale.nodes,
-    { id: 'bandGen', type: 'bulgedBand', data: {} },
-    { id: 'tailGen', type: 'boxGenerator', data: {} },
+    { id: 'bandGen', type: 'bulgedBand', data: { bulge: 1.05, segments: 20 } },
+    { id: 'tailGen', type: 'boxGenerator', data: { width: 0.09 } },
     { id: 'negatedBandThickness', type: 'numberNegate', data: {} },
     { id: 'halfTailLength', type: 'numberHalf', data: {} },
     { id: 'tailCenterY', type: 'numberSubtract', data: {} },
-    { id: 'tailCenterZ', type: 'numberMultiply', data: {} },
+    { id: 'tailCenterZ', type: 'numberMultiply', data: { factor: 0.9 } },
     { id: 'tailTranslate', type: 'translate', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,
@@ -59,10 +53,7 @@ defineGroupNode({
 
     { source: 'scale', sourceHandle: 'value', target: 'bandGen', targetHandle: 'radius' },
     { source: 'bandThicknessIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'thickness' },
-    { source: 'bulgeIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'bulge' },
-    { source: 'segmentsIn', sourceHandle: 'value', target: 'bandGen', targetHandle: 'segments' },
 
-    { source: 'tailWidthIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'width' },
     { source: 'tailLengthIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'height' },
     { source: 'bandThicknessIn', sourceHandle: 'value', target: 'tailGen', targetHandle: 'depth' },
 
@@ -72,7 +63,6 @@ defineGroupNode({
     { source: 'halfTailLength', sourceHandle: 'value', target: 'tailCenterY', targetHandle: 'b' },
 
     { source: 'scale', sourceHandle: 'value', target: 'tailCenterZ', targetHandle: 'value' },
-    { source: 'tailFrontInsetIn', sourceHandle: 'value', target: 'tailCenterZ', targetHandle: 'factor' },
 
     { source: 'tailGen', sourceHandle: 'geometry', target: 'tailTranslate', targetHandle: 'geometry' },
     { source: 'tailCenterY', sourceHandle: 'value', target: 'tailTranslate', targetHandle: 'y' },

@@ -49,28 +49,66 @@ describe('isGroupInstanceStale', () => {
 
   it('ユーザーが値だけ編集しても(構造が同じなら)stale にならない', () => {
     const data = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[]; templateFingerprint: string };
-    const edited = data.nodes.map((node) => (node.id === 'waistRadiusIn' ? { ...node, data: { ...node.data, value: 0.5 } } : node));
+    const edited = data.nodes.map((node) => (node.id === 'scale' ? { ...node, data: { ...node.data, value: 0.5 } } : node));
     expect(isGroupInstanceStale('skirtGroup', { ...data, nodes: edited })).toBe(false);
   });
 });
 
 describe('migrateGroupToTemplate', () => {
-  it('最新のテンプレートへ更新しつつ、同じ id・型の入力ノードの値を引き継ぐ', () => {
-    const old: GraphNode[] = [
-      n('waistRadiusIn', 'numberInput', { value: 0.45 }),
-      n('colorIn', 'colorInput', { hex: '#123456' }),
+  const edge = (source: string, target: string, targetHandle: string) => ({
+    source,
+    sourceHandle: 'value',
+    target,
+    targetHandle,
+  });
+
+  it('同じ id・型のノードの入力欄の値を引き継ぐ', () => {
+    const migrated = migrateGroupToTemplate('skirtGroup', [
+      n('scale', 'numberMultiply', { value: 0.45 }),
+      n('material', 'toonMaterial', { color: '#123456' }),
       n('removedNode', 'numberInput', { value: 7 }),
-    ];
-    const migrated = migrateGroupToTemplate('skirtGroup', old);
+    ]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
-    expect(byId.get('waistRadiusIn')?.data.value).toBe(0.45);
-    expect(byId.get('colorIn')?.data.hex).toBe('#123456');
+    expect(byId.get('scale')?.data.value).toBe(0.45);
+    expect(byId.get('material')?.data.color).toBe('#123456');
     expect(byId.has('removedNode')).toBe(false);
     expect(migrated.templateFingerprint).toBe(getGroupTemplateFingerprint('skirtGroup'));
   });
 
   it('型が変わっている同じ id の値は引き継がない', () => {
-    const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'colorInput', { hex: '#fff' })]);
-    expect(migrated.nodes.find((node) => node.id === 'waistRadiusIn')?.data.value).toBe(0.3);
+    const migrated = migrateGroupToTemplate('skirtGroup', [n('scale', 'colorInput', { hex: '#fff' })]);
+    expect(migrated.nodes.find((node) => node.id === 'scale')?.data.value).toBe(0.3);
+  });
+
+  it('同じ id・型の numberInput/colorInput の値を引き継ぐ(最新のテンプレートにも入力ノードがあるグループ)', () => {
+    const migrated = migrateGroupToTemplate('bodyLayoutGroup', [n('feetYIn', 'numberInput', { value: 0.5 })]);
+    expect(migrated.nodes.find((node) => node.id === 'feetYIn')?.data.value).toBe(0.5);
+  });
+
+  it('古いテンプレートの単独の入力ノードの値を、接続先の入力欄へ引き継ぐ(1本だけ繋がっていた場合)', () => {
+    const migrated = migrateGroupToTemplate(
+      'skirtGroup',
+      [n('waistRadiusIn', 'numberInput', { value: 0.45 }), n('flareIn', 'numberInput', { value: 0.9 }), n('lengthIn', 'numberInput', { value: 0.6 })],
+      [edge('waistRadiusIn', 'scale', 'value'), edge('flareIn', 'hemRadiusCalc', 'flare'), edge('lengthIn', 'profile', 'distance')],
+    );
+    const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
+    expect(byId.get('scale')?.data.value).toBe(0.45);
+    expect(byId.get('hemRadiusCalc')?.data.flare).toBe(0.9);
+    expect(byId.get('profile')?.data.distance).toBe(0.6);
+  });
+
+  it('複数へ繋がっていた入力ノード・最新のテンプレートで配線されているソケットへの値は引き継がない', () => {
+    const migrated = migrateGroupToTemplate(
+      'skirtGroup',
+      [n('a', 'numberInput', { value: 9 })],
+      [edge('a', 'scale', 'value'), edge('a', 'hemRadiusCalc', 'flare')],
+    );
+    const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
+    expect(byId.get('scale')?.data.value).toBe(0.3);
+    expect(byId.get('hemRadiusCalc')?.data.flare).toBe(0.7);
+
+    // scale.factor は最新のテンプレートで input.bodyBuild が配線されているため、入力欄の値にはならない。
+    const wired = migrateGroupToTemplate('skirtGroup', [n('b', 'numberInput', { value: 9 })], [edge('b', 'scale', 'factor')]);
+    expect(wired.nodes.find((node) => node.id === 'scale')?.data.factor).toBeUndefined();
   });
 });

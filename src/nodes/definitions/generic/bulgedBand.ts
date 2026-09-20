@@ -1,5 +1,4 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { constNumberInput } from '../constNumberInput';
 
 /** アンカー(上端、radius)から下端(radius)まで、中間で bulge 倍に膨らむ帯状の回転体を作る
  * グループノード。上半分・下半分それぞれの `easedLatheProfile` の結果を連結して Lathe 化する。
@@ -11,7 +10,7 @@ import { constNumberInput } from '../constNumberInput';
  *   - `lowerSliced`(`slicePoints`、`dropEnd=1` で `upperProfile` の始点と重複する接続点を間引く)
  *   - `upperProfile`(`radius → bulgeRadius` を `half` の距離でイージング)
  *   - `combined`(`concatPoints`)→ `gen`(`latheGenerator`)
- * (`oneIn` は `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」) */
+ * (`lowerSliced` の `dropEnd`(1)は入力欄の値) */
 defineGroupNode({
   type: 'bulgedBand',
   label: 'Bulged Band',
@@ -28,13 +27,12 @@ defineGroupNode({
         ],
       },
     },
-    constNumberInput('oneIn', 1),
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: {} },
     { id: 'halfCalc', type: 'numberHalf', data: {} },
     { id: 'negatedHalf', type: 'numberNegate', data: {} },
     { id: 'lowerProfile', type: 'easedLatheProfile', data: { direction: 'down', steps: 6 } },
     { id: 'lowerShifted', type: 'translatePointsY', data: {} },
-    { id: 'lowerSliced', type: 'slicePoints', data: {} },
+    { id: 'lowerSliced', type: 'slicePoints', data: { dropEnd: 1 } },
     { id: 'upperProfile', type: 'easedLatheProfile', data: { direction: 'down', steps: 6 } },
     { id: 'combined', type: 'concatPoints', data: {} },
     { id: 'gen', type: 'latheGenerator', data: {} },
@@ -58,7 +56,6 @@ defineGroupNode({
     { source: 'lowerProfile', sourceHandle: 'points', target: 'lowerShifted', targetHandle: 'points' },
     { source: 'negatedHalf', sourceHandle: 'value', target: 'lowerShifted', targetHandle: 'y' },
     { source: 'lowerShifted', sourceHandle: 'points', target: 'lowerSliced', targetHandle: 'points' },
-    { source: 'oneIn', sourceHandle: 'value', target: 'lowerSliced', targetHandle: 'dropEnd' },
 
     { source: 'input', sourceHandle: 'radius', target: 'upperProfile', targetHandle: 'startRadius' },
     { source: 'bulgeRadiusCalc', sourceHandle: 'value', target: 'upperProfile', targetHandle: 'endRadius' },

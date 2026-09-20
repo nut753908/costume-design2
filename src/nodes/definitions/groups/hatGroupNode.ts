@@ -7,17 +7,17 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と同じ値)に Brim Ratio を掛けて
  * 求める(`brimRadiusCalc`)ため、頭の大きさを変えるとつばも追従する。
  * profile(easedLatheProfile)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
- * offsetYIn(numberInput)+placement(garmentPlacement)+sceneOut(sceneOutput) を1枚に
+ * placement(garmentPlacement)+sceneOut(sceneOutput) を1枚に
  * まとめる。Brim Ratio/Crown Radius/Height/Color は他のガーメントと共有されない単独
- * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
- * して保持する。Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
+ * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
+ * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
  * 配線される headCenterY)は外部ソケット。
  *
  * head は左右対称な単一パーツなので `mirrorPair` は挟まない。hat は shoes/socks と同じ
  * `direction: 'up'`(つばから上=クラウン側へ伸びる)。 */
 const output = garmentOutput({ color: '#4a3b6b', offsetY: 0.1, geometry: 'gen' });
 
-const lathe = latheBody({ genId: 'gen', direction: 'up', steps: 10, startRadius: 'brimRadiusCalc', endRadius: 'crownRadiusIn', distance: 'heightIn' });
+const lathe = latheBody({ genId: 'gen', direction: 'up', steps: 10, startRadius: 'brimRadiusCalc', endRadius: 0.02, distance: 0.35, segments: 20 });
 
 defineGroupNode({
   type: 'hatGroup',
@@ -33,17 +33,12 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'brimRatioIn', type: 'numberInput', data: { value: 1.25} },
-    { id: 'brimRadiusCalc', type: 'numberMultiply', data: {} },
-    { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02} },
-    { id: 'heightIn', type: 'numberInput', data: { value: 0.35} },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 20} },
+    { id: 'brimRadiusCalc', type: 'numberMultiply', data: { factor: 1.25 } },
     ...lathe.nodes,
     ...output.nodes,
   ],
   internalEdges: [
     { source: 'input', sourceHandle: 'headRadius', target: 'brimRadiusCalc', targetHandle: 'value' },
-    { source: 'brimRatioIn', sourceHandle: 'value', target: 'brimRadiusCalc', targetHandle: 'factor' },
     ...lathe.edges,
     ...output.edges,
   ],

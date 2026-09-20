@@ -2,15 +2,14 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
-/** 足首半径(`ankleRadiusIn`)とふくらはぎ半径(`calfRadiusIn`)はどちらも Body Build を掛けてから
+/** 足首半径とふくらはぎ半径はどちらも Body Build を掛けてから
  * lathe へ渡す(`scale`/`calfScale`)。体の脚の半径がすべて Body Build でスケールされるため、
  * ふくらはぎ側を固定にすると Body Build を上げたとき靴下が脚の内側に埋まる。
  * socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
- * mirror(mirrorPair)+socksMaterial(toonMaterial)+offsetYIn(numberInput)+
+ * mirror(mirrorPair)+socksMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Ankle Radius/Calf Radius/Height/Segments/Color は他のガーメントと共有されない単独
- * パラメータのため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードと
- * して保持する。
+ * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
  * 靴下1本ぶんのジオメトリ(`profile`→`sockGen`)と、それを ±legSpacing だけ X方向に離した
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
@@ -22,9 +21,9 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ color: '#d4a83a', offsetY: 0, geometry: 'mirror' });
 
-const scale = bodyBuildScale('ankleRadiusIn');
-const calfScale = bodyBuildScale('calfRadiusIn', 'calfScale');
-const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'calfScale', distance: 'heightIn' });
+const scale = bodyBuildScale(0.09);
+const calfScale = bodyBuildScale(0.105, 'calfScale');
+const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'calfScale', distance: 0.22, segments: 16 });
 
 defineGroupNode({
   type: 'socksGroup',
@@ -41,10 +40,6 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'ankleRadiusIn', type: 'numberInput', data: { value: 0.09} },
-    { id: 'calfRadiusIn', type: 'numberInput', data: { value: 0.105} },
-    { id: 'heightIn', type: 'numberInput', data: { value: 0.22} },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 16} },
     ...scale.nodes,
     ...calfScale.nodes,
     ...lathe.nodes,

@@ -46,12 +46,12 @@ defineGeneratorNode({
 - `fields` の `default` は `DEFAULTS`/`inputs`/`createDefaultData` に自動展開されるので、リテラル値を複数箇所に書く必要はない。
 - `build*Geometry` が受け取るがソケット化しない固定値(角度分割数など)は `fields` ではなく `extra` で渡す。
 
-## 3. 配置(anchorY 用の外部ソケット + offsetY 用の numberInput / garmentPlacement)
+## 3. 配置(anchorY 用の外部ソケット + offsetY 用の入力欄 / garmentPlacement)
 
 ガーメント自体はどこにも取り付かない。取り付け位置は次の連携で決まる:
 
 - `anchorY`(外部ソケット、`number`)— `src/state/initialGraph.ts` 側のトップレベル共有ノード `bodyLayout`(`bodyLayoutGroup`)が計算した5つのアンカー候補(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に使う1つを配線する(`state/initialGraph.ts` の `e-anchor-*` エッジを参照)。**新しいアンカー種を増やす場合はこの5候補と `bodyLayoutGroupNode.ts` 側の出力を同時に変更する必要がある**(通常の追加では既存5候補のどれかを再利用すれば足りる)。どのアンカーを使うかはこの配線そのものが仕様であり、実行時に選択する仕組みは無い(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
-- `offsetYIn`(`numberInput`)— アンカー座標からの微調整量。ガーメント固有の内部ノードとして保持する。
+- `offsetY` — アンカー座標からの微調整量。`garmentPlacement` の `Offset Y` 入力欄の値として持つ(`garmentOutput()` が設定する)。
 - `garmentPlacement` — `geometry`・`anchorY`・`offsetY` を受け取り、`anchorY + offsetY` を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。出力は位置が焼き込まれた geometry 1つだけ。
 
 `garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `sceneOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。
@@ -60,11 +60,11 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 ## 4. グループノードの定義(src/nodes/definitions/groups/\<name\>GroupNode.ts)
 
-`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(色・`offsetY`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
+`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
-- `anchorYSocket`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY` ソケット定義。`garmentOutput({ color, offsetY, geometry })`(同ファイル)— `colorIn`(colorInput)→`material`(toonMaterial)→`sceneOut` と `offsetYIn`+`input.anchorY`→`placement`(garmentPlacement)→`sceneOut` のノード5個・エッジ6本。`geometry` には最終的な geometry を出力するノードの id を渡す。
-- `bodyBuildScale(rawId)`(`garmentParts.ts`)— 「体に触れる半径」(`rawId` の `value`)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
-- `latheBody({ genId, direction, steps, startRadius, endRadius, distance })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。グループ内に `segmentsIn`(numberInput)が必要。
+- `anchorYSocket`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY` ソケット定義。`garmentOutput({ color, offsetY, geometry })`(同ファイル)— `material`(toonMaterial、`Color` 入力欄が色)→`sceneOut` と `input.anchorY`→`placement`(garmentPlacement、`Offset Y` 入力欄が offsetY)→`sceneOut` のノード3個・エッジ4本。`geometry` には最終的な geometry を出力するノードの id を渡す。
+- `bodyBuildScale(rawValue)`(`garmentParts.ts`)— 「体に触れる半径」(`rawValue` は `scale` の `Value` 入力欄の値)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
+- `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `legSpacing`(`bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
 
@@ -74,8 +74,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 
 const output = garmentOutput({ color: '#cccccc', offsetY: 0, geometry: 'gen' });
-const scale = bodyBuildScale('radiusIn');
-const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'endRadiusIn', distance: 'lengthIn' });
+const scale = bodyBuildScale(0.3);
+const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 0.2, distance: 0.5, segments: 24 });
 
 defineGroupNode({
   type: 'xxxGroup',
@@ -92,10 +92,6 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'radiusIn', type: 'numberInput', data: { value: 0.3} },
-    { id: 'endRadiusIn', type: 'numberInput', data: { value: 0.2} },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5} },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 24} },
     ...scale.nodes,
     ...lathe.nodes,
     ...output.nodes,

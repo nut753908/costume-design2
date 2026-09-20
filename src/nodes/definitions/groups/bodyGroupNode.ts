@@ -18,11 +18,11 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 結合した方がノードグラフ上の階層(ネストしたグループ)が1段減る。
  *
  * 腕/脚とも手首/足首側を根元よりわずかに細くするテーパー比率を持つが、値は左右独立ではなく
- * 部位ごと(腕1本の左右ペアで共通、脚1本の左右ペアで共通)で、`armTaperRatioIn`/
- * `legTaperRatioIn` という別々の `numberInput` として持つ(id で腕用/脚用を区別できる)。
+ * 部位ごと(腕1本の左右ペアで共通、脚1本の左右ペアで共通)で、`armPair`/`legPair`(`limbPair`)の
+ * `Taper Ratio` 入力欄の値として別々に持つ(腕用/脚用は別のノードなので区別できる)。
  *
- * 肌色(`skinColorIn`)は4パーツすべてで共有される値のため、`skinColorIn`→`material`
- * (`toonMaterial`)から `sceneOut` の `material` へ1本配線するだけでよい。 */
+ * 肌色は `material`(`toonMaterial`)の `Color` 入力欄の値で、`material` から `sceneOut` の
+ * `material` へ1本配線するだけでよい(4パーツすべてが同じマテリアルを使う)。 */
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',
@@ -48,8 +48,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'skinColorIn', type: 'colorInput', data: { hex: '#f2c9a0' } },
-    { id: 'material', type: 'toonMaterial', data: {} },
+    { id: 'material', type: 'toonMaterial', data: { color: '#f2c9a0' } },
 
     // 胴体(capsuleGenerator)。
     { id: 'torsoGen', type: 'capsuleGenerator', data: {} },
@@ -60,18 +59,14 @@ defineGroupNode({
     { id: 'headTranslate', type: 'translateY', data: {} },
 
     // 腕1組・脚1組(limbPair)。テーパー比率は腕用/脚用で別々の値を持つ。
-    { id: 'armTaperRatioIn', type: 'numberInput', data: { value: 0.85} },
-    { id: 'armPair', type: 'limbPair', data: {} },
-    { id: 'legTaperRatioIn', type: 'numberInput', data: { value: 0.85} },
-    { id: 'legPair', type: 'limbPair', data: {} },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.85 } },
+    { id: 'legPair', type: 'limbPair', data: { taperRatio: 0.85 } },
 
     // 4パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
     { id: 'merge', type: 'mergeGeometry', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
-    { source: 'skinColorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoGen', targetHandle: 'length' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
@@ -85,13 +80,11 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'armLength', target: 'armPair', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armPair', targetHandle: 'spacing' },
     { source: 'input', sourceHandle: 'armCenterY', target: 'armPair', targetHandle: 'centerY' },
-    { source: 'armTaperRatioIn', sourceHandle: 'value', target: 'armPair', targetHandle: 'taperRatio' },
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legPair', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'legPair', targetHandle: 'spacing' },
     { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
-    { source: 'legTaperRatioIn', sourceHandle: 'value', target: 'legPair', targetHandle: 'taperRatio' },
 
     { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },

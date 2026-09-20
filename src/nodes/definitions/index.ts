@@ -11,7 +11,6 @@ import.meta.glob(
     '!./index.ts',
     '!./generatorNodeFactory.ts',
     '!./groupNodeFactory.ts',
-    '!./constNumberInput.ts',
     '!./garmentOutput.ts',
     '!./garmentParts.ts',
   ],

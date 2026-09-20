@@ -1,6 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
-import { constNumberInput } from '../constNumberInput';
 
 /** glasses は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
  * ブリッジ+左右テンプル+左右レンズのすべてが完全にノードグラフへ展開されている。
@@ -8,8 +7,7 @@ import { constNumberInput } from '../constNumberInput';
  * `geometry/alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
  * 2点間に整列させて作り、レンズは `torusGenerator`(汎用プリミティブノード)→`translateZ` で
  * 作る(`geometry/CLAUDE.md` 参照)。トーラスの管の太さ(`tube`)は `frameThicknessHalf`
- * (`frameThickness × 0.5`)として渡す(`zeroIn`/`forwardDepthIn`/`templeBackOffsetIn` は
- * `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」)。
+ * (`frameThickness × 0.5`)として渡す(定数は各ノードの入力欄の値)。
  *
  * 左右対称なレンズ・テンプルは、片側1つ(X=0 基準)だけを作って `mirrorPair`
  * (`nodes/definitions/generic/mirrorPair.ts`)で ±offset へ複製する(Body の腕/脚と同じ形)。
@@ -20,14 +18,15 @@ import { constNumberInput } from '../constNumberInput';
  * ブリッジは1本の箱で、`bridgeXOffset = lensSpacing - lensRadius` の ± を両端(`endX` は
  * `negatedBridgeXOffset`、`numberNegate`)に置き、Y=0・Z=`forwardDepthIn` は両端で共通。
  * テンプルは Z だけ `forwardDepthIn`(前面)から `templeBackZ = (forwardDepthIn -
- * templeBackOffsetIn) - templeLength`(後方)まで伸ばす。ブリッジ・テンプルペア・レンズペアの
+ * 0.02) - templeLength`(後方)まで伸ばす。ブリッジ・テンプルペア・レンズペアの
  * 3つは `mergeAll`(`mergeGeometry`)で結合する。
  * 顔の前面の深さ `forwardDepthIn` は、頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と
- * 同じ値)から `forwardDepthInsetIn` を引いて求めるため、頭の大きさを変えると追従する。
+ * 同じ値)から定数(0.02)を引いて求めるため、頭の大きさを変えると追従する。
  * 比率ではなく差にしているのは、レンズの大きさ・間隔が固定で、頭の球面とレンズの平面の
  * ずれが頭半径に比例して広がるのを避けるため(比率だと頭が大きいほどレンズが球面に埋まる)。
- * レンズの大きさ・間隔などそれ以外のパラメータは他のガーメントと共有されない単独パラメータの
- * ため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+ * 複数のノードが同じ値を使うパラメータ(`lensRadiusIn`/`lensSpacingIn`/`bridgeThicknessIn`/
+ * `templeThicknessIn`)だけ `numberInput` を置いて配線し、他は numberInput/colorInput ノードを置かず、
+ * 各ノードの入力欄の値として持つ。
  * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * headCenterY)は外部ソケット。 */
 const output = garmentOutput({ color: '#2a2a2a', offsetY: -0.02, geometry: 'mergeAll' });
@@ -47,16 +46,11 @@ defineGroupNode({
       },
     },
     { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045} },
-    { id: 'frameThicknessIn', type: 'numberInput', data: { value: 0.008} },
     { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.055} },
     { id: 'bridgeThicknessIn', type: 'numberInput', data: { value: 0.01} },
-    { id: 'templeLengthIn', type: 'numberInput', data: { value: 0.12} },
     { id: 'templeThicknessIn', type: 'numberInput', data: { value: 0.006} },
-    constNumberInput('zeroIn', 0),
-    constNumberInput('forwardDepthInsetIn', 0.02),
-    { id: 'forwardDepthIn', type: 'numberSubtract', data: {} },
-    constNumberInput('templeBackOffsetIn', 0.02),
-    { id: 'frameThicknessHalf', type: 'numberHalf', data: {} },
+    { id: 'forwardDepthIn', type: 'numberSubtract', data: { b: 0.02 } },
+    { id: 'frameThicknessHalf', type: 'numberHalf', data: { value: 0.008 } },
 
     // ブリッジ(bridgeXOffset の ± を両端の X に)。
     { id: 'bridgeXOffset', type: 'numberSubtract', data: {} },
@@ -65,8 +59,8 @@ defineGroupNode({
 
     // テンプル1本(X=0 基準、前面から後方まで Z 方向に伸ばす)を ±templeXOffset へ複製する。
     { id: 'templeXOffset', type: 'numberAdd', data: {} },
-    { id: 'templeBackDepth', type: 'numberSubtract', data: {} },
-    { id: 'templeBackZ', type: 'numberSubtract', data: {} },
+    { id: 'templeBackDepth', type: 'numberSubtract', data: { b: 0.02 } },
+    { id: 'templeBackZ', type: 'numberSubtract', data: { b: 0.12 } },
     { id: 'templeGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'templeMirror', type: 'mirrorPair', data: {} },
 
@@ -79,7 +73,6 @@ defineGroupNode({
   ],
   internalEdges: [
     { source: 'input', sourceHandle: 'headRadius', target: 'forwardDepthIn', targetHandle: 'a' },
-    { source: 'forwardDepthInsetIn', sourceHandle: 'value', target: 'forwardDepthIn', targetHandle: 'b' },
 
     // ブリッジ = alignedBoxGenerator(± bridgeXOffset、Y=0・Z=forwardDepth は両端で共通)。
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'bridgeXOffset', targetHandle: 'a' },
@@ -88,10 +81,8 @@ defineGroupNode({
     { source: 'bridgeThicknessIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'width' },
     { source: 'bridgeThicknessIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'thickness' },
     { source: 'bridgeXOffset', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'startX' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'startY' },
     { source: 'forwardDepthIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'startZ' },
     { source: 'negatedBridgeXOffset', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'endX' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'endY' },
     { source: 'forwardDepthIn', sourceHandle: 'value', target: 'bridgeGen', targetHandle: 'endZ' },
 
     // テンプル = alignedBoxGenerator(X=0、前面 forwardDepth から後方 templeBackZ まで Z 方向に
@@ -99,23 +90,16 @@ defineGroupNode({
     { source: 'lensSpacingIn', sourceHandle: 'value', target: 'templeXOffset', targetHandle: 'a' },
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'templeXOffset', targetHandle: 'b' },
     { source: 'forwardDepthIn', sourceHandle: 'value', target: 'templeBackDepth', targetHandle: 'a' },
-    { source: 'templeBackOffsetIn', sourceHandle: 'value', target: 'templeBackDepth', targetHandle: 'b' },
     { source: 'templeBackDepth', sourceHandle: 'value', target: 'templeBackZ', targetHandle: 'a' },
-    { source: 'templeLengthIn', sourceHandle: 'value', target: 'templeBackZ', targetHandle: 'b' },
 
     { source: 'templeThicknessIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'width' },
     { source: 'templeThicknessIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'thickness' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'startX' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'startY' },
     { source: 'forwardDepthIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'startZ' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'endX' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'templeGen', targetHandle: 'endY' },
     { source: 'templeBackZ', sourceHandle: 'value', target: 'templeGen', targetHandle: 'endZ' },
     { source: 'templeGen', sourceHandle: 'geometry', target: 'templeMirror', targetHandle: 'geometry' },
     { source: 'templeXOffset', sourceHandle: 'value', target: 'templeMirror', targetHandle: 'offset' },
 
     // レンズ = torusGenerator(X=0)を translateZ で前面へ置き、mirrorPair で ± lensSpacing へ。
-    { source: 'frameThicknessIn', sourceHandle: 'value', target: 'frameThicknessHalf', targetHandle: 'value' },
     { source: 'lensRadiusIn', sourceHandle: 'value', target: 'lensGen', targetHandle: 'radius' },
     { source: 'frameThicknessHalf', sourceHandle: 'value', target: 'lensGen', targetHandle: 'tube' },
     { source: 'lensGen', sourceHandle: 'geometry', target: 'lensTranslateZ', targetHandle: 'geometry' },

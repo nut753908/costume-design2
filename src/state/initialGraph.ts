@@ -17,8 +17,8 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // bodyBuild は慣例的な id を持つシードノード。`bodyDimensions`(下記)への配線に加え、
   // ガーメント自身の半径スケーリング用に各ガーメントへも直接配線される(下記参照)。
   // Height/Shoulder は `bodyDimensions` からしか参照されない単独パラメータのため、
-  // `bodyDimensionsGroup` 内部の `numberInput`(`heightScaleIn`/`shoulderScaleIn`)として
-  // 持ち、この階層には現れない(nodes/CLAUDE.md の「グループノード」節参照)。
+  // `bodyDimensionsGroup` の内部(`heightScaleIn`/`shoulderSpacingScale` の入力欄)に持ち、
+  // この階層には現れない(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyBuild', type: 'numberInput', data: { value: 1} },
 
   // ボディの寸法(9個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
@@ -33,12 +33,11 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // 自分ではスケール計算を一切行わない。
   { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 
-  // 全14種のガーメントは、各ガーメントの生パラメータ(numberInput/colorInput)+
-  // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetY用の
-  // numberInput + garmentPlacement という一連のパイプラインを1枚の <name>Group ノード
+  // 全14種のガーメントは、numberMultiply(体に触れる半径があれば)+ generator +
+  // toonMaterial + garmentPlacement という一連のパイプラインを1枚の <name>Group ノード
   // (nodes/definitions/groupNodeFactory.ts の defineGroupNode() で定義、nodes/definitions/
   // groups/<name>GroupNode.ts)に集約している。生パラメータと Color は他のガーメントと共有されない
-  // 単独パラメータのため、internalNodes に groupInput ノードと並べて直接書かれており
+  // 単独パラメータのため、各ノードの入力欄の値として internalNodes に直接書かれており
   // (グループの中に入って初めて編集できる)、このファイルには現れない — 詳細は
   // src/nodes/CLAUDE.md の「グループノード」節を参照。各 <name>GroupNode.ts の internalNodes
   // は `sceneOutput`(nodes/definitions/generic/sceneOutput.ts)ノードも内包しており、実際に

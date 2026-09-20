@@ -3,13 +3,13 @@ import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
- * mirror(mirrorPair)+pantsMaterial(toonMaterial)+offsetYIn(numberInput)+
+ * mirror(mirrorPair)+pantsMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Waist Radius と Hem Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/
  * `hemScale`)。体の脚の半径がすべて Body Build でスケールされるため、裾を固定にすると
  * Body Build を上げたとき裾が脚の内側に入る。
  * Waist Radius/Hem Radius/Inseam/Segments/Color は他のガーメントと共有されない単独パラメータ
- * のため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+ * のため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
  * 脚1本ぶんのジオメトリ(`profile`→`legGen`)と、それを ±legSpacing だけ X方向に離した
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`limbPair.ts` の腕/脚の
@@ -21,9 +21,9 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 外部ソケットのまま。 */
 const output = garmentOutput({ color: '#9c7b4f', offsetY: 0, geometry: 'mirror' });
 
-const scale = bodyBuildScale('waistRadiusIn');
-const hemScale = bodyBuildScale('hemRadiusIn', 'hemScale');
-const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemScale', distance: 'inseamIn' });
+const scale = bodyBuildScale(0.16);
+const hemScale = bodyBuildScale(0.1, 'hemScale');
+const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemScale', distance: 0.75, segments: 16 });
 
 defineGroupNode({
   type: 'pantsGroup',
@@ -40,10 +40,6 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.16} },
-    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.1} },
-    { id: 'inseamIn', type: 'numberInput', data: { value: 0.75} },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 16} },
     ...scale.nodes,
     ...hemScale.nodes,
     ...lathe.nodes,

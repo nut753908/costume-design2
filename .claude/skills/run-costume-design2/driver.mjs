@@ -95,8 +95,8 @@ async function main() {
     await page.screenshot({ path: path.join(SHOT_DIR, '02_after_orbit.png') });
     console.log('OK: カメラ操作後のスクリーンショットを撮影 (screenshots/02_after_orbit.png)');
 
-    // skirt の生パラメータ(waistRadiusIn/colorIn)は skirtGroup の internalNodes に
-    // 埋め込まれているため、中に入ってから操作する(nodes/CLAUDE.md の「グループノード」節参照)。
+    // skirt の生パラメータ(`scale` の Value 入力欄/`material` の Color 入力欄)は skirtGroup の
+    // internalNodes に埋め込まれているため、中に入ってから操作する(nodes/CLAUDE.md の「グループノード」節参照)。
     // 実ポインタでの dblclick() ではなく、対象要素へ直接 dblclick イベントを dispatch する
     // ("Gotchas" の number/color input と同じ考え方) — グラフが育つと `computeAutoLayout()`
     // の出力(ノード数・全体の高さ)が変わって初期ズーム/パンも変わるため、この固定
@@ -106,10 +106,10 @@ async function main() {
     await page.locator('.react-flow__node[data-id="skirtGroup"] .rf-node').evaluate((el) => {
       el.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true, view: window }));
     });
-    await page.waitForSelector('.react-flow__node[data-id="waistRadiusIn"]', { timeout: 5000 });
+    await page.waitForSelector('.react-flow__node[data-id="scale"]', { timeout: 5000 });
 
-    // numberInput ノード(waistRadiusIn)の数値入力欄を高頻度 input で連続操作 → 間引き & ジオメトリ追従の確認
-    const waistInput = page.locator('.react-flow__node[data-id="waistRadiusIn"] input[type="number"]');
+    // `scale`(numberMultiply)の Value 入力欄(未接続の数値入力ソケットの欄)を高頻度 input で連続操作 → 間引き & ジオメトリ追従の確認
+    const waistInput = page.locator('.react-flow__node[data-id="scale"] input[type="number"]');
     await waistInput.evaluate((el) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
       for (const v of [0.32, 0.36, 0.4, 0.44, 0.48, 0.5]) {
@@ -121,8 +121,8 @@ async function main() {
     await page.screenshot({ path: path.join(SHOT_DIR, '03_after_number_input.png') });
     console.log('OK: 数値入力欄の操作後のスクリーンショットを撮影 (screenshots/03_after_number_input.png)');
 
-    // colorInput ノード(colorIn)の色変更確認(同じく skirtGroup の中)
-    await page.locator('.react-flow__node[data-id="colorIn"] input[type="color"]').evaluate((el) => {
+    // `material`(toonMaterial)の Color 入力欄の色変更確認(同じく skirtGroup の中)
+    await page.locator('.react-flow__node[data-id="material"] input[type="color"]').evaluate((el) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
       setter.call(el, '#22cc55');
       el.dispatchEvent(new Event('input', { bubbles: true }));

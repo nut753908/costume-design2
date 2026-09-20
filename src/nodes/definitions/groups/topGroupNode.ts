@@ -15,7 +15,7 @@ const output = garmentOutput({ color: '#5b8fa8', offsetY: 0, geometry: 'merge' }
 
 const neckline = necklineShapes();
 
-const scale = bodyBuildScale('topRadiusIn');
+const scale = bodyBuildScale(0.29);
 
 defineGroupNode({
   type: 'topGroup',
@@ -31,16 +31,11 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'topRadiusIn', type: 'numberInput', data: { value: 0.29} },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5} },
-    { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12} },
-    { id: 'sleeveRadiusIn', type: 'numberInput', data: { value: 0.085} },
-    { id: 'sleeveLengthIn', type: 'numberInput', data: { value: 0.22} },
     ...scale.nodes,
     ...neckline.nodes,
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
-    { id: 'gen', type: 'ringGridGenerator', data: {} },
-    { id: 'sleeveGen', type: 'sleevePair', data: {} },
+    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10, distance: 0.5 } },
+    { id: 'gen', type: 'ringGridGenerator', data: { necklineDepth: 0.12 } },
+    { id: 'sleeveGen', type: 'sleevePair', data: { sleeveRadius: 0.085, sleeveLength: 0.22 } },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,
   ],
@@ -49,13 +44,9 @@ defineGroupNode({
     ...neckline.edges,
     { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
     { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
-    { source: 'lengthIn', sourceHandle: 'value', target: 'profile', targetHandle: 'distance' },
     { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'roundShape', sourceHandle: 'points', target: 'gen', targetHandle: 'necklineWeights' },
-    { source: 'necklineDepthIn', sourceHandle: 'value', target: 'gen', targetHandle: 'necklineDepth' },
     { source: 'scale', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
-    { source: 'sleeveRadiusIn', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },
-    { source: 'sleeveLengthIn', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveLength' },
     { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'sleeveGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     ...output.edges,

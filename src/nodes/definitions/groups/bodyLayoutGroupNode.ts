@@ -1,5 +1,4 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { constNumberInput } from '../constNumberInput';
 
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyLayout`)としてただ1組
  * だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
@@ -29,21 +28,21 @@ defineGroupNode({
         ],
       },
     },
-    // 四則演算チェーンで使い回す調整可能な比率。2 は「カプセルの両端ぶん」、0.4 は腕を胴体に
-    // わずかに食い込ませる割合。「半分」は `numberHalf` ノードで表す。
-    { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2} },
-    { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4} },
-    // feetY は常に0固定(地面の高さ)。
-    constNumberInput('feetYIn', 0),
+    // 四則演算チェーンの比率は各 `numberMultiply` の Factor 入力欄の値: 2 は「カプセルの両端ぶん」
+    // (`torsoRadiusDoubled`)、0.4 は腕を胴体にわずかに食い込ませる割合(`armTorsoOverlap`)。
+    // 「半分」は `numberHalf` ノードで表す。
+    // feetY は常に0固定(地面の高さ)。`groupOutput` の入力ソケットは入力欄を持てないため、
+    // 値を持つノードを置いて配線する。
+    { id: 'feetYIn', type: 'numberInput', data: { value: 0 } },
 
-    { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: {} },
+    { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'torsoCapsuleHeight', type: 'numberAdd', data: {} },
     { id: 'torsoCapsuleHeightHalf', type: 'numberHalf', data: {} },
     { id: 'torsoCenterYCalc', type: 'numberAdd', data: {} },
     { id: 'shoulderYCalc', type: 'numberAdd', data: {} },
     { id: 'headCenterYCalc', type: 'numberAdd', data: {} },
     { id: 'armLengthHalf', type: 'numberHalf', data: {} },
-    { id: 'armTorsoOverlap', type: 'numberMultiply', data: {} },
+    { id: 'armTorsoOverlap', type: 'numberMultiply', data: { factor: 0.4 } },
     { id: 'armCenterYStep1', type: 'numberSubtract', data: {} },
     { id: 'armCenterYCalc', type: 'numberSubtract', data: {} },
     { id: 'legCenterYCalc', type: 'numberHalf', data: {} },
@@ -73,7 +72,6 @@ defineGroupNode({
 
     // torsoCapsuleHeight = torsoLength + torsoRadius * capEndsFactor(2)
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoRadiusDoubled', targetHandle: 'value' },
-    { source: 'capEndsFactorIn', sourceHandle: 'value', target: 'torsoRadiusDoubled', targetHandle: 'factor' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoCapsuleHeight', targetHandle: 'a' },
     { source: 'torsoRadiusDoubled', sourceHandle: 'value', target: 'torsoCapsuleHeight', targetHandle: 'b' },
 
@@ -95,7 +93,6 @@ defineGroupNode({
     // armCenterY = shoulderY - armLength * half - torsoRadius * armTorsoOverlapRatio(0.4)
     { source: 'input', sourceHandle: 'armLength', target: 'armLengthHalf', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'torsoRadius', target: 'armTorsoOverlap', targetHandle: 'value' },
-    { source: 'armTorsoOverlapRatioIn', sourceHandle: 'value', target: 'armTorsoOverlap', targetHandle: 'factor' },
     { source: 'shoulderYCalc', sourceHandle: 'value', target: 'armCenterYStep1', targetHandle: 'a' },
     { source: 'armLengthHalf', sourceHandle: 'value', target: 'armCenterYStep1', targetHandle: 'b' },
     { source: 'armCenterYStep1', sourceHandle: 'value', target: 'armCenterYCalc', targetHandle: 'a' },

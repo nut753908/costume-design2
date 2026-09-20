@@ -3,10 +3,10 @@ import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, garmentOutput } from '../garmentOutput';
 
 /** skirtWaistScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
- * skirtMaterial(toonMaterial)+offsetYIn(numberInput)+placement(garmentPlacement)+
+ * skirtMaterial(toonMaterial)+placement(garmentPlacement)+
  * sceneOut(sceneOutput)の8ノード(+裾半径を求める `flaredRadius`)を1枚にまとめたグループノード。
  * Waist Radius/Length/Flare/Segments/Color は他のガーメントと共有されない単独パラメータの
- * ため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
+ * ため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される waistY)は外部ソケットのまま。
  *
@@ -15,8 +15,8 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 配線)が求め、コード側の式としては持たない。 */
 const output = garmentOutput({ color: '#d9738c', offsetY: 0.03, geometry: 'gen' });
 
-const scale = bodyBuildScale('waistRadiusIn');
-const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 12, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 'lengthIn' });
+const scale = bodyBuildScale(0.3);
+const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 12, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 0.55, segments: 28 });
 
 defineGroupNode({
   type: 'skirtGroup',
@@ -32,19 +32,14 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.3} },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.55} },
-    { id: 'flareIn', type: 'numberInput', data: { value: 0.7} },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 28} },
     ...scale.nodes,
-    { id: 'hemRadiusCalc', type: 'flaredRadius', data: {} },
+    { id: 'hemRadiusCalc', type: 'flaredRadius', data: { flare: 0.7 } },
     ...lathe.nodes,
     ...output.nodes,
   ],
   internalEdges: [
     ...scale.edges,
     { source: 'scale', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'radius' },
-    { source: 'flareIn', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'flare' },
     ...lathe.edges,
     ...output.edges,
   ],

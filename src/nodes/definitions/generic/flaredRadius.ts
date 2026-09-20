@@ -1,12 +1,11 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { constNumberInput } from '../constNumberInput';
 
 /** 基準の半径(`radius`)にフレア(`flare`)を掛けて、裾の半径を求めるグループノード。
  * `裾半径 = radius × (1 + max(0, flare))`。負のフレアは 0 として扱う(`flareClamped`、
  * `numberMax`)。`skirtGroupNode.ts`(Waist Radius → 裾)と `jacketGroupNode.ts`(Shoulder
  * Radius → 裾)が、同じ計算を可視の配線として共有する。出力ソケット `value` は
  * `garmentParts.ts` の `latheBody()` がそのまま半径として受け取れる形。
- * (`zeroIn`/`oneIn` は `constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」) */
+ * 定数 0/1 は `flareClamped`/`onePlusFlare` の `B` 入力欄の値。 */
 defineGroupNode({
   type: 'flaredRadius',
   label: 'Flared Radius',
@@ -21,10 +20,8 @@ defineGroupNode({
         ],
       },
     },
-    constNumberInput('zeroIn', 0),
-    constNumberInput('oneIn', 1),
     { id: 'flareClamped', type: 'numberMax', data: {} },
-    { id: 'onePlusFlare', type: 'numberAdd', data: {} },
+    { id: 'onePlusFlare', type: 'numberAdd', data: { b: 1 } },
     { id: 'hemRadiusCalc', type: 'numberMultiply', data: {} },
     {
       id: 'output',
@@ -36,9 +33,7 @@ defineGroupNode({
   ],
   internalEdges: [
     { source: 'input', sourceHandle: 'flare', target: 'flareClamped', targetHandle: 'a' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'flareClamped', targetHandle: 'b' },
     { source: 'flareClamped', sourceHandle: 'value', target: 'onePlusFlare', targetHandle: 'a' },
-    { source: 'oneIn', sourceHandle: 'value', target: 'onePlusFlare', targetHandle: 'b' },
     { source: 'input', sourceHandle: 'radius', target: 'hemRadiusCalc', targetHandle: 'value' },
     { source: 'onePlusFlare', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'factor' },
     { source: 'hemRadiusCalc', sourceHandle: 'value', target: 'output', targetHandle: 'value' },
