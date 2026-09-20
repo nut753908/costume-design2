@@ -18,7 +18,7 @@ import { constNumberInput } from '../constNumberInput';
  * 共有されない単独パラメータのため、外側の numberInput/colorInput ノードではなくグループ
  * 内部の同型ノードとして保持する。Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
  * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
-const output = garmentOutput({ color: { hex: '#8a2e3a', label: 'Scarf Color' }, offsetY: 0.08, geometry: 'merge' });
+const output = garmentOutput({ color: '#8a2e3a', offsetY: 0.08, geometry: 'merge' });
 
 const scale = bodyBuildScale('neckRadiusIn');
 
@@ -36,20 +36,20 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'neckRadiusIn', type: 'numberInput', data: { value: 0.19, min: 0.14, max: 0.3, step: 0.005, label: 'Neck Radius' } },
-    { id: 'bandThicknessIn', type: 'numberInput', data: { value: 0.05, min: 0.02, max: 0.1, step: 0.005, label: 'Band Thickness' } },
-    { id: 'tailWidthIn', type: 'numberInput', data: { value: 0.09, min: 0.04, max: 0.16, step: 0.005, label: 'Tail Width' } },
-    { id: 'tailLengthIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01, label: 'Tail Length' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
-    constNumberInput('bulgeIn', 1.05, 'Band Bulge'),
-    constNumberInput('tailFrontInsetIn', 0.9, 'Tail Front Inset'),
+    { id: 'neckRadiusIn', type: 'numberInput', data: { value: 0.19, min: 0.14, max: 0.3, step: 0.005 } },
+    { id: 'bandThicknessIn', type: 'numberInput', data: { value: 0.05, min: 0.02, max: 0.1, step: 0.005 } },
+    { id: 'tailWidthIn', type: 'numberInput', data: { value: 0.09, min: 0.04, max: 0.16, step: 0.005 } },
+    { id: 'tailLengthIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.7, step: 0.01 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1 } },
+    constNumberInput('bulgeIn', 1.05),
+    constNumberInput('tailFrontInsetIn', 0.9),
     ...scale.nodes,
     { id: 'bandGen', type: 'bulgedBand', data: {} },
     { id: 'tailGen', type: 'boxGenerator', data: {} },
-    { id: 'negatedBandThickness', type: 'numberNegate', data: { label: 'Negated Band Thickness' } },
-    { id: 'halfTailLength', type: 'numberHalf', data: { label: 'Tail Length × Half' } },
-    { id: 'tailCenterY', type: 'numberSubtract', data: { label: 'Tail Center Y' } },
-    { id: 'tailCenterZ', type: 'numberMultiply', data: { label: 'Tail Center Z' } },
+    { id: 'negatedBandThickness', type: 'numberNegate', data: {} },
+    { id: 'halfTailLength', type: 'numberHalf', data: {} },
+    { id: 'tailCenterY', type: 'numberSubtract', data: {} },
+    { id: 'tailCenterZ', type: 'numberMultiply', data: {} },
     { id: 'tailTranslate', type: 'translate', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,

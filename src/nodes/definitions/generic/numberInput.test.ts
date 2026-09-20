@@ -14,7 +14,6 @@ describe('numberInput', () => {
       min: 0,
       max: 10,
       step: 0.1,
-      label: 'Number',
     });
   });
 });

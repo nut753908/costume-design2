@@ -10,7 +10,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * ノードではなくグループ内部の同型ノードとして保持する。Body Build(半径スケーリング用)と
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される shoulderY)は
  * 外部ソケットのまま。 */
-const output = garmentOutput({ color: { hex: '#3d7a72', label: 'Dress Color' }, offsetY: 0, geometry: 'gen' });
+const output = garmentOutput({ color: '#3d7a72', offsetY: 0, geometry: 'gen' });
 
 const scale = bodyBuildScale('torsoRadiusIn');
 
@@ -28,11 +28,11 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'torsoRadiusIn', type: 'numberInput', data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
-    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.55, min: 0.3, max: 1, step: 0.01, label: 'Hem Radius' } },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.9, min: 0.4, max: 1.3, step: 0.01, label: 'Length' } },
-    { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
-    { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
+    { id: 'torsoRadiusIn', type: 'numberInput', data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01 } },
+    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.55, min: 0.3, max: 1, step: 0.01 } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.9, min: 0.4, max: 1.3, step: 0.01 } },
+    { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'] } },
+    { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01 } },
     ...scale.nodes,
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 14 } },
     { id: 'gen', type: 'ringGridGenerator', data: {} },

@@ -190,7 +190,7 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
   it('無関係なトップレベルノード(hatGroup)の data だけを差し替えても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'hatGroup' ? { ...n, data: { ...n.data, label: 'changed' } } : n,
+      n.id === 'hatGroup' ? { ...n, data: { ...n.data, memo: 'changed' } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 

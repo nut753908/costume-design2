@@ -13,7 +13,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 裾半径(`hemRadius = waistRadius * (1 + Math.max(0, flare))`)は `hemRadiusCalc`
  * (`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`、jacket と共有する可視の
  * 配線)が求め、コード側の式としては持たない。 */
-const output = garmentOutput({ color: { hex: '#d9738c', label: 'Skirt Color' }, offsetY: 0.03, geometry: 'gen' });
+const output = garmentOutput({ color: '#d9738c', offsetY: 0.03, geometry: 'gen' });
 
 const scale = bodyBuildScale('waistRadiusIn');
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 12, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 'lengthIn' });
@@ -32,10 +32,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.3, min: 0.15, max: 0.5, step: 0.01, label: 'Waist Radius' } },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.55, min: 0.2, max: 1, step: 0.01, label: 'Length' } },
-    { id: 'flareIn', type: 'numberInput', data: { value: 0.7, min: 0, max: 2.5, step: 0.05, label: 'Flare' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 28, min: 8, max: 48, step: 1, label: 'Segments' } },
+    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.3, min: 0.15, max: 0.5, step: 0.01 } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.55, min: 0.2, max: 1, step: 0.01 } },
+    { id: 'flareIn', type: 'numberInput', data: { value: 0.7, min: 0, max: 2.5, step: 0.05 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 28, min: 8, max: 48, step: 1 } },
     ...scale.nodes,
     { id: 'hemRadiusCalc', type: 'flaredRadius', data: {} },
     ...lathe.nodes,

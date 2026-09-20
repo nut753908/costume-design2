@@ -19,7 +19,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * `legSpacing`)を shoesGroup/socksGroup と共に受け取るため、Body Build(半径スケーリング用)・
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)と合わせて
  * 外部ソケットのまま。 */
-const output = garmentOutput({ color: { hex: '#9c7b4f', label: 'Pants Color' }, offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ color: '#9c7b4f', offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('waistRadiusIn');
 const hemScale = bodyBuildScale('hemRadiusIn', 'hemScale');
@@ -40,10 +40,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005, label: 'Waist Radius' } },
-    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.1, min: 0.05, max: 0.2, step: 0.005, label: 'Hem Radius' } },
-    { id: 'inseamIn', type: 'numberInput', data: { value: 0.75, min: 0.3, max: 1, step: 0.01, label: 'Inseam' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+    { id: 'waistRadiusIn', type: 'numberInput', data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005 } },
+    { id: 'hemRadiusIn', type: 'numberInput', data: { value: 0.1, min: 0.05, max: 0.2, step: 0.005 } },
+    { id: 'inseamIn', type: 'numberInput', data: { value: 0.75, min: 0.3, max: 1, step: 0.01 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1 } },
     ...scale.nodes,
     ...hemScale.nodes,
     ...lathe.nodes,

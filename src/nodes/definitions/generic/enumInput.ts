@@ -4,7 +4,6 @@ import type { SocketValue } from '../../types';
 export interface EnumInputData extends Record<string, unknown> {
   value: string;
   options: string[];
-  label?: string;
 }
 
 registerNodeType<EnumInputData>({
@@ -14,7 +13,7 @@ registerNodeType<EnumInputData>({
   inputs: [],
   outputs: [{ id: 'value', label: 'Value', type: 'enum' }],
   // Top のネックラインが現時点で唯一の enum の利用箇所であるため、ネックラインの選択肢をデフォルトにしている。
-  createDefaultData: () => ({ value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' }),
+  createDefaultData: () => ({ value: 'round', options: ['round', 'v', 'square'] }),
   evaluate: (_inputs, data): Record<string, SocketValue> => ({
     value: { type: 'enum', value: data.value },
   }),

@@ -25,7 +25,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'taper', type: 'numberMultiply', data: { label: 'Taper' } },
+    { id: 'taper', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'cylinderGenerator', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'translate', type: 'translateY', data: {} },

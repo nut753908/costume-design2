@@ -10,6 +10,6 @@ describe('colorInput', () => {
   });
 
   it('createDefaultData は既定値一式を返す', () => {
-    expect(getNodeType('colorInput').createDefaultData()).toEqual({ hex: '#cccccc', label: 'Color' });
+    expect(getNodeType('colorInput').createDefaultData()).toEqual({ hex: '#cccccc' });
   });
 });

@@ -17,7 +17,7 @@ import { constNumberInput } from '../constNumberInput';
  * 外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  * Body Build と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * shoulderY)は外部ソケット。 */
-const output = garmentOutput({ color: { hex: '#7a1f2b', label: 'Necktie Color' }, offsetY: 0, geometry: 'merge' });
+const output = garmentOutput({ color: '#7a1f2b', offsetY: 0, geometry: 'merge' });
 
 const scale = bodyBuildScale('frontDepthIn');
 
@@ -35,22 +35,22 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'knotWidthIn', type: 'numberInput', data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005, label: 'Knot Width' } },
-    { id: 'knotHeightIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.07, step: 0.005, label: 'Knot Height' } },
-    { id: 'knotThicknessIn', type: 'numberInput', data: { value: 0.025, min: 0.01, max: 0.05, step: 0.005, label: 'Knot Thickness' } },
-    { id: 'bladeTopWidthIn', type: 'numberInput', data: { value: 0.035, min: 0.015, max: 0.06, step: 0.005, label: 'Blade Top Width' } },
-    { id: 'bladeBottomWidthIn', type: 'numberInput', data: { value: 0.06, min: 0.03, max: 0.12, step: 0.005, label: 'Blade Bottom Width' } },
-    { id: 'bladeThicknessIn', type: 'numberInput', data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001, label: 'Blade Thickness' } },
-    { id: 'bladeLengthIn', type: 'numberInput', data: { value: 0.4, min: 0.2, max: 0.7, step: 0.01, label: 'Blade Length' } },
-    { id: 'frontDepthIn', type: 'numberInput', data: { value: 0.3, min: 0.2, max: 0.5, step: 0.01, label: 'Front Depth' } },
+    { id: 'knotWidthIn', type: 'numberInput', data: { value: 0.05, min: 0.03, max: 0.08, step: 0.005 } },
+    { id: 'knotHeightIn', type: 'numberInput', data: { value: 0.04, min: 0.02, max: 0.07, step: 0.005 } },
+    { id: 'knotThicknessIn', type: 'numberInput', data: { value: 0.025, min: 0.01, max: 0.05, step: 0.005 } },
+    { id: 'bladeTopWidthIn', type: 'numberInput', data: { value: 0.035, min: 0.015, max: 0.06, step: 0.005 } },
+    { id: 'bladeBottomWidthIn', type: 'numberInput', data: { value: 0.06, min: 0.03, max: 0.12, step: 0.005 } },
+    { id: 'bladeThicknessIn', type: 'numberInput', data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001 } },
+    { id: 'bladeLengthIn', type: 'numberInput', data: { value: 0.4, min: 0.2, max: 0.7, step: 0.01 } },
+    { id: 'frontDepthIn', type: 'numberInput', data: { value: 0.3, min: 0.2, max: 0.5, step: 0.01 } },
     ...scale.nodes,
-    constNumberInput('zeroIn', 0, 'Zero'),
+    constNumberInput('zeroIn', 0),
     { id: 'knotGen', type: 'boxGenerator', data: {} },
-    { id: 'halfKnotHeight', type: 'numberHalf', data: { label: 'Knot Height × Half' } },
-    { id: 'knotCenterY', type: 'numberNegate', data: { label: 'Knot Center Y' } },
+    { id: 'halfKnotHeight', type: 'numberHalf', data: {} },
+    { id: 'knotCenterY', type: 'numberNegate', data: {} },
     { id: 'knotTranslate', type: 'translate', data: {} },
-    { id: 'bladeStartY', type: 'numberNegate', data: { label: 'Blade Start Y (= −Knot Height)' } },
-    { id: 'bladeEndY', type: 'numberSubtract', data: { label: 'Blade End Y' } },
+    { id: 'bladeStartY', type: 'numberNegate', data: {} },
+    { id: 'bladeEndY', type: 'numberSubtract', data: {} },
     { id: 'bladeGen', type: 'taperedTubeGenerator', data: { shape: 'rectangle' } },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,

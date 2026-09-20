@@ -20,7 +20,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
-const output = garmentOutput({ color: { hex: '#d4a83a', label: 'Socks Color' }, offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ color: '#d4a83a', offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('ankleRadiusIn');
 const calfScale = bodyBuildScale('calfRadiusIn', 'calfScale');
@@ -41,10 +41,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'ankleRadiusIn', type: 'numberInput', data: { value: 0.09, min: 0.05, max: 0.15, step: 0.005, label: 'Ankle Radius' } },
-    { id: 'calfRadiusIn', type: 'numberInput', data: { value: 0.105, min: 0.05, max: 0.2, step: 0.005, label: 'Calf Radius' } },
-    { id: 'heightIn', type: 'numberInput', data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01, label: 'Height' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1, label: 'Segments' } },
+    { id: 'ankleRadiusIn', type: 'numberInput', data: { value: 0.09, min: 0.05, max: 0.15, step: 0.005 } },
+    { id: 'calfRadiusIn', type: 'numberInput', data: { value: 0.105, min: 0.05, max: 0.2, step: 0.005 } },
+    { id: 'heightIn', type: 'numberInput', data: { value: 0.22, min: 0.08, max: 0.5, step: 0.01 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 16, min: 8, max: 32, step: 1 } },
     ...scale.nodes,
     ...calfScale.nodes,
     ...lathe.nodes,

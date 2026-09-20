@@ -12,7 +12,6 @@ describe('enumInput', () => {
     expect(getNodeType('enumInput').createDefaultData()).toEqual({
       value: 'round',
       options: ['round', 'v', 'square'],
-      label: 'Neckline',
     });
   });
 });

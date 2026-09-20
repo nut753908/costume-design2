@@ -19,7 +19,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 腕/脚とも手首/足首側を根元よりわずかに細くするテーパー比率を持つが、値は左右独立ではなく
  * 部位ごと(腕1本の左右ペアで共通、脚1本の左右ペアで共通)で、`armTaperRatioIn`/
- * `legTaperRatioIn` という別々の `numberInput` として持つ(ラベルで腕用/脚用を区別できる)。
+ * `legTaperRatioIn` という別々の `numberInput` として持つ(id で腕用/脚用を区別できる)。
  *
  * 肌色(`skinColorIn`)は4パーツすべてで共有される値のため、`skinColorIn`→`material`
  * (`toonMaterial`)から `sceneOut` の `material` へ1本配線するだけでよい。 */
@@ -48,7 +48,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'skinColorIn', type: 'colorInput', data: { hex: '#f2c9a0', label: 'Skin Color' } },
+    { id: 'skinColorIn', type: 'colorInput', data: { hex: '#f2c9a0' } },
     { id: 'material', type: 'toonMaterial', data: {} },
 
     // 胴体(capsuleGenerator)。
@@ -60,9 +60,9 @@ defineGroupNode({
     { id: 'headTranslate', type: 'translateY', data: {} },
 
     // 腕1組・脚1組(limbPair)。テーパー比率は腕用/脚用で別々の値を持つ。
-    { id: 'armTaperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01, label: 'Arm Taper Ratio' } },
+    { id: 'armTaperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01 } },
     { id: 'armPair', type: 'limbPair', data: {} },
-    { id: 'legTaperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01, label: 'Leg Taper Ratio' } },
+    { id: 'legTaperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01 } },
     { id: 'legPair', type: 'limbPair', data: {} },
 
     // 4パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。

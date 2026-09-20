@@ -11,15 +11,15 @@ export const anchorYSocket = { id: 'anchorY', label: 'Anchor Y', type: 'number',
  * 生成されるノードは `input`(groupInput、`anchorY` ソケットを持つ)が別途 `internalNodes` に存在することを前提にする(`nodes/CLAUDE.md` の
  * 「グループノード」節参照)。 */
 export function garmentOutput(config: {
-  color: { hex: string; label: string };
+  color: string;
   offsetY: number;
   geometry: string;
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
     nodes: [
-      { id: 'colorIn', type: 'colorInput', data: { hex: config.color.hex, label: config.color.label, exposed: true } },
+      { id: 'colorIn', type: 'colorInput', data: { hex: config.color, exposed: true } },
       { id: 'material', type: 'toonMaterial', data: {} },
-      { id: 'offsetYIn', type: 'numberInput', data: { value: config.offsetY, min: -0.2, max: 0.2, step: 0.01, label: 'Offset Y' } },
+      { id: 'offsetYIn', type: 'numberInput', data: { value: config.offsetY, min: -0.2, max: 0.2, step: 0.01 } },
       { id: 'placement', type: 'garmentPlacement', data: {} },
       { id: 'sceneOut', type: 'sceneOutput', data: {} },
     ],

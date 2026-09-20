@@ -19,7 +19,7 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // Height/Shoulder は `bodyDimensions` からしか参照されない単独パラメータのため、
   // `bodyDimensionsGroup` 内部の `numberInput`(`heightScaleIn`/`shoulderScaleIn`)として
   // 持ち、この階層には現れない(nodes/CLAUDE.md の「グループノード」節参照)。
-  { id: 'bodyBuild', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.3, step: 0.01, label: 'Body Build' } },
+  { id: 'bodyBuild', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.3, step: 0.01 } },
 
   // ボディの寸法(9個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
   // アンカー候補)を計算する2つの共有ノード。bodyGroup と全14ガーメントへ普通の外部

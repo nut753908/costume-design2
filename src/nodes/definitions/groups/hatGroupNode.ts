@@ -15,7 +15,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  *
  * head は左右対称な単一パーツなので `mirrorPair` は挟まない。hat は shoes/socks と同じ
  * `direction: 'up'`(つばから上=クラウン側へ伸びる)。 */
-const output = garmentOutput({ color: { hex: '#4a3b6b', label: 'Hat Color' }, offsetY: 0.1, geometry: 'gen' });
+const output = garmentOutput({ color: '#4a3b6b', offsetY: 0.1, geometry: 'gen' });
 
 const lathe = latheBody({ genId: 'gen', direction: 'up', steps: 10, startRadius: 'brimRadiusCalc', endRadius: 'crownRadiusIn', distance: 'heightIn' });
 
@@ -33,11 +33,11 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'brimRatioIn', type: 'numberInput', data: { value: 1.25, min: 1, max: 2, step: 0.01, label: 'Brim Ratio' } },
-    { id: 'brimRadiusCalc', type: 'numberMultiply', data: { label: 'Brim Radius' } },
-    { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02, min: 0, max: 0.15, step: 0.005, label: 'Crown Radius' } },
-    { id: 'heightIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01, label: 'Height' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 32, step: 1, label: 'Segments' } },
+    { id: 'brimRatioIn', type: 'numberInput', data: { value: 1.25, min: 1, max: 2, step: 0.01 } },
+    { id: 'brimRadiusCalc', type: 'numberMultiply', data: {} },
+    { id: 'crownRadiusIn', type: 'numberInput', data: { value: 0.02, min: 0, max: 0.15, step: 0.005 } },
+    { id: 'heightIn', type: 'numberInput', data: { value: 0.35, min: 0.1, max: 0.6, step: 0.01 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 32, step: 1 } },
     ...lathe.nodes,
     ...output.nodes,
   ],

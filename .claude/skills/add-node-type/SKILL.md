@@ -27,7 +27,7 @@ capsuleGenerator/boxGenerator のようにフィールドの値を解決して `
 
 ## 数値演算ノード(単項/二項)の場合
 
-`numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax`(二項)や `numberNegate`/`numberHalf`(単項)のように数値を1つ返すだけのノードは、`registerNodeType()` を直接呼ぶ(`nodes/definitions/generic/numberNegate.ts` が最小の実例)。ノードカード上でラベルを改名できるようにしたい場合は、`editor/nodeComponents/GenericNode.tsx` の `EDITABLE_LABEL_TYPES` に type 名を追加する。
+`numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax`(二項)や `numberNegate`/`numberHalf`(単項)のように数値を1つ返すだけのノードは、`registerNodeType()` を直接呼ぶ(`nodes/definitions/generic/numberNegate.ts` が最小の実例)。
 
 ## 守ること(評価キャッシュとの関係)
 

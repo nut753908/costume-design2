@@ -31,23 +31,23 @@ defineGroupNode({
     },
     // 四則演算チェーンで使い回す調整可能な比率。2 は「カプセルの両端ぶん」、0.4 は腕を胴体に
     // わずかに食い込ませる割合。「半分」は `numberHalf` ノードで表す。
-    { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2, min: 1, max: 3, step: 0.1, label: 'Torso Cap Ends (x2)' } },
-    { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4, min: 0, max: 1, step: 0.01, label: 'Arm-Torso Overlap Ratio' } },
+    { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2, min: 1, max: 3, step: 0.1 } },
+    { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4, min: 0, max: 1, step: 0.01 } },
     // feetY は常に0固定(地面の高さ)。
-    constNumberInput('feetYIn', 0, 'Feet Y'),
+    constNumberInput('feetYIn', 0),
 
-    { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: { label: 'Torso Radius × 2' } },
-    { id: 'torsoCapsuleHeight', type: 'numberAdd', data: { label: 'Torso Capsule Height' } },
-    { id: 'torsoCapsuleHeightHalf', type: 'numberHalf', data: { label: 'Torso Capsule Height × Half' } },
-    { id: 'torsoCenterYCalc', type: 'numberAdd', data: { label: 'Torso Center Y' } },
-    { id: 'shoulderYCalc', type: 'numberAdd', data: { label: 'Shoulder Y' } },
-    { id: 'headCenterYCalc', type: 'numberAdd', data: { label: 'Head Center Y' } },
-    { id: 'armLengthHalf', type: 'numberHalf', data: { label: 'Arm Length × Half' } },
-    { id: 'armTorsoOverlap', type: 'numberMultiply', data: { label: 'Arm-Torso Overlap' } },
-    { id: 'armCenterYStep1', type: 'numberSubtract', data: { label: 'Shoulder Y − Arm Half' } },
-    { id: 'armCenterYCalc', type: 'numberSubtract', data: { label: 'Arm Center Y' } },
-    { id: 'legCenterYCalc', type: 'numberHalf', data: { label: 'Leg Center Y' } },
-    { id: 'wristYCalc', type: 'numberSubtract', data: { label: 'Wrist Y' } },
+    { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: {} },
+    { id: 'torsoCapsuleHeight', type: 'numberAdd', data: {} },
+    { id: 'torsoCapsuleHeightHalf', type: 'numberHalf', data: {} },
+    { id: 'torsoCenterYCalc', type: 'numberAdd', data: {} },
+    { id: 'shoulderYCalc', type: 'numberAdd', data: {} },
+    { id: 'headCenterYCalc', type: 'numberAdd', data: {} },
+    { id: 'armLengthHalf', type: 'numberHalf', data: {} },
+    { id: 'armTorsoOverlap', type: 'numberMultiply', data: {} },
+    { id: 'armCenterYStep1', type: 'numberSubtract', data: {} },
+    { id: 'armCenterYCalc', type: 'numberSubtract', data: {} },
+    { id: 'legCenterYCalc', type: 'numberHalf', data: {} },
+    { id: 'wristYCalc', type: 'numberSubtract', data: {} },
 
     {
       id: 'output',

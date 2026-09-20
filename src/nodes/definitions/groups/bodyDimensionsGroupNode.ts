@@ -16,22 +16,21 @@ const SHOULDER_SCALE: ScaleSource = { id: 'shoulderScaleIn', handle: 'value' };
  * 挟んでから `scale` を掛ける(shoulderSpacing が Build と Shoulder の両方を受ける場合)。 */
 function dimension(config: {
   name: string;
-  label: string;
   base: { value: number; min: number; max: number; step: number };
   scale: ScaleSource;
-  preScale?: { id: string; label: string; source: ScaleSource };
+  preScale?: { id: string; source: ScaleSource };
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
-  const { name, label, base, scale, preScale } = config;
+  const { name, base, scale, preScale } = config;
   const baseId = `${name}BaseIn`;
   const scaleId = `${name}Scale`;
   const nodes: GraphNode[] = [
-    { id: baseId, type: 'numberInput', data: { ...base, label: `${label} Base` } },
-    { id: scaleId, type: 'numberMultiply', data: { label } },
+    { id: baseId, type: 'numberInput', data: { ...base } },
+    { id: scaleId, type: 'numberMultiply', data: {} },
   ];
   const edges: GraphEdge[] = [];
   let valueSource = baseId;
   if (preScale) {
-    nodes.push({ id: preScale.id, type: 'numberMultiply', data: { label: preScale.label } });
+    nodes.push({ id: preScale.id, type: 'numberMultiply', data: {} });
     edges.push(
       { source: baseId, sourceHandle: 'value', target: preScale.id, targetHandle: 'value' },
       { source: preScale.source.id, sourceHandle: preScale.source.handle, target: preScale.id, targetHandle: 'factor' },
@@ -47,20 +46,19 @@ function dimension(config: {
 }
 
 const dimensions = [
-  dimension({ name: 'legHeight', label: 'Leg Height', base: { value: 0.85, min: 0.5, max: 1.2, step: 0.01 }, scale: HEIGHT_SCALE }),
-  dimension({ name: 'legRadius', label: 'Leg Radius', base: { value: 0.11, min: 0.05, max: 0.2, step: 0.005 }, scale: BUILD_SCALE }),
-  dimension({ name: 'legSpacing', label: 'Leg Spacing', base: { value: 0.14, min: 0.05, max: 0.3, step: 0.005 }, scale: BUILD_SCALE }),
-  dimension({ name: 'torsoLength', label: 'Torso Length', base: { value: 0.55, min: 0.3, max: 0.9, step: 0.01 }, scale: HEIGHT_SCALE }),
-  dimension({ name: 'torsoRadius', label: 'Torso Radius', base: { value: 0.26, min: 0.15, max: 0.4, step: 0.01 }, scale: BUILD_SCALE }),
-  dimension({ name: 'armLength', label: 'Arm Length', base: { value: 0.62, min: 0.4, max: 0.9, step: 0.01 }, scale: HEIGHT_SCALE }),
-  dimension({ name: 'armRadius', label: 'Arm Radius', base: { value: 0.075, min: 0.03, max: 0.15, step: 0.005 }, scale: BUILD_SCALE }),
+  dimension({ name: 'legHeight', base: { value: 0.85, min: 0.5, max: 1.2, step: 0.01 }, scale: HEIGHT_SCALE }),
+  dimension({ name: 'legRadius', base: { value: 0.11, min: 0.05, max: 0.2, step: 0.005 }, scale: BUILD_SCALE }),
+  dimension({ name: 'legSpacing', base: { value: 0.14, min: 0.05, max: 0.3, step: 0.005 }, scale: BUILD_SCALE }),
+  dimension({ name: 'torsoLength', base: { value: 0.55, min: 0.3, max: 0.9, step: 0.01 }, scale: HEIGHT_SCALE }),
+  dimension({ name: 'torsoRadius', base: { value: 0.26, min: 0.15, max: 0.4, step: 0.01 }, scale: BUILD_SCALE }),
+  dimension({ name: 'armLength', base: { value: 0.62, min: 0.4, max: 0.9, step: 0.01 }, scale: HEIGHT_SCALE }),
+  dimension({ name: 'armRadius', base: { value: 0.075, min: 0.03, max: 0.15, step: 0.005 }, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({
     name: 'shoulderSpacing',
-    label: 'Shoulder Spacing',
     base: { value: 0.34, min: 0.2, max: 0.5, step: 0.01 },
     scale: SHOULDER_SCALE,
-    preScale: { id: 'shoulderSpacingBuildScale', label: 'Shoulder Spacing × Build', source: BUILD_SCALE },
+    preScale: { id: 'shoulderSpacingBuildScale', source: BUILD_SCALE },
   }),
 ];
 
@@ -85,10 +83,10 @@ defineGroupNode({
         sockets: [{ id: 'buildScale', label: 'Build Scale', type: 'number', default: 1 }],
       },
     },
-    { id: 'heightScaleIn', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.25, step: 0.01, label: 'Body Height', exposed: true } },
-    { id: 'shoulderScaleIn', type: 'numberInput', data: { value: 1, min: 0.7, max: 1.4, step: 0.01, label: 'Body Shoulder', exposed: true } },
+    { id: 'heightScaleIn', type: 'numberInput', data: { value: 1, min: 0.8, max: 1.25, step: 0.01, exposed: true } },
+    { id: 'shoulderScaleIn', type: 'numberInput', data: { value: 1, min: 0.7, max: 1.4, step: 0.01, exposed: true } },
     // headRadius はスケール無し(基準値がそのまま出力になる)。
-    { id: 'headRadiusBaseIn', type: 'numberInput', data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005, label: 'Head Radius Base' } },
+    { id: 'headRadiusBaseIn', type: 'numberInput', data: { value: 0.16, min: 0.1, max: 0.25, step: 0.005 } },
     ...dimensions.flatMap((d) => d.nodes),
     {
       id: 'output',

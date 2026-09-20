@@ -26,7 +26,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'offsetAdd', type: 'numberAdd', data: { label: 'Anchor Y + Offset Y' } },
+    { id: 'offsetAdd', type: 'numberAdd', data: {} },
     { id: 'translate', type: 'translateY', data: {} },
     {
       id: 'output',

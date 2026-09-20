@@ -3,7 +3,7 @@ import type { GraphEdge, GraphNode } from './types';
 
 /** グループノードのテンプレート(`defineGroupNode()` の `internalNodes`/`internalEdges`)の
  * 「構造」の指紋。ノードの id と型、エッジ、`groupInput`/`groupOutput` のソケット構成だけから
- * 計算し、パラメータの値・ラベル・座標は含めない — 構造(配線・ノード構成)を変えたときだけ
+ * 計算し、パラメータの値・座標は含めない — 構造(配線・ノード構成)を変えたときだけ
  * 変わる。編集済みのグループインスタンスやプリセットは、実体化した時点の指紋を保存しておき、
  * 現在のテンプレートの指紋と比べることで「テンプレートが更新されて古くなった」ことを
  * 検知する(`isGroupInstanceStale()`)。 */
@@ -92,7 +92,7 @@ const VALUE_KEY_BY_INPUT_TYPE: Record<string, string> = {
 
 /** 現在のテンプレートを読み込み直し、古い内部グラフ(`oldNodes`)にあった同じ id・同じ型の
  * `numberInput`/`enumInput`/`colorInput` の値だけを引き継ぐ。構造(配線・ノード構成)や
- * min/max/ラベルは最新のテンプレートのものになる。対応するノードが無くなった値は捨てる。 */
+ * min/max は最新のテンプレートのものになる。対応するノードが無くなった値は捨てる。 */
 export function migrateGroupToTemplate(
   type: string,
   oldNodes: GraphNode[],

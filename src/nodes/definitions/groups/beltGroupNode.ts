@@ -10,7 +10,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される waistY)は外部ソケットのまま(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
-const output = garmentOutput({ color: { hex: '#3a2e26', label: 'Belt Color' }, offsetY: 0, geometry: 'band' });
+const output = garmentOutput({ color: '#3a2e26', offsetY: 0, geometry: 'band' });
 
 const scale = bodyBuildScale('radiusIn');
 
@@ -28,10 +28,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'radiusIn', type: 'numberInput', data: { value: 0.32, min: 0.2, max: 0.45, step: 0.01, label: 'Radius' } },
-    { id: 'thicknessIn', type: 'numberInput', data: { value: 0.05, min: 0.02, max: 0.12, step: 0.005, label: 'Thickness' } },
-    { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01, label: 'Bulge' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1, label: 'Segments' } },
+    { id: 'radiusIn', type: 'numberInput', data: { value: 0.32, min: 0.2, max: 0.45, step: 0.01 } },
+    { id: 'thicknessIn', type: 'numberInput', data: { value: 0.05, min: 0.02, max: 0.12, step: 0.005 } },
+    { id: 'bulgeIn', type: 'numberInput', data: { value: 1.15, min: 1, max: 1.5, step: 0.01 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1 } },
     ...scale.nodes,
     { id: 'band', type: 'bulgedBand', data: {} },
     ...output.nodes,

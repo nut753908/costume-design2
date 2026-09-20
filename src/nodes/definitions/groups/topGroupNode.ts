@@ -11,7 +11,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * Sleeve Length を 0 にするとチューブが根元で潰れるだけで頂点が残るため、min は 0 にしない。
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
  * 配線される shoulderY)は外部ソケットのまま。 */
-const output = garmentOutput({ color: { hex: '#5b8fa8', label: 'Top Color' }, offsetY: 0, geometry: 'merge' });
+const output = garmentOutput({ color: '#5b8fa8', offsetY: 0, geometry: 'merge' });
 
 const scale = bodyBuildScale('topRadiusIn');
 
@@ -29,12 +29,12 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'topRadiusIn', type: 'numberInput', data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01, label: 'Torso Radius' } },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5, min: 0.2, max: 0.9, step: 0.01, label: 'Length' } },
-    { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'], label: 'Neckline' } },
-    { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01, label: 'Neckline Depth' } },
-    { id: 'sleeveRadiusIn', type: 'numberInput', data: { value: 0.085, min: 0.05, max: 0.14, step: 0.005, label: 'Sleeve Radius' } },
-    { id: 'sleeveLengthIn', type: 'numberInput', data: { value: 0.22, min: 0.01, max: 0.4, step: 0.01, label: 'Sleeve Length' } },
+    { id: 'topRadiusIn', type: 'numberInput', data: { value: 0.29, min: 0.2, max: 0.4, step: 0.01 } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5, min: 0.2, max: 0.9, step: 0.01 } },
+    { id: 'necklineIn', type: 'enumInput', data: { value: 'round', options: ['round', 'v', 'square'] } },
+    { id: 'necklineDepthIn', type: 'numberInput', data: { value: 0.12, min: 0, max: 0.3, step: 0.01 } },
+    { id: 'sleeveRadiusIn', type: 'numberInput', data: { value: 0.085, min: 0.05, max: 0.14, step: 0.005 } },
+    { id: 'sleeveLengthIn', type: 'numberInput', data: { value: 0.22, min: 0.01, max: 0.4, step: 0.01 } },
     ...scale.nodes,
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10 } },
     { id: 'gen', type: 'ringGridGenerator', data: {} },

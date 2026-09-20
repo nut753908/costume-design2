@@ -18,7 +18,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * `limbPair.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。専用の `segmentsIn`
  * (`numberInput`)を置いているのは、未接続ソケットが型の既定値へフォールバックすると
  * その値がカード上のどこにも見えなくなるため。 */
-const output = garmentOutput({ color: { hex: '#b0413e', label: 'Gloves Color' }, offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ color: '#b0413e', offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale('wristRadiusIn');
 const handScale = bodyBuildScale('handRadiusIn', 'handScale');
@@ -39,10 +39,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'wristRadiusIn', type: 'numberInput', data: { value: 0.08, min: 0.05, max: 0.12, step: 0.005, label: 'Wrist Radius' } },
-    { id: 'handRadiusIn', type: 'numberInput', data: { value: 0.09, min: 0.05, max: 0.16, step: 0.005, label: 'Hand Radius' } },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005, label: 'Length' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 12, min: 8, max: 32, step: 1, label: 'Segments' } },
+    { id: 'wristRadiusIn', type: 'numberInput', data: { value: 0.08, min: 0.05, max: 0.12, step: 0.005 } },
+    { id: 'handRadiusIn', type: 'numberInput', data: { value: 0.09, min: 0.05, max: 0.16, step: 0.005 } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.14, min: 0.05, max: 0.25, step: 0.005 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 12, min: 8, max: 32, step: 1 } },
     ...scale.nodes,
     ...handScale.nodes,
     ...lathe.nodes,

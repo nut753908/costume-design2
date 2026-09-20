@@ -30,7 +30,7 @@ import { constNumberInput } from '../constNumberInput';
  * ため、外側の numberInput/colorInput ノードではなくグループ内部の同型ノードとして保持する。
  * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * headCenterY)は外部ソケット。 */
-const output = garmentOutput({ color: { hex: '#2a2a2a', label: 'Glasses Color' }, offsetY: -0.02, geometry: 'mergeAll' });
+const output = garmentOutput({ color: '#2a2a2a', offsetY: -0.02, geometry: 'mergeAll' });
 
 defineGroupNode({
   type: 'glassesGroup',
@@ -46,27 +46,27 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045, min: 0.02, max: 0.07, step: 0.005, label: 'Lens Radius' } },
-    { id: 'frameThicknessIn', type: 'numberInput', data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001, label: 'Frame Thickness' } },
-    { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.055, min: 0.03, max: 0.09, step: 0.005, label: 'Lens Spacing' } },
-    { id: 'bridgeThicknessIn', type: 'numberInput', data: { value: 0.01, min: 0.005, max: 0.02, step: 0.001, label: 'Bridge Thickness' } },
-    { id: 'templeLengthIn', type: 'numberInput', data: { value: 0.12, min: 0.05, max: 0.2, step: 0.01, label: 'Temple Length' } },
-    { id: 'templeThicknessIn', type: 'numberInput', data: { value: 0.006, min: 0.003, max: 0.015, step: 0.001, label: 'Temple Thickness' } },
-    constNumberInput('zeroIn', 0, 'Zero'),
-    constNumberInput('forwardDepthInsetIn', 0.02, 'Forward Depth Inset'),
-    { id: 'forwardDepthIn', type: 'numberSubtract', data: { label: 'Forward Depth' } },
-    constNumberInput('templeBackOffsetIn', 0.02, 'Temple Back Offset'),
-    { id: 'frameThicknessHalf', type: 'numberHalf', data: { label: 'Frame Thickness × Half' } },
+    { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045, min: 0.02, max: 0.07, step: 0.005 } },
+    { id: 'frameThicknessIn', type: 'numberInput', data: { value: 0.008, min: 0.003, max: 0.02, step: 0.001 } },
+    { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.055, min: 0.03, max: 0.09, step: 0.005 } },
+    { id: 'bridgeThicknessIn', type: 'numberInput', data: { value: 0.01, min: 0.005, max: 0.02, step: 0.001 } },
+    { id: 'templeLengthIn', type: 'numberInput', data: { value: 0.12, min: 0.05, max: 0.2, step: 0.01 } },
+    { id: 'templeThicknessIn', type: 'numberInput', data: { value: 0.006, min: 0.003, max: 0.015, step: 0.001 } },
+    constNumberInput('zeroIn', 0),
+    constNumberInput('forwardDepthInsetIn', 0.02),
+    { id: 'forwardDepthIn', type: 'numberSubtract', data: {} },
+    constNumberInput('templeBackOffsetIn', 0.02),
+    { id: 'frameThicknessHalf', type: 'numberHalf', data: {} },
 
     // ブリッジ(bridgeXOffset の ± を両端の X に)。
-    { id: 'bridgeXOffset', type: 'numberSubtract', data: { label: 'Lens Spacing − Lens Radius' } },
-    { id: 'negatedBridgeXOffset', type: 'numberNegate', data: { label: 'Negated Bridge X Offset' } },
+    { id: 'bridgeXOffset', type: 'numberSubtract', data: {} },
+    { id: 'negatedBridgeXOffset', type: 'numberNegate', data: {} },
     { id: 'bridgeGen', type: 'alignedBoxGenerator', data: {} },
 
     // テンプル1本(X=0 基準、前面から後方まで Z 方向に伸ばす)を ±templeXOffset へ複製する。
-    { id: 'templeXOffset', type: 'numberAdd', data: { label: 'Lens Spacing + Lens Radius' } },
-    { id: 'templeBackDepth', type: 'numberSubtract', data: { label: 'Temple Back Depth' } },
-    { id: 'templeBackZ', type: 'numberSubtract', data: { label: 'Temple Back Z' } },
+    { id: 'templeXOffset', type: 'numberAdd', data: {} },
+    { id: 'templeBackDepth', type: 'numberSubtract', data: {} },
+    { id: 'templeBackZ', type: 'numberSubtract', data: {} },
     { id: 'templeGen', type: 'alignedBoxGenerator', data: {} },
     { id: 'templeMirror', type: 'mirrorPair', data: {} },
 

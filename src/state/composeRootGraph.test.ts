@@ -25,7 +25,7 @@ describe('composeRootGraph', () => {
     const scopeStack: ScopeFrame[] = [
       {
         parentId: 'group1',
-        nodes: [makeNode('group1', { label: 'stale' }), makeNode('sibling')],
+        nodes: [makeNode('group1', { memo: 'stale' }), makeNode('sibling')],
         edges: [],
       },
     ];
@@ -39,8 +39,8 @@ describe('composeRootGraph', () => {
     expect(group1).toBeDefined();
     expect((group1!.data as { nodes?: Node[] }).nodes).toBe(leafNodes);
     expect((group1!.data as { edges?: Edge[] }).edges).toBe(leafEdges);
-    // 他のトップレベルの内容(label 等)は保持される。
-    expect((group1!.data as { label?: string }).label).toBe('stale');
+    // 他のトップレベルの内容(memo 等)は保持される。
+    expect((group1!.data as { memo?: string }).memo).toBe('stale');
     // トップレベルのエッジは scopeStack の最上位フレームのものになる。
     expect(result.edges).toEqual([]);
   });

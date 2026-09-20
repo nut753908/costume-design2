@@ -13,7 +13,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * `skirtGroupNode.ts` と全く同じ理由・同じ形で、プロファイル生成を `easedLatheProfile`→
  * `latheGenerator` へ、裾半径(`hemRadius = shoulderRadius * (1 + Math.max(0, hemFlare))`)を
  * `hemRadiusCalc`(`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`)へ展開している。 */
-const output = garmentOutput({ color: { hex: '#4a5c3e', label: 'Jacket Color' }, offsetY: 0, geometry: 'gen' });
+const output = garmentOutput({ color: '#4a5c3e', offsetY: 0, geometry: 'gen' });
 
 const scale = bodyBuildScale('shoulderRadiusIn');
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 'lengthIn' });
@@ -32,10 +32,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'shoulderRadiusIn', type: 'numberInput', data: { value: 0.34, min: 0.25, max: 0.5, step: 0.01, label: 'Shoulder Radius' } },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.42, min: 0.2, max: 0.8, step: 0.01, label: 'Length' } },
-    { id: 'hemFlareIn', type: 'numberInput', data: { value: 0.15, min: 0, max: 1.5, step: 0.05, label: 'Hem Flare' } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1, label: 'Segments' } },
+    { id: 'shoulderRadiusIn', type: 'numberInput', data: { value: 0.34, min: 0.25, max: 0.5, step: 0.01 } },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.42, min: 0.2, max: 0.8, step: 0.01 } },
+    { id: 'hemFlareIn', type: 'numberInput', data: { value: 0.15, min: 0, max: 1.5, step: 0.05 } },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 20, min: 8, max: 40, step: 1 } },
     ...scale.nodes,
     { id: 'hemRadiusCalc', type: 'flaredRadius', data: {} },
     ...lathe.nodes,
