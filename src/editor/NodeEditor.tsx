@@ -171,6 +171,7 @@ function NodeEditorInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        deleteKeyCode={['Backspace', 'Delete']}
         nodeTypes={nodeTypes}
         isValidConnection={isValidConnection}
         onPaneContextMenu={(event) => {
