@@ -3,7 +3,6 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { ColorInputData } from '../../nodes/definitions/generic/colorInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
-import { ExposeToggle } from './ExposeToggle';
 import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
 function ColorInputNodeViewImpl({ id, data }: NodeProps) {
@@ -33,7 +32,6 @@ function ColorInputNodeViewImpl({ id, data }: NodeProps) {
           throttledUpdate({ hex });
         }}
       />
-      <ExposeToggle id={id} exposed={nodeData.exposed === true} />
       <Handle type="source" position={Position.Right} id="color" style={{ background: SOCKET_COLORS.color }} />
     </div>
   );

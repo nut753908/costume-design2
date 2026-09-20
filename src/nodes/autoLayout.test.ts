@@ -431,12 +431,6 @@ describe('estimateNodeHeight', () => {
     expect(estimateNodeHeight('colorInput', {})).toBe(66);
   });
 
-  it('グループの中(inGroup)では、入力系ノードに「グループに表示」チェックボックス行(23px)が加わる', () => {
-    expect(estimateNodeHeight('numberInput', {}, true)).toBe(60 + 23);
-    expect(estimateNodeHeight('colorInput', {}, true)).toBe(66 + 23);
-    expect(estimateNodeHeight('enumInput', { options: ['a'] }, true)).toBe(83 + 23 + 23);
-  });
-
   it('groupInput/groupOutput は、ソケット行に加えて末尾の追加行(26px)を持つ', () => {
     expect(estimateNodeHeight('groupInput', { sockets: [{}, {}] })).toBe(40 + 2 * 23 + 26);
     expect(estimateNodeHeight('groupOutput', { sockets: [{}] })).toBe(40 + 23 + 26);

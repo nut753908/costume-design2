@@ -37,7 +37,7 @@ function toSocketDefs(sockets: GroupIOSocket[] | undefined): SocketDef[] {
  * ボタンが使うのと同じ関数)で自動算出するため、`GroupNodeConfig.internalNodes` に
  * position を持たせる必要がない。 */
 function materializeInternalNodes(config: GroupNodeConfig): GroupInternalNode[] {
-  const positions = computeAutoLayout(config.internalNodes, config.internalEdges, { inGroup: true });
+  const positions = computeAutoLayout(config.internalNodes, config.internalEdges);
   return config.internalNodes.map((node) => ({
     ...structuredClone(node),
     position: positions.get(node.id) ?? { x: 0, y: 0 },

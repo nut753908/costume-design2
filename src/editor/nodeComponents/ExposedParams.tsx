@@ -97,8 +97,8 @@ function ExposedRow({ groupId, node }: { groupId: string; node: { id: string; ty
 
 /** グループノードのカード上に、内部の `exposed: true` のパラメータ(`numberInput`/`colorInput`/
  * `enumInput`)の操作UIを並べる。中に入らずに調整でき、値は内部ノードの `data` に書き戻される
- * (`updateGroupInternalNodeData`)。露出させるかは内部ノードのカードの「グループに表示」で切り替える
- * (`ExposeToggle.tsx`)。 */
+ * (`updateGroupInternalNodeData`)。露出させるかは内部ノードの `data.exposed`
+ * (テンプレートで指定する)で決まる。 */
 export function ExposedParams({ groupId, type, data }: { groupId: string; type: string; data: Record<string, unknown> }) {
   const params = listExposedParams(type, data as { nodes?: never });
   if (params.length === 0) return null;

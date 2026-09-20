@@ -338,7 +338,7 @@ export const useGraphStore = create<GraphState>()(
             target: e.target,
             targetHandle: e.targetHandle,
           }));
-          const positions = computeAutoLayout(graphNodes, graphEdges, { inGroup: state.scopeStack.length > 0 });
+          const positions = computeAutoLayout(graphNodes, graphEdges);
           set({
             nodes: state.nodes.map((n) => {
               const position = positions.get(n.id);

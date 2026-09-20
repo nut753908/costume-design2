@@ -91,15 +91,6 @@
   opacity: 0.7;
 }
 
-.rf-node__expose {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 4px;
-  font-size: 10px;
-  opacity: 0.8;
-}
-
 .rf-node__socket-row {
   position: relative;
   padding: 3px 0 3px 10px;
