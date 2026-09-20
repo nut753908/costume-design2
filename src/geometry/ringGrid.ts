@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { necklineWeight, type NecklineType } from './neckline';
+import { necklineWeight } from './neckline';
 
 export interface RingGridRow {
   radius: number;
@@ -9,13 +9,13 @@ export interface RingGridRow {
 /**
  * 角度×高さのリングからなる手組み BufferGeometry を構築する(top.ts/dress.ts で共有)。
  * rows[0] を最上段(肩のライン)として、その行の頂点だけを角度ごとに necklineWeight() で
- * 重み付けして引き下げ、ネックラインを彫り込む。放射対称な Lathe では表現できない
+ * 重み付け(`necklineWeights` は角度に対する落ち込み量の曲線)して引き下げ、ネックラインを彫り込む。放射対称な Lathe では表現できない
  * ネックラインの落ち込みを扱うための、両ファイル共通の構築ロジック。
  */
 export function buildRingGridGeometry(
   rows: RingGridRow[],
   angleSegments: number,
-  necklineType: NecklineType,
+  necklineWeights: THREE.Vector2[],
   necklineDepth: number,
 ): THREE.BufferGeometry {
   const positions: number[] = [];
@@ -27,7 +27,7 @@ export function buildRingGridGeometry(
       const x = Math.sin(angle) * radius;
       const z = Math.cos(angle) * radius;
 
-      const y = row === 0 ? baseY - necklineDepth * necklineWeight(necklineType, angle) : baseY;
+      const y = row === 0 ? baseY - necklineDepth * necklineWeight(necklineWeights, angle) : baseY;
       positions.push(x, y, z);
     }
   }

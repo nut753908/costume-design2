@@ -2,30 +2,28 @@ import * as THREE from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
-// dressGroup の埋め込みサブグラフが参照する numberInput/enumInput/colorInput/numberMultiply/
+// dressGroup の埋め込みサブグラフが参照する numberInput/colorInput/numberMultiply/
 // easedLatheProfile/ringGridGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // dress は easedLatheProfile(肩→裾の半径)→ ringGridGenerator(geometry/ringGrid.ts による
 // ネックライン彫り込み)で組まれる(dressGroupNode.ts のコメント参照)。Torso Radius だけが
-// bodyBuild でスケールされ、他のパラメータは内部の numberInput/enumInput のデフォルトのまま
+// bodyBuild でスケールされ、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('dressGroup', () => {
-  const DEFAULTS = { torsoRadius: 0.29, hemRadius: 0.55, length: 0.9, necklineType: 'round', necklineDepth: 0.12 };
+  const DEFAULTS = { torsoRadius: 0.29, hemRadius: 0.55, length: 0.9, necklineDepth: 0.12 };
 
   /** 直近の buildRingGridGeometry() 呼び出しの引数を、DEFAULTS と同じ名前の値へ戻す。 */
   function ringGridArgs(spy: { mock: { calls: unknown[][] } }) {
-    const [rows, , necklineType, necklineDepth] = spy.mock.calls[0] as [{ radius: number; y: number }[], number, string, number];
+    const [rows, , , necklineDepth] = spy.mock.calls[0] as [{ radius: number; y: number }[], number, THREE.Vector2[], number];
     return {
       torsoRadius: rows[0].radius,
       hemRadius: rows[rows.length - 1].radius,
       length: -rows[rows.length - 1].y,
-      necklineType,
       necklineDepth,
     };
   }
   const closeTo = (actual: ReturnType<typeof ringGridArgs>, expected: typeof DEFAULTS) => {
-    expect(actual.necklineType).toBe(expected.necklineType);
     expect(actual.necklineDepth).toBe(expected.necklineDepth);
     expect(actual.torsoRadius).toBeCloseTo(expected.torsoRadius, 10);
     expect(actual.hemRadius).toBeCloseTo(expected.hemRadius, 10);
