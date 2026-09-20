@@ -2,17 +2,26 @@ import { useEffect, useState } from 'react';
 import type { SocketDef } from '../../nodes/types';
 import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
-/** 未接続の `number`/`color` 入力ソケットの行に出す入力欄。値はノードの `data[socket.id]` に
- * 保持され(未設定なら `socket.default`)、`evaluateGraph()` が未接続ソケットの値として
- * 使う。`numberInput`/`colorInput` ノードと同じく、入力途中の文字列/ドラッグ中の色は
+/** `number`/`color` の値を編集する小さな入力欄。未接続の入力ソケットの行(`GenericNode.tsx`、値は
+ * ノードの `data[socket.id]`)と、`Group Input` ノードの各ソケット行(`GroupInputNode.tsx`、値は
+ * `socket.default`)の両方が使う。`toPatch` は編集した値を `updateNodeData` へ渡す `data` の
+ * 一部へ変換する。`numberInput`/`colorInput` ノードと同じく、入力途中の文字列/ドラッグ中の色は
  * ローカル state で即座に表示し、store への反映は間引く。 */
-export function SocketField({ nodeId, socket, value }: { nodeId: string; socket: SocketDef; value: unknown }) {
-  if (socket.type === 'number') return <NumberField nodeId={nodeId} socket={socket} value={value} />;
-  if (socket.type === 'color') return <ColorField nodeId={nodeId} socket={socket} value={value} />;
+export interface SocketFieldProps {
+  nodeId: string;
+  label: string;
+  type: SocketDef['type'];
+  value: unknown;
+  toPatch: (value: number | string) => Record<string, unknown>;
+}
+
+export function SocketField(props: SocketFieldProps) {
+  if (props.type === 'number') return <NumberField {...props} />;
+  if (props.type === 'color') return <ColorField {...props} />;
   return null;
 }
 
-function NumberField({ nodeId, socket, value }: { nodeId: string; socket: SocketDef; value: unknown }) {
+function NumberField({ nodeId, label, value, toPatch }: SocketFieldProps) {
   const throttledUpdate = useThrottledNodeDataUpdate(nodeId);
   const current = typeof value === 'number' ? value : 0;
 
@@ -27,21 +36,21 @@ function NumberField({ nodeId, socket, value }: { nodeId: string; socket: Socket
       className="rf-node__socket-field nodrag"
       type="number"
       step={0.01}
-      aria-label={socket.label}
+      aria-label={label}
       value={text}
       onChange={(e) => {
         setText(e.target.value);
         const raw = e.target.value;
         if (raw.trim() === '') return;
         const parsed = Number(raw);
-        if (Number.isFinite(parsed)) throttledUpdate({ [socket.id]: parsed });
+        if (Number.isFinite(parsed)) throttledUpdate(toPatch(parsed));
       }}
       onBlur={() => setText(String(current))}
     />
   );
 }
 
-function ColorField({ nodeId, socket, value }: { nodeId: string; socket: SocketDef; value: unknown }) {
+function ColorField({ nodeId, label, value, toPatch }: SocketFieldProps) {
   const throttledUpdate = useThrottledNodeDataUpdate(nodeId);
   const current = typeof value === 'string' ? value : '#cccccc';
   const [localHex, setLocalHex] = useState(current);
@@ -51,11 +60,11 @@ function ColorField({ nodeId, socket, value }: { nodeId: string; socket: SocketD
     <input
       className="rf-node__socket-field rf-node__socket-field--color nodrag"
       type="color"
-      aria-label={socket.label}
+      aria-label={label}
       value={localHex}
       onChange={(e) => {
         setLocalHex(e.target.value);
-        throttledUpdate({ [socket.id]: e.target.value });
+        throttledUpdate(toPatch(e.target.value));
       }}
     />
   );

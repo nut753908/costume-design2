@@ -35,7 +35,15 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
               style={{ background: SOCKET_COLORS[socket.type] }}
             />
             {socket.label}
-            {hasField && <SocketField nodeId={id} socket={socket} value={(data as Record<string, unknown>)[socket.id] ?? socket.default} />}
+            {hasField && (
+              <SocketField
+                nodeId={id}
+                label={socket.label}
+                type={socket.type}
+                value={(data as Record<string, unknown>)[socket.id] ?? socket.default}
+                toPatch={(value) => ({ [socket.id]: value })}
+              />
+            )}
           </div>
         );
       })}
