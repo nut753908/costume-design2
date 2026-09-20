@@ -30,7 +30,7 @@ function useRafThrottle(update: (patch: Record<string, unknown>) => void) {
 function ExposedRow({ groupId, node }: { groupId: string; node: { id: string; type: string; data: Record<string, unknown> } }) {
   const updateInternal = useGraphStore((s) => s.updateGroupInternalNodeData);
   const throttled = useRafThrottle((patch) => updateInternal(groupId, node.id, patch));
-  const label = (node.data.label as string | undefined) ?? node.id;
+  const label = node.id;
 
   const storedValue = node.type === 'colorInput' ? (node.data.hex as string) : node.data.value;
   const [local, setLocal] = useState(storedValue);

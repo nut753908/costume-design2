@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { SocketValue } from '../nodes/types';
+import { getNodeType } from '../nodes/registry';
 import '../nodes/definitions';
 import { isMeshVisible, listSceneOutputs, sceneMeshKey, sceneMeshKeys, useViewStore } from './viewStore';
 
@@ -65,13 +66,13 @@ describe('viewStore', () => {
     ]);
     const nodes = [
       { id: 'a', type: 'topGroup', data: {} },
-      { id: 'b', type: 'skirtGroup', data: { label: 'My Skirt' } },
+      { id: 'b', type: 'skirtGroup', data: { label: 'ignored' } },
       { id: 'c', type: 'numberInput', data: {} },
     ];
     expect(listSceneOutputs(nodes, results)).toEqual([
       { key: 'a:0', nodeId: 'a', label: 'Top #0' },
       { key: 'a:1', nodeId: 'a', label: 'Top #1' },
-      { key: 'b:0', nodeId: 'b', label: 'My Skirt' },
+      { key: 'b:0', nodeId: 'b', label: getNodeType('skirtGroup').label },
     ]);
     expect(listSceneOutputs(nodes, null)).toEqual([]);
   });

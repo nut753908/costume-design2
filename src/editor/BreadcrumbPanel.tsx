@@ -12,8 +12,7 @@ export function BreadcrumbPanel() {
 
   const crumbs = scopeStack.map((frame) => {
     const node = frame.nodes.find((n) => n.id === frame.parentId);
-    const dataLabel = (node?.data as { label?: string } | undefined)?.label;
-    return dataLabel ?? (node?.type ? getNodeType(node.type).label : frame.parentId);
+    return node?.type ? getNodeType(node.type).label : frame.parentId;
   });
 
   return (

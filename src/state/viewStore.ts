@@ -62,14 +62,13 @@ export interface SceneOutputRow {
 }
 
 /** 3Dビューに描画されているメッシュ(`sceneOutput`)を、トップレベルのノード順に一覧にする。
- * ラベルはノードの `data.label`(無ければ型のラベル)で、1つのノードが複数のメッシュを持つ場合だけ
+ * ラベルはノードの型のラベルで、1つのノードが複数のメッシュを持つ場合だけ
  * 通し番号を添える。 */
 export function listSceneOutputs(nodes: GraphNode[], results: EvaluatedGraph | null): SceneOutputRow[] {
   if (!results) return [];
   return nodes.flatMap((node) => {
     const keys = sceneMeshKeys(node.id, results.get(node.id));
-    const customLabel = (node.data as { label?: unknown }).label;
-    const base = typeof customLabel === 'string' ? customLabel : getNodeType(node.type).label;
+    const base = getNodeType(node.type).label;
     return keys.map((key, i) => ({
       key,
       nodeId: node.id,
