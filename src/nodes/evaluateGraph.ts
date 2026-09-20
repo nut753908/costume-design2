@@ -64,14 +64,13 @@ export function resetNodeEvalCacheForTests(): void {
 
 /** `geometry`/`material`/`points` は値比較のコストが構造そのものの再計算と大差ないため、
  * 参照が同じ場合のみ「同じ」とみなす —— 生成元のノードもキャッシュヒットして同じ参照を
- * 返している限り、この参照比較で連鎖的に成立する。`number`/`enum`/`color` は安価に値
+ * 返している限り、この参照比較で連鎖的に成立する。`number`/`color` は安価に値
  * 比較できるため、素の値ではなく都度生成される SocketValue のラッパーオブジェクトの
  * 参照が変わっただけで無駄にキャッシュミスしないよう、値そのものを比較する。 */
 function sameSocketValue(a: SocketValue | undefined, b: SocketValue | undefined): boolean {
   if (a === b) return true;
   if (!a || !b || a.type !== b.type) return false;
   if (a.type === 'number' && b.type === 'number') return a.value === b.value;
-  if (a.type === 'enum' && b.type === 'enum') return a.value === b.value;
   if (a.type === 'color' && b.type === 'color') return a.value.equals(b.value);
   if (a.type === 'geometries' && b.type === 'geometries') {
     return a.value.length === b.value.length && a.value.every((g, i) => g === b.value[i]);

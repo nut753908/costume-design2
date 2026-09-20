@@ -117,7 +117,7 @@ function NodeEditorInner() {
     [openNodeMenu],
   );
 
-  // 宣言された型(number/color/enum/geometry/material)が同じソケット同士の接続のみを許可する。
+  // 宣言された型(number/color/geometry/material)が同じソケット同士の接続のみを許可する。
   // Geometry Nodes が型の合わないソケット接続を拒否するのと同じ挙動。
   const isValidConnection = useCallback(
     (connection: Connection | Edge) => {

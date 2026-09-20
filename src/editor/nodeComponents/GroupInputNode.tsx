@@ -8,12 +8,11 @@ import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { resolveIncomingValue } from '../../nodes/evaluateGraph';
 
-const SOCKET_TYPES: SocketType[] = ['number', 'color', 'enum', 'geometry', 'material'];
+const SOCKET_TYPES: SocketType[] = ['number', 'color', 'geometry', 'material'];
 
 function SocketValueDisplay({ value }: { value: SocketValue | undefined }) {
   if (!value) return null;
   if (value.type === 'number') return <span className="rf-node__io-value">{value.value.toFixed(2)}</span>;
-  if (value.type === 'enum') return <span className="rf-node__io-value">{value.value}</span>;
   if (value.type === 'color') {
     const hex = `#${value.value.getHexString()}`;
     return <span className="rf-node__io-value-swatch" style={{ background: hex }} title={hex} />;
@@ -31,15 +30,13 @@ function uniqueSocketId(sockets: GroupIOSocket[]): string {
 function defaultForType(type: SocketType): GroupIOSocket['default'] {
   if (type === 'number') return 0;
   if (type === 'color') return '#cccccc';
-  if (type === 'enum') return 'a';
   return undefined;
 }
 
 /** Blender の Geometry Nodes における「Group Input」ノード相当のカスタム描画。
  * グループの中に入っている間、このノードにソケットを増減・配線するだけでグループ本体の
  * 外部から見える入力ハンドルが増減する(`nodes/definitions/groupInput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。未接続時のデフォルト値(`socket.default`、enum の
- * 選択肢一覧 `socket.options` を含む)は `defineGroupNode()` の登録時テンプレート、または
+ * `nodes/resolveNodeSockets.ts` 参照)。未接続時のデフォルト値(`socket.default`)は `defineGroupNode()` の登録時テンプレート、または
  * `addSocket()` 時の `defaultForType()` 由来の値が使われるのみで、この場での編集は一切
  * できない(型を問わず値そのものを UI から直接いじる手段は無い — 変えたい場合はソケットへ
  * 配線して値を供給する)。各ソケット行には現在値を表示する — 親スコープ側でそのソケットに実際に
@@ -74,7 +71,6 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const addSocket = () => {
     const newId = uniqueSocketId(sockets);
     const socket: GroupIOSocket = { id: newId, label: newId, type: newType, default: defaultForType(newType) };
-    if (newType === 'enum') socket.options = ['a', 'b'];
     updateNodeData(id, { sockets: [...sockets, socket] });
   };
 

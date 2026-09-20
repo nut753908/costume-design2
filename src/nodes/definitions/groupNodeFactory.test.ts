@@ -20,14 +20,14 @@ function registerTestMiddle() {
     inputs: [
       { id: 'radius', label: 'Radius', type: 'number' },
       { id: 'color', label: 'Color', type: 'color' },
-      { id: 'mode', label: 'Mode', type: 'enum' },
+      { id: 'offset', label: 'Offset', type: 'number' },
     ],
     outputs: [],
     createDefaultData: () => ({}),
     evaluate: (inputs): Record<string, SocketValue> => ({
       doubledRadius: inputs.radius ?? { type: 'number', value: -1 },
       tint: inputs.color ?? { type: 'color', value: new THREE.Color('#000000') },
-      mode: inputs.mode ?? { type: 'enum', value: '?' },
+      offset: inputs.offset ?? { type: 'number', value: -1 },
       // groupOutput のどのソケットにも配線しないキー。
       unlisted: { type: 'number', value: 999 },
     }),
@@ -44,7 +44,7 @@ function buildInternalGraph() {
           sockets: [
             { id: 'radius', label: 'Radius', type: 'number', default: 2 },
             { id: 'color', label: 'Color', type: 'color', default: '#112233' },
-            { id: 'mode', label: 'Mode', type: 'enum', default: 'a' },
+            { id: 'offset', label: 'Offset', type: 'number', default: 3 },
           ],
         },
       },
@@ -57,7 +57,7 @@ function buildInternalGraph() {
           sockets: [
             { id: 'doubledRadius', label: 'Doubled Radius', type: 'number' },
             { id: 'tint', label: 'Tint', type: 'color' },
-            { id: 'mode', label: 'Mode', type: 'enum' },
+            { id: 'offset', label: 'Offset', type: 'number' },
           ],
         },
       },
@@ -66,10 +66,10 @@ function buildInternalGraph() {
       { source: 'input', sourceHandle: 'radius', target: 'double', targetHandle: 'value' },
       { source: 'double', sourceHandle: 'value', target: 'middle', targetHandle: 'radius' },
       { source: 'input', sourceHandle: 'color', target: 'middle', targetHandle: 'color' },
-      { source: 'input', sourceHandle: 'mode', target: 'middle', targetHandle: 'mode' },
+      { source: 'input', sourceHandle: 'offset', target: 'middle', targetHandle: 'offset' },
       { source: 'middle', sourceHandle: 'doubledRadius', target: 'output', targetHandle: 'doubledRadius' },
       { source: 'middle', sourceHandle: 'tint', target: 'output', targetHandle: 'tint' },
-      { source: 'middle', sourceHandle: 'mode', target: 'output', targetHandle: 'mode' },
+      { source: 'middle', sourceHandle: 'offset', target: 'output', targetHandle: 'offset' },
     ],
   };
 }
@@ -94,12 +94,12 @@ describe('defineGroupNode', () => {
     expect(def.inputs).toEqual([
       { id: 'radius', label: 'Radius', type: 'number' },
       { id: 'color', label: 'Color', type: 'color' },
-      { id: 'mode', label: 'Mode', type: 'enum' },
+      { id: 'offset', label: 'Offset', type: 'number' },
     ]);
     expect(def.outputs).toEqual([
       { id: 'doubledRadius', label: 'Doubled Radius', type: 'number' },
       { id: 'tint', label: 'Tint', type: 'color' },
-      { id: 'mode', label: 'Mode', type: 'enum' },
+      { id: 'offset', label: 'Offset', type: 'number' },
     ]);
   });
 
@@ -140,7 +140,7 @@ describe('defineGroupNode', () => {
     const result = getNodeType('groupFactoryTestGroup').evaluate({}, {});
     expect(result.doubledRadius).toEqual({ type: 'number', value: 4 }); // radius(2) * factor(2)
     expect(result.tint).toEqual({ type: 'color', value: new THREE.Color('#112233') });
-    expect(result.mode).toEqual({ type: 'enum', value: 'a' });
+    expect(result.offset).toEqual({ type: 'number', value: 3 });
   });
 
   it('接続された入力値が groupInput ノードへ注入される(任意のソケット型)', () => {
@@ -148,13 +148,13 @@ describe('defineGroupNode', () => {
       {
         radius: { type: 'number', value: 5 },
         color: { type: 'color', value: new THREE.Color('#ff0000') },
-        mode: { type: 'enum', value: 'b' },
+        offset: { type: 'number', value: 7 },
       },
       {},
     );
     expect(result.doubledRadius).toEqual({ type: 'number', value: 10 });
     expect(result.tint).toEqual({ type: 'color', value: new THREE.Color('#ff0000') });
-    expect(result.mode).toEqual({ type: 'enum', value: 'b' });
+    expect(result.offset).toEqual({ type: 'number', value: 7 });
   });
 
   it('groupOutput のどのソケットにも配線されていないキーは外部出力に含まれない', () => {

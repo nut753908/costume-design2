@@ -2,8 +2,7 @@ import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
 import { asNumber } from '../../socketHelpers';
 
-/** geometry を Y方向にだけ平行移動する汎用ノード。`garmentPlacement` が anchor(enum の
- * 選択肢)経由でボディの表面座標へ配置するのに対し、こちらは `bodyGroupNode.ts` が胴体/頭/
+/** geometry を Y方向にだけ平行移動する汎用ノード。`garmentPlacement` が `anchorY` と `offsetY` を足した位置へ配置するのに対し、こちらは `bodyGroupNode.ts` が胴体/頭/
  * 腕/脚の4パーツを自分自身の内部で組み立てる用で、`bodyLayoutGroupNode.ts` 内の
  * numberAdd/numberSubtract/numberMultiply チェーンが算出する実際のY座標をそのまま数値で
  * 受け取って平行移動するだけ(X/Zは常に0 — 胴体・頭は中心線上、腕・脚は `mirrorPair` が

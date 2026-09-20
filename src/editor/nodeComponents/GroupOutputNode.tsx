@@ -7,7 +7,7 @@ import type { SocketType } from '../../nodes/types';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 
-const SOCKET_TYPES: SocketType[] = ['number', 'color', 'enum', 'geometry', 'material'];
+const SOCKET_TYPES: SocketType[] = ['number', 'color', 'geometry', 'material'];
 
 function uniqueSocketId(sockets: GroupIOSocket[]): string {
   const taken = new Set(sockets.map((s) => s.id));

@@ -1,42 +1,27 @@
 import type * as THREE from 'three';
 import { registerNodeType } from '../registry';
 import type { SocketValue } from '../types';
-import { asEnum, asNumber } from '../socketHelpers';
+import { asNumber } from '../socketHelpers';
 
-interface NumberFieldSpec<Id extends string = string> {
+interface FieldSpec<Id extends string = string> {
   id: Id;
   label: string;
-  type?: 'number';
   default: number;
   /** 整数に丸め、下限3にクランプする(Lathe/リンググリッドの分割数である segments 用)。 */
   round?: boolean;
 }
 
-interface EnumFieldSpec<Id extends string = string, T extends string = string> {
-  id: Id;
-  label: string;
-  type: 'enum';
-  default: T;
-}
-
-type FieldSpec<Id extends string = string> = NumberFieldSpec<Id> | EnumFieldSpec<Id>;
-
-// 1つの FieldSpec を受け取り、その値の型を返す(enum なら default の文字列リテラル型、
-// それ以外は number)。
-type FieldValue<F> = F extends EnumFieldSpec<string, infer T> ? T : number;
-
-// fields 配列(例: [{id:'torsoRadius', default:0.29}, {id:'necklineType', type:'enum', ...}])から
-// { torsoRadius: number; necklineType: 'round' | ... } のような params オブジェクト型を組み立てる。
-// `F[number]['id']` で id の合併型(キー集合)を作った後、各キーごとに `Extract<F[number], {id: Id}>`
-// で元の FieldSpec に逆引きして値の型を決めている。
+// fields 配列(例: [{id:'torsoRadius', default:0.29}, ...])から
+// { torsoRadius: number; ... } のような params オブジェクト型を組み立てる。
+// `F[number]['id']` で id の合併型(キー集合)を作って、各キーの値を number にしている。
 //
-// 一見遠回りに見えるが、`[Field in F[number] as Field['id']]: FieldValue<Field>` のように
+// 一見遠回りに見えるが、`[Field in F[number] as Field['id']]: number` のように
 // F[number] を1回だけ辿ってキー remapping する簡潔な書き方は、F が(defineGeneratorNode 内部のように)
 // まだ具体化されていないジェネリックのままだと同型写像(homomorphic mapped type)として
 // 認識されず、下の DataFromFields の `Partial<...>` と噛み合わずコンパイルエラーになる
-// (確認済み)。id ごとの逆引きは、その回避策としての形。
+// (確認済み)。id の合併型からのキー生成は、その回避策としての形。
 type ParamsFromFields<F extends readonly FieldSpec[]> = {
-  [Id in F[number]['id']]: FieldValue<Extract<F[number], { id: Id }>>;
+  [Id in F[number]['id']]: number;
 };
 
 // ノードの data(createDefaultData の返り値、updateNodeData で書き換わる)は params の
@@ -73,23 +58,14 @@ export function defineGeneratorNode<
     type: config.type,
     label: config.label,
     category: 'generator',
-    inputs: config.fields.map((f) => ({ id: f.id, label: f.label, type: f.type ?? 'number' })),
+    inputs: config.fields.map((f) => ({ id: f.id, label: f.label, type: 'number' as const })),
     outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
     createDefaultData: () => ({ ...defaults }),
     evaluate: (inputs, data): Record<string, SocketValue> => {
-      // ParamsFromFields<F> の精密な型が効くのは呼び出し側(fields/build の宣言)の境界だけ。
-      // フィールドを汎用ループで回すこの内部では id が動的な文字列なので、以下は意図的に
-      // 緩い型(Record<string, number | string>)で扱い、最後に build() へ渡す箇所でのみ
-      // ParamsFromFields<F> & Extra へキャストし直す。
-      const resolved = {} as Record<string, number | string>;
+      const resolved = {} as Record<string, number>;
       for (const field of config.fields) {
-        const fallback = (data[field.id] as number | string | undefined) ?? field.default;
-        if (field.type === 'enum') {
-          resolved[field.id] = asEnum(inputs[field.id], fallback as string);
-        } else {
-          const value = asNumber(inputs[field.id], fallback as number);
-          resolved[field.id] = field.round ? Math.max(3, Math.round(value)) : value;
-        }
+        const value = asNumber(inputs[field.id], (data[field.id] as number | undefined) ?? field.default);
+        resolved[field.id] = field.round ? Math.max(3, Math.round(value)) : value;
       }
       const geometry = config.build({ ...resolved, ...config.extra } as ParamsFromFields<F> & Extra);
       return { geometry: { type: 'geometry', value: geometry } };
