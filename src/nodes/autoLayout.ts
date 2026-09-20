@@ -1,6 +1,7 @@
 import { getNodeType, nodeTypeRegistry } from './registry';
 import { resolveNodeSockets } from './resolveNodeSockets';
 import { listExposedParams } from './groupTemplate';
+import { EDITABLE_LABEL_TYPES } from './editableLabelTypes';
 import type { GraphEdge, GraphNode } from './types';
 
 export interface LayoutPosition {
@@ -24,15 +25,22 @@ const NODE_GAP = 24;
 export const ROW_SPACING = 280;
 const FALLBACK_NODE_HEIGHT = ROW_SPACING - NODE_GAP;
 
-/** ノードカード内の1行(ソケット行)の高さ、および行を持たない土台(タイトル
- * バー+パディング)の高さ。`run-costume-design2` スキルで実機のカードを実測して較正
- * した値(`.rf-node` の `offsetHeight`)。generator/material/output/group 系のノードは
- * `editor/nodeComponents/GenericNode.tsx` が入力/出力ソケットを1行ずつ描画するだけの
- * シンプルな構造で、実測値は驚くほど正確にこの線形の式(土台 + 行数 × 行高さ)に
- * 一致した(誤差1px未満、例: bagGenerator は 8入力+1出力の9行で 40 + 9*23 = 247 ≈
- * 実測246px)。 */
-const CARD_BASE_HEIGHT = 40;
-const CARD_ROW_HEIGHT = 23;
+/** ノードカード内の1行(ソケット行)の高さ、および行を持たない土台(パディング+枠線 18px、
+ * タイトル行 16.8px、タイトルとの間隔 6px)の高さ。`run-costume-design2` スキルで実機のカードを
+ * 実測して較正した値(`.rf-node` の `offsetHeight` と、CSS 上のソケット行の実寸 22.8px)。
+ * generator/material/output/group 系のノードは `editor/nodeComponents/GenericNode.tsx` が
+ * 入力/出力ソケットを1行ずつ描画するだけのシンプルな構造のため、この線形の式
+ * (土台 + 行数 × 行高さ)で `offsetHeight` と一致する(bagGenerator は 9行で 40.8 + 9*22.8 = 246)。 */
+const CARD_BASE_HEIGHT = 40.8;
+const CARD_ROW_HEIGHT = 22.8;
+/** タイトルが `<input>`(`EDITABLE_LABEL_TYPES`)のカードは、`<span>` のタイトル(16.8px)より
+ * 1.2px 高い(input は 18px)。 */
+const EDITABLE_TITLE_EXTRA_HEIGHT = 1.2;
+/** `groupInput`/`groupOutput` のソケット行と enumInput の選択肢行(`rf-node__io-row`)の高さ。
+ * `GenericNode.tsx` のソケット行(`CARD_ROW_HEIGHT`)とは別の CSS で、23px。 */
+const IO_ROW_HEIGHT = 23;
+/** `groupInput`/`groupOutput` の、ソケット行を持たない土台(パディング+枠線+タイトル行+間隔)の高さ。 */
+const GROUP_IO_BASE_HEIGHT = 40;
 /** category が `'group'` のノードだけ追加で表示される「ダブルクリックで中に入る」の
  * ヒント行の高さ。 */
 const CARD_GROUP_HINT_HEIGHT = 18;
@@ -51,26 +59,29 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
   colorInput: 90,
 };
 /** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: 選択肢3個で153px、
- * 5個で199px、傾き23pxは CARD_ROW_HEIGHT と一致したため、切片だけを定数として持つ)。 */
+ * 5個で199px、傾き23pxは `IO_ROW_HEIGHT` と一致したため、切片だけを定数として持つ)。 */
 const ENUM_INPUT_BASE_HEIGHT = 84;
 /** グループノードのカード上に並ぶ露出パラメータ(`ExposedParams.tsx`)1行あたりの高さ(行間の
- * gap 3px を含む)。`run-costume-design2` スキルで実カードの `.rf-node__exposed` を実測して較正した
- * 値(number: 52+3、color: 43+3。全体には下端の余白 4px と gap の差の 1px が加わる)。enumInput は
- * color と同じ高さで近似している。 */
+ * gap 3px を含む)。`run-costume-design2` スキルで実カードを実測して較正した値(number: 55、
+ * color/enum: 47。全体には末尾の余白 0.5px が加わる)。enumInput は color と同じ高さで近似している。 */
 const EXPOSED_NUMBER_ROW_HEIGHT = 55;
 const EXPOSED_OTHER_ROW_HEIGHT = 47;
+const EXPOSED_TRAILING_HEIGHT = 0.5;
 
 function exposedParamsHeight(type: string, data: unknown): number {
   const params = listExposedParams(type, (data as Record<string, unknown>) ?? {});
   if (params.length === 0) return 0;
-  return params.reduce((sum, p) => sum + (p.type === 'numberInput' ? EXPOSED_NUMBER_ROW_HEIGHT : EXPOSED_OTHER_ROW_HEIGHT), 1);
+  return params.reduce(
+    (sum, p) => sum + (p.type === 'numberInput' ? EXPOSED_NUMBER_ROW_HEIGHT : EXPOSED_OTHER_ROW_HEIGHT),
+    EXPOSED_TRAILING_HEIGHT,
+  );
 }
 
 /** `data.label` で独自の名前が付けられた generator 系ノード(今のところ
  * numberAdd/numberMultiply/numberSubtract のみ、`NodeTitleBar.tsx` の `rf-node__type-subtitle`
  * 参照)がタイトルの下に追加で表示する、元の type 名(例: "numberAdd")のサブタイトル行が
  * 占める高さ。`run-costume-design2` スキルで bodyLayoutGroup 内の numberAdd ノード
- * (`shoulderYCalc`)の実測 offsetHeight から逆算して較正した値。 */
+ * (`shoulderYCalc`)の実測から求めた値(サブタイトル 13px + 上マージン -4px + 下マージン 6px)。 */
 const TYPE_NAME_SUBTITLE_HEIGHT = 15;
 
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
@@ -79,13 +90,13 @@ const TYPE_NAME_SUBTITLE_HEIGHT = 15;
  * 同じ間隔で並べることになり、間延びしすぎる問題があった(詳細は Git 履歴参照)。
  *
  * - `BESPOKE_NODE_HEIGHTS` に載っている専用UI系はその固定値を返す。
- * - `enumInput` は選択肢数だけ可変(`ENUM_INPUT_BASE_HEIGHT + 選択肢数 * CARD_ROW_HEIGHT`)。
+ * - `enumInput` は選択肢数だけ可変(`ENUM_INPUT_BASE_HEIGHT + 選択肢数 * IO_ROW_HEIGHT`)。
  * - `groupInput`/`groupOutput` は `editor/nodeComponents/` の専用UI(ソケットごとの
- *   行 + 末尾の追加行)を持ち、`GenericNode.tsx` の行とは構造が異なるが、行の高さは
- *   同じ `CARD_ROW_HEIGHT` で近似し、追加行の分だけ余分に足す。
+ *   行 + 末尾の追加行)を持ち、`GROUP_IO_BASE_HEIGHT + ソケット数 * IO_ROW_HEIGHT` に追加行の分を足す。
  * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
- *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT` (+ category が `'group'` なら
- *   `CARD_GROUP_HINT_HEIGHT`)。行数は `resolveNodeSockets()` の入力+出力の合計。
+ *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT` (+ `EDITABLE_LABEL_TYPES` なら
+ *   `EDITABLE_TITLE_EXTRA_HEIGHT`、category が `'group'` なら `CARD_GROUP_HINT_HEIGHT` と
+ *   露出パラメータの分)。行数は `resolveNodeSockets()` の入力+出力の合計。
  * - numberInput/colorInput/enumInput は、グループの中に入っている間(`inGroup`)だけ
  *   「グループに表示」チェックボックス行(`EXPOSE_TOGGLE_HEIGHT`)が加わる。
  *   `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
@@ -102,12 +113,12 @@ export function estimateNodeHeight(type: string, data: unknown, inGroup = false)
 
   if (type === 'enumInput') {
     const options = (data as { options?: unknown[] } | undefined)?.options ?? [];
-    return ENUM_INPUT_BASE_HEIGHT + options.length * CARD_ROW_HEIGHT + exposeToggle;
+    return ENUM_INPUT_BASE_HEIGHT + options.length * IO_ROW_HEIGHT + exposeToggle;
   }
 
   if (type === 'groupInput' || type === 'groupOutput') {
     const sockets = (data as { sockets?: unknown[] } | undefined)?.sockets ?? [];
-    return CARD_BASE_HEIGHT + sockets.length * CARD_ROW_HEIGHT + GROUP_IO_ADD_ROW_HEIGHT;
+    return GROUP_IO_BASE_HEIGHT + sockets.length * IO_ROW_HEIGHT + GROUP_IO_ADD_ROW_HEIGHT;
   }
 
   if (!nodeTypeRegistry.has(type)) return FALLBACK_NODE_HEIGHT;
@@ -119,6 +130,7 @@ export function estimateNodeHeight(type: string, data: unknown, inGroup = false)
   return Math.round(
     CARD_BASE_HEIGHT +
       socketRows * CARD_ROW_HEIGHT +
+      (EDITABLE_LABEL_TYPES.has(type) ? EDITABLE_TITLE_EXTRA_HEIGHT : 0) +
       (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0) +
       (hasTypeNameSubtitle ? TYPE_NAME_SUBTITLE_HEIGHT : 0),
   );

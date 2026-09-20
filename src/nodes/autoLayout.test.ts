@@ -463,8 +463,28 @@ describe('estimateNodeHeight', () => {
     });
     const heightA = estimateNodeHeight('__height_test_a__', {});
     const heightB = estimateNodeHeight('__height_test_b__', {});
-    // b は a よりソケット2つぶん多い(3行 vs 1行)。
-    expect(heightB - heightA).toBe(2 * 23);
+    // b は a よりソケット2つぶん多い(3行 vs 1行)。ソケット行は 22.8px(丸めで±1px)。
+    expect(Math.abs(heightB - heightA - 2 * 22.8)).toBeLessThanOrEqual(1);
+  });
+
+  it('実機の offsetHeight と一致する(実測: 2行=86、3行=109、5行=155、9行=246、13行=337)', () => {
+    const heights = [2, 3, 5, 9, 13].map((rows) => {
+      const type = `__height_test_rows_${rows}__`;
+      registerTestType({
+        type,
+        inputs: Array.from({ length: rows - 1 }, (_, i) => ({ id: `i${i}`, label: 'I', type: 'number' as const })),
+        outputs: [{ id: 'out', label: 'Out', type: 'geometry' }],
+      });
+      return estimateNodeHeight(type, {});
+    });
+    expect(heights).toEqual([86, 109, 155, 246, 337]);
+  });
+
+  it('ラベルを直接編集できるノードは、タイトルが <input> の分だけ高い(実測: numberMultiply 110、numberHalf 88)', () => {
+    expect(estimateNodeHeight('numberMultiply', {})).toBe(110);
+    expect(estimateNodeHeight('numberHalf', {})).toBe(88);
+    // ラベル編集できない同じ3行のノードは <span> のタイトルで 109。
+    expect(estimateNodeHeight('translateX', {})).toBe(109);
   });
 
   it('group カテゴリのノードは、ダブルクリックヒント行の分だけ高さが増える', () => {

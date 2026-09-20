@@ -7,14 +7,7 @@ import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { ExposedParams } from './ExposedParams';
 import { isGroupInstanceStale } from '../../nodes/groupTemplate';
-
-/** ラベルを直接編集できる `GenericNode.tsx` 系ノードの type 名。出力が number 型で
- * 統一されておりソケット色だけでは互いに判別できない numberAdd/numberMultiply/
- * numberSubtract/numberMax/numberNegate/numberHalf は、意味的な名前を付けて見分ける必要性が他の
- * generator 系ノードより高いため、numberInput などの専用UIノードと同じくラベルをカード上で
- * 直接編集可能にしている(元の type 名は編集後もサブタイトルとして残るため判別性は失われない、
- * 下記 typeName 参照)。 */
-const EDITABLE_LABEL_TYPES = new Set(['numberAdd', 'numberSubtract', 'numberMultiply', 'numberMax', 'numberNegate', 'numberHalf']);
+import { EDITABLE_LABEL_TYPES } from '../../nodes/editableLabelTypes';
 
 /** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
  * 入出力ソケットの行を表示する。 */
