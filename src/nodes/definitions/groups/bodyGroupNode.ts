@@ -60,9 +60,9 @@ defineGroupNode({
     { id: 'headTranslate', type: 'translateY', data: {} },
 
     // 腕1組・脚1組(limbPair)。テーパー比率は腕用/脚用で別々の値を持つ。
-    { id: 'armTaperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01 } },
+    { id: 'armTaperRatioIn', type: 'numberInput', data: { value: 0.85} },
     { id: 'armPair', type: 'limbPair', data: {} },
-    { id: 'legTaperRatioIn', type: 'numberInput', data: { value: 0.85, min: 0, max: 1, step: 0.01 } },
+    { id: 'legTaperRatioIn', type: 'numberInput', data: { value: 0.85} },
     { id: 'legPair', type: 'limbPair', data: {} },
 
     // 4パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。

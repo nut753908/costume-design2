@@ -57,14 +57,13 @@ describe('isGroupInstanceStale', () => {
 describe('migrateGroupToTemplate', () => {
   it('最新のテンプレートへ更新しつつ、同じ id・型の入力ノードの値を引き継ぐ', () => {
     const old: GraphNode[] = [
-      n('waistRadiusIn', 'numberInput', { value: 0.45, min: 0, max: 99 }),
+      n('waistRadiusIn', 'numberInput', { value: 0.45 }),
       n('colorIn', 'colorInput', { hex: '#123456' }),
       n('removedNode', 'numberInput', { value: 7 }),
     ];
     const migrated = migrateGroupToTemplate('skirtGroup', old);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
     expect(byId.get('waistRadiusIn')?.data.value).toBe(0.45);
-    expect(byId.get('waistRadiusIn')?.data.max).not.toBe(99); // min/max はテンプレートのまま
     expect(byId.get('colorIn')?.data.hex).toBe('#123456');
     expect(byId.has('removedNode')).toBe(false);
     expect(migrated.templateFingerprint).toBe(getGroupTemplateFingerprint('skirtGroup'));

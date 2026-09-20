@@ -8,12 +8,7 @@ describe('numberInput', () => {
     expect(result.value).toEqual({ type: 'number', value: 0.42 });
   });
 
-  it('createDefaultData は既定値一式を返す', () => {
-    expect(getNodeType('numberInput').createDefaultData()).toEqual({
-      value: 1,
-      min: 0,
-      max: 10,
-      step: 0.1,
-    });
+  it('createDefaultData は value だけを返す', () => {
+    expect(getNodeType('numberInput').createDefaultData()).toEqual({ value: 1 });
   });
 });

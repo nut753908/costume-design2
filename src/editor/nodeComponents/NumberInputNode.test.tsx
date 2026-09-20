@@ -51,35 +51,34 @@ describe('NumberInputNodeView', () => {
     useGraphStore.setState({ nodes: [], edges: [] });
   });
 
-  it('数値入力欄が1つだけあり、スライダーや min/max/step の入力欄は無い', () => {
-    setNode({ value: 0.3, min: 0.15, max: 0.5, step: 0.01 });
+  it('数値入力欄が1つだけあり、スライダーや範囲の入力欄は無い', () => {
+    setNode({ value: 0.3 });
     render(<Harness />);
     expect(screen.getAllByRole('spinbutton')).toHaveLength(1);
     expect(screen.queryByRole('slider')).toBeNull();
     expect(input().value).toBe('0.3');
-    expect(input().min).toBe('0.15');
-    expect(input().max).toBe('0.5');
-    expect(input().step).toBe('0.01');
+    expect(input().min).toBe('');
+    expect(input().max).toBe('');
   });
 
   it('入力した数値を store へ反映する', () => {
-    setNode({ value: 0.3, min: 0.15, max: 0.5, step: 0.01 });
+    setNode({ value: 0.3 });
     render(<Harness />);
     type('0.4');
     expect(storedValue()).toBe(0.4);
   });
 
-  it('範囲外の値は [min, max] に収めて store へ反映する', () => {
-    setNode({ value: 0.3, min: 0.15, max: 0.5, step: 0.01 });
+  it('範囲の制限は無く、大きい値や負の値もそのまま store へ反映する', () => {
+    setNode({ value: 0.3 });
     render(<Harness />);
-    type('9');
-    expect(storedValue()).toBe(0.5);
+    type('99');
+    expect(storedValue()).toBe(99);
     type('-3');
-    expect(storedValue()).toBe(0.15);
+    expect(storedValue()).toBe(-3);
   });
 
   it('空文字や数値にならない入力では store を更新せず、blur で store の値に戻す', () => {
-    setNode({ value: 0.3, min: 0.15, max: 0.5, step: 0.01 });
+    setNode({ value: 0.3 });
     render(<Harness />);
     type('');
     expect(storedValue()).toBe(0.3);
@@ -91,17 +90,8 @@ describe('NumberInputNodeView', () => {
     expect(storedValue()).toBe(0.3);
   });
 
-  it('min=max の固定値(constNumberInput)は入力しても値が変わらない', () => {
-    setNode({ value: 2, min: 2, max: 2, step: 0.01 });
-    render(<Harness />);
-    type('5');
-    expect(storedValue()).toBe(2);
-    fireEvent.blur(input());
-    expect(input().value).toBe('2');
-  });
-
   it('外部要因(undo/redo・プリセット読み込みなど)で data.value が変わると入力欄に反映する', () => {
-    setNode({ value: 0.3, min: 0.15, max: 0.5, step: 0.01 });
+    setNode({ value: 0.3 });
     render(<Harness />);
     act(() => useGraphStore.getState().updateNodeData(NODE_ID, { value: 0.45 }));
     expect(input().value).toBe('0.45');

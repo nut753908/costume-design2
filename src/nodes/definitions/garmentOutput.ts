@@ -19,7 +19,7 @@ export function garmentOutput(config: {
     nodes: [
       { id: 'colorIn', type: 'colorInput', data: { hex: config.color } },
       { id: 'material', type: 'toonMaterial', data: {} },
-      { id: 'offsetYIn', type: 'numberInput', data: { value: config.offsetY, min: -0.2, max: 0.2, step: 0.01 } },
+      { id: 'offsetYIn', type: 'numberInput', data: { value: config.offsetY} },
       { id: 'placement', type: 'garmentPlacement', data: {} },
       { id: 'sceneOut', type: 'sceneOutput', data: {} },
     ],

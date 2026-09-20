@@ -31,8 +31,8 @@ defineGroupNode({
     },
     // 四則演算チェーンで使い回す調整可能な比率。2 は「カプセルの両端ぶん」、0.4 は腕を胴体に
     // わずかに食い込ませる割合。「半分」は `numberHalf` ノードで表す。
-    { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2, min: 1, max: 3, step: 0.1 } },
-    { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4, min: 0, max: 1, step: 0.01 } },
+    { id: 'capEndsFactorIn', type: 'numberInput', data: { value: 2} },
+    { id: 'armTorsoOverlapRatioIn', type: 'numberInput', data: { value: 0.4} },
     // feetY は常に0固定(地面の高さ)。
     constNumberInput('feetYIn', 0),
 

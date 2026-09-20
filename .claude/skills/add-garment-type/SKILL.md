@@ -14,7 +14,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 ## 1. 形状の設計
 
-既存のガーメントの `<name>GroupNode.ts` を実例として読むのが早い(Lathe 系なら `hatGroupNode.ts`/`skirtGroupNode.ts`、複数プリミティブの結合なら `bagGroupNode.ts`/`glassesGroupNode.ts`/`scarfGroupNode.ts`、左右対称ペアなら `pantsGroupNode.ts`/`shoesGroupNode.ts`)。技法一覧・共有ヘルパーの使い分けは [`src/geometry/CLAUDE.md`](../../../src/geometry/CLAUDE.md) の「カスタムガーメントジオメトリ」節にまとまっているので、実装前に必ず読むこと。座標を求める四則演算は `numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax`/`numberNegate`(符号反転)/`numberHalf`(半分)のノードで可視の配線として展開し、コード側の式としては持たない。定数(0/1/固定値)は `nodes/definitions/constNumberInput.ts` の `constNumberInput(id, value)` で `min=max=value` の固定 `numberInput` として置く(`numberMultiply` 等の `data` にリテラルを隠さない — 値を編集する UI が無く、キャンバス上で見えなくなるため)。
+既存のガーメントの `<name>GroupNode.ts` を実例として読むのが早い(Lathe 系なら `hatGroupNode.ts`/`skirtGroupNode.ts`、複数プリミティブの結合なら `bagGroupNode.ts`/`glassesGroupNode.ts`/`scarfGroupNode.ts`、左右対称ペアなら `pantsGroupNode.ts`/`shoesGroupNode.ts`)。技法一覧・共有ヘルパーの使い分けは [`src/geometry/CLAUDE.md`](../../../src/geometry/CLAUDE.md) の「カスタムガーメントジオメトリ」節にまとまっているので、実装前に必ず読むこと。座標を求める四則演算は `numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax`/`numberNegate`(符号反転)/`numberHalf`(半分)のノードで可視の配線として展開し、コード側の式としては持たない。定数(0/1/固定値)は `nodes/definitions/constNumberInput.ts` の `constNumberInput(id, value)` で定数の `numberInput` として置く(`numberMultiply` 等の `data` にリテラルを隠さない — 値を編集する UI が無く、キャンバス上で見えなくなるため)。
 
 **同じファイルに書かれている「すでに一度踏んだ落とし穴」も実装前に必ず読むこと**(同 CLAUDE.md 末尾):
 
@@ -92,10 +92,10 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'radiusIn', type: 'numberInput', data: { value: 0.3, min: 0.1, max: 0.5, step: 0.01 } },
-    { id: 'endRadiusIn', type: 'numberInput', data: { value: 0.2, min: 0.1, max: 0.5, step: 0.01 } },
-    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5, min: 0.1, max: 1, step: 0.01 } },
-    { id: 'segmentsIn', type: 'numberInput', data: { value: 24, min: 8, max: 48, step: 1 } },
+    { id: 'radiusIn', type: 'numberInput', data: { value: 0.3} },
+    { id: 'endRadiusIn', type: 'numberInput', data: { value: 0.2} },
+    { id: 'lengthIn', type: 'numberInput', data: { value: 0.5} },
+    { id: 'segmentsIn', type: 'numberInput', data: { value: 24} },
     ...scale.nodes,
     ...lathe.nodes,
     ...output.nodes,
