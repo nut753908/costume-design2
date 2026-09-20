@@ -65,7 +65,7 @@ describe('sleevePair', () => {
       return { start, axis };
     };
     expectOutwardWinding(sleeves(length), (centroid, i, total) => {
-      const { start, axis } = half(i < total / 2 ? 1 : -1);
+      const { start, axis } = half(i < total / 2 ? -1 : 1);
       return start.clone().add(axis.clone().multiplyScalar(centroid.clone().sub(start).dot(axis)));
     });
   });

@@ -4,12 +4,11 @@ import { constNumberInput } from '../constNumberInput';
 /** 左右の袖(肩から斜め下へ伸びる、先細りの円形断面チューブ)を作るグループノード。`topGroupNode.ts`
  * の Top 本体と結合して使う。
  *
- * 右袖は `taperedTubeGenerator`(楕円断面)で、始点 `(startX, 0, 0)` から終点
- * `(startX + length × cos(droop), -length × sin(droop), 0)` まで作る。`startX` は胴体の壁より
+ * 袖は `taperedTubeGenerator`(楕円断面)1本を、原点 `(0, 0, 0)` から
+ * `(length × cos(droop), -length × sin(droop), 0)` まで作り、`mirrorPair` で `±startX` へ複製して
+ * 左右の袖にする(左袖は `mirrorPair` 内の `mirrorX` で鏡像反転される)。`startX` は胴体の壁より
  * 少し内側(`attachRadius × insetIn`)にして、浮かずに壁と重なるようにする(ブーリアン演算や
- * 穴あけはせず、意図的な交差のみ)。左袖はこの右袖を `mirrorX`(X=0 について鏡像反転)した
- * もので、右袖とともに `mergeGeometry` で結合する(`mirrorPair` は平行移動しかしないため
- * 使えない)。終端の直径は始端の `taperIn` 倍(先細り)。
+ * 穴あけはせず、意図的な交差のみ)。終端の直径は始端の `taperIn` 倍(先細り)。
  * `cosDroopIn`/`sinDroopIn` は水平から 36°(π/5)下がる袖の向きの cos/sin。
  * (`constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」) */
 defineGroupNode({
@@ -36,14 +35,12 @@ defineGroupNode({
 
     { id: 'startX', type: 'numberMultiply', data: { label: 'Start X (Attach Radius × Inset)' } },
     { id: 'lengthX', type: 'numberMultiply', data: { label: 'Length × cos(Droop)' } },
-    { id: 'endX', type: 'numberAdd', data: { label: 'End X' } },
     { id: 'lengthDrop', type: 'numberMultiply', data: { label: 'Length × sin(Droop)' } },
     { id: 'endY', type: 'numberNegate', data: { label: 'End Y' } },
     { id: 'startDiameter', type: 'numberMultiply', data: { label: 'Start Diameter' } },
     { id: 'endDiameter', type: 'numberMultiply', data: { label: 'End Diameter' } },
     { id: 'gen', type: 'taperedTubeGenerator', data: { shape: 'ellipse', segments: 12 } },
-    { id: 'mirror', type: 'mirrorX', data: {} },
-    { id: 'merge', type: 'mergeGeometry', data: {} },
+    { id: 'mirror', type: 'mirrorPair', data: {} },
     {
       id: 'output',
       type: 'groupOutput',
@@ -57,8 +54,6 @@ defineGroupNode({
     { source: 'insetIn', sourceHandle: 'value', target: 'startX', targetHandle: 'factor' },
     { source: 'input', sourceHandle: 'sleeveLength', target: 'lengthX', targetHandle: 'value' },
     { source: 'cosDroopIn', sourceHandle: 'value', target: 'lengthX', targetHandle: 'factor' },
-    { source: 'startX', sourceHandle: 'value', target: 'endX', targetHandle: 'a' },
-    { source: 'lengthX', sourceHandle: 'value', target: 'endX', targetHandle: 'b' },
     { source: 'input', sourceHandle: 'sleeveLength', target: 'lengthDrop', targetHandle: 'value' },
     { source: 'sinDroopIn', sourceHandle: 'value', target: 'lengthDrop', targetHandle: 'factor' },
     { source: 'lengthDrop', sourceHandle: 'value', target: 'endY', targetHandle: 'value' },
@@ -67,11 +62,11 @@ defineGroupNode({
     { source: 'startDiameter', sourceHandle: 'value', target: 'endDiameter', targetHandle: 'value' },
     { source: 'taperIn', sourceHandle: 'value', target: 'endDiameter', targetHandle: 'factor' },
 
-    // 右袖(+X 側)。断面は円(幅=厚み=直径)。
-    { source: 'startX', sourceHandle: 'value', target: 'gen', targetHandle: 'startX' },
+    // 原点から伸びる袖1本。断面は円(幅=厚み=直径)。
+    { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'startX' },
     { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'startY' },
     { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'startZ' },
-    { source: 'endX', sourceHandle: 'value', target: 'gen', targetHandle: 'endX' },
+    { source: 'lengthX', sourceHandle: 'value', target: 'gen', targetHandle: 'endX' },
     { source: 'endY', sourceHandle: 'value', target: 'gen', targetHandle: 'endY' },
     { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'endZ' },
     { source: 'startDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'startWidth' },
@@ -79,10 +74,8 @@ defineGroupNode({
     { source: 'endDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'endWidth' },
     { source: 'endDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'endThickness' },
 
-    // 左袖(-X 側)は右袖の鏡像。
     { source: 'gen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'mirror', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'merge', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
+    { source: 'startX', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
+    { source: 'mirror', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });
