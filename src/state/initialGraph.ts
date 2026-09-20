@@ -17,8 +17,8 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // bodyBuild は慣例的な id を持つシードノード。`bodyDimensions`(下記)への配線に加え、
   // ガーメント自身の半径スケーリング用に各ガーメントへも直接配線される(下記参照)。
   // Height/Shoulder は `bodyDimensions` からしか参照されない単独パラメータのため、
-  // `bodyDimensionsGroup` の内部(`heightScaleIn`/`shoulderSpacingScale` の入力欄)に持ち、
-  // この階層には現れない(nodes/CLAUDE.md の「グループノード」節参照)。
+  // `bodyDimensionsGroup` の外部ソケット(`heightScale`/`shoulderScale`)として、この階層では
+  // 配線せずグループカードの入力欄から調整する(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyBuild', type: 'numberInput', data: { value: 1} },
 
   // ボディの寸法(9個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の

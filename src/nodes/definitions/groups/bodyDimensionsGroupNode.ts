@@ -1,18 +1,20 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import type { GraphEdge, GraphNode } from '../../types';
 
-/** スケールの供給元: 他のノード/ソケットの出力を配線する(`id`/`handle`)か、単独の値なら
- * `numberMultiply` の `factor` 入力欄へ直接持たせる(`value`)。 */
-type ScaleSource = { id: string; handle: string } | { value: number };
+/** スケールの供給元(配線するノード/ソケットの出力)。 */
+interface ScaleSource {
+  id: string;
+  handle: string;
+}
 
 const BUILD_SCALE: ScaleSource = { id: 'input', handle: 'buildScale' };
-const HEIGHT_SCALE: ScaleSource = { id: 'heightScaleIn', handle: 'value' };
-const SHOULDER_SCALE: ScaleSource = { value: 1 };
+const HEIGHT_SCALE: ScaleSource = { id: 'input', handle: 'heightScale' };
+const SHOULDER_SCALE: ScaleSource = { id: 'input', handle: 'shoulderScale' };
 
 /** 「基準値 × スケール → 出力ソケット `<name>`」の `<name>Scale`(numberMultiply)を生成する。
- * 基準値は `<name>Scale` の `value` 入力欄の値で、`scale` が `factor` になる。`preScale` を渡すと、
- * 基準値にまず `preScale.source` を掛ける `preScale.id`(numberMultiply)を挟んでから `scale` を
- * 掛ける(shoulderSpacing が Build と Shoulder の両方を受ける場合)。 */
+ * 基準値は `<name>Scale` の `value` 入力欄の値で、`scale` の出力が `factor` へ配線される。
+ * `preScale` を渡すと、基準値にまず `preScale.source` を掛ける `preScale.id`(numberMultiply)を
+ * 挟んでから `scale` を掛ける(shoulderSpacing が Build と Shoulder の両方を受ける場合)。 */
 function dimension(config: {
   name: string;
   base: number;
@@ -21,20 +23,24 @@ function dimension(config: {
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
   const { name, base, scale, preScale } = config;
   const scaleId = `${name}Scale`;
+  const factorEdge = (source: ScaleSource, target: string): GraphEdge => ({
+    source: source.id,
+    sourceHandle: source.handle,
+    target,
+    targetHandle: 'factor',
+  });
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
-  // `factor` に `source` を接続する(配線)か、リテラルとして `data` へ入れる。
-  const factorOf = (nodeId: string, source: ScaleSource): Record<string, unknown> => {
-    if ('value' in source) return { factor: source.value };
-    edges.push({ source: source.id, sourceHandle: source.handle, target: nodeId, targetHandle: 'factor' });
-    return {};
-  };
   if (preScale) {
-    nodes.push({ id: preScale.id, type: 'numberMultiply', data: { value: base, ...factorOf(preScale.id, preScale.source) } });
-    nodes.push({ id: scaleId, type: 'numberMultiply', data: factorOf(scaleId, scale) });
-    edges.push({ source: preScale.id, sourceHandle: 'value', target: scaleId, targetHandle: 'value' });
+    nodes.push({ id: preScale.id, type: 'numberMultiply', data: { value: base } }, { id: scaleId, type: 'numberMultiply', data: {} });
+    edges.push(
+      factorEdge(preScale.source, preScale.id),
+      { source: preScale.id, sourceHandle: 'value', target: scaleId, targetHandle: 'value' },
+      factorEdge(scale, scaleId),
+    );
   } else {
-    nodes.push({ id: scaleId, type: 'numberMultiply', data: { value: base, ...factorOf(scaleId, scale) } });
+    nodes.push({ id: scaleId, type: 'numberMultiply', data: { value: base } });
+    edges.push(factorEdge(scale, scaleId));
   }
   edges.push({ source: scaleId, sourceHandle: 'value', target: 'output', targetHandle: name });
   return { nodes, edges };
@@ -59,15 +65,13 @@ const dimensions = [
 
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyDimensions`)として
  * ただ1組だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
- * Height/Build/Shoulder スケールから各部位の半径・長さを求める9つの「基準値 × スケール」の
- * `numberMultiply`(基準値は `Value` 入力欄の値)を1枚にまとめたもの。ガーメントの『体に
- * 触れる半径』(`bodyBuildScale()`の `numberMultiply`)と同じ粒度まで
- * ノードグラフ上に展開しており、ダブルクリックで中に入れば実際の四則演算グラフが
- * そのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。Height スケールは3つの
- * `numberMultiply` が共有するため `numberInput`(`heightScaleIn`)を配線し、Shoulder スケール
- * は `shoulderSpacingScale` だけが使う単独パラメータのため `Factor` 入力欄の値として持つ
- * (どちらも `buildScale`(9ガーメントへ直接ファンアウトする共有値、外部ソケットのまま)とは
- * 異なりグループ内部の値)。`headRadius` は `groupOutput` の入力ソケットが入力欄を
+ * Height/Build/Shoulder スケール(外部ソケット `heightScale`/`buildScale`/`shoulderScale`)から
+ * 各部位の半径・長さを求める9つの「基準値 × スケール」の `numberMultiply`(基準値は `Value` 入力欄
+ * の値)を1枚にまとめたもの。ガーメントの『体に触れる半径』(`bodyBuildScale()` の
+ * `numberMultiply`)と同じ粒度までノードグラフ上に展開しており、ダブルクリックで中に入れば
+ * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
+ * Height/Shoulder スケールは、`bodyBuild` のようにルートで配線するのではなく、グループカードの
+ * 入力欄(未接続時の既定値 1)から調整する。`headRadius` は `groupOutput` の入力ソケットが入力欄を
  * 持てないため、`numberInput`(`headRadiusBaseIn`)から配線する。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
@@ -77,10 +81,13 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        sockets: [{ id: 'buildScale', label: 'Build Scale', type: 'number', default: 1 }],
+        sockets: [
+          { id: 'buildScale', label: 'Build Scale', type: 'number', default: 1 },
+          { id: 'heightScale', label: 'Height Scale', type: 'number', default: 1 },
+          { id: 'shoulderScale', label: 'Shoulder Scale', type: 'number', default: 1 },
+        ],
       },
     },
-    { id: 'heightScaleIn', type: 'numberInput', data: { value: 1} },
     // headRadius はスケール無し(基準値がそのまま出力になる)。
     { id: 'headRadiusBaseIn', type: 'numberInput', data: { value: 0.16} },
     ...dimensions.flatMap((d) => d.nodes),

@@ -1,17 +1,17 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, necklineShapes } from '../garmentParts';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** profile(easedLatheProfile、始点・終点とも同じ半径)+gen(ringGridGenerator、最上段に
  * ネックラインを彫り込む)+sleeveGen(sleevePair、`generic/sleevePair.ts`)+merge(mergeGeometry)を1つのガーメントとして
  * まとめたグループノード。袖は Top と同じ生地・同じ胴体半径で縫い付ける必要があるため、
- * Torso Radius(`topRadiusIn` × Body Build)と Color(`colorIn`→`material`)は gen/sleeveGen で
+ * Torso Radius(`topRadiusIn` × Body Build)と Color(外部ソケット `color`→`material`)は gen/sleeveGen で
  * 共有し、袖の付け根(`attachRadius`)にはスケール済みの Torso Radius をそのまま渡す。
  * 袖なしにしたい場合は `sleeveGen → merge` の配線を切る(`mergeGeometry` は1つだけでもそのまま通す)。
  * Sleeve Length を 0 にするとチューブが根元で潰れるだけで頂点が残るため、min は 0 にしない。
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
  * 配線される shoulderY)は外部ソケットのまま。 */
-const output = garmentOutput({ color: '#5b8fa8', offsetY: 0, geometry: 'merge' });
+const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
 
 const neckline = necklineShapes();
 
@@ -28,6 +28,7 @@ defineGroupNode({
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#5b8fa8'),
         ],
       },
     },

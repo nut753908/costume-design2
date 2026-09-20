@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** shoesSoleScale(numberMultiply)+profile(easedLatheProfile)+latheGen(latheGenerator)+
  * scaleZ(scaleZ)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+
@@ -8,7 +8,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * Sole Radius と Cuff Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/
  * `cuffScale`)。体の脚の半径がすべて Body Build でスケールされるため、履き口を固定にすると
  * Body Build を上げたとき履き口が脚の内側に入る。
- * Sole Radius/Cuff Radius/Height/Toe Length/Segments/Color は他のガーメントと共有されない
+ * Sole Radius/Cuff Radius/Height/Toe Length/Segments は他のガーメントと共有されない
  * 単独パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
  * 靴1本ぶんのジオメトリ(`profile`→`latheGen`→`scaleZ`)と、それを ±legSpacing だけ X方向に
@@ -20,7 +20,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
-const output = garmentOutput({ color: '#3d3630', offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale(0.13);
 const cuffScale = bodyBuildScale(0.1, 'cuffScale');
@@ -38,6 +38,7 @@ defineGroupNode({
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.14 },
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#3d3630'),
         ],
       },
     },

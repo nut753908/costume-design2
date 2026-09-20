@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale } from '../garmentParts';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** necktie の結び目・ブレードの大きさはスタイル寄りの独立した寸法だが、前面の深さ
  * (`frontDepthIn`)だけは、胴体の壁(Body Build でスケールされる)より前に出す必要があるため、
@@ -15,7 +15,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * `numberInput` を置いて配線し、他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
  * Body Build と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * shoulderY)は外部ソケット。 */
-const output = garmentOutput({ color: '#7a1f2b', offsetY: 0, geometry: 'merge' });
+const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
 
 const scale = bodyBuildScale(0.3);
 
@@ -30,6 +30,7 @@ defineGroupNode({
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#7a1f2b'),
         ],
       },
     },

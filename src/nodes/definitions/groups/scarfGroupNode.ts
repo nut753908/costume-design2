@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale } from '../garmentParts';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
  * 既存の汎用ノードだけを組み合わせて完全にノードグラフ上で表現されている。首元の輪
@@ -12,12 +12,12 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 定数は各ノードの入力欄の値)。`band`/`tail`
  * は最後に `mergeGeometry` で1つにまとめる。
  *
- * Neck Radius/Tail Width/Segments/Color は他のガーメントと共有されない単独パラメータで、
+ * Neck Radius/Tail Width/Segments は他のガーメントと共有されない単独パラメータで、
  * 複数のノードが同じ値を使う Band Thickness/Tail Length(`bandThicknessIn`/`tailLengthIn`)だけ
  * `numberInput` を置いて配線し、他は numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
  * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
-const output = garmentOutput({ color: '#8a2e3a', offsetY: 0.08, geometry: 'merge' });
+const output = garmentOutput({ offsetY: 0.08, geometry: 'merge' });
 
 const scale = bodyBuildScale(0.19);
 
@@ -32,6 +32,7 @@ defineGroupNode({
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#8a2e3a'),
         ],
       },
     },

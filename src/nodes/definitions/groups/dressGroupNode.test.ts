@@ -56,7 +56,7 @@ describe('dressGroup', () => {
     }
   });
 
-  it('内部の colorIn(デフォルト #3d7a72)が sceneOutputMaterial0 に使われる', () => {
+  it('Color ソケットの既定値(#3d7a72)が sceneOutputMaterial0 に使われる', () => {
     const result = getNodeType('dressGroup').evaluate({}, {});
     const material = result.sceneOutputMaterial0;
     const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;

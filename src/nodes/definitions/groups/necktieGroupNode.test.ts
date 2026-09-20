@@ -66,7 +66,7 @@ describe('necktieGroup', () => {
     );
   });
 
-  it('内部の colorIn(デフォルト #7a1f2b)が sceneOutputMaterial0 に使われる', () => {
+  it('Color ソケットの既定値(#7a1f2b)が sceneOutputMaterial0 に使われる', () => {
     const result = getNodeType('necktieGroup').evaluate({}, {});
     const material = result.sceneOutputMaterial0;
     const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;

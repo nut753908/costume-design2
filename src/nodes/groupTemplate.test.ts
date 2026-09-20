@@ -97,6 +97,37 @@ describe('migrateGroupToTemplate', () => {
     expect(byId.get('profile')?.data.distance).toBe(0.6);
   });
 
+  it('最新のテンプレートで groupInput のソケットから供給されるようになった値(色・スケール)を、そのソケットの既定値として引き継ぐ', () => {
+    const migrated = migrateGroupToTemplate(
+      'skirtGroup',
+      [n('colorIn', 'colorInput', { hex: '#123456' })],
+      [{ source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' }],
+    );
+    const input = migrated.nodes.find((node) => node.id === 'input');
+    expect((input!.data.sockets as { id: string; default: unknown }[]).find((sock) => sock.id === 'color')?.default).toBe('#123456');
+
+    // 複数の接続先がすべて同じ groupInput ソケットから供給されている場合も引き継ぐ。
+    const dimensions = migrateGroupToTemplate(
+      'bodyDimensionsGroup',
+      [n('heightScaleIn', 'numberInput', { value: 1.2 })],
+      ['legHeightScale', 'torsoLengthScale', 'armLengthScale'].map((target) => ({ source: 'heightScaleIn', sourceHandle: 'value', target, targetHandle: 'factor' })),
+    );
+    const dimInput = dimensions.nodes.find((node) => node.id === 'input');
+    expect((dimInput!.data.sockets as { id: string; default: unknown }[]).find((sock) => sock.id === 'heightScale')?.default).toBe(1.2);
+  });
+
+  it('同じ id の groupInput のソケットの既定値(Group Input で編集した値)を引き継ぐ', () => {
+    const template = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[] };
+    const input = template.nodes.find((node) => node.id === 'input')!;
+    const edited = {
+      ...input,
+      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'bodyBuild' ? { ...sock, default: 1.5 } : sock)) },
+    };
+    const migrated = migrateGroupToTemplate('skirtGroup', [edited]);
+    const sockets = migrated.nodes.find((node) => node.id === 'input')?.data.sockets as { id: string; default: unknown }[];
+    expect(sockets.find((sock) => sock.id === 'bodyBuild')?.default).toBe(1.5);
+  });
+
   it('複数へ繋がっていた入力ノード・最新のテンプレートで配線されているソケットへの値は引き継がない', () => {
     const migrated = migrateGroupToTemplate(
       'skirtGroup',

@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** bag の寸法の大半は独立したスタイル寄りの値だが、体の側面の位置(Hip Offset、胴体半径と
  * 同程度)と前面の深さ(`bagFrontDepthIn`)だけは、胴体の壁(Body Build でスケールされる)の
@@ -22,7 +22,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される shoulderY)と Body Build は外部ソケット。 */
-const output = garmentOutput({ color: '#8a4a2e', offsetY: 0, geometry: 'merge' });
+const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
 
 defineGroupNode({
   type: 'bagGroup',
@@ -35,6 +35,7 @@ defineGroupNode({
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#8a4a2e'),
         ],
       },
     },

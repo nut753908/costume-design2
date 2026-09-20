@@ -62,7 +62,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
-- `anchorYSocket`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY` ソケット定義。`garmentOutput({ color, offsetY, geometry })`(同ファイル)— `material`(toonMaterial、`Color` 入力欄が色)→`sceneOut` と `input.anchorY`→`placement`(garmentPlacement、`Offset Y` 入力欄が offsetY)→`sceneOut` のノード3個・エッジ4本。`geometry` には最終的な geometry を出力するノードの id を渡す。
+- `anchorYSocket`/`colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY`/`color`(既定の色 `hex`)ソケット定義。`garmentOutput({ offsetY, geometry })`(同ファイル)— `material`(toonMaterial、色は `input.color` から配線)→`sceneOut` と `input.anchorY`→`placement`(garmentPlacement、`Offset Y` 入力欄が offsetY)→`sceneOut` のノード3個・エッジ5本。`geometry` には最終的な geometry を出力するノードの id を渡す。
 - `bodyBuildScale(rawValue)`(`garmentParts.ts`)— 「体に触れる半径」(`rawValue` は `scale` の `Value` 入力欄の値)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
 
@@ -70,10 +70,10 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 
-const output = garmentOutput({ color: '#cccccc', offsetY: 0, geometry: 'gen' });
+const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
 const scale = bodyBuildScale(0.3);
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 0.2, distance: 0.5, segments: 24 });
 
@@ -85,10 +85,11 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        // anchorY は全ガーメント共通で必須。bodyBuild は半径スケーリングに使う場合だけ。
+        // anchorY/color は全ガーメント共通で必須。bodyBuild は半径スケーリングに使う場合だけ。
         sockets: [
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#cccccc'),
         ],
       },
     },

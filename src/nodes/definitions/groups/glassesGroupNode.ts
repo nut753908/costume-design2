@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** glasses は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
  * ブリッジ+左右テンプル+左右レンズのすべてが完全にノードグラフへ展開されている。
@@ -29,7 +29,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * 各ノードの入力欄の値として持つ。
  * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * headCenterY)は外部ソケット。 */
-const output = garmentOutput({ color: '#2a2a2a', offsetY: -0.02, geometry: 'mergeAll' });
+const output = garmentOutput({ offsetY: -0.02, geometry: 'mergeAll' });
 
 defineGroupNode({
   type: 'glassesGroup',
@@ -42,6 +42,7 @@ defineGroupNode({
         sockets: [
           { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.16 },
           anchorYSocket,
+          colorSocket('#2a2a2a'),
         ],
       },
     },

@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
-import { anchorYSocket, garmentOutput } from '../garmentOutput';
+import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** 足首半径とふくらはぎ半径はどちらも Body Build を掛けてから
  * lathe へ渡す(`scale`/`calfScale`)。体の脚の半径がすべて Body Build でスケールされるため、
@@ -8,7 +8,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
  * mirror(mirrorPair)+socksMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
- * Ankle Radius/Calf Radius/Height/Segments/Color は他のガーメントと共有されない単独
+ * Ankle Radius/Calf Radius/Height/Segments は他のガーメントと共有されない単独
  * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
  * 靴下1本ぶんのジオメトリ(`profile`→`sockGen`)と、それを ±legSpacing だけ X方向に離した
@@ -19,7 +19,7 @@ import { anchorYSocket, garmentOutput } from '../garmentOutput';
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
-const output = garmentOutput({ color: '#d4a83a', offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
 
 const scale = bodyBuildScale(0.09);
 const calfScale = bodyBuildScale(0.105, 'calfScale');
@@ -37,6 +37,7 @@ defineGroupNode({
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.14 },
           { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
           anchorYSocket,
+          colorSocket('#d4a83a'),
         ],
       },
     },

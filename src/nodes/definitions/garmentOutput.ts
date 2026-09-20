@@ -4,26 +4,30 @@ import type { GraphEdge, GraphNode } from '../types';
  * (`garmentPlacement` が `offsetY` と足して geometry を平行移動する)。 */
 export const anchorYSocket = { id: 'anchorY', label: 'Anchor Y', type: 'number', default: 0 } as const;
 
+/** 全ガーメントの `groupInput` が持つ色の外部ソケット `color`(`material` の色へ配線される)。
+ * `hex` はそのガーメントの既定の色。 */
+export const colorSocket = (hex: string) => ({ id: 'color', label: 'Color', type: 'color', default: hex }) as const;
+
 /** ガーメントの `<name>GroupNode.ts` が共通して持つ「末端」のノードと配線を生成する:
- * `material`(toonMaterial、`color` は入力欄の値)→`sceneOut`(sceneOutput)、および
+ * `material`(toonMaterial、色は外部ソケット `input.color`)→`sceneOut`(sceneOutput)、および
  * `placement`(garmentPlacement、`offsetY` は入力欄の値)+外部ソケット `input.anchorY`→
  * `sceneOut`。`geometry` にはこのガーメントの最終的な geometry を出力するノードの id を渡す。
- * 生成されるノードは `input`(groupInput、`anchorY` ソケットを持つ)が別途 `internalNodes` に存在することを前提にする(`nodes/CLAUDE.md` の
+ * 生成されるノードは `input`(groupInput、`anchorY`/`color`(`colorSocket()`)ソケットを持つ)が別途 `internalNodes` に存在することを前提にする(`nodes/CLAUDE.md` の
  * 「グループノード」節参照)。 */
 export function garmentOutput(config: {
-  color: string;
   offsetY: number;
   geometry: string;
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
     nodes: [
-      { id: 'material', type: 'toonMaterial', data: { color: config.color } },
+      { id: 'material', type: 'toonMaterial', data: {} },
       { id: 'placement', type: 'garmentPlacement', data: { offsetY: config.offsetY } },
       { id: 'sceneOut', type: 'sceneOutput', data: {} },
     ],
     edges: [
       { source: config.geometry, sourceHandle: 'geometry', target: 'placement', targetHandle: 'geometry' },
       { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
+      { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
       { source: 'input', sourceHandle: 'anchorY', target: 'placement', targetHandle: 'anchorY' },
       { source: 'placement', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
     ],
