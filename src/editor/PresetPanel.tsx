@@ -120,7 +120,7 @@ export function PresetPanel() {
     if (currentFingerprint !== undefined && savedFingerprint !== currentFingerprint) {
       if (
         confirm(
-          'このプリセットは古いバージョンのテンプレートから作られています。\nOK: 値(数値・色・選択肢)を引き継いで最新のテンプレートへ更新して読み込む\nキャンセル: 保存されたままの内部構造で読み込む',
+          'このプリセットは古いバージョンのテンプレートから作られています。\nOK: 値(数値・色)を引き継いで最新のテンプレートへ更新して読み込む\nキャンセル: 保存されたままの内部構造で読み込む',
         )
       ) {
         const migrated = migrateGroupToTemplate(
@@ -154,7 +154,7 @@ export function PresetPanel() {
             type="button"
             className="graph-io__button"
             onClick={() => {
-              if (confirm('内部構造を最新のテンプレートへ更新します(数値・色・選択肢の値は引き継ぎます)。配線の編集は失われます。よろしいですか?')) {
+              if (confirm('内部構造を最新のテンプレートへ更新します(数値・色の値は引き継ぎます)。配線の編集は失われます。よろしいですか?')) {
                 migrateCurrentGroupToTemplate();
               }
             }}
