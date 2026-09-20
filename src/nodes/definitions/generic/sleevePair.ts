@@ -7,9 +7,9 @@ import { constNumberInput } from '../constNumberInput';
  * 右袖は `taperedTubeGenerator`(楕円断面)で、始点 `(startX, 0, 0)` から終点
  * `(startX + length × cos(droop), -length × sin(droop), 0)` まで作る。`startX` は胴体の壁より
  * 少し内側(`attachRadius × insetIn`)にして、浮かずに壁と重なるようにする(ブーリアン演算や
- * 穴あけはせず、意図的な交差のみ)。左袖は X の符号を反転しただけの鏡像(`mirrorPair` は
- * 平行移動しかしないため使えず、始点・終点の X を `numberNegate` で反転した別のチューブとして
- * 作る)。終端の直径は始端の `taperIn` 倍(先細り)。
+ * 穴あけはせず、意図的な交差のみ)。左袖はこの右袖を `mirrorX`(X=0 について鏡像反転)した
+ * もので、右袖とともに `mergeGeometry` で結合する(`mirrorPair` は平行移動しかしないため
+ * 使えない)。終端の直径は始端の `taperIn` 倍(先細り)。
  * `cosDroopIn`/`sinDroopIn` は水平から 36°(π/5)下がる袖の向きの cos/sin。
  * (`constNumberInput()` で定義する「常に一定の値を持つ `numberInput`」) */
 defineGroupNode({
@@ -41,10 +41,8 @@ defineGroupNode({
     { id: 'endY', type: 'numberNegate', data: { label: 'End Y' } },
     { id: 'startDiameter', type: 'numberMultiply', data: { label: 'Start Diameter' } },
     { id: 'endDiameter', type: 'numberMultiply', data: { label: 'End Diameter' } },
-    { id: 'negatedStartX', type: 'numberNegate', data: { label: 'Negated Start X' } },
-    { id: 'negatedEndX', type: 'numberNegate', data: { label: 'Negated End X' } },
-    { id: 'rightGen', type: 'taperedTubeGenerator', data: { shape: 'ellipse', segments: 12 } },
-    { id: 'leftGen', type: 'taperedTubeGenerator', data: { shape: 'ellipse', segments: 12 } },
+    { id: 'gen', type: 'taperedTubeGenerator', data: { shape: 'ellipse', segments: 12 } },
+    { id: 'mirror', type: 'mirrorX', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     {
       id: 'output',
@@ -68,35 +66,23 @@ defineGroupNode({
     { source: 'twoIn', sourceHandle: 'value', target: 'startDiameter', targetHandle: 'factor' },
     { source: 'startDiameter', sourceHandle: 'value', target: 'endDiameter', targetHandle: 'value' },
     { source: 'taperIn', sourceHandle: 'value', target: 'endDiameter', targetHandle: 'factor' },
-    { source: 'startX', sourceHandle: 'value', target: 'negatedStartX', targetHandle: 'value' },
-    { source: 'endX', sourceHandle: 'value', target: 'negatedEndX', targetHandle: 'value' },
 
     // 右袖(+X 側)。断面は円(幅=厚み=直径)。
-    { source: 'startX', sourceHandle: 'value', target: 'rightGen', targetHandle: 'startX' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'rightGen', targetHandle: 'startY' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'rightGen', targetHandle: 'startZ' },
-    { source: 'endX', sourceHandle: 'value', target: 'rightGen', targetHandle: 'endX' },
-    { source: 'endY', sourceHandle: 'value', target: 'rightGen', targetHandle: 'endY' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'rightGen', targetHandle: 'endZ' },
-    { source: 'startDiameter', sourceHandle: 'value', target: 'rightGen', targetHandle: 'startWidth' },
-    { source: 'startDiameter', sourceHandle: 'value', target: 'rightGen', targetHandle: 'startThickness' },
-    { source: 'endDiameter', sourceHandle: 'value', target: 'rightGen', targetHandle: 'endWidth' },
-    { source: 'endDiameter', sourceHandle: 'value', target: 'rightGen', targetHandle: 'endThickness' },
+    { source: 'startX', sourceHandle: 'value', target: 'gen', targetHandle: 'startX' },
+    { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'startY' },
+    { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'startZ' },
+    { source: 'endX', sourceHandle: 'value', target: 'gen', targetHandle: 'endX' },
+    { source: 'endY', sourceHandle: 'value', target: 'gen', targetHandle: 'endY' },
+    { source: 'zeroIn', sourceHandle: 'value', target: 'gen', targetHandle: 'endZ' },
+    { source: 'startDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'startWidth' },
+    { source: 'startDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'startThickness' },
+    { source: 'endDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'endWidth' },
+    { source: 'endDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'endThickness' },
 
-    // 左袖(-X 側)。X だけ符号反転。
-    { source: 'negatedStartX', sourceHandle: 'value', target: 'leftGen', targetHandle: 'startX' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'leftGen', targetHandle: 'startY' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'leftGen', targetHandle: 'startZ' },
-    { source: 'negatedEndX', sourceHandle: 'value', target: 'leftGen', targetHandle: 'endX' },
-    { source: 'endY', sourceHandle: 'value', target: 'leftGen', targetHandle: 'endY' },
-    { source: 'zeroIn', sourceHandle: 'value', target: 'leftGen', targetHandle: 'endZ' },
-    { source: 'startDiameter', sourceHandle: 'value', target: 'leftGen', targetHandle: 'startWidth' },
-    { source: 'startDiameter', sourceHandle: 'value', target: 'leftGen', targetHandle: 'startThickness' },
-    { source: 'endDiameter', sourceHandle: 'value', target: 'leftGen', targetHandle: 'endWidth' },
-    { source: 'endDiameter', sourceHandle: 'value', target: 'leftGen', targetHandle: 'endThickness' },
-
-    { source: 'rightGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'leftGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    // 左袖(-X 側)は右袖の鏡像。
+    { source: 'gen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'mirror', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'merge', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });
