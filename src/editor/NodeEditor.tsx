@@ -7,7 +7,6 @@ import {
   Controls,
   MiniMap,
   type NodeTypes,
-  type EdgeTypes,
   type Connection,
   type Edge,
 } from '@xyflow/react';
@@ -25,7 +24,6 @@ import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
 import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
 import { NodePalette } from './NodePalette';
-import { DeletableEdge } from './DeletableEdge';
 import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
 import { HistoryControls } from './HistoryControls';
@@ -49,10 +47,6 @@ const NODE_VIEW_OVERRIDES: Partial<Record<string, NodeTypes[string]>> = {
 const nodeTypes: NodeTypes = Object.fromEntries(
   Array.from(nodeTypeRegistry.keys(), (type) => [type, NODE_VIEW_OVERRIDES[type] ?? GenericNodeView]),
 );
-
-const edgeTypes: EdgeTypes = {
-  default: DeletableEdge,
-};
 
 function NodeEditorInner() {
   const nodes = useGraphStore((s) => s.nodes);
@@ -180,7 +174,6 @@ function NodeEditorInner() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
         isValidConnection={isValidConnection}
         onPaneContextMenu={(event) => {
           event.preventDefault();
