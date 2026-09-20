@@ -7,7 +7,6 @@ import type { SocketValue } from '../../nodes/types';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { ExposedParams } from './ExposedParams';
-import { VisibilityToggles } from './VisibilityToggles';
 import { isGroupInstanceStale } from '../../nodes/groupTemplate';
 
 function isDisplayable(value: SocketValue): value is Extract<SocketValue, { type: 'number' | 'enum' }> {
@@ -51,7 +50,7 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
 
   return (
     <div className="rf-node" onDoubleClick={isGroup ? () => enterGroup(id) : undefined}>
-      <NodeTitleBar id={id} label={label} typeName={typeName} onLabelChange={onLabelChange} actions={isGroup ? <VisibilityToggles nodeId={id} /> : undefined} />
+      <NodeTitleBar id={id} label={label} typeName={typeName} onLabelChange={onLabelChange} />
       {isGroup && <div className="rf-node__group-hint">ダブルクリックで中に入る</div>}
       {isGroup && <ExposedParams groupId={id} type={type ?? ''} data={data as Record<string, unknown>} />}
       {isGroup && isGroupInstanceStale(type ?? '', data as Record<string, never>) && (

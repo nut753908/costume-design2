@@ -1,5 +1,3 @@
-import type { ReactNode } from 'react';
-
 /** すべてのノードカードの先頭に表示するタイトル行。`onLabelChange` を渡すと、ラベルを固定テキストではなく
  * 編集可能なテキスト入力(同じく nodrag)として描画する(numberInput/enumInput/colorInput
  * のようなラベル名を自由に変更できる入力ノードで使用)。
@@ -20,14 +18,11 @@ export function NodeTitleBar({
   label,
   onLabelChange,
   typeName,
-  actions,
 }: {
   id: string;
   label: string;
   onLabelChange?: (label: string) => void;
   typeName?: string;
-  /** ラベルの右に並べる追加のボタン(グループの Solo/Hide など)。 */
-  actions?: ReactNode;
 }) {
   return (
     <>
@@ -43,7 +38,6 @@ export function NodeTitleBar({
         ) : (
           <span id={`${id}-label`}>{label}</span>
         )}
-        {actions}
       </div>
       {typeName && <div className="rf-node__type-subtitle">{typeName}</div>}
     </>

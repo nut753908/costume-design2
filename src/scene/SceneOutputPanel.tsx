@@ -4,7 +4,7 @@ import { useRootGraphLite } from '../state/selectors';
 import { isMeshVisible, listSceneOutputs, useViewStore } from '../state/viewStore';
 
 /** 3Dビューに描画されているメッシュ(`sceneOutput`)の一覧。各行の S(単独表示)/H(非表示)で
- * 表示を切り替える(グループカードの同名ボタンと同じ `state/viewStore.ts` の状態)。
+ * 表示を切り替える(`state/viewStore.ts` の状態)。
  * どのメッシュが描画されているかを、ノードグラフを探し回らずに確認できる。 */
 export function SceneOutputPanel() {
   const [open, setOpen] = useState(true);
