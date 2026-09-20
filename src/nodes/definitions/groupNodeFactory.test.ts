@@ -92,9 +92,9 @@ describe('defineGroupNode', () => {
   it('登録時に internalNodes 内の groupInput/groupOutput ノードの sockets から静的な inputs/outputs を導出する', () => {
     const def = getNodeType('groupFactoryTestGroup');
     expect(def.inputs).toEqual([
-      { id: 'radius', label: 'Radius', type: 'number' },
-      { id: 'color', label: 'Color', type: 'color' },
-      { id: 'offset', label: 'Offset', type: 'number' },
+      { id: 'radius', label: 'Radius', type: 'number', default: 2 },
+      { id: 'color', label: 'Color', type: 'color', default: '#112233' },
+      { id: 'offset', label: 'Offset', type: 'number', default: 3 },
     ]);
     expect(def.outputs).toEqual([
       { id: 'doubledRadius', label: 'Doubled Radius', type: 'number' },

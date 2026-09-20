@@ -14,8 +14,8 @@ registerNodeType<NumberSubtractData>({
   label: 'Subtract',
   category: 'generator',
   inputs: [
-    { id: 'a', label: 'A', type: 'number' },
-    { id: 'b', label: 'B', type: 'number' },
+    { id: 'a', label: 'A', type: 'number', default: DEFAULTS.a },
+    { id: 'b', label: 'B', type: 'number', default: DEFAULTS.b },
   ],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],
   createDefaultData: () => ({ ...DEFAULTS }),

@@ -19,7 +19,7 @@ registerNodeType<LatheGeneratorData>({
   category: 'generator',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
-    { id: 'segments', label: 'Segments', type: 'number' },
+    { id: 'segments', label: 'Segments', type: 'number', default: 16 },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({ segments: 16 }),

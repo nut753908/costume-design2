@@ -29,9 +29,9 @@ registerNodeType<EasedLatheProfileData>({
   label: 'Eased Lathe Profile',
   category: 'generator',
   inputs: [
-    { id: 'startRadius', label: 'Start Radius', type: 'number' },
-    { id: 'endRadius', label: 'End Radius', type: 'number' },
-    { id: 'distance', label: 'Distance', type: 'number' },
+    { id: 'startRadius', label: 'Start Radius', type: 'number', default: 0 },
+    { id: 'endRadius', label: 'End Radius', type: 'number', default: 0 },
+    { id: 'distance', label: 'Distance', type: 'number', default: 0 },
   ],
   outputs: [{ id: 'points', label: 'Points', type: 'points' }],
   createDefaultData: () => ({ direction: 'down', steps: 10 }),

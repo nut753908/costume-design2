@@ -133,7 +133,7 @@ export function evaluateGraph(nodes: GraphNode[], edges: GraphEdge[]): Evaluated
 
       // 未接続のソケットはノード自身のリテラルな data 値にフォールバックする —
       // これは未接続の Geometry Nodes ソケットがウィジェットのデフォルト値を使うのと同じ挙動。
-      const literal = literalSocketValue(socket.type, node.data[socket.id]);
+      const literal = literalSocketValue(socket.type, node.data[socket.id] ?? socket.default);
       if (literal !== undefined) {
         inputs[socket.id] = literal;
       }

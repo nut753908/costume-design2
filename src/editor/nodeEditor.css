@@ -72,6 +72,33 @@
   padding: 3px 0 3px 10px;
 }
 
+.rf-node__socket-row--field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* 行の高さ(`nodes/autoLayout.ts` の `CARD_ROW_HEIGHT`)を変えないよう、行のコンテンツ高さ(16.8px)
+   に収まる高さにしている。 */
+.rf-node__socket-field {
+  box-sizing: border-box;
+  width: 64px;
+  height: 16px;
+  padding: 0 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  background: #fff;
+  font-size: 11px;
+  color: #1a1a1a;
+}
+
+.rf-node__socket-field--color {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
 .rf-node__socket-row--out {
   padding: 3px 10px 3px 0;
   text-align: right;

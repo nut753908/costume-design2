@@ -21,9 +21,9 @@ registerNodeType<RingGridGeneratorData>({
   category: 'generator',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
-    { id: 'segments', label: 'Segments', type: 'number' },
+    { id: 'segments', label: 'Segments', type: 'number', default: 24 },
     { id: 'necklineWeights', label: 'Neckline', type: 'points' },
-    { id: 'necklineDepth', label: 'Neckline Depth', type: 'number' },
+    { id: 'necklineDepth', label: 'Neckline Depth', type: 'number', default: 0.12 },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({ segments: 24, necklineDepth: 0.12 }),

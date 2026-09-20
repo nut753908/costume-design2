@@ -14,7 +14,7 @@ registerNodeType({
   category: 'generator',
   inputs: [
     { id: 'geometry', label: 'Geometry', type: 'geometry' },
-    { id: 'z', label: 'Z', type: 'number' },
+    { id: 'z', label: 'Z', type: 'number', default: 0 },
   ],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({}),

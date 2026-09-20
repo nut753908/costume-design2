@@ -116,6 +116,39 @@ describe('evaluateGraph', () => {
     expect(result.get('sink')?.color).toEqual({ type: 'color', value: new THREE.Color('#336699') });
   });
 
+  it('未接続のソケットは data に値が無ければ SocketDef.default にフォールバックし、data があればそちらを優先する', () => {
+    if (!nodeTypeRegistry.has('testDefaults')) {
+      registerNodeType({
+        type: 'testDefaults',
+        label: 'Test Defaults',
+        category: 'generator',
+        inputs: [
+          { id: 'n', label: 'N', type: 'number', default: 7 },
+          { id: 'c', label: 'C', type: 'color', default: '#112233' },
+        ],
+        outputs: [],
+        createDefaultData: () => ({}),
+        evaluate: (inputs) => ({ n: inputs.n, c: inputs.c }),
+      });
+    }
+    const defaults = evaluateGraph([{ id: 'x', type: 'testDefaults', data: {} }], []);
+    expect(defaults.get('x')?.n).toEqual({ type: 'number', value: 7 });
+    expect(defaults.get('x')?.c).toEqual({ type: 'color', value: new THREE.Color('#112233') });
+
+    const overridden = evaluateGraph([{ id: 'x', type: 'testDefaults', data: { n: 9, c: '#ff0000' } }], []);
+    expect(overridden.get('x')?.n).toEqual({ type: 'number', value: 9 });
+    expect(overridden.get('x')?.c).toEqual({ type: 'color', value: new THREE.Color('#ff0000') });
+
+    const connected = evaluateGraph(
+      [
+        { id: 'src', type: 'testSource', data: { value: 3 } },
+        { id: 'x', type: 'testDefaults', data: { n: 9 } },
+      ],
+      [{ source: 'src', sourceHandle: 'value', target: 'x', targetHandle: 'n' }],
+    );
+    expect(connected.get('x')?.n).toEqual({ type: 'number', value: 3 });
+  });
+
   it('接続された入力と未接続のリテラルフォールバックが混在しても動作する', () => {
     const nodes: GraphNode[] = [
       { id: 'src1', type: 'testSource', data: { value: 3 } },

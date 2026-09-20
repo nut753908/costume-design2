@@ -11,16 +11,16 @@ export interface TaperedEllipseTubeGeneratorData extends Record<string, unknown>
 /** 始点・終点を X/Y/Z の3ソケットに分解した入力(`alignedBoxGenerator` と同じく、座標を求める
  * 四則演算チェーンを可視の配線として展開するため)と、両端の幅・厚みの入力。 */
 const TUBE_INPUTS: SocketDef[] = [
-  { id: 'startX', label: 'Start X', type: 'number' },
-  { id: 'startY', label: 'Start Y', type: 'number' },
-  { id: 'startZ', label: 'Start Z', type: 'number' },
-  { id: 'endX', label: 'End X', type: 'number' },
-  { id: 'endY', label: 'End Y', type: 'number' },
-  { id: 'endZ', label: 'End Z', type: 'number' },
-  { id: 'startWidth', label: 'Start Width', type: 'number' },
-  { id: 'startThickness', label: 'Start Thickness', type: 'number' },
-  { id: 'endWidth', label: 'End Width', type: 'number' },
-  { id: 'endThickness', label: 'End Thickness', type: 'number' },
+  { id: 'startX', label: 'Start X', type: 'number', default: 0 },
+  { id: 'startY', label: 'Start Y', type: 'number', default: 0 },
+  { id: 'startZ', label: 'Start Z', type: 'number', default: 0 },
+  { id: 'endX', label: 'End X', type: 'number', default: 0 },
+  { id: 'endY', label: 'End Y', type: 'number', default: 0 },
+  { id: 'endZ', label: 'End Z', type: 'number', default: 0 },
+  { id: 'startWidth', label: 'Start Width', type: 'number', default: 0 },
+  { id: 'startThickness', label: 'Start Thickness', type: 'number', default: 0 },
+  { id: 'endWidth', label: 'End Width', type: 'number', default: 0 },
+  { id: 'endThickness', label: 'End Thickness', type: 'number', default: 0 },
 ];
 
 function buildTube(inputs: Record<string, SocketValue>, shape: TubeShape, segments: number): SocketValue {
@@ -46,7 +46,7 @@ registerNodeType<TaperedEllipseTubeGeneratorData>({
   type: 'taperedEllipseTubeGenerator',
   label: 'Tapered Ellipse Tube',
   category: 'generator',
-  inputs: [...TUBE_INPUTS, { id: 'segments', label: 'Segments', type: 'number' }],
+  inputs: [...TUBE_INPUTS, { id: 'segments', label: 'Segments', type: 'number', default: 12 }],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({ segments: 12 }),
   evaluate: (inputs, data): Record<string, SocketValue> => ({

@@ -15,7 +15,7 @@ registerNodeType<NumberNegateData>({
   type: 'numberNegate',
   label: 'Negate',
   category: 'generator',
-  inputs: [{ id: 'value', label: 'Value', type: 'number' }],
+  inputs: [{ id: 'value', label: 'Value', type: 'number', default: DEFAULTS.value }],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],
   createDefaultData: () => ({ ...DEFAULTS }),
   evaluate: (inputs, data): Record<string, SocketValue> => {

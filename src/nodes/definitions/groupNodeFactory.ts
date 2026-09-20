@@ -29,7 +29,12 @@ export interface GroupNodeData extends Record<string, unknown> {
 }
 
 function toSocketDefs(sockets: GroupIOSocket[] | undefined): SocketDef[] {
-  return (sockets ?? []).map((s) => ({ id: s.id, label: s.label, type: s.type }));
+  return (sockets ?? []).map((s) => ({
+    id: s.id,
+    label: s.label,
+    type: s.type,
+    ...(s.default !== undefined ? { default: s.default } : {}),
+  }));
 }
 
 /** テンプレート(`config.internalNodes`)を、キャンバス上で描画・編集できる独立した

@@ -58,7 +58,7 @@ export function defineGeneratorNode<
     type: config.type,
     label: config.label,
     category: 'generator',
-    inputs: config.fields.map((f) => ({ id: f.id, label: f.label, type: 'number' as const })),
+    inputs: config.fields.map((f) => ({ id: f.id, label: f.label, type: 'number' as const, default: f.default })),
     outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
     createDefaultData: () => ({ ...defaults }),
     evaluate: (inputs, data): Record<string, SocketValue> => {

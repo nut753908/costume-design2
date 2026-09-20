@@ -11,7 +11,7 @@ registerNodeType<ToonMaterialData>({
   type: 'toonMaterial',
   label: 'Toon Material',
   category: 'material',
-  inputs: [{ id: 'color', label: 'Color', type: 'color' }],
+  inputs: [{ id: 'color', label: 'Color', type: 'color', default: '#cccccc' }],
   outputs: [{ id: 'material', label: 'Material', type: 'material' }],
   createDefaultData: () => ({ color: '#cccccc' }),
   evaluate: (inputs, data): Record<string, SocketValue> => {

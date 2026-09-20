@@ -9,6 +9,7 @@ interface RawSocket {
   id: string;
   label: string;
   type: SocketDef['type'];
+  default?: number | string;
 }
 
 interface GroupInternalNodeLike {
@@ -18,7 +19,12 @@ interface GroupInternalNodeLike {
 
 function toSocketDefs(raw: unknown): SocketDef[] | undefined {
   if (!Array.isArray(raw)) return undefined;
-  return (raw as RawSocket[]).map((s) => ({ id: s.id, label: s.label, type: s.type }));
+  return (raw as RawSocket[]).map((s) => ({
+    id: s.id,
+    label: s.label,
+    type: s.type,
+    ...(s.default !== undefined ? { default: s.default } : {}),
+  }));
 }
 
 /** ノードの実効的な入出力ソケット一覧を返す。3通りの動的解決を型の静的な `inputs`/

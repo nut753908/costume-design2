@@ -14,8 +14,8 @@ registerNodeType<NumberMultiplyData>({
   label: 'Multiply',
   category: 'generator',
   inputs: [
-    { id: 'value', label: 'Value', type: 'number' },
-    { id: 'factor', label: 'Factor', type: 'number' },
+    { id: 'value', label: 'Value', type: 'number', default: DEFAULTS.value },
+    { id: 'factor', label: 'Factor', type: 'number', default: DEFAULTS.factor },
   ],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],
   createDefaultData: () => ({ ...DEFAULTS }),

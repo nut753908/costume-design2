@@ -9,7 +9,7 @@ registerNodeType({
   category: 'generator',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
-    { id: 'factor', label: 'Factor', type: 'number' },
+    { id: 'factor', label: 'Factor', type: 'number', default: 1 },
   ],
   outputs: [{ id: 'points', label: 'Points', type: 'points' }],
   createDefaultData: () => ({}),

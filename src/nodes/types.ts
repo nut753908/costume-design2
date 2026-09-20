@@ -21,6 +21,10 @@ export interface SocketDef {
    * 値がエッジの並び順で集められて渡される。現在は `geometry` 型の `mergeGeometry` だけが使い、
    * 渡される値は `{ type: 'geometries' }`。1本も接続されていなければ入力に現れない。 */
   multiple?: boolean;
+  /** 入力ソケットにだけ意味を持つ、未接続時のリテラルな値。`number` は数値、`color` は hex 文字列。
+   * 指定があれば(`number`/`color` のみ)、ノードカード上のこのソケットの行に入力欄が出る。値は
+   * ノードの `data[socket.id]` に保持され(未設定なら `default`)、未接続の入力として `evaluate()` へ渡される。 */
+  default?: number | string;
 }
 
 export type NodeCategory = 'input' | 'generator' | 'material' | 'output' | 'group' | 'group-io';
