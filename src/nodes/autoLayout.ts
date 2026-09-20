@@ -45,14 +45,14 @@ const CARD_GROUP_HINT_HEIGHT = 18;
 const EXPOSE_TOGGLE_HEIGHT = 23;
 /** `groupInput`/`groupOutput` の末尾の「追加」行(型セレクタ+「+ Add」ボタン)の高さ。 */
 const GROUP_IO_ADD_ROW_HEIGHT = 26;
-/** スライダー/カラーピッカーなど専用UIを持つ入力系ノードのうち、ノード固有設定
- * (min/max/step・カラーコードのテキスト欄)の行数が固定な2種は、ソケット数に
- * よらずほぼ固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの。enumInput は
+/** スライダー/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
+ * ソケット数によらず固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの
+ * (colorInput はグループ内の実測 89px から「グループに表示」行 23px を引いた値)。enumInput は
  * 選択肢(`rf-node__io-row`)を可変個描画するため、この固定値方式ではなく後述の
  * `ENUM_INPUT_BASE_HEIGHT` を使った式で見積もる。 */
 const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
   numberInput: 125,
-  colorInput: 89,
+  colorInput: 66,
 };
 /** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: グループ内で選択肢3個の
  * カードが 175px = 83 + 3*23 + 「グループに表示」行 23。傾き23pxは `IO_ROW_HEIGHT` と一致したため、

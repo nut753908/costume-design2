@@ -82,23 +82,6 @@
   background: none;
 }
 
-/* `.rf-node` は幅を明示指定せず内容に合わせて縮む(shrink-to-fit)ため、`width: 100%`
-   では基準になる確定幅が無くブラウザ既定の <input type="text"> の実寸(size=20相当)が
-   採用されてしまう(`.rf-node__settings-field input` と同じ理由、上記コメント参照)。
-   7桁hex("#ffffff")が収まれば十分なので固定幅にする。 */
-.rf-node__hex-input {
-  box-sizing: border-box;
-  width: 100px;
-  margin-top: 4px;
-  padding: 2px 4px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  background: #fff;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 11px;
-  color: #1a1a1a;
-}
-
 .rf-node__value {
   margin-top: 4px;
   font-family: ui-monospace, Consolas, monospace;
