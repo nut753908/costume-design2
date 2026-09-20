@@ -23,6 +23,17 @@ describe('mirrorX', () => {
     expect(geometry.boundingBox!.min.x).toBeCloseTo(1.5);
   });
 
+  it('インデックス無しの geometry でも巻き順が外向きのまま', () => {
+    const geometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 12, 1, true).translate(2, 0, 0).toNonIndexed();
+    const result = getNodeType('mirrorX').evaluate({ geometry: { type: 'geometry', value: geometry } }, {});
+    const mirrored = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    expect(mirrored!.getIndex()).toBeNull();
+    // インデックス無しは三角形ごとの頂点順を index 相当として検証する。
+    const indexed = mirrored!.clone();
+    indexed.setIndex([...Array(indexed.getAttribute('position').count).keys()]);
+    expectOutwardWinding(indexed, (c) => new THREE.Vector3(-2, c.y, 0));
+  });
+
   it('geometry が未接続なら何も返さない', () => {
     expect(getNodeType('mirrorX').evaluate({}, {}).geometry).toBeUndefined();
   });

@@ -47,6 +47,19 @@ describe('mirrorPair', () => {
     expect(geometry.boundingBox!.max.x).toBeCloseTo(originalMaxX, 5);
   });
 
+  it('X=0 について非対称な形状は、-側が鏡像になる', () => {
+    // X=-0.1〜0.3 に張り出す箱。offset=1 なら +側は 0.9〜1.3、-側は鏡像の -1.3〜-0.9。
+    const geometry = new THREE.BoxGeometry(0.4, 0.6, 0.16).translate(0.1, 0, 0);
+    const result = getNodeType('mirrorPair').evaluate(
+      { geometry: { type: 'geometry', value: geometry }, offset: { type: 'number', value: 1 } },
+      {},
+    );
+    const merged = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    merged!.computeBoundingBox();
+    expect(merged!.boundingBox!.max.x).toBeCloseTo(1.3, 5);
+    expect(merged!.boundingBox!.min.x).toBeCloseTo(-1.3, 5);
+  });
+
   it('geometry が未接続なら何も返さない', () => {
     const result = getNodeType('mirrorPair').evaluate({ offset: { type: 'number', value: 0.2 } }, {});
     expect(result.geometry).toBeUndefined();
