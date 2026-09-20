@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// mirrorPair はグループノードで、埋め込みサブグラフが groupInput/groupOutput/numberMultiply/
-// translateX/mergeGeometry を参照するため、単独インポートではなく全ノードタイプを登録する。
+// mirrorPair はグループノードで、埋め込みサブグラフが groupInput/groupOutput/
+// translateX/mirrorX/mergeGeometry を参照するため、単独インポートではなく全ノードタイプを登録する。
 import '../../definitions';
 
 describe('mirrorPair', () => {
