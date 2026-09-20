@@ -1,6 +1,5 @@
 import { memo, useEffect, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
-import { useGraphStore } from '../../state/graphStore';
 import type { ColorInputData } from '../../nodes/definitions/generic/colorInput';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
@@ -14,7 +13,6 @@ const HEX_PATTERN = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
 function ColorInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as ColorInputData;
-  const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const throttledUpdate = useThrottledNodeDataUpdate(id);
 
   // 即座に表示するためのローカル state(store への反映は useThrottledNodeDataUpdate 側で
@@ -28,7 +26,6 @@ function ColorInputNodeViewImpl({ id, data }: NodeProps) {
       <NodeTitleBar
         id={id}
         label={nodeData.label ?? 'Color'}
-        onLabelChange={(label) => updateNodeData(id, { label })}
       />
       <input
         className="rf-node__color nodrag"

@@ -26,7 +26,6 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
       <NodeTitleBar
         id={id}
         label={nodeData.label ?? 'Number'}
-        onLabelChange={(label) => updateNodeData(id, { label })}
       />
       <input
         className="rf-node__slider nodrag"

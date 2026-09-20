@@ -427,14 +427,14 @@ describe('estimateNodeHeight', () => {
   });
 
   it('専用UIを持つ入力系ノードのうち固定行数の2種は実測した固定値を返す(ソケット数によらない)', () => {
-    expect(estimateNodeHeight('numberInput', {})).toBe(127);
-    expect(estimateNodeHeight('colorInput', {})).toBe(90);
+    expect(estimateNodeHeight('numberInput', {})).toBe(125);
+    expect(estimateNodeHeight('colorInput', {})).toBe(89);
   });
 
   it('グループの中(inGroup)では、入力系ノードに「グループに表示」チェックボックス行(23px)が加わる', () => {
-    expect(estimateNodeHeight('numberInput', {}, true)).toBe(127 + 23);
-    expect(estimateNodeHeight('colorInput', {}, true)).toBe(90 + 23);
-    expect(estimateNodeHeight('enumInput', { options: ['a'] }, true)).toBe(84 + 23 + 23);
+    expect(estimateNodeHeight('numberInput', {}, true)).toBe(125 + 23);
+    expect(estimateNodeHeight('colorInput', {}, true)).toBe(89 + 23);
+    expect(estimateNodeHeight('enumInput', { options: ['a'] }, true)).toBe(83 + 23 + 23);
   });
 
   it('groupInput/groupOutput は、ソケット行に加えて末尾の追加行(26px)を持つ', () => {
@@ -447,8 +447,8 @@ describe('estimateNodeHeight', () => {
   });
 
   it('enumInputは選択肢の数に比例して高さが増える', () => {
-    expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c'] })).toBe(84 + 3 * 23);
-    expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c', 'd', 'e'] })).toBe(84 + 5 * 23);
+    expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c'] })).toBe(83 + 3 * 23);
+    expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c', 'd', 'e'] })).toBe(83 + 5 * 23);
   });
 
   it('入出力ソケット数が多いほど、その分だけ線形に高さが増える', () => {
@@ -478,13 +478,6 @@ describe('estimateNodeHeight', () => {
       return estimateNodeHeight(type, {});
     });
     expect(heights).toEqual([86, 109, 155, 246, 337]);
-  });
-
-  it('ラベルを直接編集できるノードは、タイトルが <input> の分だけ高い(実測: numberMultiply 110、numberHalf 88)', () => {
-    expect(estimateNodeHeight('numberMultiply', {})).toBe(110);
-    expect(estimateNodeHeight('numberHalf', {})).toBe(88);
-    // ラベル編集できない同じ3行のノードは <span> のタイトルで 109。
-    expect(estimateNodeHeight('translateX', {})).toBe(109);
   });
 
   it('group カテゴリのノードは、ダブルクリックヒント行の分だけ高さが増える', () => {

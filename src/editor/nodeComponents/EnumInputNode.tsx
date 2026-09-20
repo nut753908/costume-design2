@@ -44,7 +44,6 @@ function EnumInputNodeViewImpl({ id, data }: NodeProps) {
       <NodeTitleBar
         id={id}
         label={nodeData.label ?? 'Enum'}
-        onLabelChange={(label) => updateNodeData(id, { label })}
       />
       <select
         className="nodrag"
