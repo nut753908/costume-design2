@@ -6,7 +6,6 @@ import {
   fingerprintGroupStructure,
   getGroupTemplateFingerprint,
   isGroupInstanceStale,
-  listExposedParams,
   migrateGroupToTemplate,
 } from './groupTemplate';
 
@@ -74,25 +73,5 @@ describe('migrateGroupToTemplate', () => {
   it('型が変わっている同じ id の値は引き継がない', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'colorInput', { hex: '#fff' })]);
     expect(migrated.nodes.find((node) => node.id === 'waistRadiusIn')?.data.value).toBe(0.3);
-  });
-});
-
-describe('listExposedParams', () => {
-  it('実体化前のインスタンスはテンプレートの exposed なノード(garmentOutput の色)を返す', () => {
-    expect(listExposedParams('skirtGroup', {}).map((node) => node.id)).toEqual(['colorIn']);
-    expect(listExposedParams('bodyDimensionsGroup', {}).map((node) => node.id)).toEqual(['heightScaleIn', 'shoulderScaleIn']);
-  });
-
-  it('実体化済みのインスタンスは data.nodes の exposed フラグに従う(ユーザーが切り替えた状態)', () => {
-    const data = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[] };
-    const nodes = data.nodes.map((node) =>
-      node.id === 'colorIn' ? { ...node, data: { ...node.data, exposed: false } } : node.id === 'flareIn' ? { ...node, data: { ...node.data, exposed: true } } : node,
-    );
-    expect(listExposedParams('skirtGroup', { nodes }).map((node) => node.id)).toEqual(['flareIn']);
-  });
-
-  it('更新時に exposed の切り替えも引き継ぐ', () => {
-    const migrated = migrateGroupToTemplate('skirtGroup', [n('flareIn', 'numberInput', { value: 1, exposed: true })]);
-    expect(migrated.nodes.find((node) => node.id === 'flareIn')?.data.exposed).toBe(true);
   });
 });

@@ -17,7 +17,7 @@ export function garmentOutput(config: {
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
     nodes: [
-      { id: 'colorIn', type: 'colorInput', data: { hex: config.color, exposed: true } },
+      { id: 'colorIn', type: 'colorInput', data: { hex: config.color } },
       { id: 'material', type: 'toonMaterial', data: {} },
       { id: 'offsetYIn', type: 'numberInput', data: { value: config.offsetY, min: -0.2, max: 0.2, step: 0.01 } },
       { id: 'placement', type: 'garmentPlacement', data: {} },

@@ -67,30 +67,6 @@
   opacity: 1;
 }
 
-.rf-node__exposed {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin-bottom: 4px;
-}
-
-.rf-node__exposed-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1px;
-  font-size: 11px;
-}
-
-.rf-node__exposed-row input[type='range'] {
-  width: 100%;
-}
-
-.rf-node__exposed-value {
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 10px;
-  opacity: 0.7;
-}
-
 .rf-node__socket-row {
   position: relative;
   padding: 3px 0 3px 10px;

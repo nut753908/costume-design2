@@ -481,12 +481,3 @@ describe('estimateNodeHeight', () => {
     expect(groupHeight - generatorHeight).toBe(18);
   });
 });
-
-describe('estimateNodeHeight(グループカードの露出パラメータ)', () => {
-  it('露出パラメータの行数ぶんだけ高さが増える', () => {
-    const base = estimateNodeHeight('skirtGroup', { nodes: [], edges: [] });
-    const withExposed = estimateNodeHeight('skirtGroup', {});
-    expect(withExposed).toBeGreaterThan(base);
-    expect(estimateNodeHeight('bodyDimensionsGroup', {})).toBeGreaterThan(withExposed);
-  });
-});

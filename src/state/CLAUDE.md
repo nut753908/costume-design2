@@ -57,4 +57,3 @@
 
 `editor/PresetPanel.tsx` はこの `initialNodes`/`initialEdges` を、`usePresetStore` に保存されたユーザープリセットとは別に「初期状態(デフォルト)」という擬似プリセット(固定ID `__initial__`、常にドロップダウン先頭に表示、削除不可)としてロード可能にしています。上記の「リロード後は Undo で戻せない」問題への対処として、ユーザーはこのプリセットを選んで Load することでいつでも初期グラフに戻せます。
 
-- `updateGroupInternalNodeData(groupId, internalNodeId, patch)`: グループに入らずに、親グループの `data.nodes` 内の1ノードの data をパッチする(未実体化なら実体化してから)。Undo は `gdata:<groupId>:<internalNodeId>` キーで連続更新をまとめる。グループカードの露出パラメータ(`editor/nodeComponents/ExposedParams.tsx`)が使う。

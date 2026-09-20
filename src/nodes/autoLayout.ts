@@ -1,6 +1,5 @@
 import { getNodeType, nodeTypeRegistry } from './registry';
 import { resolveNodeSockets } from './resolveNodeSockets';
-import { listExposedParams } from './groupTemplate';
 import type { GraphEdge, GraphNode } from './types';
 
 export interface LayoutPosition {
@@ -55,22 +54,6 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
  * カードが 152px = 83 + 3*23。傾き23pxは `IO_ROW_HEIGHT` と一致したため、
  * 切片だけを定数として持つ)。 */
 const ENUM_INPUT_BASE_HEIGHT = 83;
-/** グループノードのカード上に並ぶ露出パラメータ(`ExposedParams.tsx`)1行あたりの高さ(行間の
- * gap 3px を含む)。`run-costume-design2` スキルで実カードを実測して較正した値(number: 55、
- * color/enum: 47。全体には末尾の余白 0.5px が加わる)。enumInput は color と同じ高さで近似している。 */
-const EXPOSED_NUMBER_ROW_HEIGHT = 55;
-const EXPOSED_OTHER_ROW_HEIGHT = 47;
-const EXPOSED_TRAILING_HEIGHT = 0.5;
-
-function exposedParamsHeight(type: string, data: unknown): number {
-  const params = listExposedParams(type, (data as Record<string, unknown>) ?? {});
-  if (params.length === 0) return 0;
-  return params.reduce(
-    (sum, p) => sum + (p.type === 'numberInput' ? EXPOSED_NUMBER_ROW_HEIGHT : EXPOSED_OTHER_ROW_HEIGHT),
-    EXPOSED_TRAILING_HEIGHT,
-  );
-}
-
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
  * 固定値では小さいノード(numberInput 約60px)も大きいノード(bagGenerator 約246px)も
@@ -82,7 +65,7 @@ function exposedParamsHeight(type: string, data: unknown): number {
  *   行 + 末尾の追加行)を持ち、`GROUP_IO_BASE_HEIGHT + ソケット数 * IO_ROW_HEIGHT` に追加行の分を足す。
  * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
  *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT` (+ category が `'group'` なら
- *   `CARD_GROUP_HINT_HEIGHT` と露出パラメータの分)。行数は `resolveNodeSockets()` の入力+出力の合計。
+ *   `CARD_GROUP_HINT_HEIGHT`)。行数は `resolveNodeSockets()` の入力+出力の合計。
  * - `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
  *   (`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の特殊扱いは不要で、
  *   この一般式にそのまま乗る。
@@ -112,7 +95,7 @@ export function estimateNodeHeight(type: string, data: unknown): number {
   return Math.round(
     CARD_BASE_HEIGHT +
       socketRows * CARD_ROW_HEIGHT +
-      (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0),
+      (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT : 0),
   );
 }
 
