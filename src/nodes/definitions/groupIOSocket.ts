@@ -12,7 +12,7 @@ export interface GroupIOSocket {
   type: SocketType;
   /** `groupInput` 側でのみ意味を持つ、未接続時のリテラルなデフォルト値。
    * number は number、color は hex 文字列、enum はオプション文字列として保持する
-   * (numberInput/colorInput/enumInput の `data.value`/`hex` と同じ表現)。
+   * (numberInput/colorInput の `data.value`/`hex` と同じ表現)。
    * geometry/material にはリテラルなデフォルトが存在しないため常に undefined。 */
   default?: number | string;
   /** enum タイプの `groupInput` ソケットのみが持つ選択肢一覧。 */

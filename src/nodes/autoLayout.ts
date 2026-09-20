@@ -31,7 +31,7 @@ const FALLBACK_NODE_HEIGHT = ROW_SPACING - NODE_GAP;
  * (土台 + 行数 × 行高さ)で `offsetHeight` と一致する(bagGenerator は 9行で 40.8 + 9*22.8 = 246)。 */
 const CARD_BASE_HEIGHT = 40.8;
 const CARD_ROW_HEIGHT = 22.8;
-/** `groupInput`/`groupOutput` のソケット行と enumInput の選択肢行(`rf-node__io-row`)の高さ。
+/** `groupInput`/`groupOutput` のソケット行(`rf-node__io-row`)の高さ。
  * `GenericNode.tsx` のソケット行(`CARD_ROW_HEIGHT`)とは別の CSS で、23px。 */
 const IO_ROW_HEIGHT = 23;
 /** `groupInput`/`groupOutput` の、ソケット行を持たない土台(パディング+枠線+タイトル行+間隔)の高さ。 */
@@ -43,24 +43,17 @@ const CARD_GROUP_HINT_HEIGHT = 18;
 const GROUP_IO_ADD_ROW_HEIGHT = 26;
 /** 数値入力欄/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
  * ソケット数によらず固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの
- * (numberInput は実測 60px、colorInput は実測 66px)。enumInput は
- * 選択肢(`rf-node__io-row`)を可変個描画するため、この固定値方式ではなく後述の
- * `ENUM_INPUT_BASE_HEIGHT` を使った式で見積もる。 */
+ * (numberInput は実測 60px、colorInput は実測 66px)。 */
 const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
   numberInput: 60,
   colorInput: 66,
 };
-/** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: 選択肢3個の
- * カードが 152px = 83 + 3*23。傾き23pxは `IO_ROW_HEIGHT` と一致したため、
- * 切片だけを定数として持つ)。 */
-const ENUM_INPUT_BASE_HEIGHT = 83;
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
  * 固定値では小さいノード(numberInput 約60px)も大きいノード(bagGenerator 約246px)も
  * 同じ間隔で並べることになり、間延びしすぎる問題があった(詳細は Git 履歴参照)。
  *
  * - `BESPOKE_NODE_HEIGHTS` に載っている専用UI系はその固定値を返す。
- * - `enumInput` は選択肢数だけ可変(`ENUM_INPUT_BASE_HEIGHT + 選択肢数 * IO_ROW_HEIGHT`)。
  * - `groupInput`/`groupOutput` は `editor/nodeComponents/` の専用UI(ソケットごとの
  *   行 + 末尾の追加行)を持ち、`GROUP_IO_BASE_HEIGHT + ソケット数 * IO_ROW_HEIGHT` に追加行の分を足す。
  * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
@@ -76,11 +69,6 @@ const ENUM_INPUT_BASE_HEIGHT = 83;
 export function estimateNodeHeight(type: string, data: unknown): number {
   const bespoke = BESPOKE_NODE_HEIGHTS[type];
   if (bespoke !== undefined) return bespoke;
-
-  if (type === 'enumInput') {
-    const options = (data as { options?: unknown[] } | undefined)?.options ?? [];
-    return ENUM_INPUT_BASE_HEIGHT + options.length * IO_ROW_HEIGHT;
-  }
 
   if (type === 'groupInput' || type === 'groupOutput') {
     const sockets = (data as { sockets?: unknown[] } | undefined)?.sockets ?? [];
@@ -110,7 +98,6 @@ export function estimateNodeHeight(type: string, data: unknown): number {
 export function socketRowFraction(type: string, data: unknown, socketId: string | null | undefined, direction: 'input' | 'output'): number {
   if (socketId == null) return 0;
   if (type in BESPOKE_NODE_HEIGHTS) return 0;
-  if (type === 'enumInput') return 0;
   if (type === 'groupInput' || type === 'groupOutput') return 0;
   if (!nodeTypeRegistry.has(type)) return 0;
 

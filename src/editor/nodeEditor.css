@@ -211,8 +211,7 @@
 
 /* `flex: 1` の flex-basis: 0% は不確定な包含ブロックに対しては auto 相当に扱われ、
    ブラウザ既定の <input> 実寸にフォールバックするため、確定した固定幅を指定する。Group Input/Output(`.rf-node--io`、
-   min-width: 190px)ではこれまで目立たなかったが、同じクラスを流用した enumInput の
-   選択肢編集行(`EnumInputNode.tsx`、カードの既定幅がずっと小さい)で顕在化した。 */
+   min-width: 190px)ではこれまで目立たなかったが、カードの既定幅が小さいノードで顕在化しうる。 */
 .rf-node__io-label {
   flex: 1 1 100px;
   width: 100px;

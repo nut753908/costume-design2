@@ -18,7 +18,6 @@ import { nodeTypeRegistry } from '../nodes/registry';
 import { hasCycle } from '../nodes/evaluateGraph';
 import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
 import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
-import { EnumInputNodeView } from './nodeComponents/EnumInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
 import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
 import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
@@ -33,12 +32,11 @@ import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
 import { NODE_TYPE_DND_MIME, fitViewPadding } from './paletteShared';
 
-// 専用UIを持つ3種(number/enum/color)以外は、レジストリに登録済みの全ノードタイプへ
+// 専用UIを持つ2種(number/color)以外は、レジストリに登録済みの全ノードタイプへ
 // GenericNodeView を自動で割り当てる。新しいノードタイプを追加してもここへの追記が
 // 不要になり、登録漏れ(=ノードが描画されない不具合)を構造的に防ぐ。
 const NODE_VIEW_OVERRIDES: Partial<Record<string, NodeTypes[string]>> = {
   numberInput: NumberInputNodeView,
-  enumInput: EnumInputNodeView,
   colorInput: ColorInputNodeView,
   groupInput: GroupInputNodeView,
   groupOutput: GroupOutputNodeView,

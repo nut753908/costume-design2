@@ -33,7 +33,7 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // 自分ではスケール計算を一切行わない。
   { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 
-  // 全14種のガーメントは、各ガーメントの生パラメータ(numberInput/enumInput/colorInput)+
+  // 全14種のガーメントは、各ガーメントの生パラメータ(numberInput/colorInput)+
   // numberMultiply(体に触れる半径があれば)+ generator + toonMaterial + offsetY用の
   // numberInput + garmentPlacement という一連のパイプラインを1枚の <name>Group ノード
   // (nodes/definitions/groupNodeFactory.ts の defineGroupNode() で定義、nodes/definitions/

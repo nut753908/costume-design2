@@ -82,7 +82,6 @@ npm run dev
 ```js
 page.locator('.react-flow__node[data-id="<ノードID>"] input[type="number"]')  // numberInput
 page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  // colorInput
-page.locator('.react-flow__node[data-id="<ノードID>"] select')               // enumInput
 ```
 
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには

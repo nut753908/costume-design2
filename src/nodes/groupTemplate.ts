@@ -59,12 +59,11 @@ export function isGroupInstanceStale(type: string, data: GroupInstanceData): boo
 
 const VALUE_KEY_BY_INPUT_TYPE: Record<string, string> = {
   numberInput: 'value',
-  enumInput: 'value',
   colorInput: 'hex',
 };
 
 /** 現在のテンプレートを読み込み直し、古い内部グラフ(`oldNodes`)にあった同じ id・同じ型の
- * `numberInput`/`enumInput`/`colorInput` の値だけを引き継ぐ。構造(配線・ノード構成)や
+ * `numberInput`/`colorInput` の値だけを引き継ぐ。構造(配線・ノード構成)や
  * min/max は最新のテンプレートのものになる。対応するノードが無くなった値は捨てる。 */
 export function migrateGroupToTemplate(
   type: string,

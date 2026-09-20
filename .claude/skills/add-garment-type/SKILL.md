@@ -66,7 +66,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 - `bodyBuildScale(rawId)`(`garmentParts.ts`)— 「体に触れる半径」(`rawId` の `value`)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。グループ内に `segmentsIn`(numberInput)が必要。
 
-外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `legSpacing`(`bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput`/`enumInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
+外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `legSpacing`(`bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';

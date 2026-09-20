@@ -94,7 +94,7 @@ interface GraphState {
    * 指紋で、親ノードの `data` に記録して「テンプレートが古い」判定(`isGroupInstanceStale`)に使う。 */
   loadGroupGraph: (nodes: Node[], edges: Edge[], templateFingerprint: string | undefined) => void;
   /** 今開いているグループの内部を最新のテンプレートへ更新する。同じ id・同じ型の
-   * `numberInput`/`enumInput`/`colorInput` の値は引き継ぐ(`migrateGroupToTemplate`)。 */
+   * `numberInput`/`colorInput` の値は引き継ぐ(`migrateGroupToTemplate`)。 */
   migrateCurrentGroupToTemplate: () => void;
   undo: () => void;
   redo: () => void;
