@@ -467,14 +467,6 @@ describe('estimateNodeHeight', () => {
     expect(heightB - heightA).toBe(2 * 23);
   });
 
-  it('数値/enum型の出力ソケットは、ソケット行とは別に値表示行の分だけ高さが増える', () => {
-    registerTestType({ type: '__height_test_geometry_out__', outputs: [{ id: 'out', label: 'Out', type: 'geometry' }] });
-    registerTestType({ type: '__height_test_number_out__', outputs: [{ id: 'out', label: 'Out', type: 'number' }] });
-    const geometryOutHeight = estimateNodeHeight('__height_test_geometry_out__', {});
-    const numberOutHeight = estimateNodeHeight('__height_test_number_out__', {});
-    expect(numberOutHeight - geometryOutHeight).toBe(22); // 値表示行1行ぶん(行 20.6 + 末尾 1.4)
-  });
-
   it('group カテゴリのノードは、ダブルクリックヒント行の分だけ高さが増える', () => {
     registerTestType({ type: '__height_test_group__', category: 'group', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
     registerTestType({ type: '__height_test_generator_same_inputs__', inputs: [{ id: 'a', label: 'A', type: 'number' }] });
