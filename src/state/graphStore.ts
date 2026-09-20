@@ -342,7 +342,7 @@ export const useGraphStore = create<GraphState>()(
           const existing = node.data as GroupNodeDataShape;
           const materialized: GroupNodeDataShape = existing.nodes
             ? existing
-            : (def.createDefaultData() as GroupNodeDataShape);
+            : ({ ...existing, ...(def.createDefaultData() as GroupNodeDataShape) } as GroupNodeDataShape);
 
           const nodesAtThisLevel = state.nodes.map((n) => (n.id === nodeId ? { ...n, data: materialized } : n));
 

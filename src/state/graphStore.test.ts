@@ -458,6 +458,17 @@ describe('graphStore の enterGroup/exitGroup/exitToLevel', () => {
     expect((parentAtTopLevel!.data as { nodes?: Node[] }).nodes).toBeDefined();
   });
 
+  it('未実体化のグループへ入っても、ノードカード上の入力欄の値(data[socketId])は保たれる', () => {
+    const node = makeGroupNode('g');
+    resetStore([{ ...node, data: { ...node.data, offset: 1.5 } }]);
+    useGraphStore.getState().enterGroup('g');
+    useGraphStore.getState().exitGroup();
+
+    const g = useGraphStore.getState().nodes.find((n) => n.id === 'g');
+    expect((g!.data as { offset?: number }).offset).toBe(1.5);
+    expect((g!.data as { nodes?: Node[] }).nodes).toBeDefined();
+  });
+
   it('exitGroup で編集結果が親ノードの data へ書き戻され、上位階層の nodes/edges が復元される', () => {
     resetStore([makeGroupNode('g'), makeNode('sibling')]);
     useGraphStore.getState().enterGroup('g');
