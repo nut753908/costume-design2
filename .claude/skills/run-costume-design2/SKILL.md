@@ -1,6 +1,6 @@
 ---
 name: run-costume-design2
-description: costume-design2(ノードグラフで3Dコスチュームをデザインするブラウザアプリ)を起動し、ヘッドレスChromiumで実際に操作してスクリーンショットを撮る。UI/3Dの変更を確認したい、コンソールエラーが無いか確認したい、スライダー/カラーピッカー操作やシーン描画を検証したいときに使う。「アプリを起動して」「動作確認して」「スクリーンショット撮って」のような依頼で使用する。
+description: costume-design2(ノードグラフで3Dコスチュームをデザインするブラウザアプリ)を起動し、ヘッドレスChromiumで実際に操作してスクリーンショットを撮る。UI/3Dの変更を確認したい、コンソールエラーが無いか確認したい、数値入力欄/カラーピッカー操作やシーン描画を検証したいときに使う。「アプリを起動して」「動作確認して」「スクリーンショット撮って」のような依頼で使用する。
 ---
 
 # costume-design2 を実行・操作する
@@ -49,7 +49,7 @@ node .claude/skills/run-costume-design2/driver.mjs
 5. `skirtGroup` をダブルクリックして中に入り(ガーメント固有の生パラメータは
    `<name>GroupNode.ts` の `internalNodes` に埋め込まれているため、中に入らないと操作できない
    — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`waistRadiusIn`(numberInputノード)の
-   スライダーに高頻度のinputイベントを連続発火させ(実際のドラッグ操作の再現)、ジオメトリが
+   数値入力欄に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが
    追従して変化した後のスクリーンショットを撮る。
 6. 同じく中にいる `colorIn`(colorInputノード)の色を変更し、トップレベルへ戻ってから
    ガーメントの色が変わった後のスクリーンショットを撮る(3Dシーンは `rootEvaluatedResults` 経由
@@ -59,7 +59,7 @@ node .claude/skills/run-costume-design2/driver.mjs
 
 スクリーンショットは `.claude/skills/run-costume-design2/screenshots/` に出力される
 (`01_initial.png` 〜 `04_after_color_change.png`)。**撮影して終わりではなく、実際に画像を見て
-判断すること** — キャラクターとガーメントが表示されているか、スライダー操作後にガーメント形状が
+判断すること** — キャラクターとガーメントが表示されているか、数値入力欄の操作後にガーメント形状が
 変化しているか、色変更後に色が変わっているかを目視確認する。
 
 終了コード0かつ「OK: コンソールエラーなし」であれば成功。それ以外(NG行が出力される、または
@@ -80,7 +80,7 @@ npm run dev
 付与する属性、値はグラフ内のノードID)でセレクタを組み立てる:
 
 ```js
-page.locator('.react-flow__node[data-id="<ノードID>"] input[type="range"]')  // numberInput
+page.locator('.react-flow__node[data-id="<ノードID>"] input[type="number"]')  // numberInput
 page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  // colorInput
 page.locator('.react-flow__node[data-id="<ノードID>"] select')               // enumInput
 ```
@@ -91,7 +91,7 @@ page.locator('.react-flow__node[data-id="<ノードID>"] select')               
 `torsoRadiusIn` のような `<socketId>In` という id で埋め込まれているため、上のステップ5と同様に
 まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。
 
-range/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
+number/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
 onChangeが発火しない。ネイティブの value setter 経由で値をセットしてから `input` イベントを
 `dispatchEvent` する必要がある(`driver.mjs` 内の該当箇所を参照)。
 
@@ -111,7 +111,7 @@ onChangeが発火しない。ネイティブの value setter 経由で値をセ�
   chromium-cli` が失敗する。代わりに `playwright-core` を直接使っている。将来 `chromium-cli` が
   使えるようになったら乗り換えを検討してよいが、その場合もこの `driver.mjs` の操作シーケンス
   (待機セレクタ・間引き検証手順)はそのまま参考にできる。
-- **`fill()` は使わない。** Playwright の `locator.fill()` は range/color input には正式対応
+- **`fill()` は使わない。** Playwright の `locator.fill()` は number/color input には正式対応
   しておらず、意図通りに動かないことがある。ネイティブ value setter + `dispatchEvent(new
   Event('input', { bubbles: true }))` の組み合わせが確実。
 - **プロジェクト本体に依存を追加していない。** `playwright-core` はこのスキルディレクトリの
@@ -119,7 +119,7 @@ onChangeが発火しない。ネイティブの value setter 経由で値をセ�
   が非アンカーのため、ここも自動的に無視される)。プロジェクト本体の `npm run build`/`npm test`
   には一切影響しない。
 - **`evaluations` カウンタ(画面右下)は間引きの効き目を確認する手がかりになる。** 例えば
-  スライダーに6回連続でinputイベントを送っても、間引きロジックが効いていれば `evaluations` は
+  数値入力欄に6回連続でinputイベントを送っても、間引きロジックが効いていれば `evaluations` は
   1〜2回分しか増えない(6回分ではない)。大きく増えていたら間引きが壊れている疑い。
 
 ## Troubleshooting

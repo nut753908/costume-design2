@@ -427,12 +427,12 @@ describe('estimateNodeHeight', () => {
   });
 
   it('専用UIを持つ入力系ノードのうち固定行数の2種は実測した固定値を返す(ソケット数によらない)', () => {
-    expect(estimateNodeHeight('numberInput', {})).toBe(125);
+    expect(estimateNodeHeight('numberInput', {})).toBe(60);
     expect(estimateNodeHeight('colorInput', {})).toBe(66);
   });
 
   it('グループの中(inGroup)では、入力系ノードに「グループに表示」チェックボックス行(23px)が加わる', () => {
-    expect(estimateNodeHeight('numberInput', {}, true)).toBe(125 + 23);
+    expect(estimateNodeHeight('numberInput', {}, true)).toBe(60 + 23);
     expect(estimateNodeHeight('colorInput', {}, true)).toBe(66 + 23);
     expect(estimateNodeHeight('enumInput', { options: ['a'] }, true)).toBe(83 + 23 + 23);
   });

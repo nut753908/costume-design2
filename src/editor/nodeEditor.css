@@ -37,31 +37,9 @@
   color: #6b4e00;
 }
 
-.rf-node__settings-row {
-  display: flex;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.rf-node__settings-field {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 10px;
-  color: #666;
-}
-
-/* `.rf-node` は幅を明示指定せず内容に合わせて縮む(shrink-to-fit)ため、ここで
-   `width: 100%` を指定しても基準になる確定幅が無く、ブラウザ既定の <input> の
-   実寸(size=20相当、約150px超)がそのまま採用されてカード全体が横に膨張してしまう
-   (実際に発生した不具合)。数値欄は元々2〜4桁程度しか入力しないので、確定した
-   固定幅を直接指定する。Chrome の number input は上下矢印(スピンボタン)ぶんの
-   幅も入力欄の内側(border-box)に食い込ませてくるため、44px では "0.01" のような
-   4文字の値がスピンボタンに隠れてしまっていた(実際に発生した不具合)。文字が
-   隠れない余裕を見て広げてある。 */
-.rf-node__settings-field input {
+.rf-node__number-input {
   box-sizing: border-box;
-  width: 56px;
+  width: 80px;
   padding: 2px 4px;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -70,22 +48,12 @@
   color: #1a1a1a;
 }
 
-.rf-node__slider {
-  width: 100%;
-}
-
 .rf-node__color {
   width: 100%;
   height: 24px;
   border: none;
   padding: 0;
   background: none;
-}
-
-.rf-node__value {
-  margin-top: 4px;
-  font-family: ui-monospace, Consolas, monospace;
-  opacity: 0.75;
 }
 
 .rf-node__group-hint {

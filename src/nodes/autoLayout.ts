@@ -45,13 +45,14 @@ const CARD_GROUP_HINT_HEIGHT = 18;
 const EXPOSE_TOGGLE_HEIGHT = 23;
 /** `groupInput`/`groupOutput` の末尾の「追加」行(型セレクタ+「+ Add」ボタン)の高さ。 */
 const GROUP_IO_ADD_ROW_HEIGHT = 26;
-/** スライダー/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
+/** 数値入力欄/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
  * ソケット数によらず固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの
- * (colorInput はグループ内の実測 89px から「グループに表示」行 23px を引いた値)。enumInput は
+ * (numberInput はトップレベルの実測 60px、colorInput はグループ内の実測 89px から
+ * 「グループに表示」行 23px を引いた値)。enumInput は
  * 選択肢(`rf-node__io-row`)を可変個描画するため、この固定値方式ではなく後述の
  * `ENUM_INPUT_BASE_HEIGHT` を使った式で見積もる。 */
 const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
-  numberInput: 125,
+  numberInput: 60,
   colorInput: 66,
 };
 /** enumInput の選択肢が0個だった場合に相当する高さへの外挿値(実測: グループ内で選択肢3個の
@@ -76,7 +77,7 @@ function exposedParamsHeight(type: string, data: unknown): number {
 
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
- * 固定値では小さいノード(numberInput 約84px)も大きいノード(bagGenerator 約246px)も
+ * 固定値では小さいノード(numberInput 約60px)も大きいノード(bagGenerator 約246px)も
  * 同じ間隔で並べることになり、間延びしすぎる問題があった(詳細は Git 履歴参照)。
  *
  * - `BESPOKE_NODE_HEIGHTS` に載っている専用UI系はその固定値を返す。

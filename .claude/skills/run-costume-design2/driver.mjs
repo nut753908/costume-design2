@@ -98,7 +98,7 @@ async function main() {
     // skirt の生パラメータ(waistRadiusIn/colorIn)は skirtGroup の internalNodes に
     // 埋め込まれているため、中に入ってから操作する(nodes/CLAUDE.md の「グループノード」節参照)。
     // 実ポインタでの dblclick() ではなく、対象要素へ直接 dblclick イベントを dispatch する
-    // ("Gotchas" の range/color input と同じ考え方) — グラフが育つと `computeAutoLayout()`
+    // ("Gotchas" の number/color input と同じ考え方) — グラフが育つと `computeAutoLayout()`
     // の出力(ノード数・全体の高さ)が変わって初期ズーム/パンも変わるため、この固定
     // ビューポート(1600x1000)では NodePalette パネル(左上の固定オーバーレイ)の下に
     // skirtGroup が重なることがあり、実ポインタクリックだと座標上は最前面のパネルへ吸われて
@@ -108,8 +108,8 @@ async function main() {
     });
     await page.waitForSelector('.react-flow__node[data-id="waistRadiusIn"]', { timeout: 5000 });
 
-    // numberInput ノード(waistRadiusIn)を高頻度 input で連続操作 → 間引き & ジオメトリ追従の確認
-    const waistInput = page.locator('.react-flow__node[data-id="waistRadiusIn"] input[type="range"]');
+    // numberInput ノード(waistRadiusIn)の数値入力欄を高頻度 input で連続操作 → 間引き & ジオメトリ追従の確認
+    const waistInput = page.locator('.react-flow__node[data-id="waistRadiusIn"] input[type="number"]');
     await waistInput.evaluate((el) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
       for (const v of [0.32, 0.36, 0.4, 0.44, 0.48, 0.5]) {
@@ -118,8 +118,8 @@ async function main() {
       }
     });
     await page.waitForTimeout(200);
-    await page.screenshot({ path: path.join(SHOT_DIR, '03_after_slider_drag.png') });
-    console.log('OK: スライダー操作後のスクリーンショットを撮影 (screenshots/03_after_slider_drag.png)');
+    await page.screenshot({ path: path.join(SHOT_DIR, '03_after_number_input.png') });
+    console.log('OK: 数値入力欄の操作後のスクリーンショットを撮影 (screenshots/03_after_number_input.png)');
 
     // colorInput ノード(colorIn)の色変更確認(同じく skirtGroup の中)
     await page.locator('.react-flow__node[data-id="colorIn"] input[type="color"]').evaluate((el) => {
