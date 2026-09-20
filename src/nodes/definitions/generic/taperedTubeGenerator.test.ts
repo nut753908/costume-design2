@@ -4,8 +4,8 @@ import '../../definitions';
 
 const num = (value: number) => ({ type: 'number' as const, value });
 
-function tube(inputs: Record<string, ReturnType<typeof num> | { type: 'enum'; value: string }>, data = {}) {
-  const def = getNodeType('taperedTubeGenerator');
+function tube(type: string, inputs: Record<string, ReturnType<typeof num>>, data = {}) {
+  const def = getNodeType(type);
   const result = def.evaluate(inputs, { ...def.createDefaultData(), ...data });
   if (result.geometry?.type !== 'geometry') throw new Error('geometry が出力されていない');
   return result.geometry.value;
@@ -20,24 +20,35 @@ const INPUTS = {
   endThickness: num(0.1),
 };
 
-describe('taperedTubeGenerator', () => {
-  it('data の shape が既定(ellipse)なら segments 分割の楕円断面になる', () => {
-    expect(tube({ ...INPUTS, segments: num(8) }).getAttribute('position').count).toBe(2 * 9);
+describe('taperedEllipseTubeGenerator', () => {
+  it('segments 分割の楕円断面になる(既定は data の segments)', () => {
+    expect(tube('taperedEllipseTubeGenerator', { ...INPUTS, segments: num(8) }).getAttribute('position').count).toBe(2 * 9);
+    expect(tube('taperedEllipseTubeGenerator', INPUTS).getAttribute('position').count).toBe(2 * 13);
   });
 
-  it('shape を矩形にすると4隅の断面になる(segments は使わない)', () => {
-    expect(tube(INPUTS, { shape: 'rectangle' }).getAttribute('position').count).toBe(2 * 5);
+  it('segments は3未満に丸まらない', () => {
+    expect(tube('taperedEllipseTubeGenerator', { ...INPUTS, segments: num(1) }).getAttribute('position').count).toBe(2 * 4);
+  });
+});
+
+describe('taperedRectTubeGenerator', () => {
+  it('4隅の矩形断面になる', () => {
+    expect(tube('taperedRectTubeGenerator', INPUTS).getAttribute('position').count).toBe(2 * 5);
   });
 
-  it('shape ソケットへ値が来ればそちらが data より優先される', () => {
-    expect(tube({ ...INPUTS, shape: { type: 'enum', value: 'rectangle' } }).getAttribute('position').count).toBe(2 * 5);
+  it('segments ソケットを持たない', () => {
+    expect(getNodeType('taperedRectTubeGenerator').inputs.some((s) => s.id === 'segments')).toBe(false);
   });
 
   it('始点・終点の X/Y/Z と各端の幅・厚みを取り違えない', () => {
-    const geometry = tube(
-      { ...INPUTS, startX: num(1), startZ: num(2), endX: num(1), endZ: num(2), endY: num(-3) },
-      { shape: 'rectangle' },
-    );
+    const geometry = tube('taperedRectTubeGenerator', {
+      ...INPUTS,
+      startX: num(1),
+      startZ: num(2),
+      endX: num(1),
+      endZ: num(2),
+      endY: num(-3),
+    });
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
     expect(box.max.y).toBeCloseTo(0, 6);

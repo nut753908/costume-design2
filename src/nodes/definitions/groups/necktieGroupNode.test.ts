@@ -3,10 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 import { expectOutwardWinding } from '../../../geometry/windingTestHelpers';
 // necktieGroup の埋め込みサブグラフが参照する numberInput/colorInput/boxGenerator/translate/
-// taperedTubeGenerator/mergeGeometry/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
+// taperedRectTubeGenerator/mergeGeometry/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// necktie は結び目(boxGenerator+translate)とブレード(taperedTubeGenerator)を mergeGeometry で
+// necktie は結び目(boxGenerator+translate)とブレード(taperedRectTubeGenerator)を mergeGeometry で
 // 結合する(necktieGroupNode.ts のコメント参照)。寸法はグループ内部の numberInput に閉じ、
 // 前面の深さ(Front Depth)だけが Body Build でスケールされる。既定値での評価結果の
 // バウンディングボックスで、各パラメータの配線先(X/Y/Z・幅/厚み)を検証する。

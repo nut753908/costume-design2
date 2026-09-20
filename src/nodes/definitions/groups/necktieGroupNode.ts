@@ -8,7 +8,7 @@ import { constNumberInput } from '../constNumberInput';
  * 他のガーメントの「体に触れる半径」と同じく Body Build を掛けてから使う(`scale`)。
  * 全体は完全にノードグラフへ展開されている: 結び目(`knotGen`、`boxGenerator`)は
  * `knotTranslate`(`translate`)で `(0, -knotHeight/2, frontDepth)` へ置き、ブレード(`bladeGen`、
- * `taperedTubeGenerator` の矩形断面)は結び目の下端 `(0, -knotHeight, frontDepth)` から
+ * `taperedRectTubeGenerator`)は結び目の下端 `(0, -knotHeight, frontDepth)` から
  * `bladeLength` だけ下の点まで、上端 `bladeTopWidth` から下端 `bladeBottomWidth` へ広がる。
  * 上端は結び目の陰、下端は先細りの点に近いため、ブレードにキャップは付けない。2つは
  * `merge`(`mergeGeometry`)で結合する。Y座標は `numberHalf`/`numberNegate`/`numberSubtract` の
@@ -51,7 +51,7 @@ defineGroupNode({
     { id: 'knotTranslate', type: 'translate', data: {} },
     { id: 'bladeStartY', type: 'numberNegate', data: {} },
     { id: 'bladeEndY', type: 'numberSubtract', data: {} },
-    { id: 'bladeGen', type: 'taperedTubeGenerator', data: { shape: 'rectangle' } },
+    { id: 'bladeGen', type: 'taperedRectTubeGenerator', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,
   ],
@@ -67,7 +67,7 @@ defineGroupNode({
     { source: 'knotCenterY', sourceHandle: 'value', target: 'knotTranslate', targetHandle: 'y' },
     { source: 'scale', sourceHandle: 'value', target: 'knotTranslate', targetHandle: 'z' },
 
-    // ブレード = taperedTubeGenerator(結び目の下端 → bladeLength だけ下、X=0・Z=frontDepth)。
+    // ブレード = taperedRectTubeGenerator(結び目の下端 → bladeLength だけ下、X=0・Z=frontDepth)。
     { source: 'knotHeightIn', sourceHandle: 'value', target: 'bladeStartY', targetHandle: 'value' },
     { source: 'bladeStartY', sourceHandle: 'value', target: 'bladeEndY', targetHandle: 'a' },
     { source: 'bladeLengthIn', sourceHandle: 'value', target: 'bladeEndY', targetHandle: 'b' },

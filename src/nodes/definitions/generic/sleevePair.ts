@@ -4,7 +4,7 @@ import { constNumberInput } from '../constNumberInput';
 /** 左右の袖(肩から斜め下へ伸びる、先細りの円形断面チューブ)を作るグループノード。`topGroupNode.ts`
  * の Top 本体と結合して使う。
  *
- * 袖は `taperedTubeGenerator`(楕円断面)1本を、原点 `(0, 0, 0)` から
+ * 袖は `taperedEllipseTubeGenerator`1本を、原点 `(0, 0, 0)` から
  * `(length × cos(droop), -length × sin(droop), 0)` まで作り、`mirrorPair` で `±startX` へ複製して
  * 左右の袖にする(左袖は `mirrorPair` 内の `mirrorX` で鏡像反転される)。`startX` は胴体の壁より
  * 少し内側(`attachRadius × insetIn`)にして、浮かずに壁と重なるようにする(ブーリアン演算や
@@ -39,7 +39,7 @@ defineGroupNode({
     { id: 'endY', type: 'numberNegate', data: {} },
     { id: 'startDiameter', type: 'numberMultiply', data: {} },
     { id: 'endDiameter', type: 'numberMultiply', data: {} },
-    { id: 'gen', type: 'taperedTubeGenerator', data: { shape: 'ellipse', segments: 12 } },
+    { id: 'gen', type: 'taperedEllipseTubeGenerator', data: { segments: 12 } },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     {
       id: 'output',
