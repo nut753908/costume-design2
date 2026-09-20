@@ -74,13 +74,6 @@ function exposedParamsHeight(type: string, data: unknown): number {
   );
 }
 
-/** `data.label` で独自の名前が付けられた generator 系ノード(今のところ
- * numberAdd/numberMultiply/numberSubtract のみ、`NodeTitleBar.tsx` の `rf-node__type-subtitle`
- * 参照)がタイトルの下に追加で表示する、元の type 名(例: "numberAdd")のサブタイトル行が
- * 占める高さ。`run-costume-design2` スキルで bodyLayoutGroup 内の numberAdd ノード
- * (`shoulderYCalc`)の実測から求めた値(サブタイトル 13px + 上マージン -4px + 下マージン 6px)。 */
-const TYPE_NAME_SUBTITLE_HEIGHT = 15;
-
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
  * 固定値では小さいノード(numberInput 約84px)も大きいノード(bagGenerator 約246px)も
@@ -122,12 +115,10 @@ export function estimateNodeHeight(type: string, data: unknown, inGroup = false)
   const def = getNodeType(type);
   const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
   const socketRows = inputs.length + outputs.length;
-  const hasTypeNameSubtitle = (data as { label?: string } | undefined)?.label !== undefined;
   return Math.round(
     CARD_BASE_HEIGHT +
       socketRows * CARD_ROW_HEIGHT +
-      (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0) +
-      (hasTypeNameSubtitle ? TYPE_NAME_SUBTITLE_HEIGHT : 0),
+      (def.category === 'group' ? CARD_GROUP_HINT_HEIGHT + exposedParamsHeight(type, data) : 0),
   );
 }
 

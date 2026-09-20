@@ -43,7 +43,7 @@ function EnumInputNodeViewImpl({ id, data }: NodeProps) {
     <div className="rf-node">
       <NodeTitleBar
         id={id}
-        label={nodeData.label ?? 'Enum'}
+        label="Enum"
       />
       <select
         className="nodrag"

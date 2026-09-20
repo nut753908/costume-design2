@@ -442,10 +442,6 @@ describe('estimateNodeHeight', () => {
     expect(estimateNodeHeight('groupOutput', { sockets: [{}] })).toBe(40 + 23 + 26);
   });
 
-  it('data.label を持つノードにはタイトル下のサブタイトル行(15px)が加わる', () => {
-    expect(estimateNodeHeight('numberAdd', { label: 'x' }) - estimateNodeHeight('numberAdd', {})).toBe(15);
-  });
-
   it('enumInputは選択肢の数に比例して高さが増える', () => {
     expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c'] })).toBe(83 + 3 * 23);
     expect(estimateNodeHeight('enumInput', { options: ['a', 'b', 'c', 'd', 'e'] })).toBe(83 + 5 * 23);
