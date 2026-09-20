@@ -95,7 +95,7 @@ async function main() {
     await page.screenshot({ path: path.join(SHOT_DIR, '02_after_orbit.png') });
     console.log('OK: カメラ操作後のスクリーンショットを撮影 (screenshots/02_after_orbit.png)');
 
-    // skirt の生パラメータ(`scale` の Value 入力欄/`material` の Color 入力欄)は skirtGroup の
+    // skirt の生パラメータ(`scale` の Value 入力欄/`Group Input` の Color 入力欄)は skirtGroup の
     // internalNodes に埋め込まれているため、中に入ってから操作する(nodes/CLAUDE.md の「グループノード」節参照)。
     // 実ポインタでの click() ではなく、「中に入る」ボタンへ直接 click を実行する
     // ("Gotchas" の number/color input と同じ考え方) — グラフが育つと `computeAutoLayout()`
@@ -119,8 +119,8 @@ async function main() {
     await page.screenshot({ path: path.join(SHOT_DIR, '03_after_number_input.png') });
     console.log('OK: 数値入力欄の操作後のスクリーンショットを撮影 (screenshots/03_after_number_input.png)');
 
-    // `material`(toonMaterial)の Color 入力欄の色変更確認(同じく skirtGroup の中)
-    await page.locator('.react-flow__node[data-id="material"] input[type="color"]').evaluate((el) => {
+    // `Group Input`(id: `input`)の Color 入力欄の色変更確認(色は外部ソケット `color` から `material` へ配線される)(同じく skirtGroup の中)
+    await page.locator('.react-flow__node[data-id="input"] input[type="color"]').evaluate((el) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
       setter.call(el, '#22cc55');
       el.dispatchEvent(new Event('input', { bubbles: true }));
