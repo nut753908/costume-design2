@@ -19,6 +19,8 @@ import { hasCycle } from '../nodes/evaluateGraph';
 import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
 import { NumberInputNodeView } from './nodeComponents/NumberInputNode';
 import { ColorInputNodeView } from './nodeComponents/ColorInputNode';
+import { NumberDisplayNodeView } from './nodeComponents/NumberDisplayNode';
+import { ColorDisplayNodeView } from './nodeComponents/ColorDisplayNode';
 import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
 import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
@@ -40,6 +42,8 @@ import type { CustomCardType } from '../nodes/customCardTypes';
 const NODE_VIEW_OVERRIDES: Record<CustomCardType, NodeTypes[string]> = {
   numberInput: NumberInputNodeView,
   colorInput: ColorInputNodeView,
+  numberDisplay: NumberDisplayNodeView,
+  colorDisplay: ColorDisplayNodeView,
   groupInput: GroupInputNodeView,
   groupOutput: GroupOutputNodeView,
 };

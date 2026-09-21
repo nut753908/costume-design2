@@ -43,10 +43,12 @@ const GROUP_IO_ADD_ROW_HEIGHT = 22;
 const GROUP_IO_ADD_ROW_MARGIN = 4;
 /** 数値入力欄/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
  * ソケット数によらず固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの
- * (numberInput は実測 60px、colorInput は実測 66px)。 */
+ * (numberInput は実測 60px、colorInput は実測 66px、numberDisplay/colorDisplay は実測 64px)。 */
 const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
   numberInput: 60,
   colorInput: 66,
+  numberDisplay: 64,
+  colorDisplay: 64,
 };
 /** `estimateNodeHeight()` が一般式ではなく個別に高さを求める type(専用のカード UI を持つノード)。
  * `nodes/customCardTypes.ts` の `CUSTOM_CARD_TYPES` と一致することをテストで確認している。 */
