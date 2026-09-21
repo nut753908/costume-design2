@@ -24,7 +24,7 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
  * グループの中に入っている間、このノードにソケットを増減・配線するだけでグループ本体の
  * 外部から見える入力ハンドルが増減する(`nodes/definitions/groupInput.ts`/
  * `nodes/resolveNodeSockets.ts` 参照)。ソケットのデフォルト値(`socket.default`)や配線された注入値は
- * このノードでは表示も編集もしない(グループカードの未接続入力の欄で変更する)。 */
+ * このノードでは表示せず、編集もできない(グループカードの未接続入力の欄で変更する)。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
   const sockets = nodeData.sockets ?? [];
