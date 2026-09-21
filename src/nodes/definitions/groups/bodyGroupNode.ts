@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { colorSocket } from '../garmentOutput';
 
 /** Body を他14種のガーメントと同じ「`<name>Group` ノード」パターンで表現する。
  * `Garments.tsx` はノードの型を問わず内部の `sceneOutput` だけを見て描画するため、
@@ -21,8 +22,9 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 部位ごと(腕1本の左右ペアで共通、脚1本の左右ペアで共通)で、`armPair`/`legPair`(`limbPair`)の
  * `Taper Ratio` 入力欄の値として別々に持つ(腕用/脚用は別のノードなので区別できる)。
  *
- * 肌色は `material`(`toonMaterial`)の `Color` 入力欄の値で、`material` から `sceneOut` の
- * `material` へ1本配線するだけでよい(4パーツすべてが同じマテリアルを使う)。 */
+ * 肌色は他のガーメントと同じ外部ソケット `color`(`colorSocket()`)で、`material`(`toonMaterial`)の
+ * `color` へ配線し、`material` から `sceneOut` の `material` へ1本配線するだけでよい
+ * (4パーツすべてが同じマテリアルを使う)。 */
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',
@@ -45,10 +47,11 @@ defineGroupNode({
           { id: 'torsoCenterY', label: 'Torso Center Y', type: 'number', default: 0 },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 0 },
           { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0 },
+          colorSocket('#f2c9a0'),
         ],
       },
     },
-    { id: 'material', type: 'toonMaterial', data: { color: '#f2c9a0' } },
+    { id: 'material', type: 'toonMaterial', data: {} },
 
     // 胴体(capsuleGenerator)。
     { id: 'torsoGen', type: 'capsuleGenerator', data: {} },
@@ -92,6 +95,7 @@ defineGroupNode({
     { source: 'legPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     { source: 'merge', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
   ],
 });

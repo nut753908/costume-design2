@@ -39,14 +39,12 @@ describe('bodyGroup', () => {
     expect(highGeom!.boundingBox!.max.y).toBeGreaterThan(lowGeom!.boundingBox!.max.y);
   });
 
-  it('内部の skinColorIn(デフォルト #f2c9a0)が結合済みメッシュのマテリアルに使われる', () => {
-    // Skin Color は bodyGroup 以外と共有されない単独パラメータのため groupInput の外部
-    // ソケットではなく内部の colorInput ノード(skinColorIn)として保持している
-    // (bodyGroupNode.ts 参照)。外部からは注入できないため、既定値がそのまま使われることを
-    // 検証する。
-    const result = getNodeType('bodyGroup').evaluate({}, {});
-    const material = result.sceneOutputMaterial0;
-    const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;
-    expect(color?.getHexString()).toBe(new THREE.Color('#f2c9a0').getHexString());
+  it('color ソケットの既定値(#f2c9a0)が結合済みメッシュのマテリアルに使われ、注入した色で上書きできる', () => {
+    const colorOf = (inputs: Parameters<ReturnType<typeof getNodeType>['evaluate']>[0]) => {
+      const material = getNodeType('bodyGroup').evaluate(inputs, {}).sceneOutputMaterial0;
+      return material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color.getHexString() : undefined;
+    };
+    expect(colorOf({})).toBe(new THREE.Color('#f2c9a0').getHexString());
+    expect(colorOf({ color: { type: 'color', value: new THREE.Color('#112233') } })).toBe('112233');
   });
 });

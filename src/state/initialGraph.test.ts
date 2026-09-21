@@ -17,8 +17,8 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
     // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
-    // id の存在自体をここで保証する。肌色(Skin Color)は bodyGroup 内部の colorInput ノード
-    // として保持しているため、ここには現れない(bodyGroupNode.test.ts 参照)。Body Height/
+    // id の存在自体をここで保証する。肌色は bodyGroup の外部ソケット `color` の既定値として
+    // 持つため、ここには現れない(bodyGroupNode.test.ts 参照)。Body Height/
     // Body Shoulder は bodyDimensions からしか参照されない単独パラメータのため、この階層には
     // 現れず bodyDimensionsGroup 内部の numberInput として持つ(bodyDimensionsGroupNode.test.ts
     // 参照)。
