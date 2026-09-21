@@ -2,8 +2,8 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** bag の寸法の大半は独立したスタイル寄りの値だが、体の側面の位置(Hip Offset、胴体半径と
- * 同程度)と前面の深さ(`bagFrontDepthIn`)だけは、胴体の壁(Body Build でスケールされる)の
- * 外側に置く必要があるため、Body Build を掛けてから使う(`hipOffsetScaled`/`bagFrontDepthIn`)。
+ * 同程度)と前面の深さ(`bagFrontDepthCalc`)だけは、胴体の壁(Body Build でスケールされる)の
+ * 外側に置く必要があるため、Body Build を掛けてから使う(`hipOffsetScaled`/`bagFrontDepthCalc`)。
  * ストラップ・バッグ本体のどちらも完全にノードグラフへ展開されている。ストラップは
  * `alignedBoxGenerator`(`nodes/definitions/generic/alignedBoxGenerator.ts`、`geometry/
  * alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
@@ -14,7 +14,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
  * (0, -bagHeight/2, 0)`は同じ深さ(Z)を共有するため、
  * X: `negatedHipOffset = -(hipOffset × bodyBuild)`(`numberNegate`)、Y(本体側): `bagCenterY =
- * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthIn = 0.18 × bodyBuild` という可視の四則演算
+ * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthCalc = 0.18 × bodyBuild` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
  * `translate` の両方から同じ計算結果を参照する
  * (定数は各ノードの入力欄の値)。ストラップと
@@ -40,7 +40,7 @@ defineGroupNode({
       },
     },
     { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14} },
-    { id: 'bagFrontDepthIn', type: 'numberMultiply', data: { value: 0.18 } },
+    { id: 'bagFrontDepthCalc', type: 'numberMultiply', data: { value: 0.18 } },
     { id: 'hipOffsetScaled', type: 'numberMultiply', data: { value: 0.26 } },
     { id: 'strapGen', type: 'alignedBoxGenerator', data: { width: 0.04, thickness: 0.015, startX: 0.08, startZ: 0.05 } },
     { id: 'boxGen', type: 'boxGenerator', data: { width: 0.16, depth: 0.08 } },
@@ -58,11 +58,11 @@ defineGroupNode({
     // bagFrontDepth)(下記参照)。
     { source: 'negatedHipOffset', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endX' },
     { source: 'negatedDrop', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endY' },
-    { source: 'bagFrontDepthIn', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endZ' },
+    { source: 'bagFrontDepthCalc', sourceHandle: 'value', target: 'strapGen', targetHandle: 'endZ' },
 
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'height' },
 
-    { source: 'input', sourceHandle: 'bodyBuild', target: 'bagFrontDepthIn', targetHandle: 'factor' },
+    { source: 'input', sourceHandle: 'bodyBuild', target: 'bagFrontDepthCalc', targetHandle: 'factor' },
     { source: 'input', sourceHandle: 'bodyBuild', target: 'hipOffsetScaled', targetHandle: 'factor' },
     { source: 'hipOffsetScaled', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'value' },
 
@@ -73,7 +73,7 @@ defineGroupNode({
     { source: 'boxGen', sourceHandle: 'geometry', target: 'bodyTranslate', targetHandle: 'geometry' },
     { source: 'negatedHipOffset', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'x' },
     { source: 'bagCenterY', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'y' },
-    { source: 'bagFrontDepthIn', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'z' },
+    { source: 'bagFrontDepthCalc', sourceHandle: 'value', target: 'bodyTranslate', targetHandle: 'z' },
 
     { source: 'strapGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'bodyTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },

@@ -41,7 +41,7 @@ describe('bagGroup', () => {
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom, 2);
   });
 
-  it('バッグ本体は bagFrontDepthIn(= 0.18、ストラップの終端 endZ と共有する固定値)の深さに置かれる', () => {
+  it('バッグ本体は bagFrontDepthCalc(= 0.18、ストラップの終端 endZ と共有する固定値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
     // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translate の Z への配線が
     // 正しいことの検証になる。

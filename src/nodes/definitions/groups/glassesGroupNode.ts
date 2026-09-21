@@ -8,10 +8,10 @@ import type { GraphEdge } from '../../types';
  * 分けて作り、3つの geometry を `mergeAll`(`mergeGeometry`)で結合する。
  * 左右対称のレンズ・テンプルは片側1つ(X=0 基準)を作って `mirrorPair` で ±offset へ複製する
  * (Body の腕/脚と同じ形、各パーツのグループの内部)。
- * 3つのパーツが共有する値(`lensRadiusIn`/`lensSpacingIn`/`forwardDepthIn`)だけをこのグループに
+ * 3つのパーツが共有する値(`lensRadiusIn`/`lensSpacingIn`/`forwardDepthCalc`)だけをこのグループに
  * 置いて各パーツへ配線し、1つのパーツだけが使う値(管の太さ、ブリッジ/テンプルの太さなど)は
  * そのパーツのグループの内部に持つ。
- * 顔の前面の深さ `forwardDepthIn` は、頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と
+ * 顔の前面の深さ `forwardDepthCalc` は、頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と
  * 同じ値)から定数(0.02)を引いて求めるため、頭の大きさを変えると追従する。
  * 比率ではなく差にしているのは、レンズの大きさ・間隔が固定で、頭の球面とレンズの平面の
  * ずれが頭半径に比例して広がるのを避けるため(比率だと頭が大きいほどレンズが球面に埋まる)。
@@ -20,7 +20,7 @@ import type { GraphEdge } from '../../types';
 const output = garmentOutput({ offsetY: -0.02, geometry: 'mergeAll' });
 
 const share = (target: string): GraphEdge[] =>
-  ['lensRadiusIn:lensRadius', 'lensSpacingIn:lensSpacing', 'forwardDepthIn:forwardDepth'].map((pair) => {
+  ['lensRadiusIn:lensRadius', 'lensSpacingIn:lensSpacing', 'forwardDepthCalc:forwardDepth'].map((pair) => {
     const [source, targetHandle] = pair.split(':');
     return { source, sourceHandle: 'value', target, targetHandle };
   });
@@ -42,7 +42,7 @@ defineGroupNode({
     },
     { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045} },
     { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.055} },
-    { id: 'forwardDepthIn', type: 'numberSubtract', data: { b: 0.02 } },
+    { id: 'forwardDepthCalc', type: 'numberSubtract', data: { b: 0.02 } },
     { id: 'lens', type: 'glassesLensPair', data: {} },
     { id: 'temple', type: 'glassesTemplePair', data: {} },
     { id: 'bridge', type: 'glassesBridge', data: {} },
@@ -50,7 +50,7 @@ defineGroupNode({
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'headRadius', target: 'forwardDepthIn', targetHandle: 'a' },
+    { source: 'input', sourceHandle: 'headRadius', target: 'forwardDepthCalc', targetHandle: 'a' },
     ...share('lens'),
     ...share('temple'),
     ...share('bridge'),
