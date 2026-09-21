@@ -44,7 +44,7 @@ function buildTube(inputs: Record<string, SocketValue>, shape: TubeShape, segmen
  * こちらは `segments` 分割の楕円断面(袖)。 */
 registerNodeType<TaperedEllipseTubeGeneratorData>({
   type: 'taperedEllipseTubeGenerator',
-  label: 'Tapered Ellipse Tube Generator',
+  label: 'Tapered Ellipse Tube',
   category: 'generator',
   inputs: [...TUBE_INPUTS, { id: 'segments', label: 'Segments', type: 'number', default: 12 }],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
@@ -58,7 +58,7 @@ registerNodeType<TaperedEllipseTubeGeneratorData>({
  * 分割数の概念が無いので `segments` は持たない。 */
 registerNodeType({
   type: 'taperedRectTubeGenerator',
-  label: 'Tapered Rect Tube Generator',
+  label: 'Tapered Rect Tube',
   category: 'generator',
   inputs: TUBE_INPUTS,
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],

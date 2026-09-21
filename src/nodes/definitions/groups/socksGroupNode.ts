@@ -27,7 +27,7 @@ const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRad
 
 defineGroupNode({
   type: 'socksGroup',
-  label: 'Socks Group',
+  label: 'Socks',
   internalNodes: [
     {
       id: 'input',

@@ -9,7 +9,7 @@ import { defineGeneratorNode } from '../generatorNodeFactory';
  * `taper` ノード参照)。 */
 defineGeneratorNode({
   type: 'cylinderGenerator',
-  label: 'Cylinder Generator',
+  label: 'Cylinder',
   build: (params) => buildCylinderGeometry(params),
   fields: [
     { id: 'radiusTop', label: 'Radius Top', default: 0.1 },

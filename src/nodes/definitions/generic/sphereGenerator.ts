@@ -5,7 +5,7 @@ import { defineGeneratorNode } from '../generatorNodeFactory';
  * (`bodyGroupNode.ts` が頭部として使っているが、それに限らない)。 */
 defineGeneratorNode({
   type: 'sphereGenerator',
-  label: 'Sphere Generator',
+  label: 'Sphere',
   build: (params) => buildSphereGeometry(params),
   fields: [{ id: 'radius', label: 'Radius', default: 0.16 }],
   extra: { widthSegments: 20, heightSegments: 16 },

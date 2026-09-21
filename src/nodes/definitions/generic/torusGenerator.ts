@@ -8,7 +8,7 @@ import { defineGeneratorNode } from '../generatorNodeFactory';
  * (他のプリミティブノードの capSegments 等と同じ扱い)。 */
 defineGeneratorNode({
   type: 'torusGenerator',
-  label: 'Torus Generator',
+  label: 'Torus',
   build: (params) => buildTorusGeometry(params),
   fields: [
     { id: 'radius', label: 'Radius', default: 0.1 },

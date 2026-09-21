@@ -21,7 +21,7 @@ const lathe = latheBody({ genId: 'gen', direction: 'up', steps: 10, startRadius:
 
 defineGroupNode({
   type: 'hatGroup',
-  label: 'Hat Group',
+  label: 'Hat',
   internalNodes: [
     {
       id: 'input',

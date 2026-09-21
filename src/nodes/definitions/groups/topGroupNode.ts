@@ -19,7 +19,7 @@ const scale = bodyBuildScale(0.29);
 
 defineGroupNode({
   type: 'topGroup',
-  label: 'Top Group',
+  label: 'Top',
   internalNodes: [
     {
       id: 'input',

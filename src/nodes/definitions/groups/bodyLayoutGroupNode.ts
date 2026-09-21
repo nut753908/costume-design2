@@ -13,7 +13,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 配線されるため出力に含めている。 */
 defineGroupNode({
   type: 'bodyLayoutGroup',
-  label: 'Body Layout Group',
+  label: 'Body Layout',
   internalNodes: [
     {
       id: 'input',

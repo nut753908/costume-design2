@@ -23,7 +23,7 @@ const scale = bodyBuildScale(0.19);
 
 defineGroupNode({
   type: 'scarfGroup',
-  label: 'Scarf Group',
+  label: 'Scarf',
   internalNodes: [
     {
       id: 'input',

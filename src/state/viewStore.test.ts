@@ -70,8 +70,8 @@ describe('viewStore', () => {
       { id: 'c', type: 'numberInput', data: {} },
     ];
     expect(listSceneOutputs(nodes, results)).toEqual([
-      { key: 'a:0', nodeId: 'a', label: `${getNodeType('topGroup').label} #0` },
-      { key: 'a:1', nodeId: 'a', label: `${getNodeType('topGroup').label} #1` },
+      { key: 'a:0', nodeId: 'a', label: 'Top #0' },
+      { key: 'a:1', nodeId: 'a', label: 'Top #1' },
       { key: 'b:0', nodeId: 'b', label: getNodeType('skirtGroup').label },
     ]);
     expect(listSceneOutputs(nodes, null)).toEqual([]);

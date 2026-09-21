@@ -12,7 +12,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 定数(0.75/0.85/2 など)は各 `numberMultiply` の入力欄の値。 */
 defineGroupNode({
   type: 'sleevePair',
-  label: 'Sleeve Pair',
+  label: 'Sleeves',
   internalNodes: [
     {
       id: 'input',

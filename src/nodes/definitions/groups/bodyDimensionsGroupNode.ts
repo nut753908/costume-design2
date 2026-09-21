@@ -75,7 +75,7 @@ const dimensions = [
  * `headRadius` の入力欄の値(0.16)がそのまま出力になる。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
-  label: 'Body Dimensions Group',
+  label: 'Body Dimensions',
   internalNodes: [
     {
       id: 'input',

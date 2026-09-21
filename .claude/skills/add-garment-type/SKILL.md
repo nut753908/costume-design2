@@ -32,7 +32,7 @@ import { defineGeneratorNode } from '../generatorNodeFactory';
 
 defineGeneratorNode({
   type: 'xxxGenerator',
-  label: 'Xxx Generator',
+  label: 'Xxx',
   build: (params) => buildXxxGeometry(params), // 必ずアロー関数で包む(下記参照)
   fields: [
     { id: 'radius', label: 'Radius', default: 0.3 },
@@ -79,7 +79,7 @@ const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadiu
 
 defineGroupNode({
   type: 'xxxGroup',
-  label: 'Xxx Group',
+  label: 'Xxx',
   internalNodes: [
     {
       id: 'input',

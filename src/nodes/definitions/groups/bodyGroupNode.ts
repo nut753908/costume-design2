@@ -27,7 +27,7 @@ import { colorSocket } from '../garmentOutput';
  * (4パーツすべてが同じマテリアルを使う)。 */
 defineGroupNode({
   type: 'bodyGroup',
-  label: 'Body Group',
+  label: 'Body',
   internalNodes: [
     {
       id: 'input',
