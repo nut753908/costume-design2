@@ -246,24 +246,6 @@
   font-size: 11px;
 }
 
-.rf-node__io-value {
-  flex-shrink: 0;
-  max-width: 48px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 10px;
-  color: #666;
-}
-
-.rf-node__io-value-swatch {
-  flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  border: 1px solid #999;
-  border-radius: 2px;
-}
-
 .rf-node__io-remove {
   flex-shrink: 0;
   width: 16px;

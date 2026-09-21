@@ -9,16 +9,6 @@ import { NodeTitleBar } from './NodeTitleBar';
 import { resolveIncomingValue } from '../../nodes/evaluateGraph';
 import { SocketField } from './SocketField';
 
-function SocketValueDisplay({ value }: { value: SocketValue | undefined }) {
-  if (!value) return null;
-  if (value.type === 'number') return <span className="rf-node__io-value">{value.value.toFixed(2)}</span>;
-  if (value.type === 'color') {
-    const hex = `#${value.value.getHexString()}`;
-    return <span className="rf-node__io-value-swatch" style={{ background: hex }} title={hex} />;
-  }
-  return null;
-}
-
 function uniqueSocketId(sockets: GroupIOSocket[]): string {
   const taken = new Set(sockets.map((s) => s.id));
   let n = sockets.length + 1;
@@ -38,16 +28,13 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
  * `nodes/resolveNodeSockets.ts` 参照)。`number`/`color` のソケットの未接続時のデフォルト値
  * (`socket.default`)は、親スコープ側でそのソケットに何も配線されていなければ、行の入力欄
  * (`SocketField.tsx`)でその場で編集できる(グループノードのカードの未接続入力の欄の初期値にも
- * なる)。親スコープ側で値が配線されている間は、入力欄の代わりに
- * `parentScopeEvaluatedResults`(`state/useParentScopeEvaluatedGraph.ts`、親スコープ視点の評価)から引いた
- * 実際の注入値を表示する。 */
+ * なる)。親スコープ側で値が配線されている間は入力欄を出さず、値も表示しない
+ * (配線の有無は `parentScopeEvaluatedResults`、`state/useParentScopeEvaluatedGraph.ts` から引く)。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
   const sockets = nodeData.sockets ?? [];
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const removeGroupIOSocket = useGraphStore((s) => s.removeGroupIOSocket);
-  const evaluated = useGraphStore((s) => s.evaluatedResults);
-  const outputValues = evaluated?.get(id);
   const scopeStack = useGraphStore((s) => s.scopeStack);
   const parentScopeResults = useGraphStore((s) => s.parentScopeEvaluatedResults);
   const parentFrame = scopeStack.at(-1);
@@ -89,7 +76,7 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
             value={socket.label}
             onChange={(e) => patchSocket(socket.id, { label: e.target.value })}
           />
-          {injectedFor(socket.id) === undefined && socket.default !== undefined ? (
+          {injectedFor(socket.id) === undefined && socket.default !== undefined && (
             <SocketField
               nodeId={id}
               label={socket.label}
@@ -97,8 +84,6 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
               value={socket.default}
               toPatch={(value) => ({ sockets: sockets.map((s) => (s.id === socket.id ? { ...s, default: value } : s)) })}
             />
-          ) : (
-            <SocketValueDisplay value={injectedFor(socket.id) ?? outputValues?.[socket.id]} />
           )}
           <Handle type="source" position={Position.Right} id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
         </div>
