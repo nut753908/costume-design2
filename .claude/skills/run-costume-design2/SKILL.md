@@ -142,3 +142,4 @@ onChangeが発火しない。ネイティブの value setter 経由で値をセ�
 | `Chromium 実行ファイルが見つかりません` | `~/.cache/ms-playwright` にキャッシュが無い。`cd .claude/skills/run-costume-design2 && npm install && npx playwright-core install chromium` |
 | `dev server が30秒以内に応答しませんでした` | ポート5173が塞がっている可能性。`lsof -ti:5173 -sTCP:LISTEN \| xargs -r kill` してから再実行 |
 | `.react-flow__node[data-id="skirtGroup"]`/`scale`/`input` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された、または対象ノードがグループの中に埋め込まれた)。`src/state/graphStore.ts` の `initialNodes` や該当する `<name>GroupNode.ts` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |
+| `check-card-heights.mjs` が全ノードで「未描画」になる | 長時間動かした dev server は HMR で `graphStore.ts` が2つのモジュールインスタンスに分かれ、検査が操作するストアとアプリが描画に使うストアが別物になる。dev server を再起動してから実行する |
