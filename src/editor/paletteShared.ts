@@ -28,3 +28,31 @@ export const NODE_TYPE_DND_MIME = 'application/costume-design-node-type';
 export function fitViewPadding(): { left: `${number}px`; top: number; right: number; bottom: number } {
   return { left: '260px', top: 0.2, right: 0.2, bottom: 0.2 };
 }
+
+/** パレットの見出しの折りたたみ状態を保存する localStorage のキー(表示の好みだけを持つ、閲覧者ごとの設定)。 */
+const COLLAPSED_STORAGE_KEY = 'costume-design-palette-collapsed';
+
+/** 保存された設定が無いときに、最初から折りたたんでおく見出し(数が多く、日常的には使わないもの)。 */
+export const DEFAULT_COLLAPSED_SECTIONS: readonly PaletteSection[] = ['geometry-op', 'points', 'group-part'];
+
+/** 折りたたんでいる見出しを読み込む。保存が無い・壊れている・localStorage が使えないときは既定値。 */
+export function loadCollapsedSections(): Set<PaletteSection> {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_STORAGE_KEY);
+    if (raw !== null) {
+      const parsed: unknown = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.every((v) => typeof v === 'string')) return new Set(parsed as PaletteSection[]);
+    }
+  } catch {
+    // localStorage が使えない/壊れているときは既定値にフォールバックする
+  }
+  return new Set(DEFAULT_COLLAPSED_SECTIONS);
+}
+
+export function saveCollapsedSections(collapsed: ReadonlySet<PaletteSection>): void {
+  try {
+    localStorage.setItem(COLLAPSED_STORAGE_KEY, JSON.stringify([...collapsed]));
+  } catch {
+    // 保存できなくても、その回の表示には影響しない
+  }
+}
