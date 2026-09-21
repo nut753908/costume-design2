@@ -22,7 +22,7 @@ beforeAll(() => {
     registerNodeType({
       type: 'testMultiSink',
       label: 'Test Multi Sink',
-      category: 'generator',
+      category: 'primitive',
       inputs: [{ id: 'items', label: 'Items', type: 'geometry', multiple: true }],
       outputs: [],
       createDefaultData: () => ({}),

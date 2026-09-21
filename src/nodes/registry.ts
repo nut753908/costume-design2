@@ -2,7 +2,7 @@ import type { NodeCategory, NodeTypeDefinition } from './types';
 
 export const nodeTypeRegistry = new Map<string, NodeTypeDefinition<any>>();
 
-const CATEGORY_ORDER: NodeCategory[] = ['input', 'generator', 'group', 'group-io', 'material', 'output'];
+const CATEGORY_ORDER: NodeCategory[] = ['input', 'math', 'primitive', 'geometry-op', 'points', 'group', 'group-io', 'material', 'output'];
 
 /** 登録済みノードタイプをカテゴリ別にグループ化する。パレットとコンテキストメニューで共有する。 */
 export function groupNodeTypesByCategory(): {

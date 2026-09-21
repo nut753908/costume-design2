@@ -9,7 +9,7 @@ import { asNumber } from '../../socketHelpers';
 registerNodeType({
   type: 'slicePoints',
   label: 'Slice Points',
-  category: 'generator',
+  category: 'points',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
     { id: 'dropEnd', label: 'Drop End', type: 'number', default: 0 },

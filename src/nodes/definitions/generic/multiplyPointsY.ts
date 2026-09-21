@@ -6,7 +6,7 @@ import type { SocketValue } from '../../types';
 registerNodeType({
   type: 'multiplyPointsY',
   label: 'Multiply Points Y',
-  category: 'generator',
+  category: 'points',
   inputs: [
     { id: 'pointsA', label: 'Points A', type: 'points' },
     { id: 'pointsB', label: 'Points B', type: 'points' },

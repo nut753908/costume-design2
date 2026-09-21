@@ -27,7 +27,16 @@ export interface SocketDef {
   default?: number | string;
 }
 
-export type NodeCategory = 'input' | 'generator' | 'material' | 'output' | 'group' | 'group-io';
+export type NodeCategory =
+  | 'input'
+  | 'math'
+  | 'primitive'
+  | 'geometry-op'
+  | 'points'
+  | 'material'
+  | 'output'
+  | 'group'
+  | 'group-io';
 
 export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   type: string;

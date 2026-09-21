@@ -17,7 +17,7 @@ const DEFAULTS = { a: 0, b: 0 };
 registerNodeType<NumberMaxData>({
   type: 'numberMax',
   label: 'Number Max',
-  category: 'generator',
+  category: 'math',
   inputs: [
     { id: 'a', label: 'A', type: 'number', default: DEFAULTS.a },
     { id: 'b', label: 'B', type: 'number', default: DEFAULTS.b },

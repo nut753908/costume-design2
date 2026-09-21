@@ -26,7 +26,7 @@ beforeAll(() => {
     registerNodeType({
       type: 'testAdd',
       label: 'Test Add',
-      category: 'generator',
+      category: 'primitive',
       inputs: [
         { id: 'a', label: 'A', type: 'number' },
         { id: 'b', label: 'B', type: 'number' },
@@ -59,7 +59,7 @@ beforeAll(() => {
     registerNodeType({
       type: 'testColorSink',
       label: 'Test Color Sink',
-      category: 'generator',
+      category: 'primitive',
       inputs: [{ id: 'color', label: 'Color', type: 'color' }],
       outputs: [{ id: 'color', label: 'Color', type: 'color' }],
       createDefaultData: () => ({}),
@@ -72,7 +72,7 @@ beforeAll(() => {
     registerNodeType({
       type: 'testCounter',
       label: 'Test Counter',
-      category: 'generator',
+      category: 'primitive',
       inputs: [{ id: 'a', label: 'A', type: 'number' }],
       outputs: [{ id: 'value', label: 'Value', type: 'number' }],
       createDefaultData: () => ({}),
@@ -121,7 +121,7 @@ describe('evaluateGraph', () => {
       registerNodeType({
         type: 'testDefaults',
         label: 'Test Defaults',
-        category: 'generator',
+        category: 'primitive',
         inputs: [
           { id: 'n', label: 'N', type: 'number', default: 7 },
           { id: 'c', label: 'C', type: 'color', default: '#112233' },

@@ -18,7 +18,7 @@ export interface RingGridGeneratorData extends Record<string, unknown> {
 registerNodeType<RingGridGeneratorData>({
   type: 'ringGridGenerator',
   label: 'Ring Grid',
-  category: 'generator',
+  category: 'primitive',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },

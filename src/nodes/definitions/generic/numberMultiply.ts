@@ -12,7 +12,7 @@ const DEFAULTS = { value: 1, factor: 2 };
 registerNodeType<NumberMultiplyData>({
   type: 'numberMultiply',
   label: 'Number Multiply',
-  category: 'generator',
+  category: 'math',
   inputs: [
     { id: 'value', label: 'Value', type: 'number', default: DEFAULTS.value },
     { id: 'factor', label: 'Factor', type: 'number', default: DEFAULTS.factor },

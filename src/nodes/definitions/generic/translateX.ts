@@ -7,7 +7,7 @@ import { asNumber } from '../../socketHelpers';
 registerNodeType({
   type: 'translateX',
   label: 'Translate X',
-  category: 'generator',
+  category: 'geometry-op',
   inputs: [
     { id: 'geometry', label: 'Geometry', type: 'geometry' },
     { id: 'x', label: 'X', type: 'number', default: 0 },

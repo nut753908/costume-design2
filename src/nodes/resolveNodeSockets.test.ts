@@ -7,7 +7,7 @@ beforeAll(() => {
     registerNodeType({
       type: 'testResolveSocketsType',
       label: 'Test',
-      category: 'generator',
+      category: 'primitive',
       inputs: [{ id: 'a', label: 'A', type: 'number' }],
       outputs: [{ id: 'out', label: 'Out', type: 'number' }],
       createDefaultData: () => ({}),

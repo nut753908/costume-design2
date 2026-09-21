@@ -9,7 +9,7 @@ import { asNumber } from '../../socketHelpers';
 registerNodeType({
   type: 'translatePointsY',
   label: 'Translate Points Y',
-  category: 'generator',
+  category: 'points',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
     { id: 'y', label: 'Y', type: 'number', default: 0 },

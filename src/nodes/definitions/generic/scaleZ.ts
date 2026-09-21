@@ -9,7 +9,7 @@ import { asNumber } from '../../socketHelpers';
 registerNodeType({
   type: 'scaleZ',
   label: 'Scale Z',
-  category: 'generator',
+  category: 'geometry-op',
   inputs: [
     { id: 'geometry', label: 'Geometry', type: 'geometry' },
     { id: 'z', label: 'Z', type: 'number', default: 1 },

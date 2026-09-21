@@ -17,7 +17,7 @@ import type { GraphEdge, GraphNode, NodeTypeDefinition } from './types';
 function registerTestType(overrides: Partial<NodeTypeDefinition> & { type: string }): void {
   registerNodeType({
     label: overrides.type,
-    category: 'generator',
+    category: 'primitive',
     inputs: [],
     outputs: [],
     createDefaultData: () => ({}),

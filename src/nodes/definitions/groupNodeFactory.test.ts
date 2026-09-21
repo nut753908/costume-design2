@@ -16,7 +16,7 @@ function registerTestMiddle() {
   registerNodeType({
     type: 'groupFactoryTestMiddle',
     label: 'Test Middle',
-    category: 'generator',
+    category: 'primitive',
     inputs: [
       { id: 'radius', label: 'Radius', type: 'number' },
       { id: 'color', label: 'Color', type: 'color' },
@@ -189,7 +189,7 @@ describe('defineGroupNode', () => {
       registerNodeType({
         type: 'groupFactoryTestMeshSource',
         label: 'Test Mesh Source',
-        category: 'generator',
+        category: 'primitive',
         inputs: [],
         outputs: [
           { id: 'geometry', label: 'Geometry', type: 'geometry' },

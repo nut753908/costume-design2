@@ -16,7 +16,7 @@ import { buildAlignedBox } from '../../../geometry/alignedBox';
 registerNodeType({
   type: 'alignedBoxGenerator',
   label: 'Aligned Box',
-  category: 'generator',
+  category: 'primitive',
   inputs: [
     { id: 'width', label: 'Width', type: 'number', default: 0 },
     { id: 'thickness', label: 'Thickness', type: 'number', default: 0 },

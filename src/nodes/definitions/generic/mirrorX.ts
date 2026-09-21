@@ -8,7 +8,7 @@ import type { SocketValue } from '../../types';
 registerNodeType({
   type: 'mirrorX',
   label: 'Mirror X',
-  category: 'generator',
+  category: 'geometry-op',
   inputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({}),

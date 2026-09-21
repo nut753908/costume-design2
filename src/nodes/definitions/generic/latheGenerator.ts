@@ -16,7 +16,7 @@ export interface LatheGeneratorData extends Record<string, unknown> {
 registerNodeType<LatheGeneratorData>({
   type: 'latheGenerator',
   label: 'Lathe',
-  category: 'generator',
+  category: 'primitive',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
     { id: 'segments', label: 'Segments', type: 'number', default: 16 },

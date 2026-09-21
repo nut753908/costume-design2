@@ -45,7 +45,7 @@ function buildTube(inputs: Record<string, SocketValue>, shape: TubeShape, segmen
 registerNodeType<TaperedEllipseTubeGeneratorData>({
   type: 'taperedEllipseTubeGenerator',
   label: 'Tapered Ellipse Tube',
-  category: 'generator',
+  category: 'primitive',
   inputs: [...TUBE_INPUTS, { id: 'segments', label: 'Segments', type: 'number', default: 12 }],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({ segments: 12 }),
@@ -59,7 +59,7 @@ registerNodeType<TaperedEllipseTubeGeneratorData>({
 registerNodeType({
   type: 'taperedRectTubeGenerator',
   label: 'Tapered Rect Tube',
-  category: 'generator',
+  category: 'primitive',
   inputs: TUBE_INPUTS,
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({}),

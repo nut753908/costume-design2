@@ -6,7 +6,7 @@ import { asNumber } from '../../socketHelpers';
 registerNodeType({
   type: 'scalePointsY',
   label: 'Scale Points Y',
-  category: 'generator',
+  category: 'points',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },
     { id: 'factor', label: 'Factor', type: 'number', default: 1 },

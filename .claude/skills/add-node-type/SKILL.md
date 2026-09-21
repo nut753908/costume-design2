@@ -7,7 +7,7 @@ description: ノードグラフに新しい NodeTypeDefinition(ノードタイ�
 
 `nodes/definitions/**/*.ts` に `evaluate()` と `createDefaultData()` を持つ `NodeTypeDefinition` を実装するだけでよい(ガーメント固有のグループノード・生成ノードは `groups/`、複数ガーメントで使い回す汎用ノードは `generic/` に置く。`generatorNodeFactory.ts`/`groupNodeFactory.ts` などの共通基盤と、`constNumberInput.ts`/`garmentOutput.ts`/`garmentParts.ts` のようなグループ定義用ヘルパーは `nodes/definitions/` 直下で、これらは `index.ts` の glob の除外リストに載せる)。`registerNodeType()` を呼ぶ副作用インポートとして、そのファイルは `definitions/index.ts` の `import.meta.glob()` によって(サブディレクトリを含め再帰的に)自動的に読み込まれ、`editor/NodeEditor.tsx` の `nodeTypes` にも `nodeTypeRegistry` から自動的に反映される(専用UIが要る場合だけ `NODE_VIEW_OVERRIDES` に追加する)。`index.ts` や `NodeEditor.tsx` への手動登録は不要。
 
-## ガーメントジェネレーターノード(category: 'generator')の場合
+## ガーメントジェネレーターノード(category: 'primitive')の場合
 
 capsuleGenerator/boxGenerator のようにフィールドの値を解決して `build*Geometry()` にそのまま渡すだけのノードは、`registerNodeType()` を直接書かず `nodes/definitions/generatorNodeFactory.ts` の `defineGeneratorNode()` を使う(既存の generator 系 definition ファイル全てを参照)。フィールド仕様(`id`/`label`/`default`、必要なら `round: true`)を渡すだけで interface 型・`DEFAULTS`・`inputs` 配列・`createDefaultData`・`evaluate` を機械的に組み立ててくれる。`build*Geometry` が受け取らない固定値(ソケット化しない `angleSegments` など)は `extra` で渡す。
 
@@ -18,9 +18,11 @@ capsuleGenerator/boxGenerator のようにフィールドの値を解決して `
 
 複数の既存ノード(`numberMultiply`+generator+`toonMaterial`+`garmentPlacement` など)を1つの埋め込みサブグラフとして内包し、外部には限られた入出力ソケットだけを見せたい場合は、`registerNodeType()` を直接書かず `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` を使う(`nodes/definitions/groups/skirtGroupNode.ts` 等、既存14種のガーメントグループを参照)。詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節、手順は [`add-garment-type` スキル](../add-garment-type/SKILL.md)を参照。外部から注入できる型に制限は無く、内部配線もノードインスタンスごとに独立してグラフ上で編集できる(「→」ボタンで中に入る)。
 
-## それ以外のノードタイプ(input/material/output)の場合
+## それ以外のノードタイプ(input/math/geometry-op/points/material/output)の場合
 
 `registerNodeType()` を直接呼ぶ。
+
+`category` はパレットの見出しを決める(`input`/`math`(数値演算)/`primitive`(形状の生成)/`geometry-op`(形状の変換・結合)/`points`(曲線の加工)/`material`/`output`)。`group`/`group-io` は機能に使われる特別なカテゴリなので、通常のノードには使わない。
 
 - `createDefaultData()` は `NodePalette.tsx` / `graphStore.addNode()` が新規追加インスタンスの初期値を作る際に使われる。
 - 既定値はファイル内に `const DEFAULTS = { ... }` として1箇所だけ定義し、`createDefaultData: () => ({ ...DEFAULTS })` と `evaluate()` 内の `data.x ?? DEFAULTS.x` フォールバックの両方から参照する。リテラル値を2箇所に書くと、片方だけ変更したときに「新規ノード作成時」と「フィールド欠損時(古い保存グラフ)」の既定値が食い違う。

@@ -9,7 +9,7 @@ import type { SocketValue } from '../../types';
 registerNodeType({
   type: 'mergeGeometry',
   label: 'Merge Geometry',
-  category: 'generator',
+  category: 'geometry-op',
   inputs: [{ id: 'geometries', label: 'Geometries', type: 'geometry', multiple: true }],
   outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
   createDefaultData: () => ({}),

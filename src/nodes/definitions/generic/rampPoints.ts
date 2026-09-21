@@ -16,7 +16,7 @@ const DEFAULTS = { steps: 12 };
 registerNodeType<RampPointsData>({
   type: 'rampPoints',
   label: 'Ramp Points',
-  category: 'generator',
+  category: 'points',
   inputs: [],
   outputs: [{ id: 'points', label: 'Points', type: 'points' }],
   createDefaultData: () => ({ ...DEFAULTS }),

@@ -14,7 +14,7 @@ const DEFAULTS = { value: 0 };
 registerNodeType<NumberNegateData>({
   type: 'numberNegate',
   label: 'Number Negate',
-  category: 'generator',
+  category: 'math',
   inputs: [{ id: 'value', label: 'Value', type: 'number', default: DEFAULTS.value }],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],
   createDefaultData: () => ({ ...DEFAULTS }),

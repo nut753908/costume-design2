@@ -27,7 +27,7 @@ export interface EasedLatheProfileData extends Record<string, unknown> {
 registerNodeType<EasedLatheProfileData>({
   type: 'easedLatheProfile',
   label: 'Eased Lathe Profile',
-  category: 'generator',
+  category: 'points',
   inputs: [
     { id: 'startRadius', label: 'Start Radius', type: 'number', default: 0 },
     { id: 'endRadius', label: 'End Radius', type: 'number', default: 0 },
