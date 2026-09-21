@@ -4,10 +4,8 @@ import { useGraphStore } from '../../state/graphStore';
 import type { GroupOutputData } from '../../nodes/definitions/groupOutput';
 import type { GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
 import type { SocketType } from '../../nodes/types';
-import { SOCKET_COLORS } from '../socketColors';
+import { SOCKET_COLORS, SOCKET_TYPES } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
-
-const SOCKET_TYPES: SocketType[] = ['number', 'color', 'geometry', 'material'];
 
 function uniqueSocketId(sockets: GroupIOSocket[]): string {
   const taken = new Set(sockets.map((s) => s.id));

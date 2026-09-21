@@ -4,12 +4,10 @@ import { useGraphStore } from '../../state/graphStore';
 import type { GroupInputData } from '../../nodes/definitions/groupInput';
 import type { GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
 import type { SocketType, SocketValue } from '../../nodes/types';
-import { SOCKET_COLORS } from '../socketColors';
+import { SOCKET_COLORS, SOCKET_TYPES } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { resolveIncomingValue } from '../../nodes/evaluateGraph';
 import { SocketField } from './SocketField';
-
-const SOCKET_TYPES: SocketType[] = ['number', 'color', 'geometry', 'material'];
 
 function SocketValueDisplay({ value }: { value: SocketValue | undefined }) {
   if (!value) return null;
