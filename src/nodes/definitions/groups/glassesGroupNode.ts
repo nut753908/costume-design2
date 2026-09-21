@@ -28,6 +28,7 @@ const share = (target: string): GraphEdge[] =>
 defineGroupNode({
   type: 'glassesGroup',
   label: 'Glasses',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

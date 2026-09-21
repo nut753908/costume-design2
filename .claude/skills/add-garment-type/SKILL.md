@@ -80,6 +80,7 @@ const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadiu
 defineGroupNode({
   type: 'xxxGroup',
   label: 'Xxx',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

@@ -9,6 +9,9 @@ import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMater
 export interface GroupNodeConfig {
   type: string;
   label: string;
+  /** パレットでの振り分け先。ガーメントと Body 関連(`bodyGroup`/`bodyDimensions`/`bodyLayout`)は
+   *  `'garment'`、省略時は部品・補助(`'group-part'`)。 */
+  paletteSection?: 'garment' | 'group-part';
   /** `type: 'groupInput'`/`type: 'groupOutput'` ノードはどちらも省略可 — 省略すると
    *  外部から見た入出力ソケットはそれぞれ0個になる(既存14種のガーメントは `groupOutput`
    *  を全て省略している。描画は `sceneOutput` が別途担うため出番が無い)。 */
@@ -116,6 +119,7 @@ export function defineGroupNode(config: GroupNodeConfig): void {
     type: config.type,
     label: config.label,
     category: 'group',
+    paletteSection: config.paletteSection,
     // インスタンスが data.nodes を持たない場合(まだ中に入って編集されていない、または
     // initialGraph.ts 由来)のベースライン/フォールバック。実効的なソケット一覧は
     // 常に resolveNodeSockets() 経由で解決すること。

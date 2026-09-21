@@ -1,25 +1,42 @@
-import type { NodeCategory, NodeTypeDefinition } from './types';
+import type { NodeTypeDefinition, PaletteSection } from './types';
 
 export const nodeTypeRegistry = new Map<string, NodeTypeDefinition<any>>();
 
-const CATEGORY_ORDER: NodeCategory[] = ['input', 'math', 'primitive', 'geometry-op', 'points', 'group', 'group-io', 'material', 'output'];
+const SECTION_ORDER: PaletteSection[] = [
+  'input',
+  'math',
+  'primitive',
+  'geometry-op',
+  'points',
+  'garment',
+  'group-part',
+  'group-io',
+  'material',
+  'output',
+];
 
-/** 登録済みノードタイプをカテゴリ別にグループ化する。パレットとコンテキストメニューで共有する。 */
-export function groupNodeTypesByCategory(): {
-  category: NodeCategory;
+/** ノードタイプの、パレット/コンテキストメニューでの見出し。 */
+function sectionOf(def: NodeTypeDefinition): PaletteSection {
+  return def.category === 'group' ? (def.paletteSection ?? 'group-part') : def.category;
+}
+
+/** 登録済みノードタイプをパレットの見出し別にグループ化する。パレットとコンテキストメニューで共有する。 */
+export function groupNodeTypesBySection(): {
+  section: PaletteSection;
   items: { type: string; label: string }[];
 }[] {
-  const byCategory = new Map<NodeCategory, { type: string; label: string }[]>();
+  const bySection = new Map<PaletteSection, { type: string; label: string }[]>();
   for (const def of nodeTypeRegistry.values()) {
-    const list = byCategory.get(def.category) ?? [];
+    const section = sectionOf(def);
+    const list = bySection.get(section) ?? [];
     list.push({ type: def.type, label: def.label });
-    byCategory.set(def.category, list);
+    bySection.set(section, list);
   }
-  return CATEGORY_ORDER.filter((c) => byCategory.has(c)).map((c) => ({
-    category: c,
+  return SECTION_ORDER.filter((s) => bySection.has(s)).map((s) => ({
+    section: s,
     // ラベルで安定ソートする。登録順(= definitions/index.ts の import.meta.glob が
     // 解決するファイルシステム順)に依存させないため。
-    items: byCategory.get(c)!.sort((a, b) => a.label.localeCompare(b.label)),
+    items: bySection.get(s)!.sort((a, b) => a.label.localeCompare(b.label)),
   }));
 }
 

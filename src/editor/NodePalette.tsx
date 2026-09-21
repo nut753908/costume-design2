@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
 import { Panel, useReactFlow } from '@xyflow/react';
-import { groupNodeTypesByCategory } from '../nodes/registry';
+import { groupNodeTypesBySection } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
-import { CATEGORY_LABELS, NODE_TYPE_DND_MIME } from './paletteShared';
+import { SECTION_LABELS, NODE_TYPE_DND_MIME } from './paletteShared';
 
 export function NodePalette() {
   const addNode = useGraphStore((s) => s.addNode);
@@ -14,7 +14,7 @@ export function NodePalette() {
   // Group Input/Output(category: 'group-io')はグループの中に入っている間だけ意味を持つ
   // (グループ本体の外部ソケット構成を定義するノードのため)。トップレベルでは隠す。
   const groups = useMemo(
-    () => groupNodeTypesByCategory().filter((g) => insideGroup || g.category !== 'group-io'),
+    () => groupNodeTypesBySection().filter((g) => insideGroup || g.section !== 'group-io'),
     [insideGroup],
   );
 
@@ -22,8 +22,8 @@ export function NodePalette() {
   const filteredGroups = useMemo(() => {
     if (!normalizedFilter) return groups;
     return groups
-      .map(({ category, items }) => ({
-        category,
+      .map(({ section, items }) => ({
+        section,
         items: items.filter((item) => item.label.toLowerCase().includes(normalizedFilter)),
       }))
       .filter(({ items }) => items.length > 0);
@@ -54,9 +54,9 @@ export function NodePalette() {
         onChange={(e) => setFilter(e.target.value)}
       />
       {filteredGroups.length === 0 && <div className="node-palette__empty">見つかりません</div>}
-      {filteredGroups.map(({ category, items }) => (
-        <div key={category} className="node-palette__group">
-          <div className="node-palette__group-title">{CATEGORY_LABELS[category]}</div>
+      {filteredGroups.map(({ section, items }) => (
+        <div key={section} className="node-palette__group">
+          <div className="node-palette__group-title">{SECTION_LABELS[section]}</div>
           {items.map((item) => (
             <button
               key={item.type}

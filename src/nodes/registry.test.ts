@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getNodeType, groupNodeTypesByCategory, nodeTypeRegistry, registerNodeType } from './registry';
+import { getNodeType, groupNodeTypesBySection, nodeTypeRegistry, registerNodeType } from './registry';
 import type { NodeTypeDefinition } from './types';
 
 function def(type: string, category: NodeTypeDefinition['category'], label = type): NodeTypeDefinition {
@@ -30,14 +30,14 @@ describe('registerNodeType / getNodeType', () => {
   });
 });
 
-describe('groupNodeTypesByCategory', () => {
+describe('groupNodeTypesBySection', () => {
   it('input → primitive → material → output の順でカテゴリをまとめる(登録順に依らない)', () => {
     registerNodeType(def('rt-out', 'output'));
     registerNodeType(def('rt-in', 'input'));
     registerNodeType(def('rt-gen', 'primitive'));
     registerNodeType(def('rt-mat', 'material'));
 
-    const categories = groupNodeTypesByCategory().map((g) => g.category);
+    const categories = groupNodeTypesBySection().map((g) => g.section);
     const relevant = categories.filter((c) => ['input', 'primitive', 'material', 'output'].includes(c));
     expect(relevant).toEqual(['input', 'primitive', 'material', 'output']);
   });
@@ -46,7 +46,7 @@ describe('groupNodeTypesByCategory', () => {
     nodeTypeRegistry.clear();
     registerNodeType(def('rt-only-input', 'input'));
 
-    const categories = groupNodeTypesByCategory().map((g) => g.category);
+    const categories = groupNodeTypesBySection().map((g) => g.section);
     expect(categories).toEqual(['input']);
   });
 
@@ -55,7 +55,7 @@ describe('groupNodeTypesByCategory', () => {
     registerNodeType(def('rt-gen-1', 'primitive', 'Gen 1'));
     registerNodeType(def('rt-gen-2', 'primitive', 'Gen 2'));
 
-    const group = groupNodeTypesByCategory().find((g) => g.category === 'primitive')!;
+    const group = groupNodeTypesBySection().find((g) => g.section === 'primitive')!;
     expect(group.items.map((i) => i.type).sort()).toEqual(['rt-gen-1', 'rt-gen-2']);
   });
 
@@ -65,7 +65,18 @@ describe('groupNodeTypesByCategory', () => {
     registerNodeType(def('rt-a', 'primitive', 'Apple'));
     registerNodeType(def('rt-m', 'primitive', 'Mango'));
 
-    const group = groupNodeTypesByCategory().find((g) => g.category === 'primitive')!;
+    const group = groupNodeTypesBySection().find((g) => g.section === 'primitive')!;
     expect(group.items.map((i) => i.label)).toEqual(['Apple', 'Mango', 'Zebra']);
+  });
+});
+
+describe('paletteSection', () => {
+  it('group カテゴリは paletteSection で garment/group-part に振り分ける(省略時は group-part)', () => {
+    registerNodeType({ ...def('rt-garment', 'group'), paletteSection: 'garment' });
+    registerNodeType(def('rt-part', 'group'));
+    const sections = groupNodeTypesBySection();
+    expect(sections.find((g) => g.section === 'garment')!.items.map((i) => i.type)).toContain('rt-garment');
+    expect(sections.find((g) => g.section === 'group-part')!.items.map((i) => i.type)).toContain('rt-part');
+    expect(sections.some((g) => (g.section as string) === 'group')).toBe(false);
   });
 });

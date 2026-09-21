@@ -24,6 +24,7 @@ const scale = bodyBuildScale(0.19);
 defineGroupNode({
   type: 'scarfGroup',
   label: 'Scarf',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

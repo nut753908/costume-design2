@@ -76,6 +76,7 @@ const dimensions = [
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

@@ -18,6 +18,7 @@ const scale = bodyBuildScale(0.29);
 defineGroupNode({
   type: 'topGroup',
   label: 'Top',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

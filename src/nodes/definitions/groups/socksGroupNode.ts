@@ -28,6 +28,7 @@ const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRad
 defineGroupNode({
   type: 'socksGroup',
   label: 'Socks',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

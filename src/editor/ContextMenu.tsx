@@ -1,8 +1,8 @@
 import { useMemo, useRef } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { groupNodeTypesByCategory } from '../nodes/registry';
+import { groupNodeTypesBySection } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
-import { CATEGORY_LABELS } from './paletteShared';
+import { SECTION_LABELS } from './paletteShared';
 import { useDismissMenu } from './useDismissMenu';
 
 export interface ContextMenuState {
@@ -24,7 +24,7 @@ export function ContextMenu({ state, onClose }: ContextMenuProps) {
   // Group Input/Output(category: 'group-io')はグループの中に入っている間だけ意味を持つ
   // ため、トップレベルでは隠す(editor/NodePalette.tsx と同じ理由)。
   const groups = useMemo(
-    () => groupNodeTypesByCategory().filter((g) => insideGroup || g.category !== 'group-io'),
+    () => groupNodeTypesBySection().filter((g) => insideGroup || g.section !== 'group-io'),
     [insideGroup],
   );
 
@@ -44,9 +44,9 @@ export function ContextMenu({ state, onClose }: ContextMenuProps) {
       className="context-menu nodrag nopan"
       style={{ left: state.x, top: state.y }}
     >
-      {groups.map(({ category, items }) => (
-        <div key={category} className="context-menu__group">
-          <div className="context-menu__group-title">{CATEGORY_LABELS[category]}</div>
+      {groups.map(({ section, items }) => (
+        <div key={section} className="context-menu__group">
+          <div className="context-menu__group-title">{SECTION_LABELS[section]}</div>
           {items.map((item) => (
             <button
               key={item.type}

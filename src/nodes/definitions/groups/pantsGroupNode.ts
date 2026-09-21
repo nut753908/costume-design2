@@ -28,6 +28,7 @@ const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRa
 defineGroupNode({
   type: 'pantsGroup',
   label: 'Pants',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

@@ -1,13 +1,14 @@
-import type { NodeCategory } from '../nodes/types';
+import type { PaletteSection } from '../nodes/types';
 
-/** ノードパレットとコンテキストメニューで共有するカテゴリ表示名。 */
-export const CATEGORY_LABELS: Record<NodeCategory, string> = {
+/** ノードパレットとコンテキストメニューで共有する見出しの表示名。 */
+export const SECTION_LABELS: Record<PaletteSection, string> = {
   input: 'Inputs',
   math: 'Math',
   primitive: 'Primitives',
   'geometry-op': 'Geometry Ops',
   points: 'Points',
-  group: 'Groups',
+  garment: 'Garments & Body',
+  'group-part': 'Group Parts',
   'group-io': 'Group I/O',
   material: 'Materials',
   output: 'Outputs',

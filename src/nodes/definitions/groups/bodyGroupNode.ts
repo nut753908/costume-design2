@@ -28,6 +28,7 @@ import { colorSocket } from '../garmentOutput';
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

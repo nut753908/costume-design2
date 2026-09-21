@@ -21,6 +21,7 @@ const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 12, startRadiu
 defineGroupNode({
   type: 'skirtGroup',
   label: 'Skirt',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

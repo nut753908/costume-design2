@@ -15,6 +15,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 defineGroupNode({
   type: 'bodyLayoutGroup',
   label: 'Body Layout',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

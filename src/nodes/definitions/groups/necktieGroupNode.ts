@@ -22,6 +22,7 @@ const scale = bodyBuildScale(0.3);
 defineGroupNode({
   type: 'necktieGroup',
   label: 'Necktie',
+  paletteSection: 'garment',
   internalNodes: [
     {
       id: 'input',

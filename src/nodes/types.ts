@@ -38,10 +38,17 @@ export type NodeCategory =
   | 'group'
   | 'group-io';
 
+/** パレット/コンテキストメニューの見出し。`NodeCategory` のうち `group` だけは機能に使われる
+ * (`resolveNodeSockets`/`enterGroup`/「→」ボタン)ため分割せず、`paletteSection`(表示専用)で
+ * `garment`(ガーメントと Body 関連)と `group-part`(部品・補助)に振り分ける。 */
+export type PaletteSection = Exclude<NodeCategory, 'group'> | 'garment' | 'group-part';
+
 export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   type: string;
   label: string;
   category: NodeCategory;
+  /** `category: 'group'` のときだけ意味を持つ、パレットでの振り分け先(省略時は `group-part`)。 */
+  paletteSection?: 'garment' | 'group-part';
   inputs: SocketDef[];
   outputs: SocketDef[];
   /** このノードタイプの新しいインスタンスを追加するたびに一度だけ呼ばれる、
