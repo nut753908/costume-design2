@@ -90,9 +90,24 @@
 }
 
 .rf-node__socket-field--color {
+  width: 16px;
   padding: 0;
   border: none;
   background: none;
+}
+
+.rf-node__socket-field--color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.rf-node__socket-field--color::-webkit-color-swatch {
+  border: 1px solid #999;
+  border-radius: 3px;
+}
+
+.rf-node__socket-field--color::-moz-color-swatch {
+  border: 1px solid #999;
+  border-radius: 3px;
 }
 
 .rf-node__socket-row--out {
