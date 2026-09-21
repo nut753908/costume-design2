@@ -71,8 +71,8 @@ const dimensions = [
  * `numberMultiply`)と同じ粒度までノードグラフ上に展開しており、「→」ボタンで中に入れば
  * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
  * Height/Shoulder スケールは、`bodyBuild` のようにルートで配線するのではなく、グループカードの
- * 入力欄(未接続時の既定値 1)から調整する。`headRadius` は `groupOutput` の入力ソケットが入力欄を
- * 持てないため、`numberInput`(`headRadiusBaseIn`)から配線する。 */
+ * 入力欄(未接続時の既定値 1)から調整する。`headRadius` はスケール無しで、`groupOutput` の
+ * `headRadius` の入力欄の値(0.16)がそのまま出力になる。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',
@@ -88,8 +88,6 @@ defineGroupNode({
         ],
       },
     },
-    // headRadius はスケール無し(基準値がそのまま出力になる)。
-    { id: 'headRadiusBaseIn', type: 'numberInput', data: { value: 0.16} },
     ...dimensions.flatMap((d) => d.nodes),
     {
       id: 'output',
@@ -101,7 +99,7 @@ defineGroupNode({
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number' },
           { id: 'torsoLength', label: 'Torso Length', type: 'number' },
           { id: 'torsoRadius', label: 'Torso Radius', type: 'number' },
-          { id: 'headRadius', label: 'Head Radius', type: 'number' },
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.16 },
           { id: 'armLength', label: 'Arm Length', type: 'number' },
           { id: 'armRadius', label: 'Arm Radius', type: 'number' },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number' },
@@ -110,7 +108,6 @@ defineGroupNode({
     },
   ],
   internalEdges: [
-    { source: 'headRadiusBaseIn', sourceHandle: 'value', target: 'output', targetHandle: 'headRadius' },
     ...dimensions.flatMap((d) => d.edges),
   ],
 });

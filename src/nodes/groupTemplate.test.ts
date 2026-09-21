@@ -74,8 +74,8 @@ describe('migrateGroupToTemplate', () => {
   });
 
   it('同じ id・型の numberInput/colorInput の値を引き継ぐ(最新のテンプレートにも入力ノードがあるグループ)', () => {
-    const migrated = migrateGroupToTemplate('bodyLayoutGroup', [n('feetYIn', 'numberInput', { value: 0.5 })]);
-    expect(migrated.nodes.find((node) => node.id === 'feetYIn')?.data.value).toBe(0.5);
+    const migrated = migrateGroupToTemplate('scarfGroup', [n('bandThicknessIn', 'numberInput', { value: 0.5 })]);
+    expect(migrated.nodes.find((node) => node.id === 'bandThicknessIn')?.data.value).toBe(0.5);
   });
 
   it('同じ id の groupInput のソケットの既定値(Group Input で編集した値)を引き継ぐ', () => {
