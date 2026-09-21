@@ -26,7 +26,7 @@ const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
 
 defineGroupNode({
   type: 'bagGroup',
-  label: 'Bag',
+  label: 'Bag Group',
   internalNodes: [
     {
       id: 'input',

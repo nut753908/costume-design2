@@ -20,7 +20,7 @@ const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadiu
 
 defineGroupNode({
   type: 'jacketGroup',
-  label: 'Jacket',
+  label: 'Jacket Group',
   internalNodes: [
     {
       id: 'input',

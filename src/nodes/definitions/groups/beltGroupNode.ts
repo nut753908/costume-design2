@@ -16,7 +16,7 @@ const scale = bodyBuildScale(0.32);
 
 defineGroupNode({
   type: 'beltGroup',
-  label: 'Belt',
+  label: 'Belt Group',
   internalNodes: [
     {
       id: 'input',

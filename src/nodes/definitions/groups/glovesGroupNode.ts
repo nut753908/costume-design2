@@ -24,7 +24,7 @@ const lathe = latheBody({ genId: 'gloveGen', direction: 'down', steps: 10, start
 
 defineGroupNode({
   type: 'glovesGroup',
-  label: 'Gloves',
+  label: 'Gloves Group',
   internalNodes: [
     {
       id: 'input',

@@ -33,7 +33,7 @@ const output = garmentOutput({ offsetY: -0.02, geometry: 'mergeAll' });
 
 defineGroupNode({
   type: 'glassesGroup',
-  label: 'Glasses',
+  label: 'Glasses Group',
   internalNodes: [
     {
       id: 'input',
