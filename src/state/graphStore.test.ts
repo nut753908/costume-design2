@@ -151,6 +151,20 @@ describe('graphStore の Undo/Redo', () => {
     expect(useGraphStore.getState().nodes.map((n) => n.id).sort()).toEqual(['a', 'b', 'c']);
   });
 
+  it('配線付きノードの削除(接続エッジの削除+ノードの削除の2回の呼び出し)は履歴1件にまとまり、Undo 1回で元に戻る', () => {
+    resetStore([makeNode('a'), makeNode('b')], [makeEdge('e-ab', 'a', 'b')]);
+    useGraphStore.getState().onEdgesChange([{ id: 'e-ab', type: 'remove' }]);
+    useGraphStore.getState().onNodesChange([{ id: 'b', type: 'remove' }]);
+
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['a']);
+    expect(useGraphStore.getState().edges).toHaveLength(0);
+    expect(useGraphStore.getState().past).toHaveLength(1);
+
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().nodes.map((n) => n.id).sort()).toEqual(['a', 'b']);
+    expect(useGraphStore.getState().edges).toHaveLength(1);
+  });
+
   it('select/dimensions のみの変更では履歴を積まない', () => {
     resetStore([makeNode('a')]);
     const changes: NodeChange[] = [{ id: 'a', type: 'select', selected: true }];

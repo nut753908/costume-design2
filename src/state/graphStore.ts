@@ -36,6 +36,9 @@ const HISTORY_LIMIT = 100;
  * 1回のUndo単位にまとめるための猶予時間。この時間内に同じキーで再度呼ばれた場合は
  * 新しい履歴エントリを積まず、直前のジェスチャーの続きとみなす。 */
 const COALESCE_MS = 500;
+/** 配線付きノードの削除では、React Flow が接続エッジの削除(`onEdgesChange`)とノード自身の削除
+ * (`onNodesChange`)を続けて呼ぶ。この2回を1件の履歴にまとめるための統合時間。 */
+const REMOVE_COALESCE_MS = 50;
 
 interface Clipboard {
   nodes: Node[];
@@ -148,7 +151,7 @@ export const useGraphStore = create<GraphState>()(
         _pasteCount: 0,
         onNodesChange: (changes) => {
           if (changes.some((c) => c.type === 'remove')) {
-            pushHistory();
+            pushHistory('remove', REMOVE_COALESCE_MS);
           } else if (changes.some((c) => c.type === 'position' && c.dragging) && !get()._dragging) {
             pushHistory();
             set({ _dragging: true });
@@ -159,7 +162,7 @@ export const useGraphStore = create<GraphState>()(
           set({ nodes: applyNodeChanges(changes, get().nodes) });
         },
         onEdgesChange: (changes) => {
-          if (changes.some((c) => c.type === 'remove')) pushHistory();
+          if (changes.some((c) => c.type === 'remove')) pushHistory('remove', REMOVE_COALESCE_MS);
           set({ edges: applyEdgeChanges(changes, get().edges) });
         },
         onConnect: (connection) => {
