@@ -30,7 +30,7 @@ registerNodeType<RingGridGeneratorData>({
   evaluate: (inputs, data): Record<string, SocketValue> => {
     if (!inputs.points || inputs.points.type !== 'points') return {};
     const segments = Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 24)));
-    // 未接続ならネックラインを彫り込まない(形はノード構成で選ぶ。`garmentParts.ts` の `necklineShapes()`)。
+    // 未接続ならネックラインを彫り込まない(形はノード構成で選ぶ。`generic/necklineShapes.ts` の `necklineShapes` グループ)。
     const necklineWeights = inputs.necklineWeights?.type === 'points' ? inputs.necklineWeights.value : [];
     const necklineDepth = asNumber(inputs.necklineDepth, data.necklineDepth ?? 0.12);
     const rows = inputs.points.value

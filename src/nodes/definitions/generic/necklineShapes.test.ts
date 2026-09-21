@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateGraph } from '../evaluateGraph';
-import { necklineShapes } from './garmentParts';
-import './index';
+import { getNodeType } from '../../registry';
+import '../../definitions';
 
 describe('necklineShapes', () => {
-  const { nodes, edges } = necklineShapes();
-  const results = evaluateGraph(nodes, edges);
+  const results = getNodeType('necklineShapes').evaluate({}, {});
   const weights = (id: string) => {
-    const out = results.get(id)?.points;
+    const out = results[id];
     if (out?.type !== 'points') throw new Error(`${id} が points を出力していない`);
     return out.value;
   };

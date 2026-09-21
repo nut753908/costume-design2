@@ -4,7 +4,7 @@ const NECKLINE_HALF_WIDTH = Math.PI / 3; // 落ち込みは正面から左右60�
 
 /** 正面(angle=0)からの角度を正規化した `t`(0〜1、`NECKLINE_HALF_WIDTH` で1)に対する落ち込み量の
  * 曲線 `weights`(x が t、y が重み。x の昇順の点列)を、`angle` の位置で線形補間して返す。
- * 曲線の形(round/v/square)はノードグラフ側で作る(`garmentParts.ts` の `necklineShapes()`)。
+ * 曲線の形(round/v/square)はノードグラフ側で作る(`generic/necklineShapes.ts` の `necklineShapes` グループ)。
  * `NECKLINE_HALF_WIDTH` を超えた角度は常に0、曲線の範囲外は端の値で頭打ちにする。
  * top/dress が共有する `ringGrid.ts` が、最上段のリングの頂点だけを角度ごとに引き下げて
  * ネックラインを彫り込むのに使う。 */

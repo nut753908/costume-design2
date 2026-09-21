@@ -18,7 +18,7 @@ function profile(startRadius: number, endRadius: number, length: number): THREE.
   return points.value;
 }
 
-/** ネックラインの落ち込み量の曲線(x=角度を0〜1に正規化した値、y=重み)。形は `necklineShapes()` と同じ。 */
+/** ネックラインの落ち込み量の曲線(x=角度を0〜1に正規化した値、y=重み)。形は `necklineShapes` グループと同じ。 */
 const shape = (f: (t: number) => number) =>
   Array.from({ length: 13 }, (_, k) => new THREE.Vector2(k / 12, f(k / 12)));
 const SHAPES = {

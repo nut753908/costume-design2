@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyBuildScale, necklineShapes } from '../garmentParts';
+import { bodyBuildScale } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** profile(easedLatheProfile、始点・終点とも同じ半径)+gen(ringGridGenerator、最上段に
@@ -12,8 +12,6 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
  * 配線される shoulderY)は外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
-
-const neckline = necklineShapes();
 
 const scale = bodyBuildScale(0.29);
 
@@ -33,7 +31,7 @@ defineGroupNode({
       },
     },
     ...scale.nodes,
-    ...neckline.nodes,
+    { id: 'neckline', type: 'necklineShapes', data: {} },
     { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10, distance: 0.5 } },
     { id: 'gen', type: 'ringGridGenerator', data: { necklineDepth: 0.12 } },
     { id: 'sleeveGen', type: 'sleevePair', data: { sleeveRadius: 0.085, sleeveLength: 0.22 } },
@@ -42,11 +40,10 @@ defineGroupNode({
   ],
   internalEdges: [
     ...scale.edges,
-    ...neckline.edges,
     { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
     { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'endRadius' },
     { source: 'profile', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
-    { source: 'roundShape', sourceHandle: 'points', target: 'gen', targetHandle: 'necklineWeights' },
+    { source: 'neckline', sourceHandle: 'roundShape', target: 'gen', targetHandle: 'necklineWeights' },
     { source: 'scale', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'attachRadius' },
     { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'sleeveGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },

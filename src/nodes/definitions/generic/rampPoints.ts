@@ -11,7 +11,7 @@ const DEFAULTS = { steps: 12 };
 
 /** x=y=0〜1 を等間隔に刻んだ斜めの点列(`(k/steps, k/steps)`)を出力する汎用ノード。
  * `scalePointsY`/`translatePointsY`/`multiplyPointsY` で y だけを加工すると、x を横軸とした
- * 任意の曲線(`garmentParts.ts` の `necklineShapes()` のネックラインの落ち込み量など)を
+ * 任意の曲線(`generic/necklineShapes.ts` の `necklineShapes` グループ のネックラインの落ち込み量など)を
  * 配線で組み立てられる。 */
 registerNodeType<RampPointsData>({
   type: 'rampPoints',
