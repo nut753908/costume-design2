@@ -126,7 +126,6 @@ export function PresetPanel() {
         const migrated = migrateGroupToTemplate(
           scope,
           preset.nodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data })),
-          preset.edges.map((e) => ({ source: e.source, sourceHandle: e.sourceHandle, target: e.target, targetHandle: e.targetHandle })),
         );
         loadGroupGraph(migrated.nodes as unknown as Node[], migrated.edges as unknown as Edge[], migrated.templateFingerprint);
         return;

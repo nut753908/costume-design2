@@ -71,23 +71,16 @@ interface SocketWithDefault {
 const socketsOf = (node: GraphNode): SocketWithDefault[] =>
   Array.isArray(node.data.sockets) ? (node.data.sockets as SocketWithDefault[]) : [];
 
-/** 現在のテンプレートを読み込み直し、古い内部グラフ(`oldNodes`/`oldEdges`)にあった値を引き継ぐ。
- * 構造(配線・ノード構成)は最新のテンプレートのものになり、対応するノードが無くなった値は捨てる。
- * 引き継ぐ値は次の3種類:
- * - 同じ id・同じ型のノードが持つ値: `numberInput`/`colorInput` の `value`/`hex`、入力欄
- *   (`SocketDef.default` を持つ number/color ソケット)の値 `data[socketId]`、`groupInput` の
- *   同じ id のソケットの既定値 `default`。
- * - 古いテンプレートでは単独の `numberInput`/`colorInput` ノードとして持たれていて、最新のテンプレートでは
- *   接続先ノードの入力欄へ移った値: 古い `oldEdges` でその入力ノードがちょうど1本だけ繋がっていた
- *   接続先ノード(同じ id が最新のテンプレートにある)で、そのソケットが最新のテンプレートで
- *   未接続の入力欄になっていれば、その入力欄の値として引き継ぐ。
- * - 同様に、最新のテンプレートでは `groupInput` のソケットから供給されるようになった値: 古い入力ノードの
- *   繋がっていた先がすべて、最新のテンプレートで同じ `groupInput` のソケットから配線されていれば、その
- *   ソケットの既定値として引き継ぐ。 */
+/** 現在のテンプレートを読み込み直し、古い内部グラフ(`oldNodes`)にあった値を引き継ぐ。
+ * 構造(配線・ノード構成)は最新のテンプレートのものになる。引き継ぐのは、同じ id・同じ型の
+ * ノードが持つ値だけで、対応するノードが無くなった値は捨てる(値の置き場所が別のノードへ
+ * 移った場合の追跡はしない — 更新後の値は最新のテンプレートの既定値になる):
+ * - `numberInput`/`colorInput` の `value`/`hex`
+ * - 入力欄(`SocketDef.default` を持つ number/color ソケット)の値 `data[socketId]`
+ * - `groupInput` の同じ id のソケットの既定値 `default` */
 export function migrateGroupToTemplate(
   type: string,
   oldNodes: GraphNode[],
-  oldEdges: GraphEdge[] = [],
 ): { nodes: GraphNode[]; edges: GraphEdge[]; templateFingerprint: string | undefined } {
   const template = getNodeType(type).createDefaultData() as {
     nodes: GraphNode[];
@@ -95,70 +88,25 @@ export function migrateGroupToTemplate(
     templateFingerprint?: string;
   };
   const oldById = new Map(oldNodes.map((n) => [n.id, n]));
-  const nodesById = new Map(
-    template.nodes.map((node) => {
-      const old = oldById.get(node.id);
-      if (!old || old.type !== node.type) return [node.id, node] as const;
-      const carried: Record<string, unknown> = {};
-      const key = VALUE_KEY_BY_INPUT_TYPE[node.type];
-      if (key && old.data[key] !== undefined) carried[key] = old.data[key];
-      for (const socket of resolveNodeSockets(node.type, node.data).inputs) {
-        if (socket.default !== undefined && typeof old.data[socket.id] === typeof socket.default) {
-          carried[socket.id] = old.data[socket.id];
-        }
+  const nodes = template.nodes.map((node) => {
+    const old = oldById.get(node.id);
+    if (!old || old.type !== node.type) return node;
+    const carried: Record<string, unknown> = {};
+    const key = VALUE_KEY_BY_INPUT_TYPE[node.type];
+    if (key && old.data[key] !== undefined) carried[key] = old.data[key];
+    for (const socket of resolveNodeSockets(node.type, node.data).inputs) {
+      if (socket.default !== undefined && typeof old.data[socket.id] === typeof socket.default) {
+        carried[socket.id] = old.data[socket.id];
       }
-      if (node.type === 'groupInput') {
-        const oldSockets = new Map(socketsOf(old).map((sock) => [sock.id, sock]));
-        carried.sockets = socketsOf(node).map((sock) => {
-          const oldDefault = oldSockets.get(sock.id)?.default;
-          return sock.default !== undefined && typeof oldDefault === typeof sock.default ? { ...sock, default: oldDefault } : sock;
-        });
-      }
-      return [node.id, Object.keys(carried).length > 0 ? { ...node, data: { ...node.data, ...carried } } : node] as const;
-    }),
-  );
-
-  /** 最新のテンプレートで `target.targetHandle` に値を供給する場所(値を書き込むノードとそのキー/ソケット)。 */
-  const landingFor = (target: string, targetHandle: string): { nodeId: string; socketId: string; via: 'literal' | 'groupInput' } | undefined => {
-    const targetNode = nodesById.get(target);
-    if (!targetNode) return undefined;
-    const wire = template.edges.find((e) => e.target === target && e.targetHandle === targetHandle);
-    if (wire) {
-      const source = nodesById.get(wire.source);
-      const socket = source?.type === 'groupInput' ? socketsOf(source).find((sock) => sock.id === wire.sourceHandle) : undefined;
-      return source && socket?.default !== undefined ? { nodeId: source.id, socketId: socket.id, via: 'groupInput' } : undefined;
     }
-    const socket = resolveNodeSockets(targetNode.type, targetNode.data).inputs.find((sock) => sock.id === targetHandle);
-    return socket?.default !== undefined ? { nodeId: target, socketId: targetHandle, via: 'literal' } : undefined;
-  };
-
-  for (const old of oldNodes) {
-    const key = VALUE_KEY_BY_INPUT_TYPE[old.type];
-    const value = key ? old.data[key] : undefined;
-    if (value === undefined) continue;
-    const outgoing = oldEdges.filter((e) => e.source === old.id && e.targetHandle);
-    if (outgoing.length === 0) continue;
-    const landings = outgoing.map((e) => landingFor(e.target, e.targetHandle as string));
-    const first = landings[0];
-    if (!first || landings.some((l) => !l || l.nodeId !== first.nodeId || l.socketId !== first.socketId || l.via !== first.via)) continue;
-    if (first.via === 'literal' && outgoing.length !== 1) continue;
-    const landed = nodesById.get(first.nodeId);
-    if (!landed) continue;
-    if (first.via === 'literal') {
-      if (typeof value !== typeof resolveNodeSockets(landed.type, landed.data).inputs.find((sock) => sock.id === first.socketId)?.default) continue;
-      nodesById.set(first.nodeId, { ...landed, data: { ...landed.data, [first.socketId]: value } });
-    } else {
-      const sockets = socketsOf(landed);
-      if (typeof value !== typeof sockets.find((sock) => sock.id === first.socketId)?.default) continue;
-      nodesById.set(first.nodeId, {
-        ...landed,
-        data: { ...landed.data, sockets: sockets.map((sock) => (sock.id === first.socketId ? { ...sock, default: value as number | string } : sock)) },
+    if (node.type === 'groupInput') {
+      const oldSockets = new Map(socketsOf(old).map((sock) => [sock.id, sock]));
+      carried.sockets = socketsOf(node).map((sock) => {
+        const oldDefault = oldSockets.get(sock.id)?.default;
+        return sock.default !== undefined && typeof oldDefault === typeof sock.default ? { ...sock, default: oldDefault } : sock;
       });
     }
-  }
-  return {
-    nodes: template.nodes.map((n) => nodesById.get(n.id) ?? n),
-    edges: template.edges,
-    templateFingerprint: template.templateFingerprint,
-  };
+    return Object.keys(carried).length > 0 ? { ...node, data: { ...node.data, ...carried } } : node;
+  });
+  return { nodes, edges: template.edges, templateFingerprint: template.templateFingerprint };
 }

@@ -94,7 +94,7 @@ interface GraphState {
    * 指紋で、親ノードの `data` に記録して「テンプレートが古い」判定(`isGroupInstanceStale`)に使う。 */
   loadGroupGraph: (nodes: Node[], edges: Edge[], templateFingerprint: string | undefined) => void;
   /** 今開いているグループの内部を最新のテンプレートへ更新する。同じ id・同じ型の
-   * 同じ id のノードの値と、入力欄へ移った単独入力ノードの値は引き継ぐ(`migrateGroupToTemplate`)。 */
+   * ノードの値は引き継ぐ(`migrateGroupToTemplate`)。 */
   migrateCurrentGroupToTemplate: () => void;
   undo: () => void;
   redo: () => void;
@@ -229,7 +229,6 @@ export const useGraphStore = create<GraphState>()(
           const migrated = migrateGroupToTemplate(
             parentType,
             state.nodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data })),
-            state.edges.map((e) => ({ source: e.source, sourceHandle: e.sourceHandle, target: e.target, targetHandle: e.targetHandle })),
           );
           get().loadGroupGraph(migrated.nodes as unknown as Node[], migrated.edges as unknown as Edge[], migrated.templateFingerprint);
         },

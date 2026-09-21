@@ -55,13 +55,6 @@ describe('isGroupInstanceStale', () => {
 });
 
 describe('migrateGroupToTemplate', () => {
-  const edge = (source: string, target: string, targetHandle: string) => ({
-    source,
-    sourceHandle: 'value',
-    target,
-    targetHandle,
-  });
-
   it('同じ id・型のノードの入力欄の値を引き継ぐ', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [
       n('scale', 'numberMultiply', { value: 0.45 }),
@@ -85,37 +78,6 @@ describe('migrateGroupToTemplate', () => {
     expect(migrated.nodes.find((node) => node.id === 'feetYIn')?.data.value).toBe(0.5);
   });
 
-  it('古いテンプレートの単独の入力ノードの値を、接続先の入力欄へ引き継ぐ(1本だけ繋がっていた場合)', () => {
-    const migrated = migrateGroupToTemplate(
-      'skirtGroup',
-      [n('waistRadiusIn', 'numberInput', { value: 0.45 }), n('flareIn', 'numberInput', { value: 0.9 }), n('lengthIn', 'numberInput', { value: 0.6 })],
-      [edge('waistRadiusIn', 'scale', 'value'), edge('flareIn', 'hemRadiusCalc', 'flare'), edge('lengthIn', 'profile', 'distance')],
-    );
-    const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
-    expect(byId.get('scale')?.data.value).toBe(0.45);
-    expect(byId.get('hemRadiusCalc')?.data.flare).toBe(0.9);
-    expect(byId.get('profile')?.data.distance).toBe(0.6);
-  });
-
-  it('最新のテンプレートで groupInput のソケットから供給されるようになった値(色・スケール)を、そのソケットの既定値として引き継ぐ', () => {
-    const migrated = migrateGroupToTemplate(
-      'skirtGroup',
-      [n('colorIn', 'colorInput', { hex: '#123456' })],
-      [{ source: 'colorIn', sourceHandle: 'color', target: 'material', targetHandle: 'color' }],
-    );
-    const input = migrated.nodes.find((node) => node.id === 'input');
-    expect((input!.data.sockets as { id: string; default: unknown }[]).find((sock) => sock.id === 'color')?.default).toBe('#123456');
-
-    // 複数の接続先がすべて同じ groupInput ソケットから供給されている場合も引き継ぐ。
-    const dimensions = migrateGroupToTemplate(
-      'bodyDimensionsGroup',
-      [n('heightScaleIn', 'numberInput', { value: 1.2 })],
-      ['legHeightScale', 'torsoLengthScale', 'armLengthScale'].map((target) => ({ source: 'heightScaleIn', sourceHandle: 'value', target, targetHandle: 'factor' })),
-    );
-    const dimInput = dimensions.nodes.find((node) => node.id === 'input');
-    expect((dimInput!.data.sockets as { id: string; default: unknown }[]).find((sock) => sock.id === 'heightScale')?.default).toBe(1.2);
-  });
-
   it('同じ id の groupInput のソケットの既定値(Group Input で編集した値)を引き継ぐ', () => {
     const template = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[] };
     const input = template.nodes.find((node) => node.id === 'input')!;
@@ -128,18 +90,11 @@ describe('migrateGroupToTemplate', () => {
     expect(sockets.find((sock) => sock.id === 'bodyBuild')?.default).toBe(1.5);
   });
 
-  it('複数へ繋がっていた入力ノード・最新のテンプレートで配線されているソケットへの値は引き継がない', () => {
-    const migrated = migrateGroupToTemplate(
-      'skirtGroup',
-      [n('a', 'numberInput', { value: 9 })],
-      [edge('a', 'scale', 'value'), edge('a', 'hemRadiusCalc', 'flare')],
-    );
+  it('値の置き場所が別のノードへ移っている場合は追跡せず、最新のテンプレートの既定値になる', () => {
+    // 古いテンプレートで numberInput(waistRadiusIn)が持っていた値は、最新のテンプレートでは scale の入力欄にある。
+    const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'numberInput', { value: 0.45 })]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
+    expect(byId.has('waistRadiusIn')).toBe(false);
     expect(byId.get('scale')?.data.value).toBe(0.3);
-    expect(byId.get('hemRadiusCalc')?.data.flare).toBe(0.7);
-
-    // scale.factor は最新のテンプレートで input.bodyBuild が配線されているため、入力欄の値にはならない。
-    const wired = migrateGroupToTemplate('skirtGroup', [n('b', 'numberInput', { value: 9 })], [edge('b', 'scale', 'factor')]);
-    expect(wired.nodes.find((node) => node.id === 'scale')?.data.factor).toBeUndefined();
   });
 });
