@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // jacketGroup の埋め込みサブグラフが参照する numberInput/numberMax/numberAdd/numberMultiply/
-// easedLatheProfile/latheGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、
+// easedLatheCurve/latheGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
 
@@ -11,7 +11,7 @@ function num(v: number) {
 
 // jacket は skirtGroupNode.ts と全く同じ理由・同じ形(geometry/jacket.ts のような専用の
 // build*Geometry() を持たず、裾半径(hemRadius = shoulderRadius × (1 + hemFlare))の導出も
-// 含めてすべて可視のノードグラフへ展開されている)。`Down` 出力の easedLatheProfile の
+// 含めてすべて可視のノードグラフへ展開されている)。`Down` 出力の easedLatheCurve の
 // 半径は始点(shoulderRadius)→終点(hemRadius)まで単調に変化するため、LatheGeometry の
 // bounding box の X/Z 半径は必ず max(shoulderRadius, hemRadius) に一致する。
 describe('jacketGroup', () => {

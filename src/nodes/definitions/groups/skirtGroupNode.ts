@@ -2,7 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** skirtWaistScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
+/** skirtWaistScale(numberMultiply)+profile(easedLatheCurve)+gen(latheGenerator)+
  * skirtMaterial(toonMaterial)+placement(garmentPlacement)+
  * sceneOut(sceneOutput)の8ノード(+裾半径を求める `flaredRadius`)を1枚にまとめたグループノード。
  * Waist Radius/Length/Flare/Segments は他のガーメントと共有されない単独パラメータの

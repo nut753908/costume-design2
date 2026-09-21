@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// socksGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheProfile/
+// socksGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheCurve/
 // latheGenerator/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
@@ -9,7 +9,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// socks は靴下1本ぶんのジオメトリ(`Up` 出力の easedLatheProfile、始点=Ankle Radius(y=0)、
+// socks は靴下1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Ankle Radius(y=0)、
 // 終点=Calf Radius(y=Height)、どちらも bodyBuild でスケール)を mirrorPair で
 // ±Leg Spacing だけ X方向に離した左右対称ペアへまとめる(socksGroupNode.ts のコメント参照)。
 describe('socksGroup', () => {

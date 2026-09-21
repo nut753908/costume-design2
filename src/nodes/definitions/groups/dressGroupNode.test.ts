@@ -3,10 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // dressGroup の埋め込みサブグラフが参照する numberInput/colorInput/numberMultiply/
-// easedLatheProfile/ringGridGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
+// easedLatheCurve/ringGridGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// dress は easedLatheProfile(肩→裾の半径)→ ringGridGenerator(geometry/ringGrid.ts による
+// dress は easedLatheCurve(肩→裾の半径)→ ringGridGenerator(geometry/ringGrid.ts による
 // ネックライン彫り込み)で組まれる(dressGroupNode.ts のコメント参照)。Torso Radius だけが
 // bodyBuild でスケールされ、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { FunctionCurve } from '../../../geometry/functionCurve';
+import { EasedLatheCurve } from '../../../geometry/latheProfile';
 import { getNodeType } from '../../registry';
 import { expectOutwardWinding } from '../../../geometry/windingTestHelpers';
 import '../../definitions';
@@ -9,14 +10,9 @@ const num = (value: number) => ({ type: 'number' as const, value });
 const SEGMENTS = 16;
 const STEPS = 8;
 
-/** easedLatheProfile と同じ下→上の順の点列(半径 startRadius → endRadius、y は 0 から -length)。 */
-function profile(startRadius: number, endRadius: number, length: number): THREE.Vector2[] {
-  const points = getNodeType('easedLatheProfile').evaluate(
-    { startRadius: num(startRadius), endRadius: num(endRadius), distance: num(length), steps: num(STEPS) },
-    {},
-  ).down;
-  if (points?.type !== 'points') throw new Error('points が出力されていない');
-  return points.value;
+/** `easedLatheCurve` の `Curve Down` と同じ、下→上の順に進む曲線(半径 startRadius → endRadius、y は 0 から -length)。 */
+function profile(startRadius: number, endRadius: number, length: number): THREE.Curve<THREE.Vector2> {
+  return new EasedLatheCurve(startRadius, endRadius, length, 'down');
 }
 
 /** ネックラインの落ち込み量の曲線(x=角度を0〜1に正規化した値、y=重み)。形は `necklineShapes` グループと同じ。 */
@@ -29,11 +25,12 @@ const SHAPES = {
 function build(
   necklineShape: keyof typeof SHAPES | null,
   necklineDepth: number,
-  points = profile(0.3, 0.3, 0.5),
+  curve = profile(0.3, 0.3, 0.5),
 ): THREE.BufferGeometry {
   const result = getNodeType('ringGridGenerator').evaluate(
     {
-      points: { type: 'points', value: points },
+      profile: { type: 'curve', value: curve },
+      steps: num(STEPS),
       segments: num(SEGMENTS),
       ...(necklineShape ? { necklineWeights: { type: 'curve' as const, value: SHAPES[necklineShape] } } : {}),
       necklineDepth: num(necklineDepth),
@@ -52,7 +49,7 @@ function topRowMinY(geometry: THREE.BufferGeometry): number {
 }
 
 describe('ringGridGenerator', () => {
-  it('points が未接続なら何も出力しない', () => {
+  it('profile が未接続なら何も出力しない', () => {
     expect(getNodeType('ringGridGenerator').evaluate({}, getNodeType('ringGridGenerator').createDefaultData())).toEqual({});
   });
 

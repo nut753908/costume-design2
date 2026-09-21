@@ -2,7 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** shoesSoleScale(numberMultiply)+profile(easedLatheProfile)+latheGen(latheGenerator)+
+/** shoesSoleScale(numberMultiply)+profile(easedLatheCurve)+latheGen(latheGenerator)+
  * scaleZ(scaleZ)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の9ノードを1枚にまとめたグループノード。
  * Sole Radius と Cuff Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/

@@ -1,10 +1,9 @@
 import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
 import { asNumber } from '../../socketHelpers';
-import { FunctionCurve } from '../../../geometry/functionCurve';
+import { MapYCurve } from '../../../geometry/functionCurve';
 
-/** 曲線の Y だけを `y` だけ平行移動する汎用ノード(`translate`(geometry 版)、
- * `translatePointsY`(points 版)の曲線版)。 */
+/** 曲線の Y だけを `y` だけ平行移動する汎用ノード(x は変えない。`translate`(geometry 版)の曲線版)。 */
 registerNodeType({
   type: 'translateCurveY',
   label: 'Translate Curve Y',
@@ -19,6 +18,6 @@ registerNodeType({
     if (!inputs.curve || inputs.curve.type !== 'curve') return {};
     const source = inputs.curve.value;
     const y = asNumber(inputs.y, 0);
-    return { curve: { type: 'curve', value: new FunctionCurve((t) => source.getPoint(t).y + y) } };
+    return { curve: { type: 'curve', value: new MapYCurve(source, (v) => v + y) } };
   },
 });

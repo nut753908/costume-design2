@@ -1,9 +1,9 @@
 import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
 import { asNumber } from '../../socketHelpers';
-import { FunctionCurve } from '../../../geometry/functionCurve';
+import { MapYCurve } from '../../../geometry/functionCurve';
 
-/** 曲線の Y だけを `factor` 倍する汎用ノード(`Translate Curve Y` の倍率版)。 */
+/** 曲線の Y だけを `factor` 倍する汎用ノード(x は変えない)(`Translate Curve Y` の倍率版)。 */
 registerNodeType({
   type: 'scaleCurveY',
   label: 'Scale Curve Y',
@@ -18,6 +18,6 @@ registerNodeType({
     if (!inputs.curve || inputs.curve.type !== 'curve') return {};
     const source = inputs.curve.value;
     const factor = asNumber(inputs.factor, 1);
-    return { curve: { type: 'curve', value: new FunctionCurve((t) => source.getPoint(t).y * factor) } };
+    return { curve: { type: 'curve', value: new MapYCurve(source, (y) => y * factor) } };
   },
 });

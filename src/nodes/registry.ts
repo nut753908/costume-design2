@@ -7,7 +7,6 @@ const SECTION_ORDER: PaletteSection[] = [
   'math',
   'primitive',
   'geometry-op',
-  'points',
   'curve',
   'garment',
   'group-part',

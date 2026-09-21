@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// shoesGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheProfile/
+// shoesGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheCurve/
 // latheGenerator/scaleZ/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
@@ -9,7 +9,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// shoes は靴1本ぶんのジオメトリ(`Up` 出力の easedLatheProfile、始点=Sole Radius
+// shoes は靴1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Sole Radius
 // (bodyBuild でスケール、y=0)、終点=Cuff Radius(y=Height)、どちらも bodyBuild でスケール)に `scaleZ` で
 // つま先方向(Z)だけ Toe Length 倍のスケールを掛けてから、mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(shoesGroupNode.ts のコメント参照)。scaleZ は

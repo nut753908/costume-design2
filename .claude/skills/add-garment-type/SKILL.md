@@ -7,7 +7,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
 
-1. **ノードグラフだけで組む(既定)**: 汎用ノード(`easedLatheProfile`+`latheGenerator`、`capsuleGenerator`/`boxGenerator`/`torusGenerator` などのプリミティブ、`alignedBoxGenerator`、`translate`、`scaleZ`、`mergeGeometry`、`mirrorPair` など、一覧は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「汎用ノード一覧」)の組み合わせだけで形状を作る。専用の `geometry/*.ts` も `*Generator.ts` も要らない。skirt/jacket/hat/gloves/pants/shoes/socks(Lathe 系)・scarf・bag・glasses が実例。
+1. **ノードグラフだけで組む(既定)**: 汎用ノード(`easedLatheCurve`+`latheGenerator`、`capsuleGenerator`/`boxGenerator`/`torusGenerator` などのプリミティブ、`alignedBoxGenerator`、`translate`、`scaleZ`、`mergeGeometry`、`mirrorPair` など、一覧は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「汎用ノード一覧」)の組み合わせだけで形状を作る。専用の `geometry/*.ts` も `*Generator.ts` も要らない。skirt/jacket/hat/gloves/pants/shoes/socks(Lathe 系)・scarf・bag・glasses が実例。
 2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノード(`ringGridGenerator`/`taperedEllipseTubeGenerator` など)でも表現しきれない形状の場合のみ(現状の全14種はこの必要が無い)。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。
 
 ノードタイプ自体の登録は `import.meta.glob` により自動化されており、レジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
@@ -64,7 +64,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 
 - `anchorYSocket`/`colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY`/`color`(既定の色 `hex`)ソケット定義。`garmentOutput({ offsetY, geometry })`(同ファイル)— `material`(toonMaterial、色は `input.color` から配線)→`sceneOut` と `input.anchorY`→`placement`(garmentPlacement、`Offset Y` 入力欄が offsetY)→`sceneOut` のノード3個・エッジ5本。`geometry` には最終的な geometry を出力するノードの id を渡す。
 - `bodyBuildScale(rawValue)`(`garmentParts.ts`)— 「体に触れる半径」(`rawValue` は `scale` の `Value` 入力欄の値)× `input.bodyBuild` の `scale`(`numberMultiply`)。半径スケーリングが要る場合だけ使う。
-- `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheProfile`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
+- `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheCurve`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、`bodyBuild`(半径スケーリングに使う場合)や `legSpacing`(`bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
 

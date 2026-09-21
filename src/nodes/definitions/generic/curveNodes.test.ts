@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { FunctionCurve } from '../../../geometry/functionCurve';
+import { EasedLatheCurve } from '../../../geometry/latheProfile';
 import { getNodeType } from '../../registry';
 import '../../definitions';
 
@@ -50,5 +51,18 @@ describe('multiplyCurveY', () => {
 
   it('どちらかが未接続なら何も出力しない', () => {
     expect(getNodeType('multiplyCurveY').evaluate({ curveA: curve((t) => t) }, {})).toEqual({});
+  });
+});
+
+describe('Y だけを加工するノードは、入力の曲線の x(半径など)を変えない', () => {
+  const path = { type: 'curve' as const, value: new EasedLatheCurve(0.4, 0.2, 1, 'up') };
+
+  it('scaleCurveY / translateCurveY', () => {
+    const scaled = yAt(getNodeType('scaleCurveY').evaluate({ curve: path, factor: num(2) }, {}), 1);
+    const moved = yAt(getNodeType('translateCurveY').evaluate({ curve: path, y: num(-3) }, {}), 1);
+    expect(scaled.x).toBeCloseTo(0.2, 12);
+    expect(scaled.y).toBeCloseTo(2, 12);
+    expect(moved.x).toBeCloseTo(0.2, 12);
+    expect(moved.y).toBeCloseTo(-2, 12);
   });
 });

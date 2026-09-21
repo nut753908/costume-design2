@@ -6,7 +6,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * buildScale の影響を受けないため)なので Body Build 入力は無い。頭に被さるつばの半径は、
  * 頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と同じ値)に Brim Ratio を掛けて
  * 求める(`brimRadiusCalc`)ため、頭の大きさを変えるとつばも追従する。
- * profile(easedLatheProfile)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
+ * profile(easedLatheCurve)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput) を1枚に
  * まとめる。Brim Ratio/Crown Radius/Height は他のガーメントと共有されない単独
  * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。

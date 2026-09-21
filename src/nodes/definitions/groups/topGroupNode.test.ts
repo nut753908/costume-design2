@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // topGroup の埋め込みサブグラフが参照する numberInput/
-// garmentPlacement/easedLatheProfile/ringGridGenerator/sleevePair を含め、全ノードタイプを登録する。
+// garmentPlacement/easedLatheCurve/ringGridGenerator/sleevePair を含め、全ノードタイプを登録する。
 import '../../definitions';
 
 // topGroup は Top 本体と袖を1つのガーメントとして持つ。Torso Radius(`topRadiusIn`)は

@@ -1,13 +1,12 @@
 import type * as THREE from 'three';
 
-export type SocketType = 'number' | 'color' | 'geometry' | 'material' | 'points' | 'curve';
+export type SocketType = 'number' | 'color' | 'geometry' | 'material' | 'curve';
 
 export type SocketValue =
   | { type: 'number'; value: number }
   | { type: 'color'; value: THREE.Color }
   | { type: 'geometry'; value: THREE.BufferGeometry }
   | { type: 'material'; value: THREE.Material }
-  | { type: 'points'; value: THREE.Vector2[] }
   | { type: 'curve'; value: THREE.Curve<THREE.Vector2> }
   /** 複数接続できる入力ソケット(`SocketDef.multiple`)へ、接続されたすべての geometry を
    * 配線順に集めて渡すための値。ソケット自身の型は `geometry` のまま。 */
@@ -33,7 +32,6 @@ export type NodeCategory =
   | 'math'
   | 'primitive'
   | 'geometry-op'
-  | 'points'
   | 'curve'
   | 'material'
   | 'output'

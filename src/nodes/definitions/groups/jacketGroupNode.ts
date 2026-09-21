@@ -2,7 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** jacketShoulderScale(numberMultiply)+profile(easedLatheProfile)+gen(latheGenerator)+
+/** jacketShoulderScale(numberMultiply)+profile(easedLatheCurve)+gen(latheGenerator)+
  * jacketMaterial(toonMaterial)+placement(garmentPlacement)+
  * sceneOut(sceneOutput)の8ノード(+裾半径を求める `flaredRadius`)を1枚にまとめたグループノード。
  * Shoulder Radius/Length/Hem Flare/Segments は他のガーメントと共有されない単独
@@ -10,7 +10,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの
  * `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。
  *
- * `skirtGroupNode.ts` と全く同じ理由・同じ形で、プロファイル生成を `easedLatheProfile`→
+ * `skirtGroupNode.ts` と全く同じ理由・同じ形で、プロファイル生成を `easedLatheCurve`→
  * `latheGenerator` へ、裾半径(`hemRadius = shoulderRadius * (1 + Math.max(0, hemFlare))`)を
  * `hemRadiusCalc`(`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`)へ展開している。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'gen' });

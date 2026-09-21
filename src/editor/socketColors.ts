@@ -5,7 +5,6 @@ export const SOCKET_COLORS: Record<SocketType, string> = {
   color: '#e2568c',
   geometry: '#3aa676',
   material: '#e0a83a',
-  points: '#2bb4c4',
   curve: '#8e6bd8',
 };
 

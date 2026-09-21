@@ -19,7 +19,7 @@ export interface GroupIOSocket {
 }
 
 /** `groupInput.evaluate()` が、外部から値が注入されていないソケットに使う
- * リテラルなデフォルト値を SocketValue へ変換する。geometry/material/points/curve はリテラルな
+ * リテラルなデフォルト値を SocketValue へ変換する。geometry/material/curve はリテラルな
  * デフォルトを表現できないため常に undefined を返す(=未接続なら単に出力されない)。 */
 export function literalGroupInputValue(socket: GroupIOSocket): SocketValue | undefined {
   switch (socket.type) {
@@ -29,14 +29,13 @@ export function literalGroupInputValue(socket: GroupIOSocket): SocketValue | und
       return { type: 'color', value: new THREE.Color(typeof socket.default === 'string' ? socket.default : '#cccccc') };
     case 'geometry':
     case 'material':
-    case 'points':
     case 'curve':
       return undefined;
   }
 }
 
 /** ソケット追加時に型ごとに割り当てる初期の `default`(number は `0`、color は `'#cccccc'`)。
- * geometry/material/points/curve はリテラルを持てないので `undefined`。 */
+ * geometry/material/curve はリテラルを持てないので `undefined`。 */
 export function defaultForSocketType(type: SocketType): GroupIOSocket['default'] {
   if (type === 'number') return 0;
   if (type === 'color') return '#cccccc';

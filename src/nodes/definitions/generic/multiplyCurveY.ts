@@ -1,8 +1,8 @@
 import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
-import { FunctionCurve } from '../../../geometry/functionCurve';
+import { MapYCurve } from '../../../geometry/functionCurve';
 
-/** 2つの曲線の Y 同士を、同じ `t` の位置ごとに掛ける汎用ノード。 */
+/** 2つの曲線の Y 同士を、同じ `t` の位置ごとに掛ける汎用ノード。x は `Curve A` のものを引き継ぐ。 */
 registerNodeType({
   type: 'multiplyCurveY',
   label: 'Multiply Curve Y',
@@ -18,6 +18,6 @@ registerNodeType({
     if (!inputs.curveB || inputs.curveB.type !== 'curve') return {};
     const a = inputs.curveA.value;
     const b = inputs.curveB.value;
-    return { curve: { type: 'curve', value: new FunctionCurve((t) => a.getPoint(t).y * b.getPoint(t).y) } };
+    return { curve: { type: 'curve', value: new MapYCurve(a, (y, t) => y * b.getPoint(t).y) } };
   },
 });

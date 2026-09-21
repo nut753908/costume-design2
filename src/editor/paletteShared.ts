@@ -6,7 +6,6 @@ export const SECTION_LABELS: Record<PaletteSection, string> = {
   math: 'Math',
   primitive: 'Primitives',
   'geometry-op': 'Geometry Ops',
-  points: 'Points',
   curve: 'Curves',
   garment: 'Garments & Body',
   'group-part': 'Group Parts',
@@ -34,7 +33,7 @@ export function fitViewPadding(): { left: `${number}px`; top: number; right: num
 const COLLAPSED_STORAGE_KEY = 'costume-design-palette-collapsed';
 
 /** 保存された設定が無いときに、最初から折りたたんでおく見出し(数が多く、日常的には使わないもの)。 */
-export const DEFAULT_COLLAPSED_SECTIONS: readonly PaletteSection[] = ['geometry-op', 'points', 'group-part'];
+export const DEFAULT_COLLAPSED_SECTIONS: readonly PaletteSection[] = ['geometry-op', 'curve', 'group-part'];
 
 /** 折りたたんでいる見出しを読み込む。保存が無い・壊れている・localStorage が使えないときは既定値。 */
 export function loadCollapsedSections(): Set<PaletteSection> {

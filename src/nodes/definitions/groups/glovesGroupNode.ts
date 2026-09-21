@@ -4,7 +4,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** 手首半径と手の半径はどちらも Body Build を掛けてから
  * lathe へ渡す(`scale`/`handScale`)。手袋全体の大きさを体の大きさに揃えるため。
- * glovesWristScale(numberMultiply)+profile(easedLatheProfile)+gloveGen(latheGenerator)+
+ * glovesWristScale(numberMultiply)+profile(easedLatheCurve)+gloveGen(latheGenerator)+
  * mirror(mirrorPair)+glovesMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Wrist Radius/Hand Radius/Length は他のガーメントと共有されない単独

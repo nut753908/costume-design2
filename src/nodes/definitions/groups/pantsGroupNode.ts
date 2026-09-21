@@ -2,7 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** pantsWaistScale(numberMultiply)+profile(easedLatheProfile)+legGen(latheGenerator)+
+/** pantsWaistScale(numberMultiply)+profile(easedLatheCurve)+legGen(latheGenerator)+
  * mirror(mirrorPair)+pantsMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Waist Radius と Hem Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/

@@ -5,7 +5,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 /** 足首半径とふくらはぎ半径はどちらも Body Build を掛けてから
  * lathe へ渡す(`scale`/`calfScale`)。体の脚の半径がすべて Body Build でスケールされるため、
  * ふくらはぎ側を固定にすると Body Build を上げたとき靴下が脚の内側に埋まる。
- * socksAnkleScale(numberMultiply)+profile(easedLatheProfile)+sockGen(latheGenerator)+
+ * socksAnkleScale(numberMultiply)+profile(easedLatheCurve)+sockGen(latheGenerator)+
  * mirror(mirrorPair)+socksMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Ankle Radius/Calf Radius/Height/Segments は他のガーメントと共有されない単独
