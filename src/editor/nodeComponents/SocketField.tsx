@@ -3,8 +3,7 @@ import type { SocketDef } from '../../nodes/types';
 import { useThrottledNodeDataUpdate } from './useThrottledNodeDataUpdate';
 
 /** `number`/`color` の値を編集する小さな入力欄。未接続の入力ソケットの行(`GenericNode.tsx`、値は
- * ノードの `data[socket.id]`)と、`Group Input` ノードの各ソケット行(`GroupInputNode.tsx`、値は
- * `socket.default`)の両方が使う。`toPatch` は編集した値を `updateNodeData` へ渡す `data` の
+ * ノードの `data[socket.id]`)が使う。`toPatch` は編集した値を `updateNodeData` へ渡す `data` の
  * 一部へ変換する。`numberInput`/`colorInput` ノードと同じく、入力途中の文字列/ドラッグ中の色は
  * ローカル state で即座に表示し、store への反映は間引く。 */
 export interface SocketFieldProps {

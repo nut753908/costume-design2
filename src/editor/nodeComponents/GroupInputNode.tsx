@@ -3,11 +3,9 @@ import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { GroupInputData } from '../../nodes/definitions/groupInput';
 import type { GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
-import type { SocketType, SocketValue } from '../../nodes/types';
+import type { SocketType } from '../../nodes/types';
 import { SOCKET_COLORS, SOCKET_TYPES } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
-import { resolveIncomingValue } from '../../nodes/evaluateGraph';
-import { SocketField } from './SocketField';
 
 function uniqueSocketId(sockets: GroupIOSocket[]): string {
   const taken = new Set(sockets.map((s) => s.id));
@@ -25,27 +23,14 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
 /** Blender の Geometry Nodes における「Group Input」ノード相当のカスタム描画。
  * グループの中に入っている間、このノードにソケットを増減・配線するだけでグループ本体の
  * 外部から見える入力ハンドルが増減する(`nodes/definitions/groupInput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。`number` のソケットの未接続時のデフォルト値
- * (`socket.default`)は、親スコープ側でそのソケットに何も配線されていなければ、行の入力欄
- * (`SocketField.tsx`)でその場で編集できる(グループノードのカードの未接続入力の欄の初期値にも
- * なる)。`color` のデフォルト値はこのノードでは表示も編集もしない(グループカードの Color 欄で
- * 変更する)。親スコープ側で値が配線されている間は入力欄を出さず、値も表示しない
- * (配線の有無は `parentScopeEvaluatedResults`、`state/useParentScopeEvaluatedGraph.ts` から引く)。 */
+ * `nodes/resolveNodeSockets.ts` 参照)。ソケットのデフォルト値(`socket.default`)や配線された注入値は
+ * このノードでは表示も編集もしない(グループカードの未接続入力の欄で変更する)。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
   const sockets = nodeData.sockets ?? [];
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const removeGroupIOSocket = useGraphStore((s) => s.removeGroupIOSocket);
-  const scopeStack = useGraphStore((s) => s.scopeStack);
-  const parentScopeResults = useGraphStore((s) => s.parentScopeEvaluatedResults);
-  const parentFrame = scopeStack.at(-1);
   const [newType, setNewType] = useState<SocketType>('number');
-
-  // 親スコープ側でそのソケットに実際に値が配線されていれば、その注入値(`undefined` なら未接続)。
-  const injectedFor = (socketId: string): SocketValue | undefined =>
-    parentFrame && parentScopeResults
-      ? resolveIncomingValue(parentFrame.edges, parentScopeResults, parentFrame.parentId, socketId)
-      : undefined;
 
   const patchSocket = (socketId: string, patch: Partial<GroupIOSocket>) => {
     updateNodeData(id, { sockets: sockets.map((s) => (s.id === socketId ? { ...s, ...patch } : s)) });
@@ -77,15 +62,6 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
             value={socket.label}
             onChange={(e) => patchSocket(socket.id, { label: e.target.value })}
           />
-          {injectedFor(socket.id) === undefined && socket.type === 'number' && socket.default !== undefined && (
-            <SocketField
-              nodeId={id}
-              label={socket.label}
-              type={socket.type}
-              value={socket.default}
-              toPatch={(value) => ({ sockets: sockets.map((s) => (s.id === socket.id ? { ...s, default: value } : s)) })}
-            />
-          )}
           <Handle type="source" position={Position.Right} id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
         </div>
       ))}
