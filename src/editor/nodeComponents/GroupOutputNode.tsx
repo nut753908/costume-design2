@@ -1,11 +1,12 @@
 import { memo, useState } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { Handle, Position, useNodeConnections, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { GroupOutputData } from '../../nodes/definitions/groupOutput';
-import type { GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
+import { defaultForSocketType, type GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
 import type { SocketType } from '../../nodes/types';
 import { SOCKET_COLORS, SOCKET_TYPES } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { SocketField } from './SocketField';
 
 function uniqueSocketId(sockets: GroupIOSocket[]): string {
   const taken = new Set(sockets.map((s) => s.id));
@@ -19,17 +20,20 @@ function uniqueSocketId(sockets: GroupIOSocket[]): string {
  * グループ本体の外部から見える出力ハンドルが増減する(`nodes/definitions/groupOutput.ts`/
  * `nodes/resolveNodeSockets.ts` 参照)。geometry(`garmentPlacement`)/material(`toonMaterial`
  * など)のような主要な出力も、他ガーメントへの再公開と同じくこのノードへの配線が必須
- * (`groupNodeFactory.ts` の `defineGroupNode()` 参照 — 区別しない)。 */
+ * (`groupNodeFactory.ts` の `defineGroupNode()` 参照 — 区別しない)。`number`/`color` の入力に
+ * 何も配線されていなければ、その行の入力欄(`SocketField.tsx`)でデフォルト値(`socket.default`)を
+ * 編集でき、未配線のままならその値がこのソケットの出力になる。 */
 function GroupOutputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupOutputData;
   const sockets = nodeData.sockets ?? [];
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const removeGroupIOSocket = useGraphStore((s) => s.removeGroupIOSocket);
   const [newType, setNewType] = useState<SocketType>('number');
+  const connectedInputs = new Set(useNodeConnections({ handleType: 'target' }).map((c) => c.targetHandle));
 
   const addSocket = () => {
     const newId = uniqueSocketId(sockets);
-    updateNodeData(id, { sockets: [...sockets, { id: newId, label: newId, type: newType }] });
+    updateNodeData(id, { sockets: [...sockets, { id: newId, label: newId, type: newType, default: defaultForSocketType(newType) }] });
   };
 
   return (
@@ -46,6 +50,15 @@ function GroupOutputNodeViewImpl({ id, data }: NodeProps) {
               updateNodeData(id, { sockets: sockets.map((s) => (s.id === socket.id ? { ...s, label: e.target.value } : s)) })
             }
           />
+          {!connectedInputs.has(socket.id) && (socket.type === 'number' || socket.type === 'color') && (
+            <SocketField
+              nodeId={id}
+              label={socket.label}
+              type={socket.type}
+              value={socket.default ?? defaultForSocketType(socket.type)}
+              toPatch={(value) => ({ sockets: sockets.map((s) => (s.id === socket.id ? { ...s, default: value } : s)) })}
+            />
+          )}
           <button
             type="button"
             className="rf-node__io-remove nodrag"

@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { GroupInputData } from '../../nodes/definitions/groupInput';
-import type { GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
+import { defaultForSocketType, type GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
 import type { SocketType } from '../../nodes/types';
 import { SOCKET_COLORS, SOCKET_TYPES } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
@@ -12,12 +12,6 @@ function uniqueSocketId(sockets: GroupIOSocket[]): string {
   let n = sockets.length + 1;
   while (taken.has(`socket-${n}`)) n++;
   return `socket-${n}`;
-}
-
-function defaultForType(type: SocketType): GroupIOSocket['default'] {
-  if (type === 'number') return 0;
-  if (type === 'color') return '#cccccc';
-  return undefined;
 }
 
 /** Blender の Geometry Nodes における「Group Input」ノード相当のカスタム描画。
@@ -38,7 +32,7 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
 
   const addSocket = () => {
     const newId = uniqueSocketId(sockets);
-    const socket: GroupIOSocket = { id: newId, label: newId, type: newType, default: defaultForType(newType) };
+    const socket: GroupIOSocket = { id: newId, label: newId, type: newType, default: defaultForSocketType(newType) };
     updateNodeData(id, { sockets: [...sockets, socket] });
   };
 

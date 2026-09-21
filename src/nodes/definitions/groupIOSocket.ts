@@ -10,7 +10,8 @@ export interface GroupIOSocket {
   id: string;
   label: string;
   type: SocketType;
-  /** `groupInput` 側でのみ意味を持つ、未接続時のリテラルなデフォルト値。
+  /** 未接続時のリテラルなデフォルト値(`groupInput` では外部から値が注入されていないとき、
+   * `groupOutput` ではこの入力に何も配線されていないときに出力される)。
    * number は number、color は hex 文字列として保持する
    * (numberInput/colorInput の `data.value`/`hex` と同じ表現)。
    * geometry/material にはリテラルなデフォルトが存在しないため常に undefined。 */
@@ -31,4 +32,12 @@ export function literalGroupInputValue(socket: GroupIOSocket): SocketValue | und
     case 'points':
       return undefined;
   }
+}
+
+/** ソケット追加時に型ごとに割り当てる初期の `default`(number は `0`、color は `'#cccccc'`)。
+ * geometry/material/points はリテラルを持てないので `undefined`。 */
+export function defaultForSocketType(type: SocketType): GroupIOSocket['default'] {
+  if (type === 'number') return 0;
+  if (type === 'color') return '#cccccc';
+  return undefined;
 }
