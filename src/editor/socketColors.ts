@@ -6,6 +6,7 @@ export const SOCKET_COLORS: Record<SocketType, string> = {
   geometry: '#3aa676',
   material: '#e0a83a',
   points: '#2bb4c4',
+  curve: '#8e6bd8',
 };
 
 /** 選択できるすべてのソケット型。`SOCKET_COLORS` が `Record<SocketType, …>` で全型を網羅するため、型を追加すると自動でここにも入る。 */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
+import { FunctionCurve } from '../../../geometry/functionCurve';
 import { getNodeType } from '../../registry';
 import { expectOutwardWinding } from '../../../geometry/windingTestHelpers';
 import '../../definitions';
@@ -19,12 +20,10 @@ function profile(startRadius: number, endRadius: number, length: number): THREE.
 }
 
 /** ネックラインの落ち込み量の曲線(x=角度を0〜1に正規化した値、y=重み)。形は `necklineShapes` グループと同じ。 */
-const shape = (f: (t: number) => number) =>
-  Array.from({ length: 13 }, (_, k) => new THREE.Vector2(k / 12, f(k / 12)));
 const SHAPES = {
-  round: shape((t) => 1 - t * t),
-  v: shape((t) => 1 - t),
-  square: shape(() => 1),
+  round: new FunctionCurve((t) => 1 - t * t),
+  v: new FunctionCurve((t) => 1 - t),
+  square: new FunctionCurve(() => 1),
 };
 
 function build(
@@ -36,7 +35,7 @@ function build(
     {
       points: { type: 'points', value: points },
       segments: num(SEGMENTS),
-      ...(necklineShape ? { necklineWeights: { type: 'points' as const, value: SHAPES[necklineShape] } } : {}),
+      ...(necklineShape ? { necklineWeights: { type: 'curve' as const, value: SHAPES[necklineShape] } } : {}),
       necklineDepth: num(necklineDepth),
     },
     {},

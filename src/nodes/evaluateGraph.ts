@@ -62,7 +62,7 @@ export function resetNodeEvalCacheForTests(): void {
   nodeEvalCacheStats.misses = 0;
 }
 
-/** `geometry`/`material`/`points` は値比較のコストが構造そのものの再計算と大差ないため、
+/** `geometry`/`material`/`points`/`curve` は値比較のコストが構造そのものの再計算と大差ないため、
  * 参照が同じ場合のみ「同じ」とみなす —— 生成元のノードもキャッシュヒットして同じ参照を
  * 返している限り、この参照比較で連鎖的に成立する。`number`/`color` は安価に値
  * 比較できるため、素の値ではなく都度生成される SocketValue のラッパーオブジェクトの

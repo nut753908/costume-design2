@@ -1,20 +1,19 @@
-import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
+import { FunctionCurve } from './functionCurve';
 import { necklineWeight } from './neckline';
 
 const HALF_WIDTH = Math.PI / 3;
 
-/** x=0〜1 を steps 分割して y=f(x) を取った曲線(ノードグラフ側で作られる落ち込み量の点列に相当)。 */
-const curve = (f: (t: number) => number, steps = 12) =>
-  Array.from({ length: steps + 1 }, (_, k) => new THREE.Vector2(k / steps, f(k / steps)));
+/** y=f(x) の曲線(ノードグラフ側で作られる落ち込み量の曲線に相当)。 */
+const curve = (f: (t: number) => number) => new FunctionCurve(f);
 
 const round = curve((t) => 1 - t * t);
 const v = curve((t) => 1 - t);
 const square = curve(() => 1);
 
 describe('necklineWeight', () => {
-  it('曲線が空なら常に0(ネックラインを彫り込まない)', () => {
-    expect(necklineWeight([], 0)).toBe(0);
+  it('曲線が未接続なら常に0(ネックラインを彫り込まない)', () => {
+    expect(necklineWeight(undefined, 0)).toBe(0);
   });
 
   it('正面(angle=0)では曲線の先頭の値になる', () => {
@@ -47,14 +46,9 @@ describe('necklineWeight', () => {
     expect(necklineWeight(round, Math.PI * 2 - 0.1)).toBeCloseTo(necklineWeight(round, -0.1), 10);
   });
 
-  it('点と点の間は線形補間される', () => {
-    const line = [new THREE.Vector2(0, 1), new THREE.Vector2(1, 0)];
-    expect(necklineWeight(line, 0.25 * HALF_WIDTH)).toBeCloseTo(0.75, 10);
-    expect(necklineWeight(line, 0.5 * HALF_WIDTH)).toBeCloseTo(0.5, 10);
-  });
-
-  it('曲線の範囲外(x の最大値より先)は端の値で頭打ちになる', () => {
-    const short = [new THREE.Vector2(0, 1), new THREE.Vector2(0.5, 0.4)];
-    expect(necklineWeight(short, 0.9 * HALF_WIDTH)).toBeCloseTo(0.4, 10);
+  it('曲線を分割せず、角度ごとにそのまま評価する(直線なら途中の値も厳密)', () => {
+    expect(necklineWeight(v, 0.25 * HALF_WIDTH)).toBeCloseTo(0.75, 12);
+    expect(necklineWeight(v, 0.5 * HALF_WIDTH)).toBeCloseTo(0.5, 12);
+    expect(necklineWeight(round, 0.5 * HALF_WIDTH)).toBeCloseTo(0.75, 12);
   });
 });

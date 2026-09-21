@@ -15,7 +15,7 @@ export interface RingGridRow {
 export function buildRingGridGeometry(
   rows: RingGridRow[],
   angleSegments: number,
-  necklineWeights: THREE.Vector2[],
+  necklineWeights: THREE.Curve<THREE.Vector2> | undefined,
   necklineDepth: number,
 ): THREE.BufferGeometry {
   const positions: number[] = [];

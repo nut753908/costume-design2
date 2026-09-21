@@ -7,6 +7,7 @@ export const SECTION_LABELS: Record<PaletteSection, string> = {
   primitive: 'Primitives',
   'geometry-op': 'Geometry Ops',
   points: 'Points',
+  curve: 'Curves',
   garment: 'Garments & Body',
   'group-part': 'Group Parts',
   'group-io': 'Group I/O',
