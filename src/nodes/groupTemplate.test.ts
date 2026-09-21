@@ -90,6 +90,20 @@ describe('migrateGroupToTemplate', () => {
     expect(sockets.find((sock) => sock.id === 'bodyBuild')?.default).toBe(1.5);
   });
 
+  it('同じ id の groupOutput のソケットの既定値(Group Output で編集した値)を引き継ぐ', () => {
+    const template = getNodeType('bodyLayoutGroup').createDefaultData() as { nodes: GraphNode[] };
+    const output = template.nodes.find((node) => node.id === 'output')!;
+    const edited = {
+      ...output,
+      data: { sockets: (output.data.sockets as { id: string }[]).map((sock) => (sock.id === 'feetY' ? { ...sock, default: 0.5 } : sock)) },
+    };
+    const migrated = migrateGroupToTemplate('bodyLayoutGroup', [edited]);
+    const sockets = migrated.nodes.find((node) => node.id === 'output')?.data.sockets as { id: string; default: unknown }[];
+    expect(sockets.find((sock) => sock.id === 'feetY')?.default).toBe(0.5);
+    // 既定値を持たないソケットは既定値を持たないまま
+    expect(sockets.find((sock) => sock.id === 'waistY')?.default).toBeUndefined();
+  });
+
   it('値の置き場所が別のノードへ移っている場合は追跡せず、最新のテンプレートの既定値になる', () => {
     // 古いテンプレートで numberInput(waistRadiusIn)が持っていた値は、最新のテンプレートでは scale の入力欄にある。
     const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'numberInput', { value: 0.45 })]);

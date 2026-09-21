@@ -77,7 +77,7 @@ const socketsOf = (node: GraphNode): SocketWithDefault[] =>
  * 移った場合の追跡はしない — 更新後の値は最新のテンプレートの既定値になる):
  * - `numberInput`/`colorInput` の `value`/`hex`
  * - 入力欄(`SocketDef.default` を持つ number/color ソケット)の値 `data[socketId]`
- * - `groupInput` の同じ id のソケットの既定値 `default` */
+ * - `groupInput`/`groupOutput` の同じ id のソケットの既定値 `default` */
 export function migrateGroupToTemplate(
   type: string,
   oldNodes: GraphNode[],
@@ -99,7 +99,7 @@ export function migrateGroupToTemplate(
         carried[socket.id] = old.data[socket.id];
       }
     }
-    if (node.type === 'groupInput') {
+    if (node.type === 'groupInput' || node.type === 'groupOutput') {
       const oldSockets = new Map(socketsOf(old).map((sock) => [sock.id, sock]));
       carried.sockets = socketsOf(node).map((sock) => {
         const oldDefault = oldSockets.get(sock.id)?.default;
