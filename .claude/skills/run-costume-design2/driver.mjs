@@ -52,7 +52,7 @@ async function main() {
     await page.screenshot({ path: path.join(SHOT_DIR, '02_after_orbit.png') });
     console.log('OK: カメラ操作後のスクリーンショットを撮影 (screenshots/02_after_orbit.png)');
 
-    // skirt の生パラメータ(`scale` の Value 入力欄/`Group Input` の Color 入力欄)は skirtGroup の
+    // skirt の生パラメータ(`scale` の Value 入力欄)は skirtGroup の
     // internalNodes に埋め込まれているため、中に入ってから操作する(nodes/CLAUDE.md の「グループノード」節参照)。
     // 実ポインタでの click() ではなく、「中に入る」ボタンへ直接 click を実行する
     // ("Gotchas" の number/color input と同じ考え方) — グラフが育つと `computeAutoLayout()`
@@ -76,17 +76,15 @@ async function main() {
     await page.screenshot({ path: path.join(SHOT_DIR, '03_after_number_input.png') });
     console.log('OK: 数値入力欄の操作後のスクリーンショットを撮影 (screenshots/03_after_number_input.png)');
 
-    // `Group Input`(id: `input`)の Color 入力欄の色変更確認(色は外部ソケット `color` から `material` へ配線される)(同じく skirtGroup の中)
-    await page.locator('.react-flow__node[data-id="input"] input[type="color"]').evaluate((el) => {
+    // トップレベルへ戻り、skirtGroup カードの未接続の Color 入力欄(外部ソケット `color`)の色変更を確認する
+    // (色は `color` から `material` へ配線される。`Group Input` 上では色のデフォルト値は編集できない)。
+    await page.getByRole('button', { name: 'トップレベル' }).click();
+    await page.waitForTimeout(200);
+    await page.locator('.react-flow__node[data-id="skirtGroup"] input[type="color"]').evaluate((el) => {
       const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
       setter.call(el, '#22cc55');
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
-    await page.waitForTimeout(200);
-
-    // トップレベルへ戻ってから最終スクリーンショットを撮る(3Dシーンはスコープに関わらず
-    // rootEvaluatedResults を見るため、中にいる間の変更もすでに反映されている)。
-    await page.getByRole('button', { name: 'トップレベル' }).click();
     await page.waitForTimeout(200);
     await page.screenshot({ path: path.join(SHOT_DIR, '04_after_color_change.png') });
     console.log('OK: 色変更後のスクリーンショットを撮影 (screenshots/04_after_color_change.png)');

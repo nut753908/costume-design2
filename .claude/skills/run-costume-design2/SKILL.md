@@ -51,9 +51,8 @@ node .claude/skills/run-costume-design2/driver.mjs
    — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`scale`(numberMultiplyノード)の Value 入力欄
    (未接続の数値入力ソケットの欄)に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが
    追従して変化した後のスクリーンショットを撮る。
-6. 同じく中にいる `Group Input`(id: `input`)の Color 入力欄の色を変更し、トップレベルへ戻ってから
-   ガーメントの色が変わった後のスクリーンショットを撮る(3Dシーンは `rootEvaluatedResults` 経由
-   でスコープに関わらず常に最新なので、戻る前の変更もすでに反映されている)。
+6. トップレベルへ戻り、`skirtGroup` カードの未接続の Color 入力欄の色を変更して、
+   ガーメントの色が変わった後のスクリーンショットを撮る(`Group Input` 上では色のデフォルト値は編集できない)。
 7. コンソールエラー/ページエラーを収集し、1件でもあれば非ゼロ終了。
 8. このスクリプト自身が起動した dev サーバーのみ停止する(元から起動していたものは触らない)。
 
@@ -100,8 +99,8 @@ page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  
 
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
 `bodyBuild`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
-(Body の肌色を含む)は対応するグループの中のノード(`scale`/`Group Input` など)の入力欄として
-埋め込まれているため、上のステップ5と同様に
+(色を除く)は対応するグループの中のノード(`scale` など)の入力欄として
+埋め込まれている(色はグループカード自身の Color 欄)ため、上のステップ5と同様に
 まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。
 
 number/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは

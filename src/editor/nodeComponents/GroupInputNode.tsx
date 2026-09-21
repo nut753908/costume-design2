@@ -25,10 +25,11 @@ function defaultForType(type: SocketType): GroupIOSocket['default'] {
 /** Blender の Geometry Nodes における「Group Input」ノード相当のカスタム描画。
  * グループの中に入っている間、このノードにソケットを増減・配線するだけでグループ本体の
  * 外部から見える入力ハンドルが増減する(`nodes/definitions/groupInput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。`number`/`color` のソケットの未接続時のデフォルト値
+ * `nodes/resolveNodeSockets.ts` 参照)。`number` のソケットの未接続時のデフォルト値
  * (`socket.default`)は、親スコープ側でそのソケットに何も配線されていなければ、行の入力欄
  * (`SocketField.tsx`)でその場で編集できる(グループノードのカードの未接続入力の欄の初期値にも
- * なる)。親スコープ側で値が配線されている間は入力欄を出さず、値も表示しない
+ * なる)。`color` のデフォルト値はこのノードでは表示も編集もしない(グループカードの Color 欄で
+ * 変更する)。親スコープ側で値が配線されている間は入力欄を出さず、値も表示しない
  * (配線の有無は `parentScopeEvaluatedResults`、`state/useParentScopeEvaluatedGraph.ts` から引く)。 */
 function GroupInputNodeViewImpl({ id, data }: NodeProps) {
   const nodeData = data as GroupInputData;
@@ -76,7 +77,7 @@ function GroupInputNodeViewImpl({ id, data }: NodeProps) {
             value={socket.label}
             onChange={(e) => patchSocket(socket.id, { label: e.target.value })}
           />
-          {injectedFor(socket.id) === undefined && socket.default !== undefined && (
+          {injectedFor(socket.id) === undefined && socket.type === 'number' && socket.default !== undefined && (
             <SocketField
               nodeId={id}
               label={socket.label}
