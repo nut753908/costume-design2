@@ -11,7 +11,7 @@ function num(v: number) {
 
 // skirt は geometry/skirt.ts のような専用の build*Geometry() を持たず、waistRadius(scale後)→
 // hemRadius(= waistRadius × (1 + flare))という裾半径の導出も含めてすべて可視のノードグラフへ
-// 展開されている(skirtGroupNode.ts のコメント参照)。direction='down' の easedLatheProfile の
+// 展開されている(skirtGroupNode.ts のコメント参照)。`Down` 出力の easedLatheProfile の
 // 半径は始点(waistRadius)→終点(hemRadius)まで単調に変化するため、LatheGeometry の
 // bounding box の X/Z 半径は必ず max(waistRadius, hemRadius) に一致する(latheProfile.ts 参照)。
 describe('skirtGroup', () => {

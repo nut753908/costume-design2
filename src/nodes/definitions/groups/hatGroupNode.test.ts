@@ -11,7 +11,7 @@ function num(v: number) {
 // hat は headRadius が bodyDimensionsGroup の中で buildScale の影響を受けないため、他の
 // ガーメントと違い Body Build 入力を持たない。つばの半径は headRadius × Brim Ratio(既定 1.25、
 // 既定の headRadius 0.16 で 0.2)で決まる(hatGroupNode.ts のコメント参照)。
-// direction='up' の easedLatheProfile は始点(つば=brimRadius、y=0)→終点(クラウン=
+// `Up` 出力の easedLatheProfile は始点(つば=brimRadius、y=0)→終点(クラウン=
 // crownRadius、y=height)まで半径が単調に変化するため、bounding box の X/Z 半径は必ず
 // max(brimRadius, crownRadius) に一致する(既定値では brim の方が大きい)。
 describe('hatGroup', () => {

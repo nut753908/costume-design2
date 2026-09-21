@@ -9,7 +9,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// gloves は手袋1つぶんのジオメトリ(direction='down' の easedLatheProfile、始点=Wrist Radius
+// gloves は手袋1つぶんのジオメトリ(`Down` 出力の easedLatheProfile、始点=Wrist Radius
 // (bodyBuild でスケール)、終点=Hand Radius、どちらも bodyBuild でスケール)を mirrorPair で ±Arm Spacing だけ
 // X方向に離した左右対称ペアへまとめる(glovesGroupNode.ts のコメント参照)。mirrorPair は
 // 元のジオメトリ(半径 r で X=0中心)を ±offset へ平行移動するだけなので、結合後の

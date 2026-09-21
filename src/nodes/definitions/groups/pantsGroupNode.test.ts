@@ -9,7 +9,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// pants は脚1本ぶんのジオメトリ(direction='down' の easedLatheProfile、始点=Waist Radius
+// pants は脚1本ぶんのジオメトリ(`Down` 出力の easedLatheProfile、始点=Waist Radius
 // (bodyBuild でスケール)、終点=Hem Radius、どちらも bodyBuild でスケール)を mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing は
 // bodyDimensions(initialGraph.ts の共有ノード)の legSpacing を受け取る外部ソケットのまま。

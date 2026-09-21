@@ -30,10 +30,10 @@ defineGroupNode({
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: {} },
     { id: 'halfCalc', type: 'numberHalf', data: {} },
     { id: 'negatedHalf', type: 'numberNegate', data: {} },
-    { id: 'lowerProfile', type: 'easedLatheProfile', data: { direction: -1, steps: 6 } },
+    { id: 'lowerProfile', type: 'easedLatheProfile', data: { steps: 6 } },
     { id: 'lowerShifted', type: 'translatePointsY', data: {} },
     { id: 'lowerSliced', type: 'slicePoints', data: { dropEnd: 1 } },
-    { id: 'upperProfile', type: 'easedLatheProfile', data: { direction: -1, steps: 6 } },
+    { id: 'upperProfile', type: 'easedLatheProfile', data: { steps: 6 } },
     { id: 'combined', type: 'concatPoints', data: {} },
     { id: 'gen', type: 'latheGenerator', data: {} },
     {
@@ -53,7 +53,7 @@ defineGroupNode({
     { source: 'bulgeRadiusCalc', sourceHandle: 'value', target: 'lowerProfile', targetHandle: 'startRadius' },
     { source: 'input', sourceHandle: 'radius', target: 'lowerProfile', targetHandle: 'endRadius' },
     { source: 'halfCalc', sourceHandle: 'value', target: 'lowerProfile', targetHandle: 'distance' },
-    { source: 'lowerProfile', sourceHandle: 'points', target: 'lowerShifted', targetHandle: 'points' },
+    { source: 'lowerProfile', sourceHandle: 'down', target: 'lowerShifted', targetHandle: 'points' },
     { source: 'negatedHalf', sourceHandle: 'value', target: 'lowerShifted', targetHandle: 'y' },
     { source: 'lowerShifted', sourceHandle: 'points', target: 'lowerSliced', targetHandle: 'points' },
 
@@ -62,7 +62,7 @@ defineGroupNode({
     { source: 'halfCalc', sourceHandle: 'value', target: 'upperProfile', targetHandle: 'distance' },
 
     { source: 'lowerSliced', sourceHandle: 'points', target: 'combined', targetHandle: 'pointsA' },
-    { source: 'upperProfile', sourceHandle: 'points', target: 'combined', targetHandle: 'pointsB' },
+    { source: 'upperProfile', sourceHandle: 'down', target: 'combined', targetHandle: 'pointsB' },
     { source: 'combined', sourceHandle: 'points', target: 'gen', targetHandle: 'points' },
     { source: 'input', sourceHandle: 'segments', target: 'gen', targetHandle: 'segments' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },

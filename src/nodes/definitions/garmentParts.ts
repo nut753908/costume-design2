@@ -16,7 +16,8 @@ export function bodyBuildScale(rawValue: number, scaleId = 'scale'): { nodes: Gr
 /** 半径がイージングで変化する回転体の定型: `profile`(`easedLatheProfile`)→ `genId`
  * (`latheGenerator`)。`startRadius`/`endRadius`/`distance` は、他のノードの `value` 出力を配線する
  * 場合はそのノードの id、単独の値ならリテラルの数値(`profile` の入力欄の値になる)を渡す。
- * 分割数 `segments` は `genId` の入力欄の値。skirt/jacket/hat/gloves/pants/shoes/socks が使う。 */
+ * `direction` は `profile` の出力のどちらを `genId` へ配線するか(`'down'` なら `Points Down`、`'up'` なら
+ * `Points Up`)。分割数 `segments` は `genId` の入力欄の値。skirt/jacket/hat/gloves/pants/shoes/socks が使う。 */
 export function latheBody(config: {
   genId: string;
   direction: 'up' | 'down';
@@ -26,9 +27,9 @@ export function latheBody(config: {
   distance: string | number;
   segments: number;
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
-  const profileData: Record<string, unknown> = { direction: config.direction === 'down' ? -1 : 1, steps: config.steps };
+  const profileData: Record<string, unknown> = { steps: config.steps };
   const edges: GraphEdge[] = [
-    { source: 'profile', sourceHandle: 'points', target: config.genId, targetHandle: 'points' },
+    { source: 'profile', sourceHandle: config.direction, target: config.genId, targetHandle: 'points' },
   ];
   for (const key of ['startRadius', 'endRadius', 'distance'] as const) {
     const value = config[key];

@@ -9,7 +9,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// socks は靴下1本ぶんのジオメトリ(direction='up' の easedLatheProfile、始点=Ankle Radius(y=0)、
+// socks は靴下1本ぶんのジオメトリ(`Up` 出力の easedLatheProfile、始点=Ankle Radius(y=0)、
 // 終点=Calf Radius(y=Height)、どちらも bodyBuild でスケール)を mirrorPair で
 // ±Leg Spacing だけ X方向に離した左右対称ペアへまとめる(socksGroupNode.ts のコメント参照)。
 describe('socksGroup', () => {

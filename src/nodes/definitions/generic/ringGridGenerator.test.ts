@@ -11,9 +11,9 @@ const STEPS = 8;
 /** easedLatheProfile と同じ下→上の順の点列(半径 startRadius → endRadius、y は 0 から -length)。 */
 function profile(startRadius: number, endRadius: number, length: number): THREE.Vector2[] {
   const points = getNodeType('easedLatheProfile').evaluate(
-    { startRadius: num(startRadius), endRadius: num(endRadius), distance: num(length), steps: num(STEPS), direction: num(-1) },
+    { startRadius: num(startRadius), endRadius: num(endRadius), distance: num(length), steps: num(STEPS) },
     {},
-  ).points;
+  ).down;
   if (points?.type !== 'points') throw new Error('points が出力されていない');
   return points.value;
 }
