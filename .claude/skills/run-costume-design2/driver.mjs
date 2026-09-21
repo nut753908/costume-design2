@@ -8,62 +8,19 @@
 // 終了時に自分が起動した場合のみ停止する(既に起動していたサーバーは触らない)。
 // スクリーンショットは ./screenshots/ に出力する。
 
-import { chromium } from 'playwright-core';
-import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync } from 'node:fs';
+import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { DEV_URL, ensureDevServer, launchBrowser } from './lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = path.resolve(__dirname, '../../..');
 const SHOT_DIR = path.join(__dirname, 'screenshots');
-const DEV_URL = 'http://localhost:5173';
-const EXEC_PATH = path.join(process.env.HOME, '.cache/ms-playwright/chromium-1234/chrome-linux64/chrome');
 
 mkdirSync(SHOT_DIR, { recursive: true });
 
-async function isServerUp() {
-  try {
-    const res = await fetch(DEV_URL);
-    return res.ok;
-  } catch {
-    return false;
-  }
-}
-
-async function waitForServer(timeoutMs) {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    if (await isServerUp()) return true;
-    await new Promise((r) => setTimeout(r, 500));
-  }
-  return false;
-}
-
 async function main() {
-  let devServer = null;
-  const alreadyUp = await isServerUp();
-  if (!alreadyUp) {
-    console.log('dev server が起動していないので `npm run dev` を起動します...');
-    devServer = spawn('npm', ['run', 'dev'], { cwd: PROJECT_ROOT, stdio: 'ignore', detached: true });
-    const up = await waitForServer(30000);
-    if (!up) throw new Error('dev server が30秒以内に応答しませんでした');
-  } else {
-    console.log('既存の dev server (localhost:5173) を使用します');
-  }
-
-  if (!existsSync(EXEC_PATH)) {
-    throw new Error(
-      `Chromium 実行ファイルが見つかりません: ${EXEC_PATH}\n` +
-        `未取得の場合は次で取得してください: npx playwright-core install chromium`,
-    );
-  }
-
-  const browser = await chromium.launch({
-    executablePath: EXEC_PATH,
-    headless: true,
-    args: ['--no-sandbox', '--disable-gpu'],
-  });
+  const devServer = await ensureDevServer();
+  const browser = await launchBrowser();
 
   try {
     const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
@@ -143,10 +100,7 @@ async function main() {
     }
   } finally {
     await browser.close();
-    if (devServer) {
-      console.log('このスクリプトが起動した dev server を停止します');
-      process.kill(-devServer.pid, 'SIGTERM');
-    }
+    devServer.stop();
   }
 }
 

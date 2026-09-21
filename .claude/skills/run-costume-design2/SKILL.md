@@ -65,6 +65,20 @@ node .claude/skills/run-costume-design2/driver.mjs
 終了コード0かつ「OK: コンソールエラーなし」であれば成功。それ以外(NG行が出力される、または
 非ゼロ終了)は失敗として扱う。
 
+## ノードカードの高さの確認
+
+カードの見た目(`src/editor/nodeEditor.css` や `src/editor/nodeComponents/*.tsx`)を変えたら、
+Arrange 用の高さ見積もり(`src/nodes/autoLayout.ts` の `estimateNodeHeight()`)が実機とずれていないかを確認する:
+
+```bash
+node .claude/skills/run-costume-design2/check-card-heights.mjs
+```
+
+レジストリに登録された全ノードタイプ(と、`groupInput` のソケット数・配線の有無など状態で高さが変わるケース)を
+1つずつ置いて `offsetHeight` を測り、見積もりとの差が ±2px を超えたものを一覧して非ゼロで終了する。
+`npm test`/pre-commit には含めない(Chromium と dev サーバーが必要で、環境に依存するため)。
+`driver.mjs` と同じく、dev サーバーとブラウザの起動は `lib.mjs` を共有している。
+
 ## 実行(人間向け)
 
 ```bash
