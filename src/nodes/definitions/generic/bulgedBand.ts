@@ -30,10 +30,10 @@ defineGroupNode({
     { id: 'bulgeRadiusCalc', type: 'numberMultiply', data: {} },
     { id: 'halfCalc', type: 'numberHalf', data: {} },
     { id: 'negatedHalf', type: 'numberNegate', data: {} },
-    { id: 'lowerProfile', type: 'easedLatheProfile', data: { direction: 'down', steps: 6 } },
+    { id: 'lowerProfile', type: 'easedLatheProfile', data: { direction: -1, steps: 6 } },
     { id: 'lowerShifted', type: 'translatePointsY', data: {} },
     { id: 'lowerSliced', type: 'slicePoints', data: { dropEnd: 1 } },
-    { id: 'upperProfile', type: 'easedLatheProfile', data: { direction: 'down', steps: 6 } },
+    { id: 'upperProfile', type: 'easedLatheProfile', data: { direction: -1, steps: 6 } },
     { id: 'combined', type: 'concatPoints', data: {} },
     { id: 'gen', type: 'latheGenerator', data: {} },
     {

@@ -58,6 +58,7 @@ React Flow (`src/editor/`) は UI の状態(ノードの位置、選択、ドラ
 新しいノードを書く前に、`nodes/definitions/` と `nodes/definitions/generic/` に近い処理をする汎用ノードが既に無いか確認すること — 専用ノードの重複実装を後から統合し直す手戻りを避けるため(pants/shoes/gloves/socks の左右対称ペア化が `mirrorPair` に統一されているのがその例)。ノードの一覧は `ls` で分かるので、ここには一覧では分からない点だけを書く。
 
 - `mergeGeometry` は入力ソケット `geometries` に繋いだすべての geometry を結合する(複数接続できるソケットなので、パーツの増減は配線を足す/切るだけ。1つだけならそのまま出力する)。uv の有無だけが違う geometry は uv を外して結合する — 標準プリミティブは uv を持ち、手組みのチューブ/リンググリッドは持たないが、トゥーンシェーディングは uv を使わないため。
+- **`easedLatheProfile` の `steps`(分割数)と `direction`(1: 上向き、-1: 下向き)、`rampPoints` の `steps` は、カード上の入力欄(入力ソケット)** で、他のノードとも配線できる(隠れた設定値は持たない)。旧データの `direction`(`'up'`/`'down'` の文字列)もそのまま解釈する。
 - `points`(`THREE.Vector2[]`)はLathe用の専用ソケット型で、`easedLatheProfile` の出力を `latheGenerator`/`ringGridGenerator`(最上段にネックラインを彫り込んだ手組みのチューブ、top/dress が使う)が消費する。`translatePointsY`/`slicePoints`/`concatPoints` は points を直接操作する汎用ノード(belt/scarf の `bulgedBand` がプロファイルを2回作って連結するのに使う)、`rampPoints`(x=y=0〜1 の斜めの点列)/`scalePointsY`/`multiplyPointsY` は x を横軸とした任意の曲線を配線で組み立てるためのノード。
 - `numberDisplay`/`colorDisplay` は入力された number/color を表示するだけのノード。`outputs` は宣言せず(他のノードへは配線できない)、`evaluate()` が入力値を評価結果にだけ載せ、専用のカード(`editor/nodeComponents/`)がそれを読んで表示する。
 - `glassesLensPair`/`glassesTemplePair`/`glassesBridge` は、`glassesGroup` を3つのパーツに分けたグループノード(レンズ・テンプル・ブリッジ)。3パーツが共有する値(`lensRadius`/`lensSpacing`/`forwardDepth`)は外部ソケットで受け取り、1つのパーツだけが使う値(ブリッジ/テンプルの太さなど)はグループの内部に持つ。

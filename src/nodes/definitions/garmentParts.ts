@@ -26,7 +26,7 @@ export function latheBody(config: {
   distance: string | number;
   segments: number;
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
-  const profileData: Record<string, unknown> = { direction: config.direction, steps: config.steps };
+  const profileData: Record<string, unknown> = { direction: config.direction === 'down' ? -1 : 1, steps: config.steps };
   const edges: GraphEdge[] = [
     { source: 'profile', sourceHandle: 'points', target: config.genId, targetHandle: 'points' },
   ];

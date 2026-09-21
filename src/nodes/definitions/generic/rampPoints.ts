@@ -1,5 +1,6 @@
 import { registerNodeType } from '../../registry';
 import type { SocketValue } from '../../types';
+import { asNumber } from '../../socketHelpers';
 import { Vector2 } from 'three';
 
 export interface RampPointsData extends Record<string, unknown> {
@@ -17,11 +18,11 @@ registerNodeType<RampPointsData>({
   type: 'rampPoints',
   label: 'Ramp Points',
   category: 'points',
-  inputs: [],
+  inputs: [{ id: 'steps', label: 'Steps', type: 'number', default: DEFAULTS.steps }],
   outputs: [{ id: 'points', label: 'Points', type: 'points' }],
   createDefaultData: () => ({ ...DEFAULTS }),
-  evaluate: (_inputs, data): Record<string, SocketValue> => {
-    const steps = Math.max(1, Math.round(data.steps ?? DEFAULTS.steps));
+  evaluate: (inputs, data): Record<string, SocketValue> => {
+    const steps = Math.max(1, Math.round(asNumber(inputs.steps, data.steps ?? DEFAULTS.steps)));
     const points = Array.from({ length: steps + 1 }, (_, k) => new Vector2(k / steps, k / steps));
     return { points: { type: 'points', value: points } };
   },

@@ -33,7 +33,7 @@ defineGroupNode({
     },
     ...scale.nodes,
     { id: 'neckline', type: 'necklineShapes', data: {} },
-    { id: 'profile', type: 'easedLatheProfile', data: { direction: 'down', steps: 10, distance: 0.5 } },
+    { id: 'profile', type: 'easedLatheProfile', data: { direction: -1, steps: 10, distance: 0.5 } },
     { id: 'gen', type: 'ringGridGenerator', data: { necklineDepth: 0.12 } },
     { id: 'sleeveGen', type: 'sleevePair', data: { sleeveRadius: 0.085, sleeveLength: 0.22 } },
     { id: 'merge', type: 'mergeGeometry', data: {} },

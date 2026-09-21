@@ -4,15 +4,10 @@ import { asNumber } from '../../socketHelpers';
 import { buildEasedLatheProfile, type ProfileDirection } from '../../../geometry/latheProfile';
 
 export interface EasedLatheProfileData extends Record<string, unknown> {
-  /** アンカー側から反対側へどちらのY方向にプロファイルを伸ばすか。skirt/pants/gloves/socks
-   * のように腰/手首から垂れ下がる形状は `'down'`、shoes/hat/socks のように地面/頭から
-   * 上へ伸びる形状は `'up'`。ガーメントの形状そのものを決める値のため、`capsuleGenerator`
-   * 等の `capSegments`/`radialSegments` と同じ扱いで、ソケット化せずノード配置時の `data` に
-   * 固定する(`nodes/CLAUDE.md` の `extra` と同じ考え方 — こちらは `defineGeneratorNode()` の
-   * 対象外(出力が `points` のため)なので `data` へ直接書く)。 */
-  direction: ProfileDirection;
-  /** プロファイル(半径のイージング)を何段の点列で近似するか。radialSegments 同様、
-   * 見た目に影響するがガーメントごとに変える理由に乏しいスタイル寄りの値のため固定する。 */
+  /** 入力ソケット `direction` の値(未接続のときの入力欄の値): 負なら `'down'`、それ以外は `'up'`。
+   * 旧データ(`'up'`/`'down'` の文字列)もそのまま解釈する。 */
+  direction: number | ProfileDirection;
+  /** 入力ソケット `steps` の値(未接続のときの入力欄の値)。 */
   steps: number;
 }
 
@@ -32,14 +27,28 @@ registerNodeType<EasedLatheProfileData>({
     { id: 'startRadius', label: 'Start Radius', type: 'number', default: 0 },
     { id: 'endRadius', label: 'End Radius', type: 'number', default: 0 },
     { id: 'distance', label: 'Distance', type: 'number', default: 0 },
+    { id: 'steps', label: 'Steps', type: 'number', default: 10 },
+    // アンカー側から反対側へどちらのY方向にプロファイルを伸ばすか。skirt/pants/gloves のように
+    // 腰/手首から垂れ下がる形状は下向き(-1)、shoes/hat/socks のように地面/頭から上へ伸びる
+    // 形状は上向き(1)。
+    { id: 'direction', label: 'Direction (1 up / -1 down)', type: 'number', default: -1 },
   ],
   outputs: [{ id: 'points', label: 'Points', type: 'points' }],
-  createDefaultData: () => ({ direction: 'down', steps: 10 }),
+  createDefaultData: () => ({ direction: -1, steps: 10 }),
   evaluate: (inputs, data): Record<string, SocketValue> => {
     const startRadius = asNumber(inputs.startRadius, 0);
     const endRadius = asNumber(inputs.endRadius, 0);
     const distance = asNumber(inputs.distance, 0);
-    const points = buildEasedLatheProfile(startRadius, endRadius, distance, data.direction, data.steps);
+    const steps = asNumber(inputs.steps, typeof data.steps === 'number' ? data.steps : 10);
+    const direction: ProfileDirection =
+      typeof data.direction === 'string'
+        ? data.direction === 'up'
+          ? 'up'
+          : 'down'
+        : asNumber(inputs.direction, -1) < 0
+          ? 'down'
+          : 'up';
+    const points = buildEasedLatheProfile(startRadius, endRadius, distance, direction, steps);
     return { points: { type: 'points', value: points } };
   },
 });

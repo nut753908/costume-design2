@@ -23,4 +23,9 @@ describe('rampPoints', () => {
   it('既定の steps は12', () => {
     expect(getNodeType('rampPoints').createDefaultData()).toEqual({ steps: 12 });
   });
+
+  it('入力ソケット steps が data.steps より優先される', () => {
+    const result = getNodeType('rampPoints').evaluate({ steps: { type: 'number', value: 2 } }, { steps: 8 });
+    expect(result.points?.type === 'points' ? result.points.value.length : 0).toBe(3);
+  });
 });
