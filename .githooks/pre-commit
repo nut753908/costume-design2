@@ -51,3 +51,23 @@ if [ ${#missing_docs[@]} -gt 0 ]; then
   done
   echo ""
 fi
+
+echo "pre-commit: CLAUDE.md size / history-phrase check"
+# 警告だけでコミットは止めない。文字数は wc -m(バイト数ではない)で数える。
+max_chars=25000
+history_pattern='以前は|旧実装|かつては|これまでどおり|以前.*に相当'
+while IFS= read -r f; do
+  case "$f" in
+    CLAUDE.md|*/CLAUDE.md) ;;
+    *) continue ;;
+  esac
+  chars=$(git show ":$f" | LC_ALL=C.UTF-8 wc -m)
+  if [ "$chars" -gt "$max_chars" ]; then
+    echo "  warning: $f が ${chars} 文字あります(目安 ${max_chars} 文字)。重複や導出可能な記述を削れないか確認してください。"
+  fi
+  added=$(git diff --cached -U0 -- "$f" | grep -E '^\+[^+]' | grep -E "$history_pattern" || true)
+  if [ -n "$added" ]; then
+    echo "  warning: $f の追加行に、履歴表現(経緯の記述)らしき箇所があります。CLAUDE.md には今の設計だけを書いてください:"
+    echo "$added" | sed 's/^+/    /'
+  fi
+done <<< "$staged_files"
