@@ -31,11 +31,13 @@ import { ContextMenu, type ContextMenuState } from './ContextMenu';
 import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
 import { NODE_TYPE_DND_MIME, fitViewPadding } from './paletteShared';
+import type { CustomCardType } from '../nodes/customCardTypes';
 
-// 専用UIを持つ2種(number/color)以外は、レジストリに登録済みの全ノードタイプへ
+// 専用のカード UI を持つノード(`CUSTOM_CARD_TYPES`)以外は、レジストリに登録済みの全ノードタイプへ
 // GenericNodeView を自動で割り当てる。新しいノードタイプを追加してもここへの追記が
 // 不要になり、登録漏れ(=ノードが描画されない不具合)を構造的に防ぐ。
-const NODE_VIEW_OVERRIDES: Partial<Record<string, NodeTypes[string]>> = {
+// キーは `CUSTOM_CARD_TYPES` と完全に一致させる(型で強制)。増やすときは高さの見積もりも対応させる。
+const NODE_VIEW_OVERRIDES: Record<CustomCardType, NodeTypes[string]> = {
   numberInput: NumberInputNodeView,
   colorInput: ColorInputNodeView,
   groupInput: GroupInputNodeView,
@@ -43,7 +45,7 @@ const NODE_VIEW_OVERRIDES: Partial<Record<string, NodeTypes[string]>> = {
 };
 
 const nodeTypes: NodeTypes = Object.fromEntries(
-  Array.from(nodeTypeRegistry.keys(), (type) => [type, NODE_VIEW_OVERRIDES[type] ?? GenericNodeView]),
+  Array.from(nodeTypeRegistry.keys(), (type) => [type, NODE_VIEW_OVERRIDES[type as CustomCardType] ?? GenericNodeView]),
 );
 
 function NodeEditorInner() {

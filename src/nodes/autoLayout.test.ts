@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BESPOKE_HEIGHT_TYPES,
   computeAutoLayout,
   estimateNodeHeight,
   isotonicRegression,
@@ -9,6 +10,7 @@ import {
   type LayoutPosition,
 } from './autoLayout';
 import './definitions';
+import { CUSTOM_CARD_TYPES } from './customCardTypes';
 import { registerNodeType } from './registry';
 import type { GraphEdge, GraphNode, NodeTypeDefinition } from './types';
 
@@ -438,6 +440,11 @@ describe('estimateNodeHeight', () => {
   it('groupInput/groupOutput のソケットが0個のときは、追加行の上余白がタイトルの下余白と相殺されて4px低い(実測 62px)', () => {
     expect(estimateNodeHeight('groupInput', { sockets: [] })).toBe(62);
     expect(estimateNodeHeight('groupOutput', {})).toBe(62);
+  });
+
+  it('専用のカード UI を持つノードの type(CUSTOM_CARD_TYPES)は、個別に高さを求める type と一致する', () => {
+    // 専用の UI を持つノードを増やしたのに高さの見積もりを対応させ忘れると、一般式で見積もられて実機とずれる。
+    expect([...BESPOKE_HEIGHT_TYPES].sort()).toEqual([...CUSTOM_CARD_TYPES].sort());
   });
 
   it('入出力ソケット数が多いほど、その分だけ線形に高さが増える', () => {

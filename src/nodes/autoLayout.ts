@@ -48,6 +48,10 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
   numberInput: 60,
   colorInput: 66,
 };
+/** `estimateNodeHeight()` が一般式ではなく個別に高さを求める type(専用のカード UI を持つノード)。
+ * `nodes/customCardTypes.ts` の `CUSTOM_CARD_TYPES` と一致することをテストで確認している。 */
+export const BESPOKE_HEIGHT_TYPES: readonly string[] = [...Object.keys(BESPOKE_NODE_HEIGHTS), 'groupInput', 'groupOutput'];
+
 /** ノードカードの高さを、DOM を一切見ずにノードの種類(type)と入出力ソケット数から
  * 見積もる。`computeAutoLayout()` はピュア関数のまま保ちたいが、`ROW_SPACING` 1本の
  * 固定値では小さいノード(numberInput 約60px)も大きいノード(bagGenerator 約246px)も
