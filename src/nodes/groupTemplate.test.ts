@@ -91,17 +91,17 @@ describe('migrateGroupToTemplate', () => {
   });
 
   it('同じ id の groupOutput のソケットの既定値(Group Output で編集した値)を引き継ぐ', () => {
-    const template = getNodeType('bodyLayoutGroup').createDefaultData() as { nodes: GraphNode[] };
+    const template = getNodeType('bodyDimensionsGroup').createDefaultData() as { nodes: GraphNode[] };
     const output = template.nodes.find((node) => node.id === 'output')!;
     const edited = {
       ...output,
-      data: { sockets: (output.data.sockets as { id: string }[]).map((sock) => (sock.id === 'feetY' ? { ...sock, default: 0.5 } : sock)) },
+      data: { sockets: (output.data.sockets as { id: string }[]).map((sock) => (sock.id === 'headRadius' ? { ...sock, default: 0.5 } : sock)) },
     };
-    const migrated = migrateGroupToTemplate('bodyLayoutGroup', [edited]);
+    const migrated = migrateGroupToTemplate('bodyDimensionsGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'output')?.data.sockets as { id: string; default: unknown }[];
-    expect(sockets.find((sock) => sock.id === 'feetY')?.default).toBe(0.5);
+    expect(sockets.find((sock) => sock.id === 'headRadius')?.default).toBe(0.5);
     // 既定値を持たないソケットは既定値を持たないまま
-    expect(sockets.find((sock) => sock.id === 'waistY')?.default).toBeUndefined();
+    expect(sockets.find((sock) => sock.id === 'legHeight')?.default).toBeUndefined();
   });
 
   it('値の置き場所が別のノードへ移っている場合は追跡せず、最新のテンプレートの既定値になる', () => {

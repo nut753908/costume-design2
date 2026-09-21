@@ -39,6 +39,22 @@ describe('bodyLayoutGroup', () => {
     expect(result.armCenterY?.type === 'number' && result.armCenterY.value).toBeCloseTo(1.506, 10);
   });
 
+  it('feetY を変えると、feetY・waistY・体のすべての Y 座標が同じだけ連動して動く', () => {
+    const base = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
+    const raised = getNodeType('bodyLayoutGroup').evaluate({ ...inputs, feetY: num(0.3) }, {});
+    const value = (r: Record<string, { type: string; value?: unknown }>, key: string) => (r[key] as { value: number }).value;
+    expect(value(raised, 'feetY')).toBeCloseTo(0.3, 10);
+    for (const key of ['waistY', 'legCenterY', 'torsoCenterY', 'headCenterY', 'armCenterY', 'shoulderY', 'wristY']) {
+      expect(value(raised, key) - value(base, key), key).toBeCloseTo(0.3, 10);
+    }
+  });
+
+  it('feetY の既定値は 0 で、waistY = legHeight になる', () => {
+    const result = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
+    expect(result.feetY).toEqual(num(0));
+    expect(result.waistY).toEqual(num(0.85));
+  });
+
   it('未接続なら全入力が0扱いになり、全出力も0になる', () => {
     const result = getNodeType('bodyLayoutGroup').evaluate({}, {});
     expect(result.legCenterY).toEqual(num(0));
