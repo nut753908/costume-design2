@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import * as THREE from 'three';
-import { evaluateGraph, getNodeEvalCacheStats, GraphCycleError, hasCycle, resolveIncomingValue } from './evaluateGraph';
+import { evaluateGraph, getNodeEvalCacheStats, GraphCycleError, hasCycle } from './evaluateGraph';
 import { registerNodeType, nodeTypeRegistry } from './registry';
 import type { GraphEdge, GraphNode, SocketValue } from './types';
 
@@ -310,31 +310,6 @@ describe('evaluateGraph のノード単位メモ化', () => {
     expect(second.get('counter')?.value).toEqual({ type: 'number', value: 14 });
 
     expect(testCounterCalls).toBe(2);
-  });
-});
-
-describe('resolveIncomingValue', () => {
-  it('targetId/targetHandle へ入ってくる接続元の評価済みの値を返す', () => {
-    const nodes: GraphNode[] = [{ id: 'src1', type: 'testSource', data: { value: 42 } }];
-    const results = evaluateGraph(nodes, []);
-    const edges: GraphEdge[] = [{ source: 'src1', sourceHandle: 'value', target: 'group1', targetHandle: 'bodyBuild' }];
-
-    expect(resolveIncomingValue(edges, results, 'group1', 'bodyBuild')).toEqual({ type: 'number', value: 42 });
-  });
-
-  it('該当する接続が無ければ undefined を返す(未接続のソケット)', () => {
-    const nodes: GraphNode[] = [{ id: 'src1', type: 'testSource', data: { value: 42 } }];
-    const results = evaluateGraph(nodes, []);
-    const edges: GraphEdge[] = [{ source: 'src1', sourceHandle: 'value', target: 'group1', targetHandle: 'other' }];
-
-    expect(resolveIncomingValue(edges, results, 'group1', 'bodyBuild')).toBeUndefined();
-  });
-
-  it('接続元がまだ評価結果に含まれていなければ undefined を返す', () => {
-    const results = evaluateGraph([], []);
-    const edges: GraphEdge[] = [{ source: 'ghost', sourceHandle: 'value', target: 'group1', targetHandle: 'bodyBuild' }];
-
-    expect(resolveIncomingValue(edges, results, 'group1', 'bodyBuild')).toBeUndefined();
   });
 });
 

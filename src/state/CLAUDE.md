@@ -37,13 +37,7 @@
 - `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
 - `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
 
-一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(`GroupInputNode` のソケット行の現在値表示などを駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
-
-### 3つ目の評価パイプライン: 親スコープ視点(`parentScopeEvaluatedResults`)
-
-`groupInput` ノードの各ソケットは、外部から値が配線されていてもいなくても、`evaluatedResults`(＝「今開いている階層」の評価)の上では常に未接続時のデフォルト値にしかならない — グループの中に入る操作自体が `nodes/definitions/groupNodeFactory.ts` の `evaluate()` が担う外部入力の注入(`data.injected` への一時パッチ)を素通りし、内部の `nodes`/`edges` を直接 `evaluateGraph()` に渡すだけだから。「今、外部から実際に何が配線されているか」を `GroupInputNode.tsx` のカード上に表示するために、`state/useParentScopeEvaluatedGraph.ts` が3つ目の小さなパイプラインとして常時マウントされている: `scopeStack` の最後のフレーム(＝今入っているグループより1階層上の nodes/edges のスナップショット)を評価し、結果を `parentScopeEvaluatedResults` に書き込む(トップレベルにいる間は `null`)。`nodes/evaluateGraph.ts` の `resolveIncomingValue(edges, results, targetId, targetHandle)` で、そのフレームの `edges` からグループノード自身(`frame.parentId`)の該当ソケットへの接続を1本引き、接続元の評価値を取り出す。
-
-グループの中に別のグループがネストしている(多段ネスト、`composeRootGraph.test.ts` の「多段ネスト」節が示す通りネスト自体は既に成立している)場合、直上の親スコープを単純に評価するだけでは不十分 — 親スコープ自身がさらに外側のグループの中にあり、親スコープの `groupInput` が未接続時のデフォルトのまま評価されてしまうと、そこから伝播する値が不正確になる。そのため `useParentScopeEvaluatedGraph.ts` 内の `evaluateScopeChain()` は `scopeStack` をトップレベル(0番目、常に外部からの未解決入力を持たない)から直上の親スコープまで**順に**評価し、各階層で見つかった `groupInput` ノードには「1つ前の階層の評価結果から見た実際の配線値」を `data.injected` として都度パッチしてから評価する(`groupNodeFactory.ts` の `evaluate()` が行う注入パッチと同じ考え方を `scopeStack` のスナップショット列に対して再現したもの)。`groupInput` という型名は `nodes/definitions/groupInput.ts` に依存せず文字列リテラルと `data.sockets` の構造的な形だけで見ている(`graphStore.ts` の `GroupNodeDataShape` と同じ方針)。
+一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(ノードカード上のリアルタイム値表示などを駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
 
 ## 初期状態への復帰: initialGraph.ts と「初期状態(デフォルト)」プリセット
 
