@@ -430,9 +430,14 @@ describe('estimateNodeHeight', () => {
     expect(estimateNodeHeight('colorInput', {})).toBe(66);
   });
 
-  it('groupInput/groupOutput は、ソケット行に加えて末尾の追加行(26px)を持つ', () => {
+  it('groupInput/groupOutput は、ソケット行に加えて末尾の追加行(上余白4px+22px)を持つ', () => {
     expect(estimateNodeHeight('groupInput', { sockets: [{}, {}] })).toBe(40 + 2 * 23 + 26);
     expect(estimateNodeHeight('groupOutput', { sockets: [{}] })).toBe(40 + 23 + 26);
+  });
+
+  it('groupInput/groupOutput のソケットが0個のときは、追加行の上余白がタイトルの下余白と相殺されて4px低い(実測 62px)', () => {
+    expect(estimateNodeHeight('groupInput', { sockets: [] })).toBe(62);
+    expect(estimateNodeHeight('groupOutput', {})).toBe(62);
   });
 
   it('入出力ソケット数が多いほど、その分だけ線形に高さが増える', () => {

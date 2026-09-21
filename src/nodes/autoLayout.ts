@@ -37,7 +37,10 @@ const IO_ROW_HEIGHT = 23;
 /** `groupInput`/`groupOutput` の、ソケット行を持たない土台(パディング+枠線+タイトル行+間隔)の高さ。 */
 const GROUP_IO_BASE_HEIGHT = 40;
 /** `groupInput`/`groupOutput` の末尾の「追加」行(型セレクタ+「+ Add」ボタン)の高さ。 */
-const GROUP_IO_ADD_ROW_HEIGHT = 26;
+const GROUP_IO_ADD_ROW_HEIGHT = 22;
+/** 「追加」行の上余白(`.rf-node__io-add` の `margin-top`)。ソケット行が1つも無いときは、タイトルの
+ * `margin-bottom` と相殺されて高さに効かない。 */
+const GROUP_IO_ADD_ROW_MARGIN = 4;
 /** 数値入力欄/カラーピッカーなど専用UIを持つ入力系ノードのうち、UI の行数が固定な2種は、
  * ソケット数によらず固定の高さになる(常に出力ソケット1個だけ)。実測値そのもの
  * (numberInput は実測 60px、colorInput は実測 66px)。 */
@@ -52,7 +55,7 @@ const BESPOKE_NODE_HEIGHTS: Record<string, number> = {
  *
  * - `BESPOKE_NODE_HEIGHTS` に載っている専用UI系はその固定値を返す。
  * - `groupInput`/`groupOutput` は `editor/nodeComponents/` の専用UI(ソケットごとの
- *   行 + 末尾の追加行)を持ち、`GROUP_IO_BASE_HEIGHT + ソケット数 * IO_ROW_HEIGHT` に追加行の分を足す。
+ *   行 + 末尾の追加行)を持ち、`GROUP_IO_BASE_HEIGHT + ソケット数 * IO_ROW_HEIGHT` に追加行(と、ソケットがあるときだけ上余白)の分を足す。
  * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
  *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT`。行数は `resolveNodeSockets()` の入力+出力の合計
  *   (group の「中に入る」ボタンはタイトル行に収まるので高さに影響しない)。
@@ -69,7 +72,8 @@ export function estimateNodeHeight(type: string, data: unknown): number {
 
   if (type === 'groupInput' || type === 'groupOutput') {
     const sockets = (data as { sockets?: unknown[] } | undefined)?.sockets ?? [];
-    return GROUP_IO_BASE_HEIGHT + sockets.length * IO_ROW_HEIGHT + GROUP_IO_ADD_ROW_HEIGHT;
+    const margin = sockets.length > 0 ? GROUP_IO_ADD_ROW_MARGIN : 0;
+    return GROUP_IO_BASE_HEIGHT + sockets.length * IO_ROW_HEIGHT + margin + GROUP_IO_ADD_ROW_HEIGHT;
   }
 
   if (!nodeTypeRegistry.has(type)) return FALLBACK_NODE_HEIGHT;
