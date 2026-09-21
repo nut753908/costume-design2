@@ -80,12 +80,3 @@ describe('paletteSection', () => {
     expect(sections.some((g) => (g.section as string) === 'group')).toBe(false);
   });
 });
-
-describe('hiddenInPalette', () => {
-  it('hiddenInPalette のノードタイプは一覧に出ないが、登録は残る', () => {
-    registerNodeType({ ...def('rt-hidden', 'primitive'), hiddenInPalette: true });
-    const types = groupNodeTypesBySection().flatMap((g) => g.items.map((i) => i.type));
-    expect(types).not.toContain('rt-hidden');
-    expect(getNodeType('rt-hidden').type).toBe('rt-hidden');
-  });
-});

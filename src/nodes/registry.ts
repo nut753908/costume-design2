@@ -27,7 +27,6 @@ export function groupNodeTypesBySection(): {
 }[] {
   const bySection = new Map<PaletteSection, { type: string; label: string }[]>();
   for (const def of nodeTypeRegistry.values()) {
-    if (def.hiddenInPalette) continue;
     const section = sectionOf(def);
     const list = bySection.get(section) ?? [];
     list.push({ type: def.type, label: def.label });

@@ -49,9 +49,6 @@ export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   category: NodeCategory;
   /** `category: 'group'` のときだけ意味を持つ、パレットでの振り分け先(省略時は `group-part`)。 */
   paletteSection?: 'garment' | 'group-part';
-  /** true ならパレット/コンテキストメニューには出さない。保存済みグラフの内部データに残っている
-   * 旧ノードタイプを、評価できるまま登録しておくためだけに使う。 */
-  hiddenInPalette?: boolean;
   inputs: SocketDef[];
   outputs: SocketDef[];
   /** このノードタイプの新しいインスタンスを追加するたびに一度だけ呼ばれる、

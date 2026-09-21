@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 import './rampPoints';
 
+const steps = (value: number) => ({ steps: { type: 'number' as const, value } });
+
 describe('rampPoints', () => {
   it('x=y=0〜1 を steps 分割した steps+1 個の点を出力する', () => {
-    const result = getNodeType('rampPoints').evaluate({}, { steps: 4 });
+    const result = getNodeType('rampPoints').evaluate(steps(4), {});
     const points = result.points?.type === 'points' ? result.points.value : [];
     expect(points.map((p) => [p.x, p.y])).toEqual([
       [0, 0],
@@ -16,16 +18,12 @@ describe('rampPoints', () => {
   });
 
   it('steps が1未満でも最低1分割(2点)になる', () => {
-    const result = getNodeType('rampPoints').evaluate({}, { steps: 0 });
+    const result = getNodeType('rampPoints').evaluate(steps(0), {});
     expect(result.points?.type === 'points' ? result.points.value.length : 0).toBe(2);
   });
 
-  it('既定の steps は12', () => {
-    expect(getNodeType('rampPoints').createDefaultData()).toEqual({ steps: 12 });
-  });
-
-  it('入力ソケット steps が data.steps より優先される', () => {
-    const result = getNodeType('rampPoints').evaluate({ steps: { type: 'number', value: 2 } }, { steps: 8 });
-    expect(result.points?.type === 'points' ? result.points.value.length : 0).toBe(3);
+  it('未接続の steps は12にフォールバックする', () => {
+    const result = getNodeType('rampPoints').evaluate({}, {});
+    expect(result.points?.type === 'points' ? result.points.value.length : 0).toBe(13);
   });
 });
