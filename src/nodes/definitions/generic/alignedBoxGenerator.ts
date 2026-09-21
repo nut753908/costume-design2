@@ -15,7 +15,7 @@ import { buildAlignedBox } from '../../../geometry/alignedBox';
  * 展開できるようにするため(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 registerNodeType({
   type: 'alignedBoxGenerator',
-  label: 'Aligned Box',
+  label: 'Aligned Box Generator',
   category: 'generator',
   inputs: [
     { id: 'width', label: 'Width', type: 'number', default: 0 },

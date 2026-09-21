@@ -7,7 +7,7 @@ import { defineGeneratorNode } from '../generatorNodeFactory';
  * スタイル寄りの値のため `extra` に固定する(他ガーメントの angleSegments 等と同じ扱い)。 */
 defineGeneratorNode({
   type: 'capsuleGenerator',
-  label: 'Capsule',
+  label: 'Capsule Generator',
   build: (params) => buildCapsuleGeometry(params),
   fields: [
     { id: 'radius', label: 'Radius', default: 0.26 },

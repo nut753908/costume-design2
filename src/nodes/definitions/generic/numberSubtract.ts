@@ -11,7 +11,7 @@ const DEFAULTS = { a: 0, b: 0 };
 
 registerNodeType<NumberSubtractData>({
   type: 'numberSubtract',
-  label: 'Subtract',
+  label: 'Number Subtract',
   category: 'generator',
   inputs: [
     { id: 'a', label: 'A', type: 'number', default: DEFAULTS.a },

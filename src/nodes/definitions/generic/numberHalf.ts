@@ -12,7 +12,7 @@ const DEFAULTS = { value: 0 };
  * 「長さの半分」を中心座標や管の太さへ使う配線に使う。 */
 registerNodeType<NumberHalfData>({
   type: 'numberHalf',
-  label: 'Half',
+  label: 'Number Half',
   category: 'generator',
   inputs: [{ id: 'value', label: 'Value', type: 'number', default: DEFAULTS.value }],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],

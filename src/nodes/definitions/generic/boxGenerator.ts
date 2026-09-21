@@ -5,7 +5,7 @@ import { defineGeneratorNode } from '../generatorNodeFactory';
  * (`bag.ts` のバッグ本体、`scarf.ts` のタイ部分が使っているが、それに限らない)。 */
 defineGeneratorNode({
   type: 'boxGenerator',
-  label: 'Box',
+  label: 'Box Generator',
   build: (params) => buildBoxGeometry(params),
   fields: [
     { id: 'width', label: 'Width', default: 0.1 },

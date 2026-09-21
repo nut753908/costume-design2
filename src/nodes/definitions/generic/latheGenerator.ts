@@ -15,7 +15,7 @@ export interface LatheGeneratorData extends Record<string, unknown> {
  * クランプする(`generatorNodeFactory.ts` の `round: true` フィールドと同じ丸め)。 */
 registerNodeType<LatheGeneratorData>({
   type: 'latheGenerator',
-  label: 'Lathe',
+  label: 'Lathe Generator',
   category: 'generator',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },

@@ -16,7 +16,7 @@ const DEFAULTS = { a: 0, b: 0 };
  * `geometry/CLAUDE.md` 参照)。 */
 registerNodeType<NumberMaxData>({
   type: 'numberMax',
-  label: 'Max',
+  label: 'Number Max',
   category: 'generator',
   inputs: [
     { id: 'a', label: 'A', type: 'number', default: DEFAULTS.a },

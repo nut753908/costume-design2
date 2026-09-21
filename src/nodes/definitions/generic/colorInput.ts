@@ -8,7 +8,7 @@ export interface ColorInputData extends Record<string, unknown> {
 
 registerNodeType<ColorInputData>({
   type: 'colorInput',
-  label: 'Color',
+  label: 'Color Input',
   category: 'input',
   inputs: [],
   outputs: [{ id: 'color', label: 'Color', type: 'color' }],

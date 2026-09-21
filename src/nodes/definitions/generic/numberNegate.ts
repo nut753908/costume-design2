@@ -13,7 +13,7 @@ const DEFAULTS = { value: 0 };
  * 「符号を反転させるだけ」の配線に使う。 */
 registerNodeType<NumberNegateData>({
   type: 'numberNegate',
-  label: 'Negate',
+  label: 'Number Negate',
   category: 'generator',
   inputs: [{ id: 'value', label: 'Value', type: 'number', default: DEFAULTS.value }],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],

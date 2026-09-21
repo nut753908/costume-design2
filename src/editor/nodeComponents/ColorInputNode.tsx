@@ -19,7 +19,7 @@ function ColorInputNodeViewImpl({ id, data }: NodeProps) {
     <div className="rf-node">
       <NodeTitleBar
         id={id}
-        label="Color"
+        label="Color Input"
       />
       <input
         className="rf-node__color nodrag"

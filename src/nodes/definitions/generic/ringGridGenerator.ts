@@ -17,7 +17,7 @@ export interface RingGridGeneratorData extends Record<string, unknown> {
  * 未接続なら `data` の値を使い、3 未満に丸まらないようクランプする。 */
 registerNodeType<RingGridGeneratorData>({
   type: 'ringGridGenerator',
-  label: 'Ring Grid',
+  label: 'Ring Grid Generator',
   category: 'generator',
   inputs: [
     { id: 'points', label: 'Points', type: 'points' },

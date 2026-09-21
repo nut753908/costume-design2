@@ -7,7 +7,7 @@ export interface NumberInputData extends Record<string, unknown> {
 
 registerNodeType<NumberInputData>({
   type: 'numberInput',
-  label: 'Number',
+  label: 'Number Input',
   category: 'input',
   inputs: [],
   outputs: [{ id: 'value', label: 'Value', type: 'number' }],

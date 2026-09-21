@@ -24,7 +24,7 @@ function NumberInputNodeViewImpl({ id, data }: NodeProps) {
 
   return (
     <div className="rf-node">
-      <NodeTitleBar id={id} label="Number" />
+      <NodeTitleBar id={id} label="Number Input" />
       <input
         className="rf-node__number-input nodrag"
         type="number"
