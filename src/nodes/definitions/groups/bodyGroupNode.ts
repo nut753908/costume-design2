@@ -9,7 +9,7 @@ import { colorSocket } from '../garmentOutput';
  * 共有ノード)が計算済みの生の値(半径・長さ・Y座標)そのもので、`bodyGroup` 自身は
  * スケール計算を行わない。
  *
- * 胴体(`capsuleGenerator`)・頭(`sphereGenerator`)をそれぞれ `translateY` で配置し、
+ * 胴体(`capsuleGenerator`)・頭(`sphereGenerator`)をそれぞれ `translate`(Y だけを配線)で配置し、
  * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
  * 4つを `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
@@ -56,11 +56,11 @@ defineGroupNode({
 
     // 胴体(capsuleGenerator)。
     { id: 'torsoGen', type: 'capsuleGenerator', data: {} },
-    { id: 'torsoTranslate', type: 'translateY', data: {} },
+    { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 頭(sphereGenerator)。
     { id: 'headGen', type: 'sphereGenerator', data: {} },
-    { id: 'headTranslate', type: 'translateY', data: {} },
+    { id: 'headTranslate', type: 'translate', data: {} },
 
     // 腕1組・脚1組(limbPair)。テーパー比率は腕用/脚用で別々の値を持つ。
     { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.85 } },

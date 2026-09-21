@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // glassesGroup の埋め込みサブグラフが参照する alignedBoxGenerator/torusGenerator/
-// numberAdd/numberSubtract/translateZ/mirrorPair/mergeGeometry/
+// numberAdd/numberSubtract/translate/mirrorPair/mergeGeometry/
 // toonMaterial/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// 左右のレンズ(torusGenerator+translateZ を mirrorPair で ±lensSpacing へ複製)と、
+// 左右のレンズ(torusGenerator+translate を mirrorPair で ±lensSpacing へ複製)と、
 // ブリッジ+左右テンプル(alignedBoxGenerator のブリッジ1本+テンプル1本を mirrorPair で
 // 複製)を mergeGeometry で1つにまとめる配線が正しいかを検証する(glassesGroupNode.ts のコメント参照)。全パラメータがグループ内部の
 // numberInput に閉じており groupInput 経由では外部から注入できないため、既定値での

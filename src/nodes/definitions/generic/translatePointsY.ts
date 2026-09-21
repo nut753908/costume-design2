@@ -3,7 +3,7 @@ import type { SocketValue } from '../../types';
 import { asNumber } from '../../socketHelpers';
 
 /** `points`(`easedLatheProfile` 等が出力する点列)を Y方向にだけ平行移動する汎用ノード。
- * `translateY`(geometry 版)の points 版 — `belt.ts` が `buildEasedLatheProfile()` の結果
+ * `translate`(geometry 版)の points 版 — `belt.ts` が `buildEasedLatheProfile()` の結果
  * (`lower`)に対して手作業で行っていた `for (const p of lower) p.y -= half;` という
  * ループを、`beltGroupNode.ts` 側のノードグラフへ展開する際に使う。 */
 registerNodeType({

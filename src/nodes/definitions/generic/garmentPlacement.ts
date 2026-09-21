@@ -7,7 +7,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * (そして `Garments.tsx`)は anchorY/offsetY を一切知る必要がなく、常に「原点に置けば
  * 正しい位置になる」geometry+material の2つだけを扱えばよい。
  *
- * 内部は `numberAdd`(anchorY + offsetY)→`translateY` の2ノードだけ。どのアンカーを
+ * 内部は `numberAdd`(anchorY + offsetY)→`translate`(Y だけを配線)の2ノードだけ。どのアンカーを
  * 使うかは呼び出し側が `bodyLayout` の5つの候補のどれを `anchorY` へ配線するかで決まり、
  * このノード自身はアンカー種を選ぶ仕組みを持たない(`nodes/CLAUDE.md` の
  * 「グループノード」節参照)。 */
@@ -27,7 +27,7 @@ defineGroupNode({
       },
     },
     { id: 'offsetAdd', type: 'numberAdd', data: {} },
-    { id: 'translate', type: 'translateY', data: {} },
+    { id: 'translate', type: 'translate', data: {} },
     {
       id: 'output',
       type: 'groupOutput',

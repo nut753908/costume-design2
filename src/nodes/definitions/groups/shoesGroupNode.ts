@@ -14,8 +14,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 靴1本ぶんのジオメトリ(`profile`→`latheGen`→`scaleZ`)と、それを ±legSpacing だけ X方向に
  * 離した左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
  * `limbPair.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。つま先方向に伸びた靴らしい
- * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scaleZ`(`translateX`/`translateY`/
- * `translateZ` と対になる、1軸だけを扱う汎用の非一様スケールノード)で表現する。
+ * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scaleZ`(1軸だけを扱う汎用の
+ * 非一様スケールノード)で表現する。
  *
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード

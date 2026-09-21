@@ -5,7 +5,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * `shoesGroupNode.ts`(左右2本)/`glovesGroupNode.ts`(左右2つ)/`socksGroupNode.ts`
  * (左右2本)/`glassesGroupNode.ts` が使う、共通の左右対称ペア化ノード。
  *
- * `translateX` で +offset へ平行移動した geometry を、そのまま +側とし、`mirrorX`(X=0 について
+ * `translate`(X だけを配線)で +offset へ平行移動した geometry を、そのまま +側とし、`mirrorX`(X=0 について
  * 鏡像反転)した geometry を -側として `mergeGeometry` で結合する(`nodes/CLAUDE.md` の
  * 「グループノード」節参照)。入力は X=0 について対称な形状を想定しており、その場合 -側は
  * -offset へ平行移動したコピーと同じ形になる。 */
@@ -23,7 +23,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'translatePos', type: 'translateX', data: {} },
+    { id: 'translatePos', type: 'translate', data: {} },
     { id: 'mirror', type: 'mirrorX', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { getNodeType } from '../../registry';
-// garmentPlacement の埋め込みサブグラフが参照する numberAdd/translateY を含め、
+// garmentPlacement の埋め込みサブグラフが参照する numberAdd/translate を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
 

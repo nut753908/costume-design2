@@ -1,42 +1,26 @@
-import { defineGroupNode } from '../groupNodeFactory';
+import { registerNodeType } from '../../registry';
+import type { SocketValue } from '../../types';
+import { asNumber } from '../../socketHelpers';
 
-/** geometry を X/Y/Z の3軸方向へ平行移動するグループノード。`translateX`/`translateY`/
- * `translateZ` を直列に並べただけで、`bagGroupNode.ts`/`scarfGroupNode.ts` が複数軸へ
- * 移動する箇所で使う。動かさない軸は未接続のままにする(既定値 0)。 */
-defineGroupNode({
+/** geometry を X/Y/Z の3軸方向へ平行移動する汎用ノード。動かさない軸は未接続のままにする
+ * (入力欄の既定値 0)。 */
+registerNodeType({
   type: 'translate',
   label: 'Translate',
-  internalNodes: [
-    {
-      id: 'input',
-      type: 'groupInput',
-      data: {
-        sockets: [
-          { id: 'geometry', label: 'Geometry', type: 'geometry' },
-          { id: 'x', label: 'X', type: 'number', default: 0 },
-          { id: 'y', label: 'Y', type: 'number', default: 0 },
-          { id: 'z', label: 'Z', type: 'number', default: 0 },
-        ],
-      },
-    },
-    { id: 'translateX', type: 'translateX', data: {} },
-    { id: 'translateY', type: 'translateY', data: {} },
-    { id: 'translateZ', type: 'translateZ', data: {} },
-    {
-      id: 'output',
-      type: 'groupOutput',
-      data: {
-        sockets: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
-      },
-    },
+  category: 'geometry-op',
+  inputs: [
+    { id: 'geometry', label: 'Geometry', type: 'geometry' },
+    { id: 'x', label: 'X', type: 'number', default: 0 },
+    { id: 'y', label: 'Y', type: 'number', default: 0 },
+    { id: 'z', label: 'Z', type: 'number', default: 0 },
   ],
-  internalEdges: [
-    { source: 'input', sourceHandle: 'geometry', target: 'translateX', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'x', target: 'translateX', targetHandle: 'x' },
-    { source: 'translateX', sourceHandle: 'geometry', target: 'translateY', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'y', target: 'translateY', targetHandle: 'y' },
-    { source: 'translateY', sourceHandle: 'geometry', target: 'translateZ', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'z', target: 'translateZ', targetHandle: 'z' },
-    { source: 'translateZ', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
-  ],
+  outputs: [{ id: 'geometry', label: 'Geometry', type: 'geometry' }],
+  createDefaultData: () => ({}),
+  evaluate: (inputs): Record<string, SocketValue> => {
+    if (!inputs.geometry || inputs.geometry.type !== 'geometry') return {};
+    const x = asNumber(inputs.x, 0);
+    const y = asNumber(inputs.y, 0);
+    const z = asNumber(inputs.z, 0);
+    return { geometry: { type: 'geometry', value: inputs.geometry.value.clone().translate(x, y, z) } };
+  },
 });

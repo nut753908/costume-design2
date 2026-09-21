@@ -1,30 +1,34 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-import '../../definitions';
+import './translate';
 
-const num = (value: number) => ({ type: 'number' as const, value });
-
-function center(inputs: Record<string, ReturnType<typeof num>>) {
-  const box = new THREE.BoxGeometry(1, 1, 1);
-  const result = getNodeType('translate').evaluate({ geometry: { type: 'geometry', value: box }, ...inputs }, {});
-  const geometry = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
-  geometry!.computeBoundingBox();
-  return geometry!.boundingBox!.getCenter(new THREE.Vector3());
+function box() {
+  return { type: 'geometry' as const, value: new THREE.BoxGeometry(1, 1, 1) };
 }
 
 describe('translate', () => {
-  it('X/Y/Z の3軸方向へ平行移動する', () => {
-    const c = center({ x: num(1), y: num(2), z: num(3) });
-    expect([c.x, c.y, c.z]).toEqual([1, 2, 3]);
+  it('X/Y/Z の3軸方向へ平行移動する(入力ジオメトリは変更しない)', () => {
+    const input = box();
+    const result = getNodeType('translate').evaluate(
+      { geometry: input, x: { type: 'number', value: 1 }, y: { type: 'number', value: 2 }, z: { type: 'number', value: 3 } },
+      {},
+    );
+    const out = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    out!.computeBoundingBox();
+    expect(out!.boundingBox!.min.toArray()).toEqual([0.5, 1.5, 2.5]);
+    input.value.computeBoundingBox();
+    expect(input.value.boundingBox!.min.toArray()).toEqual([-0.5, -0.5, -0.5]);
   });
 
-  it('未接続の軸は動かさない', () => {
-    const c = center({ y: num(2) });
-    expect([c.x, c.y, c.z]).toEqual([0, 2, 0]);
+  it('未接続の軸は 0 として扱う', () => {
+    const result = getNodeType('translate').evaluate({ geometry: box(), y: { type: 'number', value: 2 } }, {});
+    const out = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    out!.computeBoundingBox();
+    expect(out!.boundingBox!.min.toArray()).toEqual([-0.5, 1.5, -0.5]);
   });
 
-  it('geometry が未接続なら何も返さない', () => {
-    expect(getNodeType('translate').evaluate({ x: num(1) }, {}).geometry).toBeUndefined();
+  it('geometry が未接続なら何も出力しない', () => {
+    expect(getNodeType('translate').evaluate({ x: { type: 'number', value: 1 } }, {})).toEqual({});
   });
 });

@@ -1,7 +1,7 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
 /** 左右のレンズを作るグループノード。`glassesGroupNode.ts` が使う。トーラス1個(X=0 基準)を
- * `translateZ` で顔の前面(`forwardDepth`)へ置き、`mirrorPair` で ±`lensSpacing` へ複製する。
+ * `translate`(Z だけを配線)で顔の前面(`forwardDepth`)へ置き、`mirrorPair` で ±`lensSpacing` へ複製する。
  * トーラスの管の太さ(`tube`)は `frameThicknessHalf`(`numberHalf`、`Value` 入力欄の値がフレームの
  * 太さ)として渡す。 */
 defineGroupNode({
@@ -21,7 +21,7 @@ defineGroupNode({
     },
     { id: 'frameThicknessHalf', type: 'numberHalf', data: { value: 0.008 } },
     { id: 'lensGen', type: 'torusGenerator', data: {} },
-    { id: 'lensTranslateZ', type: 'translateZ', data: {} },
+    { id: 'lensTranslateZ', type: 'translate', data: {} },
     { id: 'lensMirror', type: 'mirrorPair', data: {} },
     {
       id: 'output',
