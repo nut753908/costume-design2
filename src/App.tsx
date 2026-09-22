@@ -13,7 +13,14 @@ import { useRootEvaluatedGraph } from './state/useRootEvaluatedGraph';
 // エディタへ回る)。ドラッグでの微調整用に下限/上限だけ設ける。
 const MIN_SCENE_WIDTH = 240;
 const MAX_SCENE_WIDTH = 900;
-const DEFAULT_SCENE_WIDTH = 420;
+// カメラは垂直FOV固定・target原点中心(Scene.tsx)なので、マネキンの描画上の見かけの半幅は
+// ウィンドウ高さだけで決まり、シーン幅を狭めるほどマネキンの中心はシーン領域の中で左へ
+// 寄る(シーン領域自体は常にウィンドウ右端に張り付いたまま左へ伸縮するため)。一方
+// SceneOutputPanel(右上、position:absolute; right:12)はウィンドウ右端からの距離が
+// 常に一定なので、シーン幅が狭いとマネキン(特に肩まわり)と重なる。実機計測
+// (ウィンドウ高さ 900〜1200px)でマネキンの右端と Scene Outputs パネルの左端の間に
+// 常時 30px 前後の余白が残る最小の幅として 760px を採用。
+const DEFAULT_SCENE_WIDTH = 760;
 const DIVIDER_WIDTH = 6;
 
 function App() {
