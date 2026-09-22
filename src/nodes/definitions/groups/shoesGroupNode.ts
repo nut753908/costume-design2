@@ -3,19 +3,19 @@ import { bodyBuildScale, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** shoesSoleScale(numberMultiply)+profile(easedLatheCurve)+latheGen(latheGenerator)+
- * scaleZ(scaleZ)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+
+ * scaleZ(scale)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の9ノードを1枚にまとめたグループノード。
  * Sole Radius と Cuff Radius はどちらも Body Build を掛けてから lathe へ渡す(`scale`/
- * `cuffScale`)。体の脚の半径がすべて Body Build でスケールされるため、履き口を固定にすると
- * Body Build を上げたとき履き口が脚の内側に入る。
+ * `cuffScale`、内部ノード id の `scale` とは別)。体の脚の半径がすべて Body Build でスケール
+ * されるため、履き口を固定にすると Body Build を上げたとき履き口が脚の内側に入る。
  * Sole Radius/Cuff Radius/Height/Toe Length/Segments は他のガーメントと共有されない
  * 単独パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
  * 靴1本ぶんのジオメトリ(`profile`→`latheGen`→`scaleZ`)と、それを ±legSpacing だけ X方向に
  * 離した左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
  * `limbPair.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。つま先方向に伸びた靴らしい
- * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scaleZ`(1軸だけを扱う汎用の
- * 非一様スケールノード)で表現する。
+ * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scale`(X/Y/Z を持つ汎用の
+ * 非一様スケールノード、`translate` と対になる形)の Z 入力欄だけを使って表現する。
  *
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Body Build(半径スケーリング用)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
@@ -46,7 +46,7 @@ defineGroupNode({
     ...scale.nodes,
     ...cuffScale.nodes,
     ...lathe.nodes,
-    { id: 'scaleZ', type: 'scaleZ', data: { z: 1.5 } },
+    { id: 'scaleZ', type: 'scale', data: { z: 1.5 } },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],

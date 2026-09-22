@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // shoesGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheCurve/
-// latheGenerator/scaleZ/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、
+// latheGenerator/scale/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
 
