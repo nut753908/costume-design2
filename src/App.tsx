@@ -8,8 +8,12 @@ import { SceneOutputPanel } from './scene/SceneOutputPanel';
 import { useEvaluatedGraph } from './state/useEvaluatedGraph';
 import { useRootEvaluatedGraph } from './state/useRootEvaluatedGraph';
 
-const MIN_PANEL_RATIO = 0.2;
-const MAX_PANEL_RATIO = 0.8;
+// シーン側はノードエディタをなるべく広く使うため、ウィンドウ幅に比例する割合ではなく
+// 固定 px 幅にする(ウィンドウを広げてもシーン側は必要最小限のまま、余りは全てノード
+// エディタへ回る)。ドラッグでの微調整用に下限/上限だけ設ける。
+const MIN_SCENE_WIDTH = 240;
+const MAX_SCENE_WIDTH = 900;
+const DEFAULT_SCENE_WIDTH = 420;
 const DIVIDER_WIDTH = 6;
 
 function App() {
@@ -17,7 +21,7 @@ function App() {
   const cacheStats = getNodeEvalCacheStats();
   useRootEvaluatedGraph();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [leftRatio, setLeftRatio] = useState(0.45);
+  const [sceneWidth, setSceneWidth] = useState(DEFAULT_SCENE_WIDTH);
 
   const handleDividerMouseDown = useCallback((event: ReactMouseEvent) => {
     event.preventDefault();
@@ -26,8 +30,8 @@ function App() {
 
     const handleMouseMove = (moveEvent: globalThis.MouseEvent) => {
       const rect = container.getBoundingClientRect();
-      const ratio = (moveEvent.clientX - rect.left) / rect.width;
-      setLeftRatio(Math.min(MAX_PANEL_RATIO, Math.max(MIN_PANEL_RATIO, ratio)));
+      const width = rect.right - moveEvent.clientX;
+      setSceneWidth(Math.min(MAX_SCENE_WIDTH, Math.max(MIN_SCENE_WIDTH, width)));
     };
 
     const handleMouseUp = () => {
@@ -45,7 +49,7 @@ function App() {
 
   return (
     <div ref={containerRef} style={{ display: 'flex', width: '100%', height: '100%' }}>
-      <div style={{ flex: `${leftRatio} 0 0`, height: '100%', minWidth: 0 }}>
+      <div style={{ flex: '1 1 auto', height: '100%', minWidth: 0 }}>
         <NodeEditor />
       </div>
       <div
@@ -57,7 +61,11 @@ function App() {
           background: '#ccc',
         }}
       />
-      <div style={{ flex: `${1 - leftRatio} 0 0`, height: '100%', position: 'relative', minWidth: 0 }}>
+      {/* flex-shrink:0 だけでは不十分: 既定の min-width:auto は子要素(3Dビューの
+          <canvas> が持つ固定px幅)のコンテンツ最小サイズを下回れないため、それを
+          明示的に上書きしないと flex-basis を縮めても実際の描画幅が縮まない
+          (flexbox の min-width:auto がハマりやすい落とし穴)。 */}
+      <div style={{ flex: `0 0 ${sceneWidth}px`, height: '100%', position: 'relative', minWidth: 0 }}>
         <Scene />
         <ViewIndicator />
         <SceneOutputPanel />
