@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Panel } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { isEditableTextTarget } from './keyboardGuards';
 
@@ -32,13 +31,13 @@ export function HistoryControls() {
   }, [undo, redo]);
 
   return (
-    <Panel position="top-center" className="history-controls">
+    <div className="history-controls">
       <button type="button" className="graph-io__button" onClick={undo} disabled={!canUndo}>
         Undo
       </button>
       <button type="button" className="graph-io__button" onClick={redo} disabled={!canRedo}>
         Redo
       </button>
-    </Panel>
+    </div>
   );
 }

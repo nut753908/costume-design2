@@ -6,6 +6,7 @@ import {
   Background,
   Controls,
   MiniMap,
+  Panel,
   type NodeTypes,
   type Connection,
   type Edge,
@@ -216,8 +217,10 @@ function NodeEditorInner() {
           style={{ width: 150, height: 110 }}
         />
         <NodePalette />
-        <HistoryControls />
-        <BreadcrumbPanel />
+        <Panel position="top-center" className="top-panel-stack">
+          <HistoryControls />
+          <BreadcrumbPanel />
+        </Panel>
         <GraphIO />
         <PresetPanel />
         <ContextMenu state={menuState} onClose={() => setMenuState(null)} />

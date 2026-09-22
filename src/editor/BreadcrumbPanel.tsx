@@ -1,4 +1,3 @@
-import { Panel } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { getNodeType } from '../nodes/registry';
 
@@ -16,7 +15,7 @@ export function BreadcrumbPanel() {
   });
 
   return (
-    <Panel position="top-center" className="breadcrumb-panel">
+    <div className="breadcrumb-panel">
       <button type="button" className="graph-io__button" onClick={() => exitToLevel(-1)}>
         トップレベル
       </button>
@@ -33,6 +32,6 @@ export function BreadcrumbPanel() {
           </button>
         </span>
       ))}
-    </Panel>
+    </div>
   );
 }

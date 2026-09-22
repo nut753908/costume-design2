@@ -145,7 +145,7 @@ export function PresetPanel() {
   };
 
   return (
-    <Panel position="bottom-right" className="preset-panel">
+    <Panel position="bottom-center" className="preset-panel">
       {groupStale && (
         <div className="preset-panel__stale">
           このグループのテンプレートが更新されています。

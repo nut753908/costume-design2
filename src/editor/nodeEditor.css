@@ -238,6 +238,13 @@
   cursor: default;
 }
 
+.top-panel-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 .history-controls {
   display: flex;
   gap: 8px;
@@ -329,7 +336,13 @@
 .preset-panel {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
+  /* このパネルは bottom-center に配置される。グラフ編集ペイン自体が狭く(実測700px前後)、
+     NodePalette(左端、実測190px)と MiniMap(右端、150px)の間の余白は300px強しか無いため、
+     中身を折り返し可能にした上でこの幅に収め、両方との重なりを避ける。 */
+  max-width: 300px;
 }
 
 .preset-panel__stale {
