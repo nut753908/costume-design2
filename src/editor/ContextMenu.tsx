@@ -1,9 +1,10 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, type RefObject } from 'react';
 import { useReactFlow } from '@xyflow/react';
 import { groupNodeTypesBySection } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
 import { SECTION_LABELS } from './paletteShared';
 import { useDismissMenu } from './useDismissMenu';
+import { useClampMenuPosition } from './useClampMenuPosition';
 
 export interface ContextMenuState {
   x: number;
@@ -13,10 +14,11 @@ export interface ContextMenuState {
 interface ContextMenuProps {
   state: ContextMenuState | null;
   onClose: () => void;
+  boundsRef: RefObject<HTMLElement | null>;
 }
 
 /** キャンバスを右クリックした位置に表示し、選んだノードタイプをその位置に追加するメニュー。 */
-export function ContextMenu({ state, onClose }: ContextMenuProps) {
+export function ContextMenu({ state, onClose, boundsRef }: ContextMenuProps) {
   const addNode = useGraphStore((s) => s.addNode);
   const insideGroup = useGraphStore((s) => s.scopeStack.length > 0);
   const { screenToFlowPosition } = useReactFlow();
@@ -29,8 +31,9 @@ export function ContextMenu({ state, onClose }: ContextMenuProps) {
   );
 
   useDismissMenu(!!state, menuRef, onClose);
+  const pos = useClampMenuPosition(menuRef, boundsRef, state);
 
-  if (!state) return null;
+  if (!state || !pos) return null;
 
   const handleAdd = (type: string) => {
     const position = screenToFlowPosition({ x: state.x, y: state.y });
@@ -42,7 +45,7 @@ export function ContextMenu({ state, onClose }: ContextMenuProps) {
     <div
       ref={menuRef}
       className="context-menu nodrag nopan"
-      style={{ left: state.x, top: state.y }}
+      style={{ left: pos.x, top: pos.y }}
     >
       {groups.map(({ section, items }) => (
         <div key={section} className="context-menu__group">

@@ -223,8 +223,8 @@ function NodeEditorInner() {
         </Panel>
         <GraphIO />
         <PresetPanel />
-        <ContextMenu state={menuState} onClose={() => setMenuState(null)} />
-        <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} />
+        <ContextMenu state={menuState} onClose={() => setMenuState(null)} boundsRef={wrapperRef} />
+        <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} boundsRef={wrapperRef} />
         <NodeClipboard />
       </ReactFlow>
     </div>
