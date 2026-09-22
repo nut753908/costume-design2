@@ -155,7 +155,15 @@
   background: #fdfaf4e6;
   font-size: 12px;
   color: #1a1a1a;
-  max-height: calc(100% - 40px);
+  /* top-left の NodePalette は bottom-left の React Flow 標準 Controls(ズーム/フィット/ロック、
+     実測 104px 高)と同じ左端の列を共有するため、下端が Controls に重ならないよう手前で
+     止める必要がある(実測: 修正前は Controls の中心にカーソルを置くと NodePalette の
+     アイテムが最前面に来ており、ボタンがクリックできなくなっていた)。内訳(実測ベース):
+     自身の上マージン15px + Controls との間隔15px + Controls高さ104px + Controls下マージン15px
+     + 自身の padding/border(10px×2+1px×2=22px)= 171px を 100%(コンテナ高さ)から引く。
+     Controls の高さは React Flow 側の既定値(このアプリ側では制御していない)なので、
+     ライブラリ更新で変わったら実測し直すこと。 */
+  max-height: calc(100% - 171px);
   overflow-y: auto;
 }
 
