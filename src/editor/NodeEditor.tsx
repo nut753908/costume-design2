@@ -206,7 +206,7 @@ function NodeEditorInner() {
         key={scopeDepth}
       >
         <Background />
-        <Controls />
+        <Controls fitViewOptions={{ padding: fitViewPadding() }} />
         <MiniMap
           position="bottom-right"
           pannable
