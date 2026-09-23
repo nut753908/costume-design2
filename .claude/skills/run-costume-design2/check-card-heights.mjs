@@ -22,9 +22,19 @@ async function main() {
     await page.waitForSelector('.react-flow__node', { timeout: 15000 });
 
     const rows = await page.evaluate(async () => {
-      const { useGraphStore } = await import('/src/state/graphStore.ts');
-      const { nodeTypeRegistry } = await import('/src/nodes/registry.ts');
-      const { estimateNodeHeight } = await import('/src/nodes/autoLayout.ts');
+      // HMR で更新されたモジュールはアプリ側では `?t=…` 付きの URL で読み込まれており、素の
+      // パスで import すると別インスタンス(アプリの画面と繋がっていないストア)になる。
+      // アプリが実際に読み込んだ URL を Resource Timing から探して、同じインスタンスを使う。
+      const importAppModule = (path) => {
+        const loaded = performance
+          .getEntriesByType('resource')
+          .map((e) => e.name)
+          .filter((name) => new URL(name).pathname === path);
+        return import(loaded.at(-1) ?? path);
+      };
+      const { useGraphStore } = await importAppModule('/src/state/graphStore.ts');
+      const { nodeTypeRegistry } = await importAppModule('/src/nodes/registry.ts');
+      const { estimateNodeHeight } = await importAppModule('/src/nodes/autoLayout.ts');
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
       const socket = (i) => ({ id: `s${i}`, label: `S${i}`, type: 'number', default: 0 });
 
