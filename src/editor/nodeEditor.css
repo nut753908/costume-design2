@@ -155,10 +155,11 @@
 }
 
 /* 接続済みの入力ソケット(InputHandle)は isConnectableStart={false} にしているため、React Flow の
-   既定では pointer-events: none になりドラッグで掴めない。 */
+   既定では pointer-events: none になりドラッグで掴めない。カーソルはキャンバス/ノードの grab と
+   見分けがつくよう、未接続のソケット(React Flow の connectionindicator)と同じ crosshair にする。 */
 .react-flow__handle.rf-socket--pickup {
   pointer-events: all;
-  cursor: grab;
+  cursor: crosshair;
 }
 
 .node-palette {
