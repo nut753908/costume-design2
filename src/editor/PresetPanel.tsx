@@ -179,7 +179,13 @@ export function PresetPanel() {
       <button type="button" className="graph-io__button" onClick={handleLoad} disabled={!validSelectedId}>
         Load
       </button>
-      <button type="button" className="graph-io__button" onClick={handleDelete} disabled={!validSelectedId}>
+      <button
+        type="button"
+        className="graph-io__button"
+        onClick={handleDelete}
+        disabled={!validSelectedId || validSelectedId === INITIAL_PRESET_ID}
+        title={validSelectedId === INITIAL_PRESET_ID ? 'デフォルトは削除できません' : undefined}
+      >
         Delete
       </button>
     </Panel>
