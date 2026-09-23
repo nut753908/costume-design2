@@ -157,6 +157,31 @@ describe('defineGroupNode', () => {
     expect(result.offset).toEqual({ type: 'number', value: 7 });
   });
 
+  it('groupInput/groupOutput を複数置くと、どの groupInput にも値が注入され、出力はソケットごとに配線している groupOutput の値になる', () => {
+    const { internalNodes, internalEdges } = buildInternalGraph();
+    const input = internalNodes.find((n) => n.id === 'input')!;
+    const output = internalNodes.find((n) => n.id === 'output')!;
+    const data = {
+      nodes: [...internalNodes, { ...input, id: 'input2' }, { ...output, id: 'output2' }],
+      edges: internalEdges.map((e) =>
+        e.sourceHandle === 'color' && e.source === 'input'
+          ? { ...e, source: 'input2' }
+          : e.targetHandle === 'offset' && e.target === 'output'
+            ? { ...e, target: 'output2' }
+            : e,
+      ),
+    };
+
+    const result = getNodeType('groupFactoryTestGroup').evaluate(
+      { color: { type: 'color', value: new THREE.Color('#ff0000') }, offset: { type: 'number', value: 7 } },
+      data,
+    );
+
+    expect(result.tint).toEqual({ type: 'color', value: new THREE.Color('#ff0000') });
+    expect(result.offset).toEqual({ type: 'number', value: 7 });
+    expect(result.doubledRadius).toEqual({ type: 'number', value: 4 });
+  });
+
   it('groupOutput のどのソケットにも配線されていないキーは外部出力に含まれない', () => {
     const result = getNodeType('groupFactoryTestGroup').evaluate({}, {});
     expect(result.unlisted).toBeUndefined();

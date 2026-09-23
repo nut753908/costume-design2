@@ -743,3 +743,25 @@ describe('graphStore の groupInput/groupOutput ノードの削除', () => {
     expect(externalEdgesOrphanedByRemoval({ nodes: useGraphStore.getState().nodes, scopeStack: [] }, new Set([inputId]))).toEqual([]);
   });
 });
+
+describe('graphStore の Group Input/Output を複数置いた場合', () => {
+  const socketIds = (id: string) =>
+    (useGraphStore.getState().nodes.find((n) => n.id === id)!.data as { sockets: { id: string }[] }).sockets.map((s) => s.id);
+
+  it('2つ目を追加すると既存のものの入出力の一覧を引き継ぎ、どちらかの編集・削除は両方に反映される', () => {
+    resetStore([makeGroupIONode('input', 'groupInput', [{ id: 'a' }]), makeNode('consumer')]);
+    useGraphStore.getState().addNode('groupInput', { x: 0, y: 0 });
+    const secondId = useGraphStore.getState().nodes.find((n) => n.type === 'groupInput' && n.id !== 'input')!.id;
+    expect(socketIds(secondId)).toEqual(['a']);
+
+    useGraphStore.getState().updateNodeData(secondId, { sockets: [{ id: 'a' }, { id: 'b' }] });
+    expect(socketIds('input')).toEqual(['a', 'b']);
+
+    useGraphStore.setState({
+      edges: [{ id: 'e-b', source: secondId, sourceHandle: 'b', target: 'consumer', targetHandle: 'value' }],
+    });
+    useGraphStore.getState().removeGroupIOSocket('input', 'b');
+    expect(socketIds(secondId)).toEqual(['a']);
+    expect(useGraphStore.getState().edges).toEqual([]);
+  });
+});

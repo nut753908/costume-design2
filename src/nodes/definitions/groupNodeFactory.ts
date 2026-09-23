@@ -142,9 +142,17 @@ export function defineGroupNode(config: GroupNodeConfig): void {
 
       const internalResults = evaluateGraph(patchedNodes, internalEdges);
 
-      // groupOutput ノードに実際に配線された値だけが、そのまま外部出力になる。
-      const outputNode = internalNodes.find((n) => n.type === 'groupOutput');
-      const forwarded = outputNode ? { ...(internalResults.get(outputNode.id) ?? {}) } : {};
+      // groupOutput ノードに実際に配線された値だけが、そのまま外部出力になる。groupOutput が
+      // 複数ある(ソケットの一覧は共有)場合は、ソケットごとにそれを配線している最初のノードの
+      // 値を使い、どれにも配線されていなければ最初のノードの値(ソケットの既定値)を使う。
+      const outputNodes = internalNodes.filter((n) => n.type === 'groupOutput');
+      const sourceFor = (socketId: string) =>
+        outputNodes.find((n) => internalEdges.some((e) => e.target === n.id && e.targetHandle === socketId)) ?? outputNodes[0];
+      const forwarded: Record<string, SocketValue> = {};
+      for (const socketId of new Set(outputNodes.flatMap((n) => Object.keys(internalResults.get(n.id) ?? {})))) {
+        const value = internalResults.get(sourceFor(socketId).id)?.[socketId];
+        if (value !== undefined) forwarded[socketId] = value;
+      }
 
       // 内部の sceneOutput(任意、1つのグループの中に何個あってもよい)が実際に
       // geometry+material を受け取っているものを、予約キーで 0 から振り直して外部出力へ

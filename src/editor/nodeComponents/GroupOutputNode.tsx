@@ -1,5 +1,5 @@
 import { memo, useState } from 'react';
-import { useNodeConnections, type NodeProps } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { GroupOutputData } from '../../nodes/definitions/groupOutput';
 import { defaultForSocketType, type GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
@@ -30,7 +30,13 @@ function GroupOutputNodeViewImpl({ id, data }: NodeProps) {
   const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const removeGroupIOSocket = useGraphStore((s) => s.removeGroupIOSocket);
   const [newType, setNewType] = useState<SocketType>('number');
-  const connectedInputs = new Set(useNodeConnections({ handleType: 'target' }).map((c) => c.targetHandle));
+  // Group Output が複数あるとき、どれかで配線されたソケットは既定値を使わないので欄を出さない
+  // (`groupNodeFactory.ts` の `evaluate()` 参照)。
+  const wiredKey = useGraphStore((s) => {
+    const outputIds = new Set(s.nodes.filter((n) => n.type === 'groupOutput').map((n) => n.id));
+    return [...new Set(s.edges.filter((e) => outputIds.has(e.target)).map((e) => e.targetHandle ?? ''))].sort().join('\n');
+  });
+  const connectedInputs = new Set(wiredKey.split('\n'));
 
   const addSocket = () => {
     const newId = uniqueSocketId(sockets);

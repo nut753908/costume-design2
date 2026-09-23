@@ -19,6 +19,7 @@ import { initialNodes, initialEdges } from './initialGraph';
 import { composeRootGraph, type ScopeFrame } from './composeRootGraph';
 import { validateGraph } from './validateGraph';
 import { migrateGroupToTemplate } from '../nodes/groupTemplate';
+import { shareGroupIOSockets } from './groupIOSockets';
 
 /** localStorage の永続化キー。persist の name とErrorBoundaryのリセット処理(main.tsx)の
  * 両方から参照するため、値のドリフトを避けて1箇所にまとめる。 */
@@ -240,9 +241,9 @@ export const useGraphStore = create<GraphState>()(
         },
         updateNodeData: (id, data) => {
           pushHistory(`data:${id}`, COALESCE_MS);
-          set({
-            nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n)),
-          });
+          const nodes = get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n));
+          // Group Input/Output の入出力の一覧は、同じ階層の同じ型のノードへも反映する。
+          set('sockets' in data ? shareGroupIOSockets(nodes, get().edges, new Set([id])) : { nodes });
         },
         setEvaluatedResults: (results) => set({ evaluatedResults: results }),
         setRootEvaluatedResults: (results) => set({ rootEvaluatedResults: results }),
@@ -251,7 +252,9 @@ export const useGraphStore = create<GraphState>()(
           const def = getNodeType(type);
           const id = `${type}-${Math.random().toString(36).slice(2, 9)}`;
           const newNode: Node = { id, type, position, data: def.createDefaultData() };
-          set({ nodes: [...get().nodes, newNode] });
+          const { nodes, edges } = get();
+          // 2つ目以降の Group Input/Output は、既存のものの入出力の一覧を引き継ぐ。
+          set(shareGroupIOSockets([...nodes, newNode], edges, new Set(nodes.map((n) => n.id))));
         },
         loadGraph: (nodes, edges) => {
           pushHistory();
@@ -351,8 +354,12 @@ export const useGraphStore = create<GraphState>()(
           }));
 
           set({
-            nodes: [...state.nodes.map((n) => (n.selected ? { ...n, selected: false } : n)), ...newNodes],
-            edges: [...state.edges, ...newEdges],
+            // 貼り付けた Group Input/Output は、この階層に既にあるものの入出力の一覧を引き継ぐ。
+            ...shareGroupIOSockets(
+              [...state.nodes.map((n) => (n.selected ? { ...n, selected: false } : n)), ...newNodes],
+              [...state.edges, ...newEdges],
+              new Set(state.nodes.map((n) => n.id)),
+            ),
             _pasteCount: state._pasteCount + 1,
           });
         },
@@ -437,11 +444,6 @@ export const useGraphStore = create<GraphState>()(
           const isOutput = node.type === 'groupOutput';
           if (!isInput && !isOutput) return;
 
-          // 現在の階層(埋め込みサブグラフ)の中で、このソケットに繋がっている内部エッジ。
-          const internalOrphans = state.edges.filter((e) =>
-            isInput ? e.source === nodeId && e.sourceHandle === socketId : e.target === nodeId && e.targetHandle === socketId,
-          );
-
           // このグループノード自身は現在の nodes ではなく直近の scopeStack フレームに
           // 退避されている(グループの中に入っている場合)。そのフレームの edges の中で、
           // 親ノードの同名ハンドルに繋がっている外部エッジ。
@@ -464,12 +466,15 @@ export const useGraphStore = create<GraphState>()(
           pushHistory();
 
           const sockets = ((node.data as { sockets?: { id: string }[] }).sockets ?? []).filter((s) => s.id !== socketId);
-          const internalOrphanIds = new Set(internalOrphans.map((e) => e.id));
           const externalOrphanIds = new Set(externalOrphans.map((e) => e.id));
 
           set({
-            nodes: state.nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, sockets } } : n)),
-            edges: state.edges.filter((e) => !internalOrphanIds.has(e.id)),
+            // 同じ型の他のノードからも消え、このソケットに繋がっていた内部エッジも消える。
+            ...shareGroupIOSockets(
+              state.nodes.map((n) => (n.id === nodeId ? { ...n, data: { ...n.data, sockets } } : n)),
+              state.edges,
+              new Set([nodeId]),
+            ),
             scopeStack:
               frame && externalOrphanIds.size > 0
                 ? [...state.scopeStack.slice(0, -1), { ...frame, edges: frame.edges.filter((e) => !externalOrphanIds.has(e.id)) }]
