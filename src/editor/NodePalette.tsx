@@ -64,36 +64,38 @@ export function NodePalette() {
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
       />
-      {filteredGroups.length === 0 && <div className="node-palette__empty">見つかりません</div>}
-      {filteredGroups.map(({ section, items }) => {
-        // 検索中は一致した項目を見つけやすいよう、折りたたみに関わらず全て開く
-        const open = normalizedFilter !== '' || !collapsed.has(section);
-        return (
-          <div key={section} className="node-palette__group">
-            <button
-              type="button"
-              className="node-palette__group-title"
-              aria-expanded={open}
-              onClick={() => toggleSection(section)}
-            >
-              {open ? '▾' : '▸'} {SECTION_LABELS[section]} ({items.length})
-            </button>
-            {open &&
-              items.map((item) => (
-                <button
-                  key={item.type}
-                  type="button"
-                  className="node-palette__item"
-                  draggable
-                  onDragStart={(event) => handleDragStart(event, item.type)}
-                  onClick={() => handleAdd(item.type)}
-                >
-                  + {item.label}
-                </button>
-              ))}
-          </div>
-        );
-      })}
+      <div className="node-palette__list">
+        {filteredGroups.length === 0 && <div className="node-palette__empty">見つかりません</div>}
+        {filteredGroups.map(({ section, items }) => {
+          // 検索中は一致した項目を見つけやすいよう、折りたたみに関わらず全て開く
+          const open = normalizedFilter !== '' || !collapsed.has(section);
+          return (
+            <div key={section} className="node-palette__group">
+              <button
+                type="button"
+                className="node-palette__group-title"
+                aria-expanded={open}
+                onClick={() => toggleSection(section)}
+              >
+                {open ? '▾' : '▸'} {SECTION_LABELS[section]} ({items.length})
+              </button>
+              {open &&
+                items.map((item) => (
+                  <button
+                    key={item.type}
+                    type="button"
+                    className="node-palette__item"
+                    draggable
+                    onDragStart={(event) => handleDragStart(event, item.type)}
+                    onClick={() => handleAdd(item.type)}
+                  >
+                    + {item.label}
+                  </button>
+                ))}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
