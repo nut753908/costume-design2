@@ -26,7 +26,7 @@ import { ColorDisplayNodeView } from './nodeComponents/ColorDisplayNode';
 import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
 import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
-import { withSocketClickGuard } from './nodeComponents/withSocketClickGuard';
+import { withControlClickGuard } from './nodeComponents/withControlClickGuard';
 import { SocketEdge } from './SocketEdge';
 import { NodePalette } from './NodePalette';
 import { GraphIO } from './GraphIO';
@@ -55,7 +55,7 @@ const NODE_VIEW_OVERRIDES: Record<CustomCardType, NodeTypes[string]> = {
 const nodeTypes: NodeTypes = Object.fromEntries(
   Array.from(nodeTypeRegistry.keys(), (type) => [
     type,
-    withSocketClickGuard(NODE_VIEW_OVERRIDES[type as CustomCardType] ?? GenericNodeView),
+    withControlClickGuard(NODE_VIEW_OVERRIDES[type as CustomCardType] ?? GenericNodeView),
   ]),
 );
 
