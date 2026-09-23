@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type DragEvent, type FocusEvent, type KeyboardEvent } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -97,6 +97,14 @@ function NodeEditorInner() {
   const [selectionMenuState, setSelectionMenuState] = useState<SelectionContextMenuState | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
+  const selectOnly = useCallback(
+    (target: { kind: 'node' | 'edge'; id: string }) => {
+      onNodesChange(nodes.map((n) => ({ id: n.id, type: 'select', selected: target.kind === 'node' && n.id === target.id })));
+      onEdgesChange(edges.map((e) => ({ id: e.id, type: 'select', selected: target.kind === 'edge' && e.id === target.id })));
+    },
+    [nodes, edges, onNodesChange, onEdgesChange],
+  );
+
   // 右クリックしたノード/エッジが既に選択されていればその選択全体を対象にし、
   // 選択されていなければそれ単体だけを選択し直す(Blender などと同じ挙動)。
   // target を省略すると(範囲選択の枠の右クリック)今の選択をそのまま対象にする。
@@ -107,14 +115,39 @@ function NodeEditorInner() {
         target?.kind === 'node'
           ? nodes.find((n) => n.id === target.id)?.selected
           : edges.find((e) => e.id === target?.id)?.selected;
-      if (target && !isSelected) {
-        onNodesChange(nodes.map((n) => ({ id: n.id, type: 'select', selected: target.kind === 'node' && n.id === target.id })));
-        onEdgesChange(edges.map((e) => ({ id: e.id, type: 'select', selected: target.kind === 'edge' && e.id === target.id })));
-      }
+      if (target && !isSelected) selectOnly(target);
       setMenuState(null);
       setSelectionMenuState({ x, y, edgeOnly: target?.kind === 'edge' });
     },
-    [nodes, edges, onNodesChange, onEdgesChange],
+    [nodes, edges, selectOnly],
+  );
+
+  // Tab キーでノード(またはカード内の入力欄など)へフォーカスが移ったら、クリックと同じくそのノード単体を選択する。
+  // Shift+Tab ではノード本体より先にカード内の最後の欄へ入るため、ノード本体へのフォーカスだけでは足りない。
+  // マウスのクリックでもフォーカスは移るため直前のキーが Tab のときに限る — でないと複数選択が潰れたり、
+  // カード上の欄の操作でノードを選択してしまう(入力欄は :focus-visible がマウスでも付くため判定に使えない)。
+  const tabbingRef = useRef(false);
+  useEffect(() => {
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      tabbingRef.current = event.key === 'Tab';
+    };
+    const onPointerDown = () => {
+      tabbingRef.current = false;
+    };
+    document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('pointerdown', onPointerDown, true);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown, true);
+      document.removeEventListener('pointerdown', onPointerDown, true);
+    };
+  }, []);
+  const handleFocus = useCallback(
+    (event: FocusEvent<HTMLDivElement>) => {
+      if (!tabbingRef.current) return;
+      const nodeId = (event.target as HTMLElement).closest<HTMLElement>('.react-flow__node')?.dataset.id;
+      if (nodeId && !nodes.find((n) => n.id === nodeId)?.selected) selectOnly({ kind: 'node', id: nodeId });
+    },
+    [nodes, selectOnly],
   );
 
   // マウスなしでもノードの右クリックメニュー(複製/コピー/削除)を開けるようにする。
@@ -185,7 +218,7 @@ function NodeEditorInner() {
   );
 
   return (
-    <div ref={wrapperRef} style={{ width: '100%', height: '100%' }} onKeyDown={handleKeyDown}>
+    <div ref={wrapperRef} style={{ width: '100%', height: '100%' }} onKeyDown={handleKeyDown} onFocus={handleFocus}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
