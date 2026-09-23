@@ -169,7 +169,7 @@ export function PresetPanel() {
         onChange={(e) => setSelectedId(e.target.value)}
       >
         <option value="">プリセットを選択...</option>
-        <option value={INITIAL_PRESET_ID}>{scope === undefined ? '初期状態(デフォルト)' : 'テンプレート(デフォルト)'}</option>
+        <option value={INITIAL_PRESET_ID}>初期状態(デフォルト)</option>
         {presets.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name}
