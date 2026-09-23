@@ -55,3 +55,11 @@ export function getNodeType(type: string): NodeTypeDefinition<any> {
   }
   return def;
 }
+
+/** ノードインスタンスの表示名。`renamable` な型で `data.label` が空でなければそれを、
+ * それ以外は型のラベルを返す。カードのタイトル・パンくず・3Dビューのメッシュ一覧で共有する。 */
+export function nodeDisplayLabel(type: string, data: Record<string, unknown>): string {
+  const def = getNodeType(type);
+  const label = data.label;
+  return def.renamable && typeof label === 'string' && label.trim() !== '' ? label : def.label;
+}

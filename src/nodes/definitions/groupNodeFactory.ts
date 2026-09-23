@@ -12,10 +12,15 @@ export interface GroupNodeConfig {
   /** パレットでの振り分け先。ガーメントと Body 関連(`bodyGroup`/`bodyDimensions`/`bodyLayout`)は
    *  `'garment'`、省略時は部品・補助(`'group-part'`)。 */
   paletteSection?: 'garment' | 'group-part';
+  /** テンプレートを持たない、ユーザーが中身を一から組む自作グループ(`customGroup`)。
+   *  中身の編集は常にテンプレートとの食い違いになるため構造の更新検知(`isGroupInstanceStale`)を
+   *  行わず、インスタンスごとに表示名(`data.label`)を付けられるようにする。 */
+  userDefined?: boolean;
   /** `type: 'groupInput'`/`type: 'groupOutput'` ノードはどちらも省略可 — 省略すると
    *  外部から見た入出力ソケットはそれぞれ0個になる(既存14種のガーメントは `groupOutput`
    *  を全て省略している。描画は `sceneOutput` が別途担うため出番が無い)。 */
-  internalNodes: GraphNode[];
+  /** `position` を持つノードはその座標に置き、持たないノードは自動レイアウトで配置する。 */
+  internalNodes: (GraphNode & { position?: { x: number; y: number } })[];
   internalEdges: GraphEdge[];
 }
 
@@ -29,6 +34,8 @@ export interface GroupNodeData extends Record<string, unknown> {
   edges?: GroupInternalEdge[];
   /** 実体化した時点のテンプレートの構造の指紋(`nodes/groupTemplate.ts` 参照)。 */
   templateFingerprint?: string;
+  /** インスタンスの表示名(`userDefined` のグループだけが使う)。 */
+  label?: string;
 }
 
 function toSocketDefs(sockets: GroupIOSocket[] | undefined): SocketDef[] {
@@ -48,7 +55,7 @@ function materializeInternalNodes(config: GroupNodeConfig): GroupInternalNode[] 
   const positions = computeAutoLayout(config.internalNodes, config.internalEdges);
   return config.internalNodes.map((node) => ({
     ...structuredClone(node),
-    position: positions.get(node.id) ?? { x: 0, y: 0 },
+    position: node.position ?? positions.get(node.id) ?? { x: 0, y: 0 },
   }));
 }
 
@@ -106,8 +113,10 @@ function findResolvedSceneOutputs(
  * 独立して編集できる(詳細・編集UXは `nodes/CLAUDE.md` の「グループノード」節参照)。
  */
 export function defineGroupNode(config: GroupNodeConfig): void {
-  const templateFingerprint = fingerprintGroupStructure(config.internalNodes, config.internalEdges);
-  registerGroupTemplateFingerprint(config.type, templateFingerprint);
+  const templateFingerprint = config.userDefined
+    ? undefined
+    : fingerprintGroupStructure(config.internalNodes, config.internalEdges);
+  if (templateFingerprint !== undefined) registerGroupTemplateFingerprint(config.type, templateFingerprint);
 
   const templateInputNode = config.internalNodes.find((n) => n.type === 'groupInput');
   const templateOutputNode = config.internalNodes.find((n) => n.type === 'groupOutput');
@@ -120,6 +129,7 @@ export function defineGroupNode(config: GroupNodeConfig): void {
     label: config.label,
     category: 'group',
     paletteSection: config.paletteSection,
+    renamable: config.userDefined,
     // インスタンスが data.nodes を持たない場合(まだ中に入って編集されていない、または
     // initialGraph.ts 由来)のベースライン/フォールバック。実効的なソケット一覧は
     // 常に resolveNodeSockets() 経由で解決すること。
@@ -128,7 +138,7 @@ export function defineGroupNode(config: GroupNodeConfig): void {
     createDefaultData: () => ({
       nodes: materializeInternalNodes(config),
       edges: materializeInternalEdges(config),
-      templateFingerprint,
+      ...(templateFingerprint !== undefined ? { templateFingerprint } : {}),
     }),
     evaluate: (inputs, data): Record<string, SocketValue> => {
       const internalNodes = data.nodes ?? config.internalNodes;

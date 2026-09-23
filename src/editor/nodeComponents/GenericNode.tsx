@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Handle, Position, useNodeConnections, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
-import { getNodeType } from '../../nodes/registry';
+import { getNodeType, nodeDisplayLabel } from '../../nodes/registry';
 import { resolveNodeSockets } from '../../nodes/resolveNodeSockets';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
@@ -16,6 +16,7 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const def = getNodeType(type ?? '');
   const { inputs, outputs } = resolveNodeSockets(type ?? '', data as Record<string, unknown>);
   const enterGroup = useGraphStore((s) => s.enterGroup);
+  const updateNodeData = useGraphStore((s) => s.updateNodeData);
   const isGroup = def.category === 'group';
   const inputCounts = new Map<string | null, number>();
   for (const c of useNodeConnections({ handleType: 'target' })) inputCounts.set(c.targetHandle, (inputCounts.get(c.targetHandle) ?? 0) + 1);
@@ -24,7 +25,8 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
     <div className="rf-node">
       <NodeTitleBar
         id={id}
-        label={def.label}
+        label={nodeDisplayLabel(type ?? '', data as Record<string, unknown>)}
+        onRename={def.renamable ? (label) => updateNodeData(id, { label }) : undefined}
         action={
           isGroup && (
             <button

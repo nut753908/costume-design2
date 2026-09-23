@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getNodeType, groupNodeTypesBySection, nodeTypeRegistry, registerNodeType } from './registry';
+import { getNodeType, groupNodeTypesBySection, nodeDisplayLabel, nodeTypeRegistry, registerNodeType } from './registry';
 import type { NodeTypeDefinition } from './types';
 
 function def(type: string, category: NodeTypeDefinition['category'], label = type): NodeTypeDefinition {
@@ -78,5 +78,16 @@ describe('paletteSection', () => {
     expect(sections.find((g) => g.section === 'garment')!.items.map((i) => i.type)).toContain('rt-garment');
     expect(sections.find((g) => g.section === 'group-part')!.items.map((i) => i.type)).toContain('rt-part');
     expect(sections.some((g) => (g.section as string) === 'group')).toBe(false);
+  });
+});
+
+describe('nodeDisplayLabel', () => {
+  it('renamable な型だけ data.label を使い、空なら型のラベルに戻る', () => {
+    registerNodeType({ ...def('rt-renamable', 'group', 'Group'), renamable: true });
+    registerNodeType(def('rt-fixed', 'group', 'Fixed'));
+    expect(nodeDisplayLabel('rt-renamable', { label: 'Cape' })).toBe('Cape');
+    expect(nodeDisplayLabel('rt-renamable', { label: '  ' })).toBe('Group');
+    expect(nodeDisplayLabel('rt-renamable', {})).toBe('Group');
+    expect(nodeDisplayLabel('rt-fixed', { label: 'Cape' })).toBe('Fixed');
   });
 });

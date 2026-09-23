@@ -63,16 +63,19 @@ describe('viewStore', () => {
       ['b', { sceneOutputGeometry0: geometry, sceneOutputMaterial0: geometry }],
       ['a', { sceneOutputGeometry0: geometry, sceneOutputGeometry1: geometry }],
       ['c', { value: geometry }],
+      ['d', { sceneOutputGeometry0: geometry }],
     ]);
     const nodes = [
       { id: 'a', type: 'topGroup', data: {} },
       { id: 'b', type: 'skirtGroup', data: { label: 'ignored' } },
       { id: 'c', type: 'numberInput', data: {} },
+      { id: 'd', type: 'customGroup', data: { label: 'Cape' } },
     ];
     expect(listSceneOutputs(nodes, results)).toEqual([
       { key: 'a:0', nodeId: 'a', label: 'Top #0' },
       { key: 'a:1', nodeId: 'a', label: 'Top #1' },
       { key: 'b:0', nodeId: 'b', label: getNodeType('skirtGroup').label },
+      { key: 'd:0', nodeId: 'd', label: 'Cape' },
     ]);
     expect(listSceneOutputs(nodes, null)).toEqual([]);
   });

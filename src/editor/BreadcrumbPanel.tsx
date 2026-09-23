@@ -1,5 +1,5 @@
 import { useGraphStore } from '../state/graphStore';
-import { getNodeType } from '../nodes/registry';
+import { nodeDisplayLabel } from '../nodes/registry';
 
 /** 現在の階層パス。クリックで任意の階層へ直接ジャンプできる(`exitToLevel`、内部的には
  * `exitGroup` を必要回数呼ぶだけ)。トップレベルでも「トップレベル」だけを常に表示するのは、
@@ -10,7 +10,7 @@ export function BreadcrumbPanel() {
 
   const crumbs = scopeStack.map((frame) => {
     const node = frame.nodes.find((n) => n.id === frame.parentId);
-    return node?.type ? getNodeType(node.type).label : frame.parentId;
+    return node?.type ? nodeDisplayLabel(node.type, node.data) : frame.parentId;
   });
 
   return (

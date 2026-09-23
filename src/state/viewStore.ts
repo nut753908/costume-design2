@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { GraphNode, SocketValue } from '../nodes/types';
 import type { EvaluatedGraph } from '../nodes/evaluateGraph';
-import { getNodeType } from '../nodes/registry';
+import { nodeDisplayLabel } from '../nodes/registry';
 import { matchSceneOutputGeometryIndex } from '../nodes/definitions/generic/sceneOutput';
 
 /** 3Dビューに描画される1つのメッシュ(= `Garments.tsx` がマウントする1つの `ToonMesh`)の識別子。
@@ -62,13 +62,13 @@ export interface SceneOutputRow {
 }
 
 /** 3Dビューに描画されているメッシュ(`sceneOutput`)を、トップレベルのノード順に一覧にする。
- * ラベルはノードの型のラベルで、1つのノードが複数のメッシュを持つ場合だけ
+ * ラベルはノードの表示名(`nodeDisplayLabel()`)で、1つのノードが複数のメッシュを持つ場合だけ
  * 通し番号を添える。 */
 export function listSceneOutputs(nodes: GraphNode[], results: EvaluatedGraph | null): SceneOutputRow[] {
   if (!results) return [];
   return nodes.flatMap((node) => {
     const keys = sceneMeshKeys(node.id, results.get(node.id));
-    const base = getNodeType(node.type).label;
+    const base = nodeDisplayLabel(node.type, node.data);
     return keys.map((key, i) => ({
       key,
       nodeId: node.id,

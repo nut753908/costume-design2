@@ -49,6 +49,8 @@ export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   category: NodeCategory;
   /** `category: 'group'` のときだけ意味を持つ、パレットでの振り分け先(省略時は `group-part`)。 */
   paletteSection?: 'garment' | 'group-part';
+  /** true なら、インスタンスごとの表示名を `data.label` に持てる(`nodeDisplayLabel()` 参照)。 */
+  renamable?: boolean;
   inputs: SocketDef[];
   outputs: SocketDef[];
   /** このノードタイプの新しいインスタンスを追加するたびに一度だけ呼ばれる、
