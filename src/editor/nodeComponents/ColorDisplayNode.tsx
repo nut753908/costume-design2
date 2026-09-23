@@ -1,8 +1,9 @@
 import { memo } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import type { NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { InputHandle } from './InputHandle';
 
 /** 入力された color をスウォッチと hex で表示するだけのカード。値は自身の評価結果
  * (`evaluatedResults`)の `color`(`nodes/definitions/generic/colorDisplay.ts`)から読む。
@@ -24,7 +25,7 @@ function ColorDisplayNodeViewImpl({ id }: NodeProps) {
           '—'
         )}
       </div>
-      <Handle type="target" position={Position.Left} id="color" style={{ background: SOCKET_COLORS.color }} />
+      <InputHandle id="color" style={{ background: SOCKET_COLORS.color }} />
     </div>
   );
 }

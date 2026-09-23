@@ -6,6 +6,7 @@ import { resolveNodeSockets } from '../../nodes/resolveNodeSockets';
 import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { SocketField } from './SocketField';
+import { InputHandle } from './InputHandle';
 import { isGroupInstanceStale } from '../../nodes/groupTemplate';
 
 /** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
@@ -43,12 +44,7 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
         const hasField = socket.default !== undefined && !connectedInputs.has(socket.id);
         return (
           <div key={socket.id} className={hasField ? 'rf-node__socket-row rf-node__socket-row--field' : 'rf-node__socket-row'}>
-            <Handle
-              type="target"
-              position={Position.Left}
-              id={socket.id}
-              style={{ background: SOCKET_COLORS[socket.type] }}
-            />
+            <InputHandle id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
             {socket.label}
             {hasField && (
               <SocketField

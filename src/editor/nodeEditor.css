@@ -155,6 +155,13 @@
   right: -13px;
 }
 
+/* 接続済みの入力ソケット(InputHandle)は isConnectableStart={false} にしているため、React Flow の
+   既定では pointer-events: none になりドラッグで掴めない。 */
+.react-flow__handle.rf-socket--pickup {
+  pointer-events: all;
+  cursor: grab;
+}
+
 .node-palette {
   display: flex;
   flex-direction: column;

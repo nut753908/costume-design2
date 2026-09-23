@@ -1,11 +1,12 @@
 import { memo, useState } from 'react';
-import { Handle, Position, useNodeConnections, type NodeProps } from '@xyflow/react';
+import { useNodeConnections, type NodeProps } from '@xyflow/react';
 import { useGraphStore } from '../../state/graphStore';
 import type { GroupOutputData } from '../../nodes/definitions/groupOutput';
 import { defaultForSocketType, type GroupIOSocket } from '../../nodes/definitions/groupIOSocket';
 import type { SocketType } from '../../nodes/types';
 import { SOCKET_COLORS, SOCKET_TYPES } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
+import { InputHandle } from './InputHandle';
 import { SocketField } from './SocketField';
 
 function uniqueSocketId(sockets: GroupIOSocket[]): string {
@@ -41,7 +42,7 @@ function GroupOutputNodeViewImpl({ id, data }: NodeProps) {
       <NodeTitleBar id={id} label="Group Output" />
       {sockets.map((socket) => (
         <div key={socket.id} className="rf-node__io-row">
-          <Handle type="target" position={Position.Left} id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
+          <InputHandle id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
           <input
             className="rf-node__io-label nodrag"
             type="text"

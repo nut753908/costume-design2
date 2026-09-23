@@ -305,6 +305,31 @@ describe('graphStore の Undo/Redo', () => {
   });
 });
 
+describe('graphStore の pickUpEdge/dropPickedEdge', () => {
+  it('掴んだ時点でエッジを外し、落とした先へ繋ぐ。Undo 1回で掴む前に戻る', () => {
+    resetStore([makeNode('a'), makeNode('b'), makeNode('c')], [makeEdge('e1', 'a', 'b')]);
+
+    useGraphStore.getState().pickUpEdge('e1');
+    expect(useGraphStore.getState().edges).toEqual([]);
+
+    useGraphStore.getState().dropPickedEdge({ source: 'a', sourceHandle: 'value', target: 'c', targetHandle: 'value' });
+    expect(useGraphStore.getState().edges.map((e) => [e.source, e.target])).toEqual([['a', 'c']]);
+    expect(useGraphStore.getState().past).toHaveLength(1);
+
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().edges).toEqual([makeEdge('e1', 'a', 'b')]);
+  });
+
+  it('落とした先の入力に既存の接続があれば置き換える', () => {
+    resetStore([makeNode('a'), makeNode('b'), makeNode('c')], [makeEdge('e1', 'a', 'b'), makeEdge('e2', 'b', 'c')]);
+
+    useGraphStore.getState().pickUpEdge('e1');
+    useGraphStore.getState().dropPickedEdge({ source: 'a', sourceHandle: 'value', target: 'c', targetHandle: 'value' });
+
+    expect(useGraphStore.getState().edges.map((e) => [e.source, e.target])).toEqual([['a', 'c']]);
+  });
+});
+
 describe('graphStore の setEvaluatedResults', () => {
   it('evaluatedResults をそのままストアへ反映する(履歴は積まない)', () => {
     resetStore([makeNode('a')]);
