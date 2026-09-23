@@ -9,7 +9,7 @@ export const SECTION_LABELS: Record<PaletteSection, string> = {
   curve: 'Curves',
   garment: 'Garments & Body',
   'group-part': 'Group Parts',
-  'group-io': 'Group I/O',
+  group: 'Group',
   material: 'Materials',
   output: 'Outputs',
 };

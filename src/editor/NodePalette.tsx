@@ -24,10 +24,7 @@ export function NodePalette() {
 
   // Group Input/Output(category: 'group-io')はグループの中に入っている間だけ意味を持つ
   // (グループ本体の外部ソケット構成を定義するノードのため)。トップレベルでは隠す。
-  const groups = useMemo(
-    () => groupNodeTypesBySection().filter((g) => insideGroup || g.section !== 'group-io'),
-    [insideGroup],
-  );
+  const groups = useMemo(() => groupNodeTypesBySection({ includeGroupIO: insideGroup }), [insideGroup]);
 
   const normalizedFilter = filter.trim().toLowerCase();
   const filteredGroups = useMemo(() => {

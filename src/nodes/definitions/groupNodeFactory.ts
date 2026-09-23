@@ -10,8 +10,8 @@ export interface GroupNodeConfig {
   type: string;
   label: string;
   /** パレットでの振り分け先。ガーメントと Body 関連(`bodyGroup`/`bodyDimensions`/`bodyLayout`)は
-   *  `'garment'`、省略時は部品・補助(`'group-part'`)。 */
-  paletteSection?: 'garment' | 'group-part';
+   *  `'garment'`、自作グループは `'group'`、省略時は部品・補助(`'group-part'`)。 */
+  paletteSection?: 'garment' | 'group-part' | 'group';
   /** テンプレートを持たない、ユーザーが中身を一から組む自作グループ(`customGroup`)。
    *  中身の編集は常にテンプレートとの食い違いになるため構造の更新検知(`isGroupInstanceStale`)を
    *  行わず、インスタンスごとに表示名(`data.label`)を付けられるようにする。 */

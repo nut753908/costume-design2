@@ -71,13 +71,25 @@ describe('groupNodeTypesBySection', () => {
 });
 
 describe('paletteSection', () => {
-  it('group カテゴリは paletteSection で garment/group-part に振り分ける(省略時は group-part)', () => {
+  it('group カテゴリは paletteSection で garment/group-part/group に振り分ける(省略時は group-part)', () => {
+    nodeTypeRegistry.clear();
     registerNodeType({ ...def('rt-garment', 'group'), paletteSection: 'garment' });
     registerNodeType(def('rt-part', 'group'));
+    registerNodeType({ ...def('rt-custom', 'group'), paletteSection: 'group' });
     const sections = groupNodeTypesBySection();
-    expect(sections.find((g) => g.section === 'garment')!.items.map((i) => i.type)).toContain('rt-garment');
-    expect(sections.find((g) => g.section === 'group-part')!.items.map((i) => i.type)).toContain('rt-part');
-    expect(sections.some((g) => (g.section as string) === 'group')).toBe(false);
+    expect(sections.find((g) => g.section === 'garment')!.items.map((i) => i.type)).toEqual(['rt-garment']);
+    expect(sections.find((g) => g.section === 'group-part')!.items.map((i) => i.type)).toEqual(['rt-part']);
+    expect(sections.find((g) => g.section === 'group')!.items.map((i) => i.type)).toEqual(['rt-custom']);
+  });
+
+  it('group-io カテゴリは group の見出しに入り、includeGroupIO: false なら除かれる', () => {
+    nodeTypeRegistry.clear();
+    registerNodeType({ ...def('rt-custom', 'group'), paletteSection: 'group' });
+    registerNodeType(def('rt-io', 'group-io'));
+    const types = (opts?: { includeGroupIO: boolean }) =>
+      groupNodeTypesBySection(opts).find((g) => g.section === 'group')!.items.map((i) => i.type).sort();
+    expect(types()).toEqual(['rt-custom', 'rt-io']);
+    expect(types({ includeGroupIO: false })).toEqual(['rt-custom']);
   });
 });
 

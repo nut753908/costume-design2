@@ -10,23 +10,27 @@ const SECTION_ORDER: PaletteSection[] = [
   'curve',
   'garment',
   'group-part',
-  'group-io',
+  'group',
   'material',
   'output',
 ];
 
 /** ノードタイプの、パレットでの見出し。 */
 function sectionOf(def: NodeTypeDefinition): PaletteSection {
-  return def.category === 'group' ? (def.paletteSection ?? 'group-part') : def.category;
+  if (def.category === 'group') return def.paletteSection ?? 'group-part';
+  if (def.category === 'group-io') return 'group';
+  return def.category;
 }
 
-/** 登録済みノードタイプをパレットの見出し別にグループ化する。 */
-export function groupNodeTypesBySection(): {
+/** 登録済みノードタイプをパレットの見出し別にグループ化する。`includeGroupIO: false` なら
+ * Group Input/Output(グループの中でしか意味を持たない)を除く。 */
+export function groupNodeTypesBySection({ includeGroupIO = true } = {}): {
   section: PaletteSection;
   items: { type: string; label: string }[];
 }[] {
   const bySection = new Map<PaletteSection, { type: string; label: string }[]>();
   for (const def of nodeTypeRegistry.values()) {
+    if (!includeGroupIO && def.category === 'group-io') continue;
     const section = sectionOf(def);
     const list = bySection.get(section) ?? [];
     list.push({ type: def.type, label: def.label });

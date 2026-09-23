@@ -40,15 +40,16 @@ export type NodeCategory =
 
 /** パレットの見出し。`NodeCategory` のうち `group` だけは機能に使われる
  * (`resolveNodeSockets`/`enterGroup`/「→」ボタン)ため分割せず、`paletteSection`(表示専用)で
- * `garment`(ガーメントと Body 関連)と `group-part`(部品・補助)に振り分ける。 */
-export type PaletteSection = Exclude<NodeCategory, 'group'> | 'garment' | 'group-part';
+ * `garment`(ガーメントと Body 関連)・`group-part`(部品・補助)・`group`(自作グループ)に振り分ける。
+ * `group` の見出しには Group Input/Output(`category: 'group-io'`)も入る(Blender の Add > Group と同じ)。 */
+export type PaletteSection = Exclude<NodeCategory, 'group' | 'group-io'> | 'garment' | 'group-part' | 'group';
 
 export interface NodeTypeDefinition<TData = Record<string, unknown>> {
   type: string;
   label: string;
   category: NodeCategory;
   /** `category: 'group'` のときだけ意味を持つ、パレットでの振り分け先(省略時は `group-part`)。 */
-  paletteSection?: 'garment' | 'group-part';
+  paletteSection?: 'garment' | 'group-part' | 'group';
   /** true なら、インスタンスごとの表示名を `data.label` に持てる(`nodeDisplayLabel()` 参照)。 */
   renamable?: boolean;
   inputs: SocketDef[];

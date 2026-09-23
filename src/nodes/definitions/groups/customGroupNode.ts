@@ -6,6 +6,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 defineGroupNode({
   type: 'customGroup',
   label: 'Group',
+  paletteSection: 'group',
   userDefined: true,
   internalNodes: [
     { id: 'input', type: 'groupInput', data: { sockets: [] }, position: { x: 0, y: 0 } },
