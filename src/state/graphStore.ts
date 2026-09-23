@@ -26,9 +26,13 @@ export const GRAPH_STORAGE_KEY = 'costume-design-graph';
 /** 復元時の検証に失敗した保存データの退避先(`persist` の `merge` 参照)。 */
 export const GRAPH_BACKUP_STORAGE_KEY = 'costume-design-graph-invalid-backup';
 
+/** `scopeStack` も含めるのは、`removeGroupIOSocket`(親階層の外部エッジ)が
+ * 今開いている階層の外側にも書き込むため。
+ * 履歴は階層の移動でクリアされるので、復元しても今いる階層は変わらない。 */
 interface HistorySnapshot {
   nodes: Node[];
   edges: Edge[];
+  scopeStack: ScopeFrame[];
 }
 
 const HISTORY_LIMIT = 100;
@@ -129,7 +133,7 @@ export const useGraphStore = create<GraphState>()(
           return;
         }
         set({
-          past: [...state.past, { nodes: state.nodes, edges: state.edges }].slice(-HISTORY_LIMIT),
+          past: [...state.past, { nodes: state.nodes, edges: state.edges, scopeStack: state.scopeStack }].slice(-HISTORY_LIMIT),
           future: [],
           _historyKey: key ?? null,
           _historyAt: now,
@@ -226,27 +230,29 @@ export const useGraphStore = create<GraphState>()(
           get().loadGroupGraph(migrated.nodes as unknown as Node[], migrated.edges as unknown as Edge[], migrated.templateFingerprint);
         },
         undo: () => {
-          const { past, nodes, edges, future } = get();
+          const { past, nodes, edges, scopeStack, future } = get();
           if (past.length === 0) return;
           const previous = past[past.length - 1];
           set({
             nodes: previous.nodes,
             edges: previous.edges,
+            scopeStack: previous.scopeStack,
             past: past.slice(0, -1),
-            future: [{ nodes, edges }, ...future],
+            future: [{ nodes, edges, scopeStack }, ...future],
             _historyKey: null,
             _dragging: false,
           });
         },
         redo: () => {
-          const { future, nodes, edges, past } = get();
+          const { future, nodes, edges, scopeStack, past } = get();
           if (future.length === 0) return;
           const next = future[0];
           set({
             nodes: next.nodes,
             edges: next.edges,
+            scopeStack: next.scopeStack,
             future: future.slice(1),
-            past: [...past, { nodes, edges }],
+            past: [...past, { nodes, edges, scopeStack }],
             _historyKey: null,
             _dragging: false,
           });

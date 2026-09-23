@@ -22,9 +22,9 @@
 
 ## Undo/Redo
 
-`state/graphStore.ts` は `past`/`future` の2つのスナップショットスタック(`{nodes, edges}`)を持ち、Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)と `HistoryControls.tsx` のボタンで操作できます。すべての変更操作(`onNodesChange` の remove、`onEdgesChange` の remove、`onConnect`、`addNode`、`updateNodeData`)は、実際に `set()` する前に内部ヘルパー `pushHistory(key?, coalesceMs?)` を呼びます。
+`state/graphStore.ts` は `past`/`future` の2つのスナップショットスタック(`{nodes, edges, scopeStack}`)を持ち、Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)と `HistoryControls.tsx` のボタンで操作できます。すべての変更操作(`onNodesChange` の remove、`onEdgesChange` の remove、`onConnect`、`addNode`、`updateNodeData`)は、実際に `set()` する前に内部ヘルパー `pushHistory(key?, coalesceMs?)` を呼びます。
 
-スライダー/カラーピッカーのドラッグは `updateNodeData` を1ジェスチャーあたり何十回も連続発火させるため、`key`(`data:${id}` など)と `coalesceMs` を指定すると、直前のプッシュから `coalesceMs` 以内・同じ `key` での呼び出しはスタックに新規エントリを積まず「同じジェスチャーの続き」として吸収されます(タイムスタンプだけ更新)。配線付きノードの削除では React Flow が接続エッジの削除(`onEdgesChange`)とノード自身の削除(`onNodesChange`)を続けて呼ぶため、この2つの削除は同じ `key`(`'remove'`)と短い `coalesceMs`(`REMOVE_COALESCE_MS`)で1件にまとめ、Undo 1回で戻る。ノードのドラッグ移動は `dragging` フラグの立ち上がりエッジ(`_dragging` 内部状態)で1ドラッグ=1エントリに区切っており、こちらは時間ベースのコアレッシングを使っていません。`past`/`future` は localStorage に永続化されず(`partialize` は下記「グループの中に入る」節で説明する合成後の `{nodes, edges}` のみ)、`loadGraph`(JSON インポート/プリセット読み込み)・`enterGroup`/`exitGroup`(グループの中に入る/出る)は履歴をクリアします。**そのため、リロード後や、グループの中に入る/出る操作を跨いでは、Undo で以前の状態に戻すことはできません。**
+スライダー/カラーピッカーのドラッグは `updateNodeData` を1ジェスチャーあたり何十回も連続発火させるため、`key`(`data:${id}` など)と `coalesceMs` を指定すると、直前のプッシュから `coalesceMs` 以内・同じ `key` での呼び出しはスタックに新規エントリを積まず「同じジェスチャーの続き」として吸収されます(タイムスタンプだけ更新)。配線付きノードの削除では React Flow が接続エッジの削除(`onEdgesChange`)とノード自身の削除(`onNodesChange`)を続けて呼ぶため、この2つの削除は同じ `key`(`'remove'`)と短い `coalesceMs`(`REMOVE_COALESCE_MS`)で1件にまとめ、Undo 1回で戻る。ノードのドラッグ移動は `dragging` フラグの立ち上がりエッジ(`_dragging` 内部状態)で1ドラッグ=1エントリに区切っており、こちらは時間ベースのコアレッシングを使っていません。`past`/`future` は localStorage に永続化されず(`partialize` は下記「グループの中に入る」節で説明する合成後の `{nodes, edges}` のみ)、`loadGraph`(JSON インポート/プリセット読み込み)・`enterGroup`/`exitGroup`(グループの中に入る/出る)は履歴をクリアします。スナップショットに `scopeStack` を含めるのは、`removeGroupIOSocket`(親階層の外部エッジ)が今開いている階層の外側にも書き込むためで、履歴は階層の移動でクリアされるため、復元しても今いる階層自体は変わりません。**そのため、リロード後や、グループの中に入る/出る操作を跨いでは、Undo で以前の状態に戻すことはできません。**
 
 ## グループの中に入る(スコープ切り替え)とトップレベル評価パイプライン
 

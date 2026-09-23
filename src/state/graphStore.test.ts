@@ -597,6 +597,22 @@ describe('graphStore の removeGroupIOSocket', () => {
     expect((inputNode.data as { sockets: unknown[] }).sockets).toEqual([]);
   });
 
+  it('Undo で1つ上の階層の外部エッジも復元する', () => {
+    vi.stubGlobal('confirm', vi.fn().mockReturnValue(true));
+
+    resetStore([makeGroupNode('g'), makeNode('outerSrc')]);
+    useGraphStore.setState({ edges: [makeEdge('e-outer', 'outerSrc', 'g')] });
+    useGraphStore.getState().enterGroup('g');
+    useGraphStore.getState().addNode('groupInput', { x: 0, y: 0 });
+    const inputId = useGraphStore.getState().nodes.find((n) => n.type === 'groupInput')!.id;
+    useGraphStore.getState().updateNodeData(inputId, { sockets: [{ id: 'value' }] });
+
+    useGraphStore.getState().removeGroupIOSocket(inputId, 'value');
+    useGraphStore.getState().undo();
+
+    expect(useGraphStore.getState().scopeStack.at(-1)!.edges).toEqual([makeEdge('e-outer', 'outerSrc', 'g')]);
+  });
+
   it('確認ダイアログでキャンセルすると何も変更しない', () => {
     const confirmMock = vi.fn().mockReturnValue(false);
     vi.stubGlobal('confirm', confirmMock);
