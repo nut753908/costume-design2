@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
-import { useReactFlow } from '@xyflow/react';
+import { useReactFlow, useStoreApi } from '@xyflow/react';
 import { groupNodeTypesBySection } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
 import type { PaletteSection } from '../nodes/types';
@@ -9,6 +9,7 @@ export function NodePalette() {
   const addNode = useGraphStore((s) => s.addNode);
   const insideGroup = useGraphStore((s) => s.scopeStack.length > 0);
   const { screenToFlowPosition } = useReactFlow();
+  const flowStore = useStoreApi();
   const cascadeRef = useRef(0);
   const [filter, setFilter] = useState('');
   const [collapsed, setCollapsed] = useState<Set<PaletteSection>>(loadCollapsedSections);
@@ -39,12 +40,25 @@ export function NodePalette() {
 
   const handleAdd = useCallback(
     (type: string) => {
-      const step = cascadeRef.current % 8;
+      const step = cascadeRef.current % 4;
       cascadeRef.current += 1;
-      const position = screenToFlowPosition({ x: 360 + step * 24, y: 40 + step * 24 });
+      // パネル類(四隅と上下端)に重ならないよう、左のパレット列の右端から右端までの中央を起点にする
+      // (ペインが狭いと、パレットが左側の大半を占めてペイン全体の中央にかかるため)。ノードの左上が
+      // この位置に来るため、カードのおおよそ半分(フロー座標で 90x40)だけ左上へずらしておく。
+      // ペインは幅600px前後と狭いため、拡大表示でもカード(幅約180)が右端を越えないよう x を抑える。
+      const { domNode: paneEl, transform } = flowStore.getState();
+      const zoom = transform[2];
+      const rect = paneEl?.getBoundingClientRect();
+      if (!rect) return;
+      const left = paneEl?.querySelector('.panel-stack--left')?.getBoundingClientRect().right ?? rect.left;
+      const x = Math.max(left + 8, Math.min((left + rect.right) / 2 - 90 * zoom + step * 24, rect.right - 8 - 180 * zoom));
+      const position = screenToFlowPosition({
+        x,
+        y: rect.top + rect.height / 2 - 40 * zoom + step * 24,
+      });
       addNode(type, position);
     },
-    [addNode, screenToFlowPosition],
+    [addNode, screenToFlowPosition, flowStore],
   );
 
   const handleDragStart = useCallback((event: DragEvent, type: string) => {
