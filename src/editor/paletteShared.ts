@@ -17,8 +17,8 @@ export const SECTION_LABELS: Record<PaletteSection, string> = {
 /** パレットからキャンバスへのドラッグ&ドロップで、ノードタイプを運ぶための dataTransfer MIME タイプ。 */
 export const NODE_TYPE_DND_MIME = 'application/costume-design-node-type';
 
-/** `fitView()`/`fitViewOptions` に渡す共通の padding。`NodePalette`(`Panel
- * position="top-left"`、幅は内容依存だが実測200px前後)は画面座標に固定表示されるため、
+/** `fitView()`/`fitViewOptions` に渡す共通の padding。`NodePalette`(左上の `Panel`
+ * 内、幅は内容依存だが実測200px前後)は画面座標に固定表示されるため、
  * 通常の均等な割合パディングだけでは足りず、入次数0のノード(`groupInput` など、
  * `computeAutoLayout()` が常に列0=キャンバス左端に置く)がパレットの真下に完全に隠れて
  * しまうことがある(実際に発生した不具合 — bodyDimensionsGroup の Group Input が中に

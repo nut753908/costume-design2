@@ -1,5 +1,5 @@
 import { useRef, type ChangeEvent } from 'react';
-import { Panel, useReactFlow, type Node, type Edge } from '@xyflow/react';
+import { useReactFlow, type Node, type Edge } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
 import { validateGraph, GRAPH_VALIDATION_MESSAGES } from '../state/validateGraph';
 import { fitViewPadding } from './paletteShared';
@@ -68,7 +68,7 @@ export function GraphIO() {
   };
 
   return (
-    <Panel position="top-right" className="graph-io">
+    <div className="graph-io">
       <button type="button" className="graph-io__button" onClick={handleExport}>
         Export JSON
       </button>
@@ -79,6 +79,6 @@ export function GraphIO() {
         Arrange
       </button>
       <input ref={fileInputRef} type="file" accept="application/json" hidden onChange={handleFileChange} />
-    </Panel>
+    </div>
   );
 }

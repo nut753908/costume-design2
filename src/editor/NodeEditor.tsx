@@ -236,12 +236,14 @@ function NodeEditorInner() {
           maskColor="#fdfaf4b3"
           style={{ width: 150, height: 110 }}
         />
-        <NodePalette />
-        <Panel position="top-center" className="top-panel-stack">
-          <HistoryControls />
+        <Panel position="top-left" className="panel-stack panel-stack--left">
           <BreadcrumbPanel />
+          <NodePalette />
         </Panel>
-        <GraphIO />
+        <Panel position="top-right" className="panel-stack panel-stack--right">
+          <GraphIO />
+          <HistoryControls />
+        </Panel>
         <PresetPanel />
         <ContextMenu state={menuState} onClose={() => setMenuState(null)} boundsRef={wrapperRef} />
         <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} boundsRef={wrapperRef} />

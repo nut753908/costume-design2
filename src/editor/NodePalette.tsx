@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useRef, useState, type DragEvent } from 'react';
-import { Panel, useReactFlow } from '@xyflow/react';
+import { useReactFlow } from '@xyflow/react';
 import { groupNodeTypesBySection } from '../nodes/registry';
 import { useGraphStore } from '../state/graphStore';
 import type { PaletteSection } from '../nodes/types';
@@ -56,7 +56,7 @@ export function NodePalette() {
   }, []);
 
   return (
-    <Panel position="top-left" className="node-palette">
+    <div className="node-palette">
       <input
         className="node-palette__search"
         type="text"
@@ -94,6 +94,6 @@ export function NodePalette() {
           </div>
         );
       })}
-    </Panel>
+    </div>
   );
 }
