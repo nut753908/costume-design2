@@ -104,7 +104,9 @@ interface GraphState {
   undo: () => void;
   redo: () => void;
   copySelected: () => void;
-  pasteClipboard: () => void;
+  /** `at` を指定すると、コピーしたノード群の左上をそのフロー座標に合わせて貼り付ける
+   * (背景の右クリックメニュー用)。省略時は元の位置からカスケードオフセットする。 */
+  pasteClipboard: (at?: { x: number; y: number }) => void;
   duplicateSelected: () => void;
   autoLayout: () => void;
   /** グループノードの「中に入る」ボタンを押した際に呼ぶ。そのノードが `category: 'group'` でなければ
@@ -328,14 +330,20 @@ export const useGraphStore = create<GraphState>()(
             _pasteCount: 0,
           });
         },
-        pasteClipboard: () => {
+        pasteClipboard: (at) => {
           const state = get();
           const clip = state.clipboard;
           if (!clip || clip.nodes.length === 0) return;
 
           pushHistory();
 
-          const offset = (state._pasteCount + 1) * 32;
+          const cascade = (state._pasteCount + 1) * 32;
+          const offset = at
+            ? {
+                x: at.x - Math.min(...clip.nodes.map((n) => n.position.x)),
+                y: at.y - Math.min(...clip.nodes.map((n) => n.position.y)),
+              }
+            : { x: cascade, y: cascade };
           const idMap = new Map<string, string>();
           const newNodes: Node[] = clip.nodes.map((n) => {
             const newId = `${n.type ?? 'node'}-${Math.random().toString(36).slice(2, 9)}`;
@@ -344,7 +352,7 @@ export const useGraphStore = create<GraphState>()(
               ...structuredClone(n),
               id: newId,
               selected: true,
-              position: { x: n.position.x + offset, y: n.position.y + offset },
+              position: { x: n.position.x + offset.x, y: n.position.y + offset.y },
             };
           });
           const newEdges: Edge[] = clip.edges.map((e) => ({

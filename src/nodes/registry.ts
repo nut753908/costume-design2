@@ -15,12 +15,12 @@ const SECTION_ORDER: PaletteSection[] = [
   'output',
 ];
 
-/** ノードタイプの、パレット/コンテキストメニューでの見出し。 */
+/** ノードタイプの、パレットでの見出し。 */
 function sectionOf(def: NodeTypeDefinition): PaletteSection {
   return def.category === 'group' ? (def.paletteSection ?? 'group-part') : def.category;
 }
 
-/** 登録済みノードタイプをパレットの見出し別にグループ化する。パレットとコンテキストメニューで共有する。 */
+/** 登録済みノードタイプをパレットの見出し別にグループ化する。 */
 export function groupNodeTypesBySection(): {
   section: PaletteSection;
   items: { type: string; label: string }[];

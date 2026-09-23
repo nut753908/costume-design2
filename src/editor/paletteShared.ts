@@ -1,6 +1,6 @@
 import type { PaletteSection } from '../nodes/types';
 
-/** ノードパレットとコンテキストメニューで共有する見出しの表示名。 */
+/** ノードパレットの見出しの表示名。 */
 export const SECTION_LABELS: Record<PaletteSection, string> = {
   input: 'Inputs',
   math: 'Math',

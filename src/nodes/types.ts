@@ -38,7 +38,7 @@ export type NodeCategory =
   | 'group'
   | 'group-io';
 
-/** パレット/コンテキストメニューの見出し。`NodeCategory` のうち `group` だけは機能に使われる
+/** パレットの見出し。`NodeCategory` のうち `group` だけは機能に使われる
  * (`resolveNodeSockets`/`enterGroup`/「→」ボタン)ため分割せず、`paletteSection`(表示専用)で
  * `garment`(ガーメントと Body 関連)と `group-part`(部品・補助)に振り分ける。 */
 export type PaletteSection = Exclude<NodeCategory, 'group'> | 'garment' | 'group-part';

@@ -449,15 +449,6 @@
   overflow-y: auto;
 }
 
-.context-menu__group-title {
-  font-weight: 600;
-  opacity: 0.6;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  font-size: 10px;
-  letter-spacing: 0.04em;
-}
-
 .context-menu__item {
   display: block;
   width: 100%;
@@ -471,11 +462,16 @@
   cursor: pointer;
 }
 
-.context-menu__item:hover {
+.context-menu__item:hover:not(:disabled) {
   background: #eee6d8;
 }
 
-.context-menu__item--danger:hover {
+.context-menu__item:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.context-menu__item--danger:hover:not(:disabled) {
   background: #f3d4d4;
   border-color: #b0413e;
   color: #b0413e;

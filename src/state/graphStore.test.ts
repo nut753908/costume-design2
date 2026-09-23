@@ -400,6 +400,21 @@ describe('graphStore のコピー&ペースト/複製', () => {
     expect(new Set(positions).size).toBe(positions.length);
   });
 
+  it('位置を指定して pasteClipboard すると、コピーしたノード群の左上がその位置に来る', () => {
+    resetStore([
+      makeNode('a', { selected: true, position: { x: 10, y: 50 } }),
+      makeNode('b', { selected: true, position: { x: 40, y: 20 } }),
+    ]);
+    useGraphStore.getState().copySelected();
+    useGraphStore.getState().pasteClipboard({ x: 100, y: 200 });
+
+    const pasted = useGraphStore.getState().nodes.filter((n) => n.selected);
+    expect(pasted.map((n) => n.position)).toEqual([
+      { x: 100, y: 230 },
+      { x: 130, y: 200 },
+    ]);
+  });
+
   it('duplicateSelected はコピー+ペーストを1回のUndo単位で行う', () => {
     resetStore([makeNode('a', { selected: true })]);
     useGraphStore.getState().duplicateSelected();

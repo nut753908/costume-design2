@@ -33,8 +33,8 @@ import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
 import { HistoryControls } from './HistoryControls';
 import { NodeClipboard } from './NodeClipboard';
-import { ContextMenu, type ContextMenuState } from './ContextMenu';
-import { NodeContextMenu, type NodeContextMenuState } from './NodeContextMenu';
+import { PaneContextMenu, type PaneContextMenuState } from './PaneContextMenu';
+import { SelectionContextMenu, type SelectionContextMenuState } from './SelectionContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
 import { NODE_TYPE_DND_MIME, fitViewPadding } from './paletteShared';
 import type { CustomCardType } from '../nodes/customCardTypes';
@@ -93,24 +93,28 @@ function NodeEditorInner() {
   // 内部キャッシュを毎回まっさらな状態から作り直させ、この取り違えを避けている
   // (NodePalette の検索文字列などスコープを跨いで保持する意味の無い軽量な子コンポーネントの
   // ローカル state がリセットされる副作用はあるが、実害はない)。
-  const [menuState, setMenuState] = useState<ContextMenuState | null>(null);
-  const [nodeMenuState, setNodeMenuState] = useState<NodeContextMenuState | null>(null);
+  const [menuState, setMenuState] = useState<PaneContextMenuState | null>(null);
+  const [selectionMenuState, setSelectionMenuState] = useState<SelectionContextMenuState | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  // 右クリックしたノードが既存の複数選択に含まれていればその選択全体を対象にし、
-  // 含まれていなければそのノード単体だけを選択し直す(Blender などと同じ挙動)。
-  // onNodeContextMenu(右クリック)と handleKeyDown(Shift+F10 等でのキーボード起動)の両方から使う。
-  const openNodeMenu = useCallback(
-    (nodeId: string, x: number, y: number) => {
-      const isPartOfSelection =
-        (nodes.find((n) => n.id === nodeId)?.selected ?? false) && nodes.some((n) => n.selected);
-      if (!isPartOfSelection) {
-        onNodesChange(nodes.map((n) => ({ id: n.id, type: 'select', selected: n.id === nodeId })));
+  // 右クリックしたノード/エッジが既に選択されていればその選択全体を対象にし、
+  // 選択されていなければそれ単体だけを選択し直す(Blender などと同じ挙動)。
+  // target を省略すると(範囲選択の枠の右クリック)今の選択をそのまま対象にする。
+  // onNodeContextMenu などの右クリックと handleKeyDown(Shift+F10 等でのキーボード起動)から使う。
+  const openSelectionMenu = useCallback(
+    (x: number, y: number, target?: { kind: 'node' | 'edge'; id: string }) => {
+      const isSelected =
+        target?.kind === 'node'
+          ? nodes.find((n) => n.id === target.id)?.selected
+          : edges.find((e) => e.id === target?.id)?.selected;
+      if (target && !isSelected) {
+        onNodesChange(nodes.map((n) => ({ id: n.id, type: 'select', selected: target.kind === 'node' && n.id === target.id })));
+        onEdgesChange(edges.map((e) => ({ id: e.id, type: 'select', selected: target.kind === 'edge' && e.id === target.id })));
       }
       setMenuState(null);
-      setNodeMenuState({ x, y });
+      setSelectionMenuState({ x, y, edgeOnly: target?.kind === 'edge' });
     },
-    [nodes, onNodesChange],
+    [nodes, edges, onNodesChange, onEdgesChange],
   );
 
   // マウスなしでもノードの右クリックメニュー(複製/コピー/削除)を開けるようにする。
@@ -129,9 +133,9 @@ function NodeEditorInner() {
 
       event.preventDefault();
       const rect = nodeEl.getBoundingClientRect();
-      openNodeMenu(nodeId, rect.left + rect.width / 2, rect.top + rect.height / 2);
+      openSelectionMenu(rect.left + rect.width / 2, rect.top + rect.height / 2, { kind: 'node', id: nodeId });
     },
-    [openNodeMenu],
+    [openSelectionMenu],
   );
 
   // 宣言された型(number/color/geometry/material)が同じソケット同士の接続のみを許可する。
@@ -203,20 +207,28 @@ function NodeEditorInner() {
         isValidConnection={isValidConnection}
         onPaneContextMenu={(event) => {
           event.preventDefault();
-          setNodeMenuState(null);
+          setSelectionMenuState(null);
           setMenuState({ x: event.clientX, y: event.clientY });
         }}
         onNodeContextMenu={(event, node) => {
           event.preventDefault();
-          openNodeMenu(node.id, event.clientX, event.clientY);
+          openSelectionMenu(event.clientX, event.clientY, { kind: 'node', id: node.id });
+        }}
+        onEdgeContextMenu={(event, edge) => {
+          event.preventDefault();
+          openSelectionMenu(event.clientX, event.clientY, { kind: 'edge', id: edge.id });
+        }}
+        onSelectionContextMenu={(event) => {
+          event.preventDefault();
+          openSelectionMenu(event.clientX, event.clientY);
         }}
         onPaneClick={() => {
           setMenuState(null);
-          setNodeMenuState(null);
+          setSelectionMenuState(null);
         }}
         onMoveStart={() => {
           setMenuState(null);
-          setNodeMenuState(null);
+          setSelectionMenuState(null);
         }}
         onDragOver={onDragOver}
         onDrop={onDrop}
@@ -245,8 +257,8 @@ function NodeEditorInner() {
           <HistoryControls />
         </Panel>
         <PresetPanel />
-        <ContextMenu state={menuState} onClose={() => setMenuState(null)} boundsRef={wrapperRef} />
-        <NodeContextMenu state={nodeMenuState} onClose={() => setNodeMenuState(null)} boundsRef={wrapperRef} />
+        <PaneContextMenu state={menuState} onClose={() => setMenuState(null)} boundsRef={wrapperRef} />
+        <SelectionContextMenu state={selectionMenuState} onClose={() => setSelectionMenuState(null)} boundsRef={wrapperRef} />
         <NodeClipboard />
       </ReactFlow>
     </div>

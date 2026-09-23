@@ -13,7 +13,7 @@ export interface MenuPosition {
  * クリック座標を起点にした `left`/`top` 自体は補正しない)。下端は枠がビューポート下端と
  * 一致するため `body { overflow: hidden }`(`index.css`)で見えなくなり、右端は枠の外側
  * (隣の3Dプレビュー側)へはみ出して重なる。開いた直後に実際の描画サイズを測って
- * `boundsRef` の矩形内に収まる位置を返す(`ContextMenu`/`NodeContextMenu` で共有)。
+ * `boundsRef` の矩形内に収まる位置を返す(`PaneContextMenu`/`SelectionContextMenu` で共有)。
  *
  * `raw` が変わった(メニューが新しく開いた)ことをレンダー中に検知したら `clamped` を
  * 同期的に `raw` へ戻す(React 公式の「レンダー中に state を補正する」パターン — この

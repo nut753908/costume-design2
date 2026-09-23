@@ -1,7 +1,7 @@
 import { useEffect, type RefObject } from 'react';
 
 /** メニューが開いている間、外側クリックまたは Escape キーで閉じる。
- * ContextMenu と NodeContextMenu で共有する。 */
+ * PaneContextMenu と SelectionContextMenu で共有する。 */
 export function useDismissMenu(isOpen: boolean, menuRef: RefObject<HTMLElement | null>, onClose: () => void) {
   useEffect(() => {
     if (!isOpen) return;
