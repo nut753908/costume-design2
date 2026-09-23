@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Node, Edge } from '@xyflow/react';
-import { usePresetStore } from './presetStore';
+import { usePresetStore, isPresetShape } from './presetStore';
 
 function resetStore() {
   usePresetStore.setState({ presets: [] });
@@ -88,5 +88,34 @@ describe('presetStore', () => {
     expect(presets).toHaveLength(2);
     expect(presets.find((p) => p.scope === 'skirtGroup')?.nodes).toEqual(nodesA);
     expect(presets.find((p) => p.scope === undefined)?.scope).toBeUndefined();
+  });
+
+  it('importPresets は同名・同じ scope の既存を id を保って上書きし、それ以外は新しい id で追加する', () => {
+    usePresetStore.getState().savePreset('foo', nodesA, edges);
+    usePresetStore.getState().savePreset('keep', nodesA, edges);
+    const fooId = usePresetStore.getState().presets[0].id;
+
+    usePresetStore.getState().importPresets([
+      { id: 'file-id-1', name: 'foo', savedAt: 1, nodes: nodesB, edges },
+      { id: 'file-id-2', name: 'foo', savedAt: 2, nodes: nodesB, edges, scope: 'skirtGroup', templateFingerprint: 'fp' },
+    ]);
+
+    const { presets } = usePresetStore.getState();
+    expect(presets).toHaveLength(3);
+    const top = presets.find((p) => p.name === 'foo' && p.scope === undefined);
+    expect(top).toMatchObject({ id: fooId, savedAt: 1, nodes: nodesB });
+    const group = presets.find((p) => p.scope === 'skirtGroup');
+    expect(group).toMatchObject({ savedAt: 2, templateFingerprint: 'fp' });
+    expect(group?.id).not.toBe('file-id-2');
+    expect(presets.find((p) => p.name === 'keep')?.nodes).toEqual(nodesA);
+  });
+
+  it('isPresetShape は name/nodes/edges が揃い、scope/templateFingerprint が文字列か省略のものだけを受け入れる', () => {
+    expect(isPresetShape({ name: 'a', nodes: [], edges: [] })).toBe(true);
+    expect(isPresetShape({ name: 'a', nodes: [], edges: [], scope: 'skirtGroup', templateFingerprint: 'fp' })).toBe(true);
+    expect(isPresetShape({ name: 'a', nodes: [] })).toBe(false);
+    expect(isPresetShape({ name: 1, nodes: [], edges: [] })).toBe(false);
+    expect(isPresetShape({ name: 'a', nodes: [], edges: [], scope: 1 })).toBe(false);
+    expect(isPresetShape(null)).toBe(false);
   });
 });
