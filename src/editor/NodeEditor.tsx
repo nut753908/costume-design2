@@ -15,7 +15,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import './nodeEditor.css';
 import '../nodes/definitions'; // 下の nodeTypes 導出がレジストリに依存するため、副作用インポートで登録を確実に済ませておく
-import { useGraphStore } from '../state/graphStore';
+import { useGraphStore, externalEdgesOrphanedByRemoval } from '../state/graphStore';
 import { nodeTypeRegistry } from '../nodes/registry';
 import { hasCycle } from '../nodes/evaluateGraph';
 import { resolveNodeSockets } from '../nodes/resolveNodeSockets';
@@ -189,6 +189,15 @@ function NodeEditorInner() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         deleteKeyCode={['Backspace', 'Delete']}
+        // Group Input/Output を削除すると1つ上の階層の外部ソケットも消えるため、そこへの接続が
+        // あれば(ソケットの「×」ボタンと同じく)確認してから消す。外部エッジの削除は onNodesChange。
+        onBeforeDelete={async ({ nodes: removing }) => {
+          const orphans = externalEdgesOrphanedByRemoval(useGraphStore.getState(), new Set(removing.map((n) => n.id)));
+          return (
+            orphans.length === 0 ||
+            confirm(`グループの外から${orphans.length}本接続されている入出力が無くなります。削除すると接続も切れます。よろしいですか?`)
+          );
+        }}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         isValidConnection={isValidConnection}

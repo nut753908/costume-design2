@@ -36,11 +36,11 @@ function toSocketDefs(raw: unknown): SocketDef[] | undefined {
  *   (Blender の Group Output ノード相当)。
  * - `category === 'group'`(グループノード本体)かつ `data.nodes`(埋め込みサブグラフが
  *   実体化済み)がある場合: その中の `groupInput`/`groupOutput` ノードの `data.sockets` を
- *   そのまま外部から見た入力/出力ソケット一覧として転送する。埋め込みサブグラフが
- *   まだ実体化されていない(`data: {}` の初期状態、または `initialGraph.ts` 由来の
- *   旧インスタンス)場合や、該当する内部ノードが無い場合は型の静的な `inputs`/`outputs`
- *   (`defineGroupNode()` が登録時に埋め込みサブグラフのテンプレートから導出したもの)
- *   にフォールバックする。 */
+ *   そのまま外部から見た入力/出力ソケット一覧として転送する。該当する内部ノードが無ければ
+ *   (中で削除した場合も)その側のソケットは0個 — 型の静的な `inputs`/`outputs` へ戻すと、
+ *   値の注入先が無いのに入力が見え続けてしまう。埋め込みサブグラフがまだ実体化されていない
+ *   (`data: {}` の初期状態、または `initialGraph.ts` 由来のインスタンス)場合だけ、型の静的な
+ *   `inputs`/`outputs`(`defineGroupNode()` が登録時にテンプレートから導出したもの)を使う。 */
 export function resolveNodeSockets(
   type: string,
   data: Record<string, unknown>,
@@ -56,8 +56,8 @@ export function resolveNodeSockets(
       const inputNode = internalNodes.find((n) => n.type === 'groupInput');
       const outputNode = internalNodes.find((n) => n.type === 'groupOutput');
       return {
-        inputs: (inputNode && toSocketDefs(inputNode.data.sockets)) ?? def.inputs,
-        outputs: (outputNode && toSocketDefs(outputNode.data.sockets)) ?? def.outputs,
+        inputs: inputNode ? (toSocketDefs(inputNode.data.sockets) ?? []) : [],
+        outputs: outputNode ? (toSocketDefs(outputNode.data.sockets) ?? []) : [],
       };
     }
   }

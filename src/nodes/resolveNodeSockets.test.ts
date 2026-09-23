@@ -79,11 +79,14 @@ describe('resolveNodeSockets', () => {
     expect(result.outputs).toEqual([{ id: 'staticOut', label: 'Static Out', type: 'number' }]);
   });
 
-  it('category: group のノードで data.nodes 内に groupInput/groupOutput が無ければ、その側だけ型の静的な inputs/outputs にフォールバックする', () => {
+  it('category: group のノードで data.nodes 内に groupInput/groupOutput が無ければ、その側のソケットは0個(型の静的な定義へ戻さない)', () => {
     const result = resolveNodeSockets('testResolveSocketsGroup', {
-      nodes: [{ type: 'someOtherType', data: {} }],
+      nodes: [
+        { type: 'groupOutput', data: { sockets: [{ id: 'innerOut', label: 'Inner Out', type: 'geometry' }] } },
+        { type: 'someOtherType', data: {} },
+      ],
     });
-    expect(result.inputs).toEqual([{ id: 'staticIn', label: 'Static In', type: 'number' }]);
-    expect(result.outputs).toEqual([{ id: 'staticOut', label: 'Static Out', type: 'number' }]);
+    expect(result.inputs).toEqual([]);
+    expect(result.outputs).toEqual([{ id: 'innerOut', label: 'Inner Out', type: 'geometry' }]);
   });
 });

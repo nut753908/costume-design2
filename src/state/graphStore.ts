@@ -140,6 +140,34 @@ function connectEdge(nodes: Node[], edges: Edge[], connection: Connection): Edge
   return addEdge(connection, kept);
 }
 
+/** グループの中で `removedIds` のノードを削除すると、1つ上の階層でそのグループノードの外部
+ * ソケットが消えて繋がる先を失うエッジ。`groupInput`/`groupOutput` を削除すると、その側の
+ * 外部ソケットは0個になる(`resolveNodeSockets()`)。削除前から繋がる先の無いエッジは含めない。 */
+export function externalEdgesOrphanedByRemoval(
+  state: { nodes: Node[]; scopeStack: ScopeFrame[] },
+  removedIds: ReadonlySet<string>,
+): Edge[] {
+  const frame = state.scopeStack.at(-1);
+  if (!frame) return [];
+  if (!state.nodes.some((n) => removedIds.has(n.id) && (n.type === 'groupInput' || n.type === 'groupOutput'))) return [];
+  const parent = frame.nodes.find((n) => n.id === frame.parentId);
+  if (!parent) return [];
+
+  const socketIds = (nodes: Node[]) => {
+    const { inputs, outputs } = resolveNodeSockets(parent.type ?? '', { ...parent.data, nodes });
+    return { inputs: new Set(inputs.map((s) => s.id)), outputs: new Set(outputs.map((s) => s.id)) };
+  };
+  const connected = (edge: Edge, sockets: ReturnType<typeof socketIds>) =>
+    (edge.target !== parent.id || sockets.inputs.has(edge.targetHandle ?? '')) &&
+    (edge.source !== parent.id || sockets.outputs.has(edge.sourceHandle ?? ''));
+
+  const before = socketIds(state.nodes);
+  const after = socketIds(state.nodes.filter((n) => !removedIds.has(n.id)));
+  return frame.edges.filter(
+    (e) => (e.source === parent.id || e.target === parent.id) && connected(e, before) && !connected(e, after),
+  );
+}
+
 export const useGraphStore = create<GraphState>()(
   persist(
     (set, get) => {
@@ -175,8 +203,16 @@ export const useGraphStore = create<GraphState>()(
         clipboard: null,
         _pasteCount: 0,
         onNodesChange: (changes) => {
-          if (changes.some((c) => c.type === 'remove')) {
+          const removedIds = new Set(changes.flatMap((c) => (c.type === 'remove' ? [c.id] : [])));
+          if (removedIds.size > 0) {
             pushHistory('remove', REMOVE_COALESCE_MS);
+            // 削除の確認は NodeEditor.tsx の onBeforeDelete が済ませている。
+            const orphanIds = new Set(externalEdgesOrphanedByRemoval(get(), removedIds).map((e) => e.id));
+            if (orphanIds.size > 0) {
+              const { scopeStack } = get();
+              const frame = scopeStack.at(-1)!;
+              set({ scopeStack: [...scopeStack.slice(0, -1), { ...frame, edges: frame.edges.filter((e) => !orphanIds.has(e.id)) }] });
+            }
           } else if (changes.some((c) => c.type === 'position' && c.dragging) && !get()._dragging) {
             pushHistory();
             set({ _dragging: true });

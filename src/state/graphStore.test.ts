@@ -1,6 +1,6 @@
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Node, Edge, NodeChange, EdgeChange } from '@xyflow/react';
-import { useGraphStore } from './graphStore';
+import { useGraphStore, externalEdgesOrphanedByRemoval } from './graphStore';
 import { registerNodeType, nodeTypeRegistry } from '../nodes/registry';
 
 beforeAll(() => {
@@ -698,5 +698,48 @@ describe('graphStore の removeGroupIOSocket', () => {
     expect(frame.edges).toEqual([makeEdge('e-outer', 'outerSrc', 'g')]);
     const inputNode = useGraphStore.getState().nodes.find((n) => n.id === inputId)!;
     expect((inputNode.data as { sockets: unknown[] }).sockets).toEqual([{ id: 'value' }]);
+  });
+});
+
+describe('graphStore の groupInput/groupOutput ノードの削除', () => {
+  /** グループ g の中に入り、外部ソケット 'value' を持つ groupInput を置いた状態にする
+   * (1つ上の階層では outerSrc → g.value が繋がっている)。 */
+  function enterGroupWithInput(): string {
+    resetStore([makeGroupNode('g'), makeNode('outerSrc')]);
+    useGraphStore.setState({ edges: [makeEdge('e-outer', 'outerSrc', 'g')] });
+    useGraphStore.getState().enterGroup('g');
+    useGraphStore.getState().addNode('groupInput', { x: 0, y: 0 });
+    const inputId = useGraphStore.getState().nodes.find((n) => n.type === 'groupInput')!.id;
+    useGraphStore.getState().updateNodeData(inputId, { sockets: [{ id: 'value' }] });
+    return inputId;
+  }
+
+  it('groupInput を削除すると、1つ上の階層でそのソケットに繋がっていた外部エッジも削除する', () => {
+    const inputId = enterGroupWithInput();
+
+    useGraphStore.getState().onNodesChange([{ type: 'remove', id: inputId }]);
+
+    expect(useGraphStore.getState().scopeStack.at(-1)!.edges).toEqual([]);
+  });
+
+  it('Undo で groupInput と外部エッジの両方を復元する', () => {
+    const inputId = enterGroupWithInput();
+
+    useGraphStore.getState().onNodesChange([{ type: 'remove', id: inputId }]);
+    useGraphStore.getState().undo();
+
+    expect(useGraphStore.getState().nodes.some((n) => n.id === inputId)).toBe(true);
+    expect(useGraphStore.getState().scopeStack.at(-1)!.edges).toEqual([makeEdge('e-outer', 'outerSrc', 'g')]);
+  });
+
+  it('externalEdgesOrphanedByRemoval は、groupInput/groupOutput 以外の削除やトップレベルでは空を返す', () => {
+    const inputId = enterGroupWithInput();
+    const otherId = useGraphStore.getState().nodes.find((n) => n.id !== inputId)!.id;
+
+    expect(externalEdgesOrphanedByRemoval(useGraphStore.getState(), new Set([otherId]))).toEqual([]);
+    expect(externalEdgesOrphanedByRemoval(useGraphStore.getState(), new Set([inputId]))).toEqual([
+      makeEdge('e-outer', 'outerSrc', 'g'),
+    ]);
+    expect(externalEdgesOrphanedByRemoval({ nodes: useGraphStore.getState().nodes, scopeStack: [] }, new Set([inputId]))).toEqual([]);
   });
 });
