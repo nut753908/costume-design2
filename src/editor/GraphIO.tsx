@@ -1,6 +1,7 @@
 import { useRef, type ChangeEvent } from 'react';
 import { useReactFlow, type Node, type Edge } from '@xyflow/react';
 import { useGraphStore } from '../state/graphStore';
+import { composeRootGraph } from '../state/composeRootGraph';
 import { validateGraph, GRAPH_VALIDATION_MESSAGES } from '../state/validateGraph';
 import { fitViewPadding } from './paletteShared';
 
@@ -15,12 +16,11 @@ function hasGraphShape(value: unknown): value is GraphFile {
   return Array.isArray(nodes) && Array.isArray(edges);
 }
 
-/** グラフ全体を JSON ファイルとして書き出し/読み込みする。読み込んだ内容は
+/** グラフ全体を JSON ファイルとして書き出し/読み込みする。グループの中にいても常にトップレベルの
+ * グラフ全体が対象(グループ単位の保存は PresetPanel が担う)。読み込んだ内容は
  * validateGraph()(未知のノードタイプ・循環の有無)を通してから loadGraph() に渡す —
  * さもないと次の描画で evaluateGraph() が例外を投げてグラフが評価不能になるため。 */
 export function GraphIO() {
-  const nodes = useGraphStore((s) => s.nodes);
-  const edges = useGraphStore((s) => s.edges);
   const loadGraph = useGraphStore((s) => s.loadGraph);
   const autoLayout = useGraphStore((s) => s.autoLayout);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +33,8 @@ export function GraphIO() {
   };
 
   const handleExport = () => {
-    const file: GraphFile = { nodes, edges };
+    const { scopeStack, nodes, edges } = useGraphStore.getState();
+    const file: GraphFile = composeRootGraph(scopeStack, nodes, edges);
     const blob = new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

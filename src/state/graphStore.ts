@@ -92,6 +92,7 @@ interface GraphState {
   setEvaluatedResults: (results: EvaluatedGraph) => void;
   setRootEvaluatedResults: (results: EvaluatedGraph) => void;
   addNode: (type: string, position: { x: number; y: number }) => void;
+  /** トップレベルのグラフ全体を差し替える。グループの中にいてもトップレベルへ戻してから読み込む。 */
   loadGraph: (nodes: Node[], edges: Edge[]) => void;
   /** グループの中に入っている間、今開いているグループの内部グラフを差し替える(プリセット/
    * テンプレートの読み込み用)。`templateFingerprint` は差し替えた内容の元になったテンプレートの
@@ -258,7 +259,7 @@ export const useGraphStore = create<GraphState>()(
         },
         loadGraph: (nodes, edges) => {
           pushHistory();
-          set({ nodes, edges });
+          set({ nodes, edges, scopeStack: [] });
         },
         loadGroupGraph: (nodes, edges, templateFingerprint) => {
           const state = get();

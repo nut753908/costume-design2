@@ -455,6 +455,20 @@ describe('graphStore の loadGraph', () => {
     expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['z']);
   });
 
+  it('グループの中にいても、トップレベルへ戻ってグラフ全体を置き換え、Undo で読み込み前の階層へ戻る', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().enterGroup('g');
+    const inside = useGraphStore.getState();
+
+    useGraphStore.getState().loadGraph([makeNode('z')], []);
+    expect(useGraphStore.getState().scopeStack).toEqual([]);
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['z']);
+
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().scopeStack).toEqual(inside.scopeStack);
+    expect(useGraphStore.getState().nodes).toEqual(inside.nodes);
+  });
+
   // loadGraph が evaluatedResults を無条件に null へリセットしていた頃のバグの回帰テスト。
   // Garments.tsx は state.evaluatedResults を直接読むが、それを埋め戻すのは
   // useEvaluatedGraph.ts の useEffect(nodesLite/edgesLite の参照が実際に変化した時にしか
