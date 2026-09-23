@@ -12,10 +12,9 @@
    (`.react-flow__node-input`/`-default`/`-output`/`-group`)にしか効かず、このアプリのように
    `nodeTypes` でカスタム型を登録しているノードはどれにも一致しないため、素の React Flow では
    選択状態が見た目に一切反映されない。`.rf-node`(全カード共通のルート要素)側で明示的に
-   スタイルを付ける。 */
+   スタイルを付ける。色は増やさず、通常の枠線(#333)と同じ色のまま太くして選択を示す。 */
 .react-flow__node.selected .rf-node {
-  border-color: #2b6cb0;
-  box-shadow: 0 0 0 2px #2b6cb0;
+  box-shadow: 0 0 0 2px #333;
 }
 
 .rf-node__title {
