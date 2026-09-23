@@ -29,10 +29,11 @@ describe('shareGroupIOSockets', () => {
   });
 
   it('揃えた結果、繋がる先のソケットが無くなった内部エッジを捨てる', () => {
-    const nodes = [io('in1', 'groupInput', ['a']), io('in2', 'groupInput', ['b']), io('out', 'groupOutput', ['x'])];
+    // in1 のソケット b を削除した直後(in2 へはまだ反映していない)の状態。
+    const nodes = [io('in1', 'groupInput', ['a']), io('in2', 'groupInput', ['a', 'b']), io('out', 'groupOutput', ['x', 'y'])];
     const edges: Edge[] = [
       { id: 'from-a', source: 'in1', sourceHandle: 'a', target: 'out', targetHandle: 'x' },
-      { id: 'from-b', source: 'in2', sourceHandle: 'b', target: 'out', targetHandle: 'x' },
+      { id: 'from-b', source: 'in2', sourceHandle: 'b', target: 'out', targetHandle: 'y' },
     ];
 
     const result = shareGroupIOSockets(nodes, edges, new Set(['in1']));
