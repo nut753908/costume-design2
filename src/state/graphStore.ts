@@ -26,8 +26,8 @@ export const GRAPH_STORAGE_KEY = 'costume-design-graph';
 /** 復元時の検証に失敗した保存データの退避先(`persist` の `merge` 参照)。 */
 export const GRAPH_BACKUP_STORAGE_KEY = 'costume-design-graph-invalid-backup';
 
-/** `scopeStack` も含めるのは、`removeGroupIOSocket`(親階層の外部エッジ)が
- * 今開いている階層の外側にも書き込むため。
+/** `scopeStack` も含めるのは、`loadGroupGraph`(親ノードの `templateFingerprint`)と
+ * `removeGroupIOSocket`(親階層の外部エッジ)が今開いている階層の外側にも書き込むため。
  * 履歴は階層の移動でクリアされるので、復元しても今いる階層は変わらない。 */
 interface HistorySnapshot {
   nodes: Node[];
@@ -203,7 +203,10 @@ export const useGraphStore = create<GraphState>()(
           const newNode: Node = { id, type, position, data: def.createDefaultData() };
           set({ nodes: [...get().nodes, newNode] });
         },
-        loadGraph: (nodes, edges) => set({ nodes, edges, past: [], future: [], _historyKey: null }),
+        loadGraph: (nodes, edges) => {
+          pushHistory();
+          set({ nodes, edges });
+        },
         loadGroupGraph: (nodes, edges, templateFingerprint) => {
           const state = get();
           const frame = state.scopeStack.at(-1);
@@ -216,7 +219,8 @@ export const useGraphStore = create<GraphState>()(
                 }
               : f,
           );
-          set({ nodes, edges, scopeStack, past: [], future: [], _historyKey: null });
+          pushHistory();
+          set({ nodes, edges, scopeStack });
         },
         migrateCurrentGroupToTemplate: () => {
           const state = get();

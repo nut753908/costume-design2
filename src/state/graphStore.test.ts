@@ -417,17 +417,17 @@ describe('graphStore の autoLayout', () => {
 });
 
 describe('graphStore の loadGraph', () => {
-  it('nodes/edges を置き換え、履歴をクリアする', () => {
+  it('nodes/edges を置き換え、Undo で読み込み前に戻し Redo で再度読み込める', () => {
     resetStore([makeNode('a')]);
-    useGraphStore.getState().addNode('testNode', { x: 0, y: 0 });
-    expect(useGraphStore.getState().past).toHaveLength(1);
 
     useGraphStore.getState().loadGraph([makeNode('z')], []);
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['z']);
 
-    const state = useGraphStore.getState();
-    expect(state.nodes.map((n) => n.id)).toEqual(['z']);
-    expect(state.past).toHaveLength(0);
-    expect(state.future).toHaveLength(0);
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['a']);
+
+    useGraphStore.getState().redo();
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['z']);
   });
 
   // loadGraph が evaluatedResults を無条件に null へリセットしていた頃のバグの回帰テスト。
@@ -445,6 +445,29 @@ describe('graphStore の loadGraph', () => {
     useGraphStore.getState().loadGraph(nodes, edges);
 
     expect(useGraphStore.getState().evaluatedResults).not.toBeNull();
+  });
+});
+
+describe('graphStore の loadGroupGraph', () => {
+  it('Undo で内部グラフと親ノードの templateFingerprint を読み込み前に戻す', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().enterGroup('g');
+    const before = useGraphStore.getState();
+
+    useGraphStore.getState().loadGroupGraph([makeNode('z')], [], 'fp-new');
+    const parentData = () => {
+      const frame = useGraphStore.getState().scopeStack.at(-1)!;
+      return frame.nodes.find((n) => n.id === 'g')!.data as { templateFingerprint?: string };
+    };
+    expect(parentData().templateFingerprint).toBe('fp-new');
+
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().nodes).toBe(before.nodes);
+    expect(useGraphStore.getState().scopeStack).toBe(before.scopeStack);
+
+    useGraphStore.getState().redo();
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['z']);
+    expect(parentData().templateFingerprint).toBe('fp-new');
   });
 });
 

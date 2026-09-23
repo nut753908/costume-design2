@@ -77,10 +77,6 @@ export function PresetPanel() {
     if (validSelectedId === INITIAL_PRESET_ID) {
       // initialNodes/initialEdges は initialGraph.test.ts で常に検証済みのため、
       // ここで改めて validateGraph は通さない。グループの中ではそのグループ型のテンプレート。
-      const label = scope === undefined ? '初期状態' : 'このグループのテンプレート';
-      if (!confirm(`現在のグラフを破棄して${label}を読み込みます。この操作は元に戻せません。よろしいですか?`)) {
-        return;
-      }
       if (scope === undefined) {
         loadGraph(initialNodes, initialEdges);
       } else {
@@ -97,11 +93,6 @@ export function PresetPanel() {
     const error = validateGraph(preset.nodes, preset.edges);
     if (error) {
       alert(`このプリセットは読み込めません(${GRAPH_VALIDATION_MESSAGES[error]})。`);
-      return;
-    }
-    // loadGraph() は履歴(past/future)も一緒にクリアするため、読み込み後は
-    // Undo で現在のグラフに戻せない。取り返しがつかない操作である旨を確認する。
-    if (!confirm(`現在のグラフを破棄して「${preset.name}」を読み込みます。この操作は元に戻せません。よろしいですか?`)) {
       return;
     }
     if (scope === undefined) {
