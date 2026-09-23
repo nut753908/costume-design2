@@ -26,6 +26,7 @@ import { ColorDisplayNodeView } from './nodeComponents/ColorDisplayNode';
 import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
 import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
+import { withSocketClickGuard } from './nodeComponents/withSocketClickGuard';
 import { SocketEdge } from './SocketEdge';
 import { NodePalette } from './NodePalette';
 import { GraphIO } from './GraphIO';
@@ -52,7 +53,10 @@ const NODE_VIEW_OVERRIDES: Record<CustomCardType, NodeTypes[string]> = {
 };
 
 const nodeTypes: NodeTypes = Object.fromEntries(
-  Array.from(nodeTypeRegistry.keys(), (type) => [type, NODE_VIEW_OVERRIDES[type as CustomCardType] ?? GenericNodeView]),
+  Array.from(nodeTypeRegistry.keys(), (type) => [
+    type,
+    withSocketClickGuard(NODE_VIEW_OVERRIDES[type as CustomCardType] ?? GenericNodeView),
+  ]),
 );
 
 // エッジは type を指定せずに作る(= 'default')ため、既定の描画ごと SocketEdge に差し替える。
