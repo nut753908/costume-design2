@@ -244,6 +244,9 @@
   border-radius: 4px;
   background: #fdfaf4;
   font-size: 12px;
+  /* normal のままだと、日本語だけフォールバックフォント(Meiryo/Yu Gothic)の行高で
+     ラベルが日本語のボタンだけ数px背が高くなる。 */
+  line-height: 1.25;
   cursor: pointer;
 }
 
