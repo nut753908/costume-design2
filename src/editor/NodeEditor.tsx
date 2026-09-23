@@ -8,6 +8,7 @@ import {
   MiniMap,
   Panel,
   type NodeTypes,
+  type EdgeTypes,
   type Connection,
   type Edge,
 } from '@xyflow/react';
@@ -25,6 +26,7 @@ import { ColorDisplayNodeView } from './nodeComponents/ColorDisplayNode';
 import { GroupInputNodeView } from './nodeComponents/GroupInputNode';
 import { GroupOutputNodeView } from './nodeComponents/GroupOutputNode';
 import { GenericNodeView } from './nodeComponents/GenericNode';
+import { SocketEdge } from './SocketEdge';
 import { NodePalette } from './NodePalette';
 import { GraphIO } from './GraphIO';
 import { PresetPanel } from './PresetPanel';
@@ -52,6 +54,9 @@ const NODE_VIEW_OVERRIDES: Record<CustomCardType, NodeTypes[string]> = {
 const nodeTypes: NodeTypes = Object.fromEntries(
   Array.from(nodeTypeRegistry.keys(), (type) => [type, NODE_VIEW_OVERRIDES[type as CustomCardType] ?? GenericNodeView]),
 );
+
+// エッジは type を指定せずに作る(= 'default')ため、既定の描画ごと SocketEdge に差し替える。
+const edgeTypes: EdgeTypes = { default: SocketEdge };
 
 function NodeEditorInner() {
   const nodes = useGraphStore((s) => s.nodes);
@@ -181,6 +186,7 @@ function NodeEditorInner() {
         onConnect={onConnect}
         deleteKeyCode={['Backspace', 'Delete']}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         isValidConnection={isValidConnection}
         onPaneContextMenu={(event) => {
           event.preventDefault();

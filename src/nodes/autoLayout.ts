@@ -1,6 +1,7 @@
 import { nodeTypeRegistry } from './registry';
 import { resolveNodeSockets } from './resolveNodeSockets';
 import type { GraphEdge, GraphNode } from './types';
+import { multiSocketRowExtra } from './multiInputSocket';
 
 export interface LayoutPosition {
   x: number;
@@ -68,11 +69,13 @@ export const BESPOKE_HEIGHT_TYPES: readonly string[] = [...Object.keys(BESPOKE_N
  * - `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
  *   (`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の特殊扱いは不要で、
  *   この一般式にそのまま乗る。
+ * - 複数接続できる入力ソケット(`SocketDef.multiple`)の行は接続本数に応じて高くなるため、
+ *   `multiInputCounts`(ソケット id → 接続本数)の分を足す(`multiInputSocket.ts`)。
  * - `nodeTypeRegistry` に登録の無い種類(単体テストの `type: 'test'` など)は
  *   `FALLBACK_NODE_HEIGHT` を返す。
  *
  * テストからも直接検証できるよう export している。 */
-export function estimateNodeHeight(type: string, data: unknown): number {
+export function estimateNodeHeight(type: string, data: unknown, multiInputCounts?: ReadonlyMap<string, number>): number {
   const bespoke = BESPOKE_NODE_HEIGHTS[type];
   if (bespoke !== undefined) return bespoke;
 
@@ -86,7 +89,10 @@ export function estimateNodeHeight(type: string, data: unknown): number {
 
   const { inputs, outputs } = resolveNodeSockets(type, (data as Record<string, unknown>) ?? {});
   const socketRows = inputs.length + outputs.length;
-  return Math.round(CARD_BASE_HEIGHT + socketRows * CARD_ROW_HEIGHT);
+  const multiExtra = inputs
+    .filter((s) => s.multiple)
+    .reduce((sum, s) => sum + multiSocketRowExtra(multiInputCounts?.get(s.id) ?? 0), 0);
+  return Math.round(CARD_BASE_HEIGHT + socketRows * CARD_ROW_HEIGHT + multiExtra);
 }
 
 /** ソケット `socketId` が、そのノードの中で描画される行の何番目か(0=先頭)を、
@@ -179,7 +185,14 @@ export function isotonicRegression(values: number[]): number[] {
  * 例外を投げない。 */
 export function computeAutoLayout(nodes: GraphNode[], edges: GraphEdge[]): Map<string, LayoutPosition> {
   const nodeById = new Map(nodes.map((n) => [n.id, n]));
-  const nodeHeight = new Map(nodes.map((n) => [n.id, estimateNodeHeight(n.type, n.data)]));
+  const inputCounts = new Map<string, Map<string, number>>();
+  for (const edge of edges) {
+    if (edge.targetHandle == null) continue;
+    const counts = inputCounts.get(edge.target) ?? new Map<string, number>();
+    counts.set(edge.targetHandle, (counts.get(edge.targetHandle) ?? 0) + 1);
+    inputCounts.set(edge.target, counts);
+  }
+  const nodeHeight = new Map(nodes.map((n) => [n.id, estimateNodeHeight(n.type, n.data, inputCounts.get(n.id))]));
   const nodeIds = new Set(nodes.map((n) => n.id));
   const inDegree = new Map<string, number>();
   const dependents = new Map<string, string[]>();

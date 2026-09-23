@@ -46,17 +46,42 @@ async function main() {
         ['groupOutput', { sockets: [socket(1), socket(2)] }, 'groupOutput(ソケット2個)'],
         ['numberMultiply', {}, 'numberMultiply(未配線)'],
         ['numberMultiply', {}, 'numberMultiply(配線済み)'],
+        ['mergeGeometry', {}, 'mergeGeometry(4本)'],
       ].map(([type, data, label], i) => ({ id: `extra:${i}`, type, data, label, position: { x: i * 420, y: extraY } }));
       const wired = extras.find((n) => n.label === 'numberMultiply(配線済み)');
       const source = { id: 'extra:source', type: 'numberInput', data: { value: 2 }, label: 'numberInput(配線元)', position: { x: 0, y: extraY + 400 } };
-      const all = [...nodes, ...extras, source];
-      const edges = ['value', 'factor'].map((handle) => ({
-        id: `wire:${handle}`,
-        source: source.id,
-        sourceHandle: 'value',
-        target: wired.id,
-        targetHandle: handle,
+      // 複数接続できる入力ソケットは接続本数で高さが変わる。geometry の出力を持つ mergeGeometry を配線元にする。
+      const merged = extras.find((n) => n.label === 'mergeGeometry(4本)');
+      const geometrySources = [0, 1, 2, 3].map((i) => ({
+        id: `extra:geometry-source:${i}`,
+        type: 'mergeGeometry',
+        data: {},
+        label: `mergeGeometry(配線元${i})`,
+        position: { x: 420 + i * 420, y: extraY + 400 },
       }));
+      const all = [...nodes, ...extras, source, ...geometrySources];
+      const edges = [
+        ...['value', 'factor'].map((handle) => ({
+          id: `wire:${handle}`,
+          source: source.id,
+          sourceHandle: 'value',
+          target: wired.id,
+          targetHandle: handle,
+        })),
+        ...geometrySources.map((g) => ({
+          id: `wire:${g.id}`,
+          source: g.id,
+          sourceHandle: 'geometry',
+          target: merged.id,
+          targetHandle: 'geometries',
+        })),
+      ];
+      // computeAutoLayout() と同じく、ノードごとの入力ソケット別の接続本数を見積もりに渡す。
+      const inputCounts = (nodeId) => {
+        const counts = new Map();
+        for (const e of edges) if (e.target === nodeId) counts.set(e.targetHandle, (counts.get(e.targetHandle) ?? 0) + 1);
+        return counts;
+      };
 
       useGraphStore.getState().loadGraph(
         all.map(({ label: _label, ...n }) => n),
@@ -65,7 +90,7 @@ async function main() {
       await sleep(2000);
       return all.map((n) => {
         const el = document.querySelector(`.react-flow__node[data-id="${n.id}"] .rf-node`);
-        return { label: n.label, measured: el ? el.offsetHeight : null, estimated: estimateNodeHeight(n.type, n.data) };
+        return { label: n.label, measured: el ? el.offsetHeight : null, estimated: estimateNodeHeight(n.type, n.data, inputCounts(n.id)) };
       });
     });
 

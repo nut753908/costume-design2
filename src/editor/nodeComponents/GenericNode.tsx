@@ -7,6 +7,7 @@ import { SOCKET_COLORS } from '../socketColors';
 import { NodeTitleBar } from './NodeTitleBar';
 import { SocketField } from './SocketField';
 import { InputHandle } from './InputHandle';
+import { multiSocketRowExtra } from '../../nodes/multiInputSocket';
 import { isGroupInstanceStale } from '../../nodes/groupTemplate';
 
 /** 専用のカスタム UI をまだ持たないノードタイプのための汎用レンダラー — ラベル、
@@ -16,7 +17,8 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
   const { inputs, outputs } = resolveNodeSockets(type ?? '', data as Record<string, unknown>);
   const enterGroup = useGraphStore((s) => s.enterGroup);
   const isGroup = def.category === 'group';
-  const connectedInputs = new Set(useNodeConnections({ handleType: 'target' }).map((c) => c.targetHandle));
+  const inputCounts = new Map<string | null, number>();
+  for (const c of useNodeConnections({ handleType: 'target' })) inputCounts.set(c.targetHandle, (inputCounts.get(c.targetHandle) ?? 0) + 1);
 
   return (
     <div className="rf-node">
@@ -41,10 +43,13 @@ function GenericNodeViewImpl({ id, type, data }: NodeProps) {
         <div className="rf-node__group-hint">テンプレート更新あり(中で更新)</div>
       )}
       {inputs.map((socket) => {
-        const hasField = socket.default !== undefined && !connectedInputs.has(socket.id);
+        const count = inputCounts.get(socket.id) ?? 0;
+        const hasField = socket.default !== undefined && count === 0;
+        // 複数接続できるソケットはカプセルが伸びた分だけ行を高くする(autoLayout.ts の見積もりと対応)。
+        const rowStyle = socket.multiple ? { paddingTop: 3 + multiSocketRowExtra(count) / 2, paddingBottom: 3 + multiSocketRowExtra(count) / 2 } : undefined;
         return (
-          <div key={socket.id} className={hasField ? 'rf-node__socket-row rf-node__socket-row--field' : 'rf-node__socket-row'}>
-            <InputHandle id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} />
+          <div key={socket.id} className={hasField ? 'rf-node__socket-row rf-node__socket-row--field' : 'rf-node__socket-row'} style={rowStyle}>
+            <InputHandle id={socket.id} style={{ background: SOCKET_COLORS[socket.type] }} multiple={socket.multiple} />
             {socket.label}
             {hasField && (
               <SocketField

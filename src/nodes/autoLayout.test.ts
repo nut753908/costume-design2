@@ -11,6 +11,7 @@ import {
 } from './autoLayout';
 import './definitions';
 import { CUSTOM_CARD_TYPES } from './customCardTypes';
+import { MULTI_SOCKET_SLOT } from './multiInputSocket';
 import { registerNodeType } from './registry';
 import type { GraphEdge, GraphNode, NodeTypeDefinition } from './types';
 
@@ -445,6 +446,30 @@ describe('estimateNodeHeight', () => {
   it('専用のカード UI を持つノードの type(CUSTOM_CARD_TYPES)は、個別に高さを求める type と一致する', () => {
     // 専用の UI を持つノードを増やしたのに高さの見積もりを対応させ忘れると、一般式で見積もられて実機とずれる。
     expect([...BESPOKE_HEIGHT_TYPES].sort()).toEqual([...CUSTOM_CARD_TYPES].sort());
+  });
+
+  it('複数接続できる入力ソケットは、3本目以降の接続1本ごとに MULTI_SOCKET_SLOT ずつ高くなる', () => {
+    registerTestType({ type: '__height_test_multi__', inputs: [{ id: 'items', label: 'Items', type: 'geometry', multiple: true }] });
+    const base = estimateNodeHeight('__height_test_multi__', {});
+    expect(estimateNodeHeight('__height_test_multi__', {}, new Map([['items', 2]]))).toBe(base);
+    expect(estimateNodeHeight('__height_test_multi__', {}, new Map([['items', 5]]))).toBe(base + 3 * MULTI_SOCKET_SLOT);
+  });
+
+  it('computeAutoLayout は複数接続できる入力ソケットの接続本数を高さの見積もりに含める', () => {
+    const nodes: GraphNode[] = [
+      ...['a', 'b', 'c', 'd'].map((id) => ({ id, type: 'numberInput', data: {} })),
+      { id: 'm', type: '__height_test_multi__', data: {} },
+      { id: 'below', type: '__height_test_multi__', data: {} },
+    ];
+    // m と below はどちらも4本受ける(同じ高さなので、どちらが上に並んでも同じ判定でよい)。
+    const edges: GraphEdge[] = ['m', 'below'].flatMap((target) =>
+      ['a', 'b', 'c', 'd'].map((id) => ({ source: id, sourceHandle: 'value', target, targetHandle: 'items' })),
+    );
+    const positions = computeAutoLayout(nodes, edges);
+    expect(positions.get('below')!.x).toBe(positions.get('m')!.x);
+    const gap = Math.abs(positions.get('below')!.y - positions.get('m')!.y);
+    // 同じ層に並ぶ2つは、4本受けたときの高さ(2本分高い)と余白 24px 以上は離れている。
+    expect(gap).toBeGreaterThanOrEqual(estimateNodeHeight('__height_test_multi__', {}, new Map([['items', 4]])) + 24);
   });
 
   it('入出力ソケット数が多いほど、その分だけ線形に高さが増える', () => {
