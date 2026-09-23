@@ -525,17 +525,36 @@ describe('graphStore の enterGroup/exitGroup/exitToLevel', () => {
     expect((g!.data as { nodes?: Node[] }).nodes?.map((n) => n.id)).toEqual(insideIds);
   });
 
-  it('enter/exit で past/future(Undo履歴)がクリアされる', () => {
+  it('enter/exit を跨いで Undo でき、表示中の階層もその時点へ戻る', () => {
     resetStore([makeGroupNode('g')]);
     useGraphStore.getState().addNode('testNode', { x: 0, y: 0 });
-    expect(useGraphStore.getState().past.length).toBeGreaterThan(0);
-
     useGraphStore.getState().enterGroup('g');
-    expect(useGraphStore.getState().past).toHaveLength(0);
-
     useGraphStore.getState().addNode('testNode', { x: 0, y: 0 });
-    expect(useGraphStore.getState().past.length).toBeGreaterThan(0);
+    useGraphStore.getState().exitGroup();
 
+    // グループ内の addNode を取り消す: グループの中へ戻る(テンプレートの inner-a/inner-b だけになる)。
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().scopeStack.map((f) => f.parentId)).toEqual(['g']);
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['inner-a', 'inner-b']);
+
+    // トップレベルの addNode を取り消す: トップレベルへ戻る。
+    useGraphStore.getState().undo();
+    expect(useGraphStore.getState().scopeStack).toHaveLength(0);
+    expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(['g']);
+
+    // Redo 2回で最初の Undo の直前(exitGroup 後のトップレベル)へ戻る。
+    useGraphStore.getState().redo();
+    useGraphStore.getState().redo();
+    const state = useGraphStore.getState();
+    expect(state.scopeStack).toHaveLength(0);
+    expect(state.nodes).toHaveLength(2);
+    const g = state.nodes.find((n) => n.id === 'g')!;
+    expect((g.data as { nodes?: Node[] }).nodes).toHaveLength(3);
+  });
+
+  it('enter/exit は Undo 履歴を積まない', () => {
+    resetStore([makeGroupNode('g')]);
+    useGraphStore.getState().enterGroup('g');
     useGraphStore.getState().exitGroup();
     expect(useGraphStore.getState().past).toHaveLength(0);
   });

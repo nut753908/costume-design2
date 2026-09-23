@@ -26,9 +26,8 @@ export const GRAPH_STORAGE_KEY = 'costume-design-graph';
 /** 復元時の検証に失敗した保存データの退避先(`persist` の `merge` 参照)。 */
 export const GRAPH_BACKUP_STORAGE_KEY = 'costume-design-graph-invalid-backup';
 
-/** `scopeStack` も含めるのは、`loadGroupGraph`(親ノードの `templateFingerprint`)と
- * `removeGroupIOSocket`(親階層の外部エッジ)が今開いている階層の外側にも書き込むため。
- * 履歴は階層の移動でクリアされるので、復元しても今いる階層は変わらない。 */
+/** `scopeStack` を含めることで、1件でグラフ全体と表示中の階層がそろう。そのため履歴は
+ * 階層の移動を跨いで保持でき、階層を跨いで Undo/Redo すると表示中の階層もその時点へ戻る。 */
 interface HistorySnapshot {
   nodes: Node[];
   edges: Edge[];
@@ -352,8 +351,8 @@ export const useGraphStore = create<GraphState>()(
             scopeStack: [...state.scopeStack, { parentId: nodeId, nodes: nodesAtThisLevel, edges: state.edges }],
             nodes: materialized.nodes ?? [],
             edges: materialized.edges ?? [],
-            past: [],
-            future: [],
+            // groupInput/groupOutput の id 'input'/'output' などは階層ごとに重複するため、
+            // コアレッシング(`data:${id}`)が階層を跨いで別ノードの編集をまとめないようにする。
             _historyKey: null,
             _dragging: false,
           });
@@ -371,8 +370,6 @@ export const useGraphStore = create<GraphState>()(
             nodes: restoredNodes,
             edges: frame.edges,
             scopeStack: state.scopeStack.slice(0, -1),
-            past: [],
-            future: [],
             _historyKey: null,
             _dragging: false,
           });

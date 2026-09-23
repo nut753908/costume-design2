@@ -60,16 +60,17 @@ function NodeEditorInner() {
   const onEdgesChange = useGraphStore((s) => s.onEdgesChange);
   const onConnect = useGraphStore((s) => s.onConnect);
   const addNode = useGraphStore((s) => s.addNode);
-  const scopeDepth = useGraphStore((s) => s.scopeStack.length);
+  // 深さだけでなく経路で区別する: Undo/Redo では同じ深さのまま別のグループの中へ移りうる。
+  const scopePath = useGraphStore((s) => s.scopeStack.map((f) => f.parentId).join('/'));
   const { screenToFlowPosition, fitView } = useReactFlow();
 
-  // グループの中に入る/出るたびに、新しいスコープのノード群が画面内に収まるよう
+  // 表示する階層が変わるたびに、新しいスコープのノード群が画面内に収まるよう
   // fitView し直す(fitView props は初回マウント時にしか効かないため)。
   useEffect(() => {
     requestAnimationFrame(() => fitView({ padding: fitViewPadding(), duration: 300 }));
-  }, [scopeDepth, fitView]);
+  }, [scopePath, fitView]);
 
-  // <ReactFlow> 自体は enterGroup/exitGroup のたびにアンマウントされず、nodes/edges の
+  // <ReactFlow> 自体は階層が変わっても(enterGroup/exitGroup・階層を跨ぐ Undo/Redo)アンマウントされず、nodes/edges の
   // props だけが丸ごと差し替わる(state/CLAUDE.md の「グループの中に入る」節参照)。
   // すべてのグループの groupInput/groupOutput ノードは慣例的に id 'input'/'output' を
   // 使う(nodes/CLAUDE.md 参照)ため、多段ネスト(例: bodyGroup の中の bodyDimensionsGroup)
@@ -78,7 +79,7 @@ function NodeEditorInner() {
   // 再度入り直すと(bodyGroup 自身の 'input' → bodyDimensionsGroup の 'input' → …と
   // 同じ id が複数回入れ替わった後)、Group Input ノードの出力から伸びるはずのエッジが
   // ストア上のデータ(evaluateGraph・Export JSON では正しい)とは無関係に描画されなくなる、
-  // という React Flow 側のハンドル計測キャッシュの取り違えが起きていた。`key={scopeDepth}`
+  // という React Flow 側のハンドル計測キャッシュの取り違えが起きていた。`key={scopePath}`
   // を <ReactFlow> に付けてスコープが変わるたびに強制的にアンマウント→再マウントさせることで、
   // 内部キャッシュを毎回まっさらな状態から作り直させ、この取り違えを避けている
   // (NodePalette の検索文字列などスコープを跨いで保持する意味の無い軽量な子コンポーネントの
@@ -203,7 +204,7 @@ function NodeEditorInner() {
         fitView
         fitViewOptions={{ padding: fitViewPadding() }}
         minZoom={0.1}
-        key={scopeDepth}
+        key={scopePath}
       >
         <Background />
         <Controls fitViewOptions={{ padding: fitViewPadding() }} />
