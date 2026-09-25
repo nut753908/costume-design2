@@ -18,7 +18,7 @@
 
 `state/graphStore.ts` の `onConnect`(と、入力ソケットから掴んだエッジを落とす `dropPickedEdge`。どちらも内部ヘルパー `connectEdge` を通る)は、新しいエッジを追加する前に同じ `target`/`targetHandle` への既存のエッジを取り除く。`isValidConnection`(`editor/NodeEditor.tsx`)は型の一致と循環の有無しかチェックしないため、これを onConnect 側でやらないと、既に接続済みの入力ソケットへ別のノードから繋いでも(`@xyflow/react` の `addEdge()` は source/target/両handle が完全一致する場合しか重複除去しないため)両方のエッジが共存してしまう。`nodes/evaluateGraph.ts` の `incomingEdges.find(...)` は配列中で最初に見つかったエッジ(=古い方)しか採用しないため、後から繋いだ方は静かに無視され、古い方のエッジを消した瞬間に見た目の値が突然切り替わるという分かりにくいバグになる(修正前に実際に発生していた)。新しいノードタイプ/接続経路を追加する際、エッジを直接 `set({ edges: ... })` する箇所を増やすなら、この置き換えロジックも一緒に通すこと。
 
-**例外**: `SocketDef.multiple` な入力ソケット(現在は `mergeGeometry` の `geometries`)は置き換えず、接続を追加する。`evaluateGraph()` はそのソケットについて、繋がったすべてのエッジの値を配列の並び順(=接続した順)で集める。グループのテンプレート内のエッジ id(`groupNodeFactory.ts`)は、この場合に衝突しないよう接続元も含めて作る。
+**例外**: `SocketDef.multiple` な入力ソケット(現在は `mergeGeometry` の `geometries`)は置き換えず、接続を追加する。`evaluateGraph()` はそのソケットについて、繋がったすべてのエッジの値をエッジ配列の並び順で集めるため、この並びが結合順になる。`onConnect`/`dropPickedEdge` に `slot` を渡すと、新しいエッジは同じソケットへのエッジの中でその番目に来るよう配列の途中に挿入される(省略時は末尾。エディタは離した位置から `slot` を求める — `src/editor/CLAUDE.md` 参照)。グループのテンプレート内のエッジ id(`groupNodeFactory.ts`)は、この場合に衝突しないよう接続元も含めて作る。
 
 ## Undo/Redo
 

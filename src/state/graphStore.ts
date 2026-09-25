@@ -8,7 +8,6 @@ import {
   type Edge,
   type OnNodesChange,
   type OnEdgesChange,
-  type OnConnect,
   type Connection,
 } from '@xyflow/react';
 import type { EvaluatedGraph } from '../nodes/evaluateGraph';
@@ -83,11 +82,13 @@ interface GraphState {
   _pasteCount: number;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
-  onConnect: OnConnect;
+  /** `slot` は複数接続できるソケットへ繋ぐときの並び順(0=先頭、省略時は末尾)。それ以外のソケットでは無視する。 */
+  onConnect: (connection: Connection, slot?: number) => void;
   /** 接続済みの入力ソケットからエッジを掴んで外す(`editor/nodeComponents/InputHandle.tsx`)。 */
   pickUpEdge: (edgeId: string) => void;
-  /** 掴んだエッジを落とした先の入力ソケットへ繋ぐ。何もない所で離した場合は呼ばれず、外れたままになる。 */
-  dropPickedEdge: (connection: Connection) => void;
+  /** 掴んだエッジを落とした先の入力ソケットへ繋ぐ。何もない所で離した場合は呼ばれず、外れたままになる。
+   * `slot` は `onConnect` と同じ。 */
+  dropPickedEdge: (connection: Connection, slot?: number) => void;
   updateNodeData: (id: string, data: Record<string, unknown>) => void;
   setEvaluatedResults: (results: EvaluatedGraph) => void;
   setRootEvaluatedResults: (results: EvaluatedGraph) => void;
@@ -132,16 +133,24 @@ interface GraphState {
  * 後でそのエッジが消えた瞬間に見た目の値が突然変わる)。それを避けるため、
  * 新しい接続を追加する前に、同じ target/targetHandle への既存の接続を
  * 置き換える(繋ぎ直す一般的なノードエディタの挙動)。
- * ただし複数接続できるソケット(`SocketDef.multiple`)は置き換えず、そのまま追加する。 */
-function connectEdge(nodes: Node[], edges: Edge[], connection: Connection): Edge[] {
+ * ただし複数接続できるソケット(`SocketDef.multiple`)は置き換えず、同じソケットへのエッジの中で
+ * `slot` 番目(省略時は末尾)に入るようエッジ配列に挿入する(この並びが結合順になる)。 */
+function connectEdge(nodes: Node[], edges: Edge[], connection: Connection, slot?: number): Edge[] {
   const targetNode = nodes.find((n) => n.id === connection.target);
   const targetSocket = targetNode
     ? resolveNodeSockets(targetNode.type ?? '', targetNode.data).inputs.find((s) => s.id === connection.targetHandle)
     : undefined;
-  const kept = targetSocket?.multiple
-    ? edges
-    : edges.filter((e) => !(e.target === connection.target && (e.targetHandle ?? null) === (connection.targetHandle ?? null)));
-  return addEdge(connection, kept);
+  const sameSocket = (e: Edge) =>
+    e.target === connection.target && (e.targetHandle ?? null) === (connection.targetHandle ?? null);
+  if (!targetSocket?.multiple) return addEdge(connection, edges.filter((e) => !sameSocket(e)));
+
+  const added = addEdge(connection, edges);
+  // addEdge は同じ接続が既にあれば何も足さない。足した場合は末尾に来る。
+  if (added.length === edges.length || slot === undefined) return added;
+  const next = edges.filter(sameSocket)[slot];
+  if (!next) return added;
+  const at = edges.indexOf(next);
+  return [...edges.slice(0, at), added[added.length - 1], ...edges.slice(at)];
 }
 
 /** グループの中で `removedIds` のノードを削除すると、1つ上の階層でそのグループノードの外部
@@ -230,17 +239,17 @@ export const useGraphStore = create<GraphState>()(
           if (changes.some((c) => c.type === 'remove')) pushHistory('remove', REMOVE_COALESCE_MS);
           set({ edges: applyEdgeChanges(changes, get().edges) });
         },
-        onConnect: (connection) => {
+        onConnect: (connection, slot) => {
           pushHistory();
-          set({ edges: connectEdge(get().nodes, get().edges, connection) });
+          set({ edges: connectEdge(get().nodes, get().edges, connection, slot) });
         },
         pickUpEdge: (edgeId) => {
           pushHistory();
           set({ edges: get().edges.filter((e) => e.id !== edgeId) });
         },
-        dropPickedEdge: (connection) => {
+        dropPickedEdge: (connection, slot) => {
           // pickUpEdge が積んだ履歴1件に含める(掴んで落とすまでで Undo 1回)。
-          set({ edges: connectEdge(get().nodes, get().edges, connection) });
+          set({ edges: connectEdge(get().nodes, get().edges, connection, slot) });
         },
         updateNodeData: (id, data) => {
           pushHistory(`data:${id}`, COALESCE_MS);

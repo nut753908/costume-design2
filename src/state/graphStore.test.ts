@@ -226,6 +226,21 @@ describe('graphStore の Undo/Redo', () => {
     expect(useGraphStore.getState().edges.map((e) => e.source)).toEqual(['a', 'b']);
   });
 
+  it('onConnect の slot を指定すると、複数接続できるソケットへのエッジの中でその並び順に入る', () => {
+    resetStore([makeNode('a'), makeNode('b'), makeNode('c'), makeNode('x'), makeNode('m', { type: 'testMultiSink' })]);
+    const connect = (source: string, slot?: number) =>
+      useGraphStore.getState().onConnect({ source, sourceHandle: 'value', target: 'm', targetHandle: 'items' }, slot);
+    connect('a');
+    useGraphStore.getState().onConnect({ source: 'x', sourceHandle: 'value', target: 'a', targetHandle: 'value' });
+    connect('b');
+    connect('c', 1);
+    const intoM = () => useGraphStore.getState().edges.filter((e) => e.target === 'm').map((e) => e.source);
+    expect(intoM()).toEqual(['a', 'c', 'b']);
+
+    connect('x', 0);
+    expect(intoM()).toEqual(['x', 'a', 'c', 'b']);
+  });
+
   it('異なる入力ソケットへの接続は置き換えられず両方残る', () => {
     resetStore([makeNode('a'), makeNode('b'), makeNode('c')]);
     useGraphStore.getState().onConnect({ source: 'a', sourceHandle: 'value', target: 'c', targetHandle: 'x' });
@@ -318,6 +333,18 @@ describe('graphStore の pickUpEdge/dropPickedEdge', () => {
 
     useGraphStore.getState().undo();
     expect(useGraphStore.getState().edges).toEqual([makeEdge('e1', 'a', 'b')]);
+  });
+
+  it('複数接続できるソケットから掴んだエッジを同じソケットの別の並び順へ落とすと、結合順を入れ替えられる', () => {
+    resetStore(
+      [makeNode('a'), makeNode('b'), makeNode('c'), makeNode('m', { type: 'testMultiSink' })],
+      ['a', 'b', 'c'].map((src) => ({ id: `e-${src}`, source: src, sourceHandle: 'value', target: 'm', targetHandle: 'items' })),
+    );
+
+    useGraphStore.getState().pickUpEdge('e-a');
+    useGraphStore.getState().dropPickedEdge({ source: 'a', sourceHandle: 'value', target: 'm', targetHandle: 'items' }, 2);
+
+    expect(useGraphStore.getState().edges.map((e) => e.source)).toEqual(['b', 'c', 'a']);
   });
 
   it('落とした先の入力に既存の接続があれば置き換える', () => {

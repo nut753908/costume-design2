@@ -2,13 +2,15 @@ import type { CSSProperties, MouseEvent, TouchEvent } from 'react';
 import { Handle, Position, useNodeConnections, useNodeId, useStoreApi } from '@xyflow/react';
 import { XYHandle } from '@xyflow/system';
 import { useGraphStore } from '../../state/graphStore';
+import { multiSocketDropSlot } from '../multiSocketDropSlot';
 import { MULTI_SOCKET_SLOT, MULTI_SOCKET_WIDTH, multiSocketHeight } from '../../nodes/multiInputSocket';
 
 /** 入力ソケットのハンドル。未接続なら通常どおりここから接続を始められ、接続済みなら
  * Blender と同じく左ドラッグでそのエッジを外して掴む(別の入力へ落とすと繋ぎ替え、
  * 何もない所で離すと外れたまま)。
  * `multiple`(`SocketDef.multiple`)なら接続本数に応じて伸びるカプセル形で描き、各エッジは
- * `SocketEdge` が結合順に縦にずらして刺す。掴むのは押した位置に一番近いエッジ。 */
+ * `SocketEdge` が結合順に縦にずらして刺す。掴むのは押した位置に一番近いエッジで、落とすと離した位置の
+ * 並び順に入る(`multiSocketDropSlot`)。 */
 export function InputHandle({ id, style, multiple = false }: { id: string; style?: CSSProperties; multiple?: boolean }) {
   const nodeId = useNodeId();
   const rfStore = useStoreApi();
@@ -46,7 +48,7 @@ export function InputHandle({ id, style, multiple = false }: { id: string; style
         rfStore.getState().onConnectStart?.(e, params);
       },
       onConnectEnd: (...args) => rfStore.getState().onConnectEnd?.(...args),
-      onConnect: dropPickedEdge,
+      onConnect: (connection) => dropPickedEdge(connection, multiSocketDropSlot(rfStore.getState(), connection)),
       isValidConnection: (connection) => rfStore.getState().isValidConnection?.(connection) ?? true,
       updateConnection: s.updateConnection,
       getTransform: () => rfStore.getState().transform,

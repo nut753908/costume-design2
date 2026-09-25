@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type DragEvent, type FocusEve
 import {
   ReactFlow,
   ReactFlowProvider,
+  useStoreApi,
   useReactFlow,
   Background,
   Controls,
@@ -36,6 +37,7 @@ import { NodeClipboard } from './NodeClipboard';
 import { PaneContextMenu, type PaneContextMenuState } from './PaneContextMenu';
 import { SelectionContextMenu, type SelectionContextMenuState } from './SelectionContextMenu';
 import { BreadcrumbPanel } from './BreadcrumbPanel';
+import { multiSocketDropSlot } from './multiSocketDropSlot';
 import { NODE_TYPE_DND_MIME, fitViewPadding } from './paletteShared';
 import type { CustomCardType } from '../nodes/customCardTypes';
 
@@ -72,6 +74,12 @@ function NodeEditorInner() {
   // 深さだけでなく経路で区別する: Undo/Redo では同じ深さのまま別のグループの中へ移りうる。
   const scopePath = useGraphStore((s) => s.scopeStack.map((f) => f.parentId).join('/'));
   const { screenToFlowPosition, fitView } = useReactFlow();
+  const rfStore = useStoreApi();
+  // 複数接続できるソケットでは、離した位置に一番近い並び順へ入れる。
+  const handleConnect = useCallback(
+    (connection: Connection) => onConnect(connection, multiSocketDropSlot(rfStore.getState(), connection)),
+    [onConnect, rfStore],
+  );
 
   // 表示する階層が変わるたびに、新しいスコープのノード群が画面内に収まるよう
   // fitView し直す(fitView props は初回マウント時にしか効かないため)。
@@ -224,7 +232,7 @@ function NodeEditorInner() {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onConnect={handleConnect}
         deleteKeyCode={['Backspace', 'Delete']}
         // Group Input/Output を削除すると1つ上の階層の外部ソケットも消えるため、そこへの接続が
         // あれば(ソケットの「×」ボタンと同じく)確認してから消す。外部エッジの削除は onNodesChange。

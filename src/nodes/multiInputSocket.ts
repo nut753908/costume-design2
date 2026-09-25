@@ -23,3 +23,9 @@ export function multiSocketRowExtra(count: number): number {
 export function multiSocketSlotOffset(index: number, count: number): number {
   return (index - (count - 1) / 2) * MULTI_SOCKET_SLOT;
 }
+
+/** 既に `count` 本刺さっているソケットの中心から縦に `offset`(px、フロー座標)ずれた所へ新しいエッジを
+ * 落としたとき、それを並びの何番目(0=先頭)に入れるか。落とした位置より上に刺さっているエッジの本数。 */
+export function multiSocketInsertIndex(offset: number, count: number): number {
+  return Math.min(count, Math.max(0, Math.ceil(offset / MULTI_SOCKET_SLOT + (count - 1) / 2)));
+}
