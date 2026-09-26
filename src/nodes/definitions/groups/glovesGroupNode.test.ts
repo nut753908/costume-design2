@@ -16,7 +16,7 @@ function num(v: number) {
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
   const ARM_RADIUS = 0.04;
-  const DEFAULTS = { wristRadius: 1.07 * ARM_RADIUS, handRadius: 1.2 * ARM_RADIUS, length: 0.14, armSpacing: 0.15, offsetY: 0 };
+  const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, armSpacing: 0.15, offsetY: 0.04 };
   // `k` は既定の armRadius に対する倍率。
   const maxRadius = (k: number) => Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius) * k;
 
@@ -47,12 +47,12 @@ describe('glovesGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(0.5 + maxRadius(1), 5);
   });
 
-  it('Length ぶん下(-Y)に伸びる(Wrist側が anchor=0)', () => {
+  it('Length ぶん下(-Y)に伸び、Offset Y(既定0.04、手の上端を覆う)だけ押し上げられる', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.length, 5);
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(0, 5);
+    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.length + DEFAULTS.offsetY, 5);
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.offsetY, 5);
   });
 
   it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {

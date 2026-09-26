@@ -23,10 +23,17 @@ describe('limbPair', () => {
     expect(box.min.x).toBeCloseTo(-(0.3 + 0.1), 3);
   });
 
-  it('centerY を中心に length だけ縦に広がり、上端には radius の球(関節)が乗る', () => {
+  it('centerY を中心に length だけ縦に広がり、上端には radius の球(関節)、先端には既定で同じ大きさの球が付く', () => {
     const box = evaluateBox(base);
-    expect(box.min.y).toBeCloseTo(1 - 0.3, 5);
+    expect(box.min.y).toBeCloseTo(1 - 0.3 - 0.1, 5);
     expect(box.max.y).toBeCloseTo(1 + 0.3 + 0.1, 5);
+  });
+
+  it('先端の球は radius × endRatio の大きさで、endScaleY/endShiftY/endShiftZ に従ってつぶれ・ずれる', () => {
+    // 足: 半径 0.1 × 1.2 = 0.12、上下 0.5 倍につぶし、中心を先端から 0.5 × 0.12 だけ上、1 × 0.12 だけ前へ。
+    const box = evaluateBox({ ...base, endRatio: 1.2, endScaleY: 0.5, endShiftY: 0.5, endShiftZ: 1 });
+    expect(box.min.y).toBeCloseTo(1 - 0.3 + 0.06 - 0.06, 5);
+    expect(box.max.z).toBeCloseTo(0.12 + 0.12, 5);
   });
 
   it('taperRatio は先端側(radiusBottom)だけを細くし、根元の広がりには影響しない', () => {

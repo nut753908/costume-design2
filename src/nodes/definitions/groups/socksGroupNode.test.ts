@@ -14,7 +14,7 @@ function num(v: number) {
 // ±Leg Spacing だけ X方向に離した左右対称ペアへまとめる(socksGroupNode.ts のコメント参照)。
 describe('socksGroup', () => {
   const LEG_RADIUS = 0.06;
-  const DEFAULTS = { ankleRadius: 0.87 * LEG_RADIUS, calfRadius: 0.95 * LEG_RADIUS, height: 0.22, legSpacing: 0.08, offsetY: 0 };
+  const DEFAULTS = { ankleRadius: 0.92 * LEG_RADIUS, calfRadius: 0.95 * LEG_RADIUS, height: 0.22, legSpacing: 0.08, offsetY: 0.09 };
   // `k` は既定の legRadius に対する倍率。
   const maxRadius = (k: number) => Math.max(DEFAULTS.ankleRadius, DEFAULTS.calfRadius) * k;
 
@@ -38,12 +38,12 @@ describe('socksGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + DEFAULTS.calfRadius * 1.3, 5);
   });
 
-  it('地面(Ankle側、y=0)から Height ぶん上(+Y、ふくらはぎ側)に伸びる', () => {
+  it('足の上(Offset Y、既定0.09)から Height ぶん上(+Y、ふくらはぎ側)に伸びる', () => {
     const result = getNodeType('socksGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.y).toBeCloseTo(0, 5);
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.height, 5);
+    expect(geom!.boundingBox!.min.y).toBeCloseTo(DEFAULTS.offsetY, 5);
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.offsetY + DEFAULTS.height, 5);
   });
 
   it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {

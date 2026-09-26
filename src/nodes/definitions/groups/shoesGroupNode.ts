@@ -22,7 +22,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
 
-const scale = bodyRadiusScale('legRadius', 1.18);
+const scale = bodyRadiusScale('legRadius', 1.3);
 const cuffScale = bodyRadiusScale('legRadius', 0.91, 'cuffScale');
 const lathe = latheBody({ genId: 'latheGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'cuffScale', distance: 0.12, segments: 16 });
 
@@ -46,7 +46,7 @@ defineGroupNode({
     ...scale.nodes,
     ...cuffScale.nodes,
     ...lathe.nodes,
-    { id: 'scaleZ', type: 'scale', data: { z: 1.5 } },
+    { id: 'scaleZ', type: 'scale', data: { z: 1.95 } },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     ...output.nodes,
   ],

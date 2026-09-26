@@ -16,11 +16,11 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 手袋1つぶんのジオメトリ(`profile`→`gloveGen`)と、それを ±armSpacing だけ X方向に離した
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
  * `limbPair.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ offsetY: 0.04, geometry: 'mirror' });
 
-const scale = bodyRadiusScale('armRadius', 1.07);
-const handScale = bodyRadiusScale('armRadius', 1.2, 'handScale');
-const lathe = latheBody({ genId: 'gloveGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'handScale', distance: 0.14, segments: 12 });
+const scale = bodyRadiusScale('armRadius', 1.4);
+const handScale = bodyRadiusScale('armRadius', 1.55, 'handScale');
+const lathe = latheBody({ genId: 'gloveGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'handScale', distance: 0.16, segments: 12 });
 
 defineGroupNode({
   type: 'glovesGroup',

@@ -18,9 +18,9 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
  * Leg Radius・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ offsetY: 0.09, geometry: 'mirror' });
 
-const scale = bodyRadiusScale('legRadius', 0.87);
+const scale = bodyRadiusScale('legRadius', 0.92);
 const calfScale = bodyRadiusScale('legRadius', 0.95, 'calfScale');
 const lathe = latheBody({ genId: 'sockGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'calfScale', distance: 0.22, segments: 16 });
 

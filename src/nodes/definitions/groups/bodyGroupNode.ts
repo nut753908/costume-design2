@@ -70,9 +70,14 @@ defineGroupNode({
     { id: 'headGen', type: 'sphereGenerator', data: {} },
     { id: 'headTranslate', type: 'translate', data: {} },
 
-    // 腕1組・脚1組(limbPair)。テーパー比率は腕用/脚用で別々の値を持つ。
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.85 } },
-    { id: 'legPair', type: 'limbPair', data: { taperRatio: 0.85 } },
+    // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
+    // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.85, endRatio: 1.3, endScaleY: 1.1, endScaleZ: 0.85, endShiftY: -0.5 } },
+    {
+      id: 'legPair',
+      type: 'limbPair',
+      data: { taperRatio: 0.85, endRatio: 1.1, endScaleY: 0.6, endScaleZ: 1.6, endShiftY: 0.6, endShiftZ: 0.3 },
+    },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
     { id: 'merge', type: 'mergeGeometry', data: {} },
