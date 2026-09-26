@@ -23,7 +23,7 @@ describe('topGroup', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({ torsoRadius: { type: 'number', value: 0.3 } }, {});
-      expect(firstRowRadius(spy)).toBeCloseTo(0.3 * 1.12, 10);
+      expect(chestRowRadius(spy)).toBeCloseTo(0.3 * 1.12, 10);
     } finally {
       spy.mockRestore();
     }
@@ -33,19 +33,21 @@ describe('topGroup', () => {
     expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo(0.25 - 0.15, 5);
   });
 
-  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.14)になる', () => {
+  it('未接続なら torsoRadius/neckRadius は groupInput ソケット自身のデフォルト(0.14/0.045)になり、最上段は首まわりの開口', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({}, {});
-      expect(firstRowRadius(spy)).toBeCloseTo(0.14 * 1.12, 10);
+      expect(chestRowRadius(spy)).toBeCloseTo(0.14 * 1.12, 10);
+      const rows = spy.mock.calls[0][0] as { radius: number }[];
+      expect(rows[0].radius).toBeCloseTo(0.045 * 1.8, 10);
     } finally {
       spy.mockRestore();
     }
   });
 
-  it('袖の太さは armRadius に追従し、袖の付け根は torsoRadius × 0.5 だけ下がる(腕の上端の関節を覆う高さ)', () => {
+  it('袖の太さは armRadius に追従し、袖の付け根は torsoRadius × 0.7 だけ下がる(腕の上端の関節を覆い、肩の線から出ない高さ)', () => {
     const base = sleevesOnly();
-    expect(sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } }).min.y).toBeCloseTo(base.min.y - (0.3 - 0.14) * 0.5, 5);
+    expect(sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } }).min.y).toBeCloseTo(base.min.y - (0.3 - 0.14) * 0.7, 5);
     expect(sleevesOnly({ armRadius: { type: 'number', value: 0.15 } }).min.y).toBeLessThan(base.min.y);
   });
 
@@ -78,13 +80,14 @@ describe('topGroup', () => {
   });
 });
 
-/** 直近の buildRingGridGeometry() 呼び出しの最上段(肩)の半径。 */
-function firstRowRadius(spy: { mock: { calls: unknown[][] } }): number {
+/** 直近の buildRingGridGeometry() 呼び出しの胸の段(肩の丸みと胴の継ぎ目、shoulderedProfile の
+ * 曲線の中央)の半径。 */
+function chestRowRadius(spy: { mock: { calls: unknown[][] } }): number {
   const rows = spy.mock.calls[0][0] as { radius: number }[];
-  return rows[0].radius;
+  return rows[(rows.length - 1) / 2].radius;
 }
 
-/** angleSegments=24、heightSegments=10 のリンググリッドの頂点数。 */
+/** angleSegments=24、heightSegments=16 のリンググリッドの頂点数。 */
 function buildTopOnlyVertexCount(): number {
-  return (24 + 1) * (10 + 1);
+  return (24 + 1) * (16 + 1);
 }

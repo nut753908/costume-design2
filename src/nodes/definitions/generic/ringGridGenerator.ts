@@ -10,7 +10,7 @@ export interface RingGridGeneratorData extends Record<string, unknown> {
 }
 
 /** `profile`(`easedLatheCurve` が出力する曲線を `steps` 分割した、`latheGenerator` と同じ下→上の順の点列)を
- * 受け取り、`geometry/ringGrid.ts` の `buildRingGridGeometry()` で最上段のリングにだけ
+ * 受け取り、`geometry/ringGrid.ts` の `buildRingGridGeometry()` で最上段から
  * ネックラインを彫り込んだ手組みのチューブを作る。`necklineWeights` は正面からの角度(0〜1に
  * 正規化)に対する落ち込み量の曲線(x=角度、y=重み、`geometry/neckline.ts` 参照)。`latheGenerator` の放射非対称版
  * (ネックラインの落ち込みは Lathe では表現できない)で、top/dress が使う。プロファイルは

@@ -8,6 +8,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 肩幅)へ複製して左右の袖にする(左袖は `mirrorPair` 内の `mirrorX` で鏡像反転される)。
  * 終端の直径は始端の 0.85 倍(先細り)。`lengthX`/`lengthDrop` の `factor` は、水平から 88° 下がる
  * 袖の向きの cos/sin(体の脇にまっすぐ下ろした腕の軸に沿わせ、わずかに裾を開く)。
+ * 袖の付け根(上端)には `sleeveRadius` の球(`cap`)を結合して開口をふさぎ、肩の丸みにする(開いたままだと
+ * 斜め上から中の腕が見える)。
  * 定数(0.85/2 など)は各 `numberMultiply` の入力欄の値。 */
 defineGroupNode({
   type: 'sleevePair',
@@ -30,6 +32,8 @@ defineGroupNode({
     { id: 'startDiameter', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'endDiameter', type: 'numberMultiply', data: { factor: 0.85 } },
     { id: 'gen', type: 'taperedEllipseTubeGenerator', data: { segments: 12 } },
+    { id: 'cap', type: 'sphereGenerator', data: {} },
+    { id: 'withCap', type: 'mergeGeometry', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     {
       id: 'output',
@@ -54,7 +58,10 @@ defineGroupNode({
     { source: 'endDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'endWidth' },
     { source: 'endDiameter', sourceHandle: 'value', target: 'gen', targetHandle: 'endThickness' },
 
-    { source: 'gen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'sleeveRadius', target: 'cap', targetHandle: 'radius' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'withCap', targetHandle: 'geometries' },
+    { source: 'cap', sourceHandle: 'geometry', target: 'withCap', targetHandle: 'geometries' },
+    { source: 'withCap', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'spacing', target: 'mirror', targetHandle: 'offset' },
     { source: 'mirror', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],

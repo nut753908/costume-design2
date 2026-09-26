@@ -15,7 +15,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `numberInput` を置いて配線し、他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
  * Torso Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * shoulderY)は外部ソケット。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
+// 結び目を肩の頂点より少し下(服の襟ぐりの底)に置く。
+const output = garmentOutput({ offsetY: -0.04, geometry: 'merge' });
 
 const scale = bodyRadiusScale('torsoRadius', 1.15);
 

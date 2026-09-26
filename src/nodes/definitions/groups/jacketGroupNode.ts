@@ -1,22 +1,19 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyRadiusScale, bodyRadiusSockets, latheBody } from '../garmentParts';
+import { bodyRadiusScale, bodyRadiusSockets, shoulderedBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** jacketShoulderScale(numberMultiply)+profile(easedLatheCurve)+gen(latheGenerator)+
- * jacketMaterial(toonMaterial)+placement(garmentPlacement)+
- * sceneOut(sceneOutput)の8ノード(+裾半径を求める `flaredRadius`)を1枚にまとめたグループノード。
- * Shoulder Radius/Length/Hem Flare/Segments は他のガーメントと共有されない単独
- * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Torso Radius(体の胴体半径、`scale` が倍率を掛ける)と Anchor Y(取り付け位置、ルートの
- * `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。
- *
- * `skirtGroupNode.ts` と全く同じ理由・同じ形で、プロファイル生成を `easedLatheCurve`→
- * `latheGenerator` へ、裾半径(`hemRadius = shoulderRadius * (1 + Math.max(0, hemFlare))`)を
- * `hemRadiusCalc`(`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`)へ展開している。 */
+/** scale(numberMultiply、胸の半径)+hemRadiusCalc(flaredRadius、裾半径 = 胸の半径 × (1 + hemFlare))+
+ * profile(shoulderedProfile、肩の丸みで首まわりまで閉じたプロファイル、`garmentParts.ts` の
+ * `shoulderedBody()`)+gen(latheGenerator)+末端(`garmentOutput()`)を1枚にまとめたグループノード。
+ * 倍率/Length/Hem Flare/Segments は他のガーメントと共有されない単独パラメータのため、
+ * numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
+ * 体の Torso Radius/Neck Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
+ * 配線される shoulderY)は外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
 
 const scale = bodyRadiusScale('torsoRadius', 1.15);
-const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 0.46, segments: 20 });
+// 首まわりの開口は Top(1.8)より広くして、肩の丸みで Top の外側に重ねる。
+const body = shoulderedBody({ length: 0.46, hemRadius: 'hemRadiusCalc', neckOpeningRatio: 2.0 });
 
 defineGroupNode({
   type: 'jacketGroup',
@@ -29,6 +26,7 @@ defineGroupNode({
       data: {
         sockets: [
           bodyRadiusSockets.torsoRadius,
+          bodyRadiusSockets.neckRadius,
           anchorYSocket,
           colorSocket('#4a5c3e'),
         ],
@@ -36,13 +34,15 @@ defineGroupNode({
     },
     ...scale.nodes,
     { id: 'hemRadiusCalc', type: 'flaredRadius', data: { flare: 0.15 } },
-    ...lathe.nodes,
+    ...body.nodes,
+    { id: 'gen', type: 'latheGenerator', data: { steps: 16, segments: 20 } },
     ...output.nodes,
   ],
   internalEdges: [
     ...scale.edges,
     { source: 'scale', sourceHandle: 'value', target: 'hemRadiusCalc', targetHandle: 'radius' },
-    ...lathe.edges,
+    ...body.edges,
+    { source: 'profile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
     ...output.edges,
   ],
 });

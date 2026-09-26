@@ -38,8 +38,8 @@ describe('sleevePair', () => {
     expect(b.max.x).toBeCloseTo(-b.min.x, 6);
   });
 
-  it('頂点数は 2チューブ × 2行 × (segments 12 + 1)', () => {
-    expect(sleeves(0.22).getAttribute('position').count).toBe(2 * 2 * 13);
+  it('頂点数は 2本 ×(チューブ 2行 × (segments 12 + 1)+ 付け根の球 (20 + 1) × (16 + 1))', () => {
+    expect(sleeves(0.22).getAttribute('position').count).toBe(2 * (2 * 13 + 21 * 17));
   });
 
   it('袖の付け根は ±spacing(腕の中心)から、水平から88°下へ sleeveLength だけ伸びる', () => {
@@ -48,8 +48,8 @@ describe('sleevePair', () => {
     const startX = SPACING;
     const endX = startX + length * Math.cos(DROOP);
     // 各断面は軸に垂直で、X方向には radius × sin(droop) だけ広がる。ほぼ真下へ伸びるので、
-    // 最大Xは太い付け根側と先細りの終端側の広い方で決まる。
-    const expected = Math.max(startX + 0.085 * Math.sin(DROOP), endX + 0.085 * 0.85 * Math.sin(DROOP));
+    // 最大Xは付け根の球(半径 0.085)と先細りの終端側の広い方で決まる。
+    const expected = Math.max(startX + 0.085, endX + 0.085 * 0.85 * Math.sin(DROOP));
     expect(b.max.x).toBeCloseTo(expected, 5);
     expect(b.min.y).toBeLessThan(-length * Math.sin(DROOP) + 1e-6);
   });

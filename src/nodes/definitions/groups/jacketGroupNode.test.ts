@@ -38,12 +38,12 @@ describe('jacketGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(hemRadius(DEFAULTS.shoulderRadius * 2), 5);
   });
 
-  it('Length ぶん下(-Y)に伸びる(Offset Y は既定0)', () => {
+  it('Length ぶん下(-Y)に伸び、肩の丸みの上端(首まわり)は肩の頂点より torsoRadius × 0.1 上にある', () => {
     const result = getNodeType('jacketGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.length, 5);
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(0, 5);
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(0.14 * 0.1, 5);
   });
 
   it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {

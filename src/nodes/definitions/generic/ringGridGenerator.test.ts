@@ -84,7 +84,7 @@ describe('ringGridGenerator', () => {
       const pos = build(shape, 0.3).getAttribute('position').array as Float32Array;
       return pos[col * 3 + 1];
     };
-    // SEGMENTS=16 のとき col 2 は正面から 45°(half-width 60° の 0.75)。
+    // SEGMENTS=16 のとき col 2 は正面から 45°(half-width 90° の 0.5)。
     expect(topRowY('v', 0)).toBeCloseTo(topRowY('square', 0), 6);
     expect(topRowY('v', 2)).toBeGreaterThan(topRowY('round', 2));
     expect(topRowY('round', 2)).toBeGreaterThan(topRowY('square', 2));
@@ -94,6 +94,22 @@ describe('ringGridGenerator', () => {
     for (const type of ['round', 'v', 'square'] as const) {
       expect(topRowMinY(build(type, 0.3))).toBeLessThan(topRowMinY(build(type, 0.02)));
     }
+  });
+
+  it('上へ細くなる(肩の丸みのある)プロファイルでも、行の間隔より深く彫り込んだ正面の各列は上下が折り返さない', () => {
+    // 半径 0.1(首)→ 0.3(胸)、行の間隔 0.5 / 8 ≈ 0.06 より深い 0.2 を彫り込む。
+    const geometry = build('square', 0.2, profile(0.1, 0.3, 0.5));
+    const pos = geometry.getAttribute('position');
+    const frontCol = 0; // 角度 0 = 正面(z 方向)
+    for (let row = 0; row < STEPS; row++) {
+      const upper = row * (SEGMENTS + 1) + frontCol;
+      const lower = upper + SEGMENTS + 1;
+      expect(pos.getY(upper)).toBeGreaterThanOrEqual(pos.getY(lower) - 1e-9);
+    }
+    // 彫り込みの線(最上段から 0.2 下)より上の行は線上に寄せられ、半径はその高さのプロファイルの半径になる。
+    expect(pos.getY(frontCol)).toBeCloseTo(-0.2, 5);
+    expect(pos.getZ(frontCol)).toBeGreaterThan(0.1);
+    expect(pos.getZ(frontCol)).toBeLessThan(0.3);
   });
 
   it('裾(最下段の行)は necklineDepth の影響を受けない', () => {

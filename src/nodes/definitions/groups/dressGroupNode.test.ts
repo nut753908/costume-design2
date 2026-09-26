@@ -11,13 +11,13 @@ import '../../definitions';
 // 体の torsoRadius × 1.12、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('dressGroup', () => {
-  const DEFAULTS = { torsoRadius: 1.12 * 0.14, hemRadius: 1.12 * 0.14 * 1.3, length: 0.9, necklineDepth: 0.12 };
+  const DEFAULTS = { torsoRadius: 1.12 * 0.14, hemRadius: 1.12 * 0.14 * 1.3, length: 0.9, necklineDepth: 0.05 };
 
   /** 直近の buildRingGridGeometry() 呼び出しの引数を、DEFAULTS と同じ名前の値へ戻す。 */
   function ringGridArgs(spy: { mock: { calls: unknown[][] } }) {
     const [rows, , , necklineDepth] = spy.mock.calls[0] as [{ radius: number; y: number }[], number, THREE.Vector2[], number];
     return {
-      torsoRadius: rows[0].radius,
+      torsoRadius: rows[(rows.length - 1) / 2].radius,
       hemRadius: rows[rows.length - 1].radius,
       length: -rows[rows.length - 1].y,
       necklineDepth,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { FunctionCurve } from './functionCurve';
 import { necklineWeight } from './neckline';
 
-const HALF_WIDTH = Math.PI / 3;
+const HALF_WIDTH = Math.PI / 2;
 
 /** y=f(x) の曲線(ノードグラフ側で作られる落ち込み量の曲線に相当)。 */
 const curve = (f: (t: number) => number) => new FunctionCurve(f);
@@ -22,7 +22,7 @@ describe('necklineWeight', () => {
     }
   });
 
-  it('half-width(π/3)ちょうどでは曲線の終端の値になる(round/v は0、square は1のまま)', () => {
+  it('half-width(π/2)ちょうどでは曲線の終端の値になる(round/v は0、square は1のまま)', () => {
     expect(necklineWeight(round, HALF_WIDTH)).toBeCloseTo(0, 10);
     expect(necklineWeight(v, HALF_WIDTH)).toBeCloseTo(0, 10);
     expect(necklineWeight(square, HALF_WIDTH)).toBe(1);

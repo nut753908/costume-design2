@@ -26,11 +26,36 @@ export function bodyRadiusScale(
   };
 }
 
+/** 肩の丸みで首まわりまで閉じた上衣のプロファイルの定型: `profile`(`shoulderedProfile`、
+ * `generic/shoulderedProfile.ts`)と、首まわりの開口の半径 `neckOpening`(体の Neck Radius ×
+ * `neckOpeningRatio`)。胸の半径は `scale`(`bodyRadiusScale('torsoRadius', …)` の出力)、裾の半径は
+ * `hemRadius` のノードの `value` 出力を配線する。`input` が `torsoRadius`/`neckRadius` ソケットを
+ * 持つことを前提にする。出力の曲線は `profile.curve`。top/dress/jacket が使う。 */
+export function shoulderedBody(config: {
+  length: number;
+  hemRadius: string;
+  neckOpeningRatio: number;
+}): { nodes: GraphNode[]; edges: GraphEdge[] } {
+  return {
+    nodes: [
+      { id: 'neckOpening', type: 'numberMultiply', data: { value: config.neckOpeningRatio } },
+      { id: 'profile', type: 'shoulderedProfile', data: { length: config.length } },
+    ],
+    edges: [
+      { source: 'input', sourceHandle: 'neckRadius', target: 'neckOpening', targetHandle: 'factor' },
+      { source: 'input', sourceHandle: 'torsoRadius', target: 'profile', targetHandle: 'torsoRadius' },
+      { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'chestRadius' },
+      { source: config.hemRadius, sourceHandle: 'value', target: 'profile', targetHandle: 'hemRadius' },
+      { source: 'neckOpening', sourceHandle: 'value', target: 'profile', targetHandle: 'neckOpening' },
+    ],
+  };
+}
+
 /** 半径がイージングで変化する回転体の定型: `profile`(`easedLatheCurve`)→ `genId`
  * (`latheGenerator`)。`startRadius`/`endRadius`/`distance` は、他のノードの `value` 出力を配線する
  * 場合はそのノードの id、単独の値ならリテラルの数値(`profile` の入力欄の値になる)を渡す。
  * `direction` は `profile` の出力のどちらを `genId` へ配線するか(`'down'` なら `Curve Down`、`'up'` なら
- * `Curve Up`)。輪郭の分割数 `steps` と回転方向の分割数 `segments` は `genId` の入力欄の値。skirt/jacket/hat/gloves/pants/shoes/socks が使う。 */
+ * `Curve Up`)。輪郭の分割数 `steps` と回転方向の分割数 `segments` は `genId` の入力欄の値。skirt/hat/gloves/pants/shoes/socks が使う。 */
 export function latheBody(config: {
   genId: string;
   direction: 'up' | 'down';
