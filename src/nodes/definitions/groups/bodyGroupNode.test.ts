@@ -29,6 +29,22 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
+  it('首は neckCenterY を中心に、首の長さの2倍の高さ(上下を頭と胴体に食い込ませる)で結合される', () => {
+    const result = getNodeType('bodyGroup').evaluate(
+      {
+        neckRadius: { type: 'number', value: 0.05 },
+        neckLength: { type: 'number', value: 0.1 },
+        neckCenterY: { type: 'number', value: 3 },
+      },
+      {},
+    );
+    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+    geom!.computeBoundingBox();
+    // 他のパーツは未接続(寸法0・原点付近)なので、上端は首の上端で決まる。
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(3 + 0.1, 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.05, 5);
+  });
+
   it('headCenterY が大きくなるほど結合済みジオメトリの上端(頭)が上がる', () => {
     const lowResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 1.5 } }, {});
     const highResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 2.0 } }, {});

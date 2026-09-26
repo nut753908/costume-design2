@@ -53,6 +53,8 @@ const dimensions = [
   dimension({ name: 'torsoLength', base: 0.55, scale: HEIGHT_SCALE }),
   dimension({ name: 'torsoRadius', base: 0.26, scale: BUILD_SCALE }),
   dimension({ name: 'armLength', base: 0.62, scale: HEIGHT_SCALE }),
+  dimension({ name: 'neckLength', base: 0.06, scale: HEIGHT_SCALE }),
+  dimension({ name: 'neckRadius', base: 0.06, scale: BUILD_SCALE }),
   dimension({ name: 'armRadius', base: 0.075, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({
@@ -66,7 +68,7 @@ const dimensions = [
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyDimensions`)として
  * ただ1組だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
  * Height/Build/Shoulder スケール(外部ソケット `heightScale`/`buildScale`/`shoulderScale`)から
- * 各部位の半径・長さを求める9つの「基準値 × スケール」の `numberMultiply`(基準値は `Value` 入力欄
+ * 各部位の半径・長さを求める11個の「基準値 × スケール」の `numberMultiply`(基準値は `Value` 入力欄
  * の値)を1枚にまとめたもの。ガーメントの『体に触れる半径』(`bodyRadiusScale()` の
  * `numberMultiply`)と同じ粒度までノードグラフ上に展開しており、「→」ボタンで中に入れば
  * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
@@ -104,6 +106,8 @@ defineGroupNode({
           { id: 'armLength', label: 'Arm Length', type: 'number' },
           { id: 'armRadius', label: 'Arm Radius', type: 'number' },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number' },
+          { id: 'neckLength', label: 'Neck Length', type: 'number' },
+          { id: 'neckRadius', label: 'Neck Radius', type: 'number' },
         ],
       },
     },

@@ -32,13 +32,13 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
   });
 
   it('bodyDimensions/bodyLayout が計算済みの値を bodyGroup へ配線している(bodyGroup 自身は寸法を計算しない)', () => {
-    const dimsSockets = ['legHeight', 'legRadius', 'legSpacing', 'torsoLength', 'torsoRadius', 'headRadius', 'armLength', 'armRadius', 'shoulderSpacing'];
+    const dimsSockets = ['legHeight', 'legRadius', 'legSpacing', 'torsoLength', 'torsoRadius', 'headRadius', 'armLength', 'armRadius', 'shoulderSpacing', 'neckLength', 'neckRadius'];
     for (const socket of dimsSockets) {
       const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
       expect(edge?.source).toBe('bodyDimensions');
       expect(edge?.sourceHandle).toBe(socket);
     }
-    const layoutSockets = ['legCenterY', 'torsoCenterY', 'headCenterY', 'armCenterY'];
+    const layoutSockets = ['legCenterY', 'torsoCenterY', 'neckCenterY', 'headCenterY', 'armCenterY'];
     for (const socket of layoutSockets) {
       const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
       expect(edge?.source).toBe('bodyLayout');

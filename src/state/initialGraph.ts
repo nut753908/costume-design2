@@ -20,7 +20,7 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // 配線せずグループカードの入力欄から調整する(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyBuild', type: 'numberInput', data: { value: 1} },
 
-  // ボディの寸法(9個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
+  // ボディの寸法(11個)・配置Y座標(9個、うち5個は waist/shoulder/feet/wrist/head の
   // アンカー候補)を計算する2つの共有ノード。bodyGroup と全14ガーメントへ普通の外部
   // ソケットとしてファンアウトする(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyDimensions', type: 'bodyDimensionsGroup', data: {} },
@@ -65,14 +65,15 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-dims-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bodyDimensions', targetHandle: 'buildScale' },
 
   // bodyDimensions → bodyLayout(共有の配置Y座標計算ノード)。bodyLayoutGroup が入力に
-  // 使う5個の寸法だけを配線する(nodes/definitions/groups/bodyLayoutGroupNode.ts 参照)。
+  // 使う6個の寸法だけを配線する(nodes/definitions/groups/bodyLayoutGroupNode.ts 参照)。
   { id: 'e-body-layout-leg-height', source: 'bodyDimensions', sourceHandle: 'legHeight', target: 'bodyLayout', targetHandle: 'legHeight' },
   { id: 'e-body-layout-torso-length', source: 'bodyDimensions', sourceHandle: 'torsoLength', target: 'bodyLayout', targetHandle: 'torsoLength' },
   { id: 'e-body-layout-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'bodyLayout', targetHandle: 'torsoRadius' },
   { id: 'e-body-layout-head-radius', source: 'bodyDimensions', sourceHandle: 'headRadius', target: 'bodyLayout', targetHandle: 'headRadius' },
   { id: 'e-body-layout-arm-length', source: 'bodyDimensions', sourceHandle: 'armLength', target: 'bodyLayout', targetHandle: 'armLength' },
+  { id: 'e-body-layout-neck-length', source: 'bodyDimensions', sourceHandle: 'neckLength', target: 'bodyLayout', targetHandle: 'neckLength' },
 
-  // bodyDimensions(9出力すべて)→ bodyGroup。bodyGroup 自身は寸法を計算せず、
+  // bodyDimensions(11出力すべて)→ bodyGroup。bodyGroup 自身は寸法を計算せず、
   // 計算済みの値をそのままジェネレーターへ渡すだけ(bodyGroupNode.ts 参照)。
   { id: 'e-body-group-leg-height', source: 'bodyDimensions', sourceHandle: 'legHeight', target: 'bodyGroup', targetHandle: 'legHeight' },
   { id: 'e-body-group-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'bodyGroup', targetHandle: 'legRadius' },
@@ -83,10 +84,13 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-group-arm-length', source: 'bodyDimensions', sourceHandle: 'armLength', target: 'bodyGroup', targetHandle: 'armLength' },
   { id: 'e-body-group-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'bodyGroup', targetHandle: 'armRadius' },
   { id: 'e-body-group-shoulder-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'bodyGroup', targetHandle: 'shoulderSpacing' },
+  { id: 'e-body-group-neck-length', source: 'bodyDimensions', sourceHandle: 'neckLength', target: 'bodyGroup', targetHandle: 'neckLength' },
+  { id: 'e-body-group-neck-radius', source: 'bodyDimensions', sourceHandle: 'neckRadius', target: 'bodyGroup', targetHandle: 'neckRadius' },
 
-  // bodyLayout(bodyGroup 自身のメッシュ配置に使う4出力)→ bodyGroup。
+  // bodyLayout(bodyGroup 自身のメッシュ配置に使う5出力)→ bodyGroup。
   { id: 'e-body-group-leg-center-y', source: 'bodyLayout', sourceHandle: 'legCenterY', target: 'bodyGroup', targetHandle: 'legCenterY' },
   { id: 'e-body-group-torso-center-y', source: 'bodyLayout', sourceHandle: 'torsoCenterY', target: 'bodyGroup', targetHandle: 'torsoCenterY' },
+  { id: 'e-body-group-neck-center-y', source: 'bodyLayout', sourceHandle: 'neckCenterY', target: 'bodyGroup', targetHandle: 'neckCenterY' },
   { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },
   { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
 
