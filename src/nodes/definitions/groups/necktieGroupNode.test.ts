@@ -8,7 +8,7 @@ import '../../definitions';
 
 // necktie は結び目(boxGenerator+translate)とブレード(taperedRectTubeGenerator)を mergeGeometry で
 // 結合する(necktieGroupNode.ts のコメント参照)。寸法はグループ内部の numberInput に閉じ、
-// 前面の深さ(Front Depth)だけが Body Build でスケールされる。既定値での評価結果の
+// 前面の深さ(Front Depth)だけが体の torsoRadius × 1.15 で決まる。既定値での評価結果の
 // バウンディングボックスで、各パラメータの配線先(X/Y/Z・幅/厚み)を検証する。
 describe('necktieGroup', () => {
   const DEFAULTS = {
@@ -19,7 +19,7 @@ describe('necktieGroup', () => {
     bladeBottomWidth: 0.06,
     bladeThickness: 0.008,
     bladeLength: 0.4,
-    frontDepth: 0.3,
+    frontDepth: 1.15 * 0.26,
   };
 
   const geometryOf = (inputs: Record<string, { type: 'number'; value: number }> = {}) => {
@@ -49,8 +49,8 @@ describe('necktieGroup', () => {
     expect(geom.boundingBox!.min.z).toBeCloseTo(DEFAULTS.frontDepth - DEFAULTS.knotThickness / 2, 5);
   });
 
-  it('bodyBuild を掛けた Front Depth で結び目・ブレードとも前へ移る(胴体の壁の拡大に追従する)', () => {
-    const geom = geometryOf({ bodyBuild: { type: 'number', value: 1.2 } })!;
+  it('torsoRadius に比例した Front Depth で結び目・ブレードとも前へ移る(胴体の壁の拡大に追従する)', () => {
+    const geom = geometryOf({ torsoRadius: { type: 'number', value: 0.26 * 1.2 } })!;
     geom.computeBoundingBox();
     expect(geom.boundingBox!.max.z).toBeCloseTo(DEFAULTS.frontDepth * 1.2 + DEFAULTS.knotThickness / 2, 5);
     expect(geom.boundingBox!.min.z).toBeCloseTo(DEFAULTS.frontDepth * 1.2 - DEFAULTS.knotThickness / 2, 5);

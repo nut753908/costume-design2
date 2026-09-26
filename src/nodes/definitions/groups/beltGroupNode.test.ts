@@ -22,11 +22,11 @@ describe('beltGroup', () => {
     expect(geometryOf()!.getAttribute('position').count).toBe(13 * 25);
   });
 
-  it('既定値(radius=0.32, thickness=0.05, bulge=1.15)の範囲に収まる(offsetY=0 のためズレが無い)', () => {
+  it('既定値(radius=1.23 × torsoRadius, thickness=0.05, bulge=1.15)の範囲に収まる(offsetY=0 のためズレが無い)', () => {
     const geom = geometryOf()!;
     geom.computeBoundingBox();
     expect(geom.boundingBox!.min.y).toBeCloseTo(-0.05, 5);
     expect(geom.boundingBox!.max.y).toBeCloseTo(0, 5);
-    expect(geom.boundingBox!.max.x).toBeCloseTo(0.32 * 1.15, 5);
+    expect(geom.boundingBox!.max.x).toBeCloseTo(1.23 * 0.26 * 1.15, 5);
   });
 });

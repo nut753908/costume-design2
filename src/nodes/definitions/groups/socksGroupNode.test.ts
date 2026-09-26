@@ -10,11 +10,13 @@ function num(v: number) {
 }
 
 // socks は靴下1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Ankle Radius(y=0)、
-// 終点=Calf Radius(y=Height)、どちらも bodyBuild でスケール)を mirrorPair で
+// 終点=Calf Radius(y=Height)、どちらも legRadius × 倍率)を mirrorPair で
 // ±Leg Spacing だけ X方向に離した左右対称ペアへまとめる(socksGroupNode.ts のコメント参照)。
 describe('socksGroup', () => {
-  const DEFAULTS = { ankleRadius: 0.09, calfRadius: 0.105, height: 0.22, legSpacing: 0.14, offsetY: 0 };
-  const maxRadius = (bodyBuild: number) => Math.max(DEFAULTS.ankleRadius, DEFAULTS.calfRadius) * bodyBuild;
+  const LEG_RADIUS = 0.11;
+  const DEFAULTS = { ankleRadius: 0.82 * LEG_RADIUS, calfRadius: 0.95 * LEG_RADIUS, height: 0.22, legSpacing: 0.14, offsetY: 0 };
+  // `k` は既定の legRadius に対する倍率。
+  const maxRadius = (k: number) => Math.max(DEFAULTS.ankleRadius, DEFAULTS.calfRadius) * k;
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('socksGroup').evaluate({}, {});
@@ -22,15 +24,15 @@ describe('socksGroup', () => {
     expect(result.sceneOutputMaterial0?.type).toBe('material');
   });
 
-  it('bodyBuild=1 では Calf Radius が Ankle Radius より大きく、そちらが左右対称ペアの最大Xを決める', () => {
+  it('既定では Calf Radius が Ankle Radius より大きく、そちらが左右対称ペアの最大Xを決める', () => {
     const result = getNodeType('socksGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(1), 5);
   });
 
-  it('bodyBuild を大きくすると Ankle Radius と Calf Radius の両方がスケールし、最大Xを押し広げる', () => {
-    const result = getNodeType('socksGroup').evaluate({ bodyBuild: num(1.3) }, {});
+  it('legRadius を大きくすると Ankle Radius と Calf Radius の両方がスケールし、最大Xを押し広げる', () => {
+    const result = getNodeType('socksGroup').evaluate({ legRadius: num(LEG_RADIUS * 1.3) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + DEFAULTS.calfRadius * 1.3, 5);

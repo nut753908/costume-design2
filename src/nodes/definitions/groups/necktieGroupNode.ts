@@ -1,10 +1,10 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyBuildScale } from '../garmentParts';
+import { bodyRadiusScale, bodyRadiusSockets } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** necktie の結び目・ブレードの大きさはスタイル寄りの独立した寸法だが、前面の深さ
- * (`frontDepthIn`)だけは、胴体の壁(Body Build でスケールされる)より前に出す必要があるため、
- * 他のガーメントの「体に触れる半径」と同じく Body Build を掛けてから使う(`scale`)。
+ * (`scale`)だけは、胴体の壁より前に出す必要があるため、他のガーメントの「体に触れる半径」と
+ * 同じく体の胴体半径(外部ソケット Torso Radius)に倍率を掛けて求める。
  * 全体は完全にノードグラフへ展開されている: 結び目(`knotGen`、`boxGenerator`)は
  * `knotTranslate`(`translate`)で `(0, -knotHeight/2, frontDepth)` へ置き、ブレード(`bladeGen`、
  * `taperedRectTubeGenerator`)は結び目の下端 `(0, -knotHeight, frontDepth)` から
@@ -13,11 +13,11 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `merge`(`mergeGeometry`)で結合する。Y座標は `numberHalf`/`numberNegate`/`numberSubtract` の
  * 可視の四則演算チェーンで導出する。複数のノードが同じ値を使うパラメータ(`knotHeightIn`/`bladeThicknessIn`)だけ
  * `numberInput` を置いて配線し、他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
- * Body Build と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
+ * Torso Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
  * shoulderY)は外部ソケット。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
 
-const scale = bodyBuildScale(0.3);
+const scale = bodyRadiusScale('torsoRadius', 1.15);
 
 defineGroupNode({
   type: 'necktieGroup',
@@ -29,7 +29,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
+          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#7a1f2b'),
         ],

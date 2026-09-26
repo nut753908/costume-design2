@@ -9,14 +9,16 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// gloves は手袋1つぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Wrist Radius
-// (bodyBuild でスケール)、終点=Hand Radius、どちらも bodyBuild でスケール)を mirrorPair で ±Arm Spacing だけ
+// gloves は手袋1つぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Wrist Radius、
+// 終点=Hand Radius、どちらも armRadius × 倍率)を mirrorPair で ±Arm Spacing だけ
 // X方向に離した左右対称ペアへまとめる(glovesGroupNode.ts のコメント参照)。mirrorPair は
 // 元のジオメトリ(半径 r で X=0中心)を ±offset へ平行移動するだけなので、結合後の
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
-  const DEFAULTS = { wristRadius: 0.08, handRadius: 0.09, length: 0.14, armSpacing: 0.34, offsetY: 0 };
-  const maxRadius = (bodyBuild: number) => Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius) * bodyBuild;
+  const ARM_RADIUS = 0.075;
+  const DEFAULTS = { wristRadius: 1.07 * ARM_RADIUS, handRadius: 1.2 * ARM_RADIUS, length: 0.14, armSpacing: 0.34, offsetY: 0 };
+  // `k` は既定の armRadius に対する倍率。
+  const maxRadius = (k: number) => Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius) * k;
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
@@ -24,15 +26,15 @@ describe('glovesGroup', () => {
     expect(result.sceneOutputMaterial0?.type).toBe('material');
   });
 
-  it('bodyBuild=1 では Hand Radius が Wrist Radius より大きく、そちらが左右対称ペアの最大Xを決める', () => {
+  it('既定では Hand Radius が Wrist Radius より大きく、そちらが左右対称ペアの最大Xを決める', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + maxRadius(1), 5);
   });
 
-  it('bodyBuild を大きくすると Wrist Radius と Hand Radius の両方がスケールし、最大Xを押し広げる', () => {
-    const result = getNodeType('glovesGroup').evaluate({ bodyBuild: num(3) }, {});
+  it('armRadius を大きくすると Wrist Radius と Hand Radius の両方がスケールし、最大Xを押し広げる', () => {
+    const result = getNodeType('glovesGroup').evaluate({ armRadius: num(ARM_RADIUS * 3) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + DEFAULTS.handRadius * 3, 5);

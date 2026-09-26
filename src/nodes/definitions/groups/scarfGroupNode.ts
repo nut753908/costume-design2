@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyBuildScale } from '../garmentParts';
+import { bodyRadiusScale, bodyRadiusSockets } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** scarf(マフラー)は、他のガーメントのように専用の `build*Geometry()` 関数を一切持たず、
@@ -15,11 +15,11 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * Neck Radius/Tail Width/Segments は他のガーメントと共有されない単独パラメータで、
  * 複数のノードが同じ値を使う Band Thickness/Tail Length(`bandThicknessIn`/`tailLengthIn`)だけ
  * `numberInput` を置いて配線し、他は numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、
+ * Torso Radius(体の胴体半径、`scale` が倍率を掛けて首元の半径にする)と Anchor Y(取り付け位置、
  * ルートの `bodyLayout` 共有ノードから配線される shoulderY)は外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0.08, geometry: 'merge' });
 
-const scale = bodyBuildScale(0.19);
+const scale = bodyRadiusScale('torsoRadius', 0.73);
 
 defineGroupNode({
   type: 'scarfGroup',
@@ -31,7 +31,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
+          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#8a2e3a'),
         ],

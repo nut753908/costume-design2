@@ -67,10 +67,10 @@ const dimensions = [
  * ただ1組だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
  * Height/Build/Shoulder スケール(外部ソケット `heightScale`/`buildScale`/`shoulderScale`)から
  * 各部位の半径・長さを求める9つの「基準値 × スケール」の `numberMultiply`(基準値は `Value` 入力欄
- * の値)を1枚にまとめたもの。ガーメントの『体に触れる半径』(`bodyBuildScale()` の
+ * の値)を1枚にまとめたもの。ガーメントの『体に触れる半径』(`bodyRadiusScale()` の
  * `numberMultiply`)と同じ粒度までノードグラフ上に展開しており、「→」ボタンで中に入れば
  * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
- * Height/Shoulder スケールは、`bodyBuild` のようにルートで配線するのではなく、グループカードの
+ * Height/Shoulder スケールは、ルートで配線するのではなく、グループカードの
  * 入力欄(未接続時の既定値 1)から調整する。`headRadius` はスケール無しで、`groupOutput` の
  * `headRadius` の入力欄の値(0.16)がそのまま出力になる。 */
 defineGroupNode({

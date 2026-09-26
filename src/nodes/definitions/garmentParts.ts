@@ -1,15 +1,27 @@
 import type { GraphEdge, GraphNode } from '../types';
 
-/** 「体に触れる半径」を Body Build でスケールする定型: 生の値(`rawValue`)× 外部ソケット
- * `input.bodyBuild` を `scale`(`numberMultiply`)で掛ける。生の値は `scale` の `Value` 入力欄に
- * 直接持たせる(他のノードと共有しない単独パラメータのため)。出力は `scale.value`。1つのグループで
- * 複数の半径をスケールする場合は、`scaleId` で別々の id を付ける。`input`(groupInput、`bodyBuild`
- * ソケットを持つ)が別途 `internalNodes` に存在することを前提にする(`nodes/CLAUDE.md` の
- * 「グループノード」節参照)。 */
-export function bodyBuildScale(rawValue: number, scaleId = 'scale'): { nodes: GraphNode[]; edges: GraphEdge[] } {
+/** ガーメントの「体に触れる半径」が追従する体の半径の外部ソケット(id は `bodyDimensions` の出力と
+ * 同じ)。既定値は `bodyDimensions` の基準値と同じなので、未接続でも既定の体型に合った大きさになる。 */
+export const bodyRadiusSockets = {
+  torsoRadius: { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.26 },
+  legRadius: { id: 'legRadius', label: 'Leg Radius', type: 'number', default: 0.11 },
+  armRadius: { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0.075 },
+} as const;
+
+export type BodyRadius = keyof typeof bodyRadiusSockets;
+
+/** 「体に触れる半径」を体の半径に追従させる定型: 体の半径(外部ソケット `input.<radius>`)×
+ * 倍率(`scale` の `Value` 入力欄)を `scale`(`numberMultiply`)で求める。出力は `scale.value`。
+ * 1つのグループで複数の半径を求める場合は、`scaleId` で別々の id を付ける。`input`(groupInput、
+ * `bodyRadiusSockets[radius]` を持つ)が別途 `internalNodes` に存在することを前提にする。 */
+export function bodyRadiusScale(
+  radius: BodyRadius,
+  ratio: number,
+  scaleId = 'scale',
+): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
-    nodes: [{ id: scaleId, type: 'numberMultiply', data: { value: rawValue } }],
-    edges: [{ source: 'input', sourceHandle: 'bodyBuild', target: scaleId, targetHandle: 'factor' }],
+    nodes: [{ id: scaleId, type: 'numberMultiply', data: { value: ratio } }],
+    edges: [{ source: 'input', sourceHandle: radius, target: scaleId, targetHandle: 'factor' }],
   };
 }
 

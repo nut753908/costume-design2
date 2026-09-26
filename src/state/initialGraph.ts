@@ -14,8 +14,7 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 // 登録内容(カードの高さの見積もり)に依存するため、ここで definitions を読み込んでから
 // 計算する。新しいガーメント種を追加する際は add-garment-type スキル・下記の慣例に従うこと。
 const initialNodeDefs: Omit<Node, 'position'>[] = [
-  // bodyBuild は慣例的な id を持つシードノード。`bodyDimensions`(下記)への配線に加え、
-  // ガーメント自身の半径スケーリング用に各ガーメントへも直接配線される(下記参照)。
+  // bodyBuild は慣例的な id を持つシードノードで、`bodyDimensions`(下記)へ配線される。
   // Height/Shoulder は `bodyDimensions` からしか参照されない単独パラメータのため、
   // `bodyDimensionsGroup` の外部ソケット(`heightScale`/`shoulderScale`)として、この階層では
   // 配線せずグループカードの入力欄から調整する(nodes/CLAUDE.md の「グループノード」節参照)。
@@ -91,25 +90,25 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },
   { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
 
-  // ガーメント自身の「体に触れる半径」を bodyBuild でスケールするグループ(12種)への配線。
-  // アンカー座標の計算は下記の bodyLayout → anchorY の配線が別途担うため、ここでの bodyBuild
-  // はあくまで各ガーメントの半径スケーリング専用。
-  { id: 'e-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'skirtGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-pants-waist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'pantsGroup', targetHandle: 'bodyBuild' },
+  // ガーメント自身の「体に触れる半径」が追従する体の半径(胴体/脚/腕)を、bodyDimensions から
+  // 12種のガーメントへ配線する(各グループの内部で倍率を掛ける)。
+  { id: 'e-skirt-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'skirtGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-pants-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'pantsGroup', targetHandle: 'legRadius' },
   { id: 'e-pants-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'pantsGroup', targetHandle: 'legSpacing' },
   { id: 'e-shoes-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'shoesGroup', targetHandle: 'legSpacing' },
-  { id: 'e-shoes-sole-build', source: 'bodyBuild', sourceHandle: 'value', target: 'shoesGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-shoes-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'shoesGroup', targetHandle: 'legRadius' },
   { id: 'e-gloves-arm-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'glovesGroup', targetHandle: 'armSpacing' },
-  { id: 'e-gloves-wrist-build', source: 'bodyBuild', sourceHandle: 'value', target: 'glovesGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-belt-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'beltGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-scarf-neck-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'scarfGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-jacket-shoulder-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'jacketGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-gloves-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'glovesGroup', targetHandle: 'armRadius' },
+  { id: 'e-belt-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'beltGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-scarf-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'scarfGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-jacket-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'jacketGroup', targetHandle: 'torsoRadius' },
   { id: 'e-socks-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'socksGroup', targetHandle: 'legSpacing' },
-  { id: 'e-socks-ankle-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'socksGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-top-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'topGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-bag-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bagGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-necktie-front-depth-build', source: 'bodyBuild', sourceHandle: 'value', target: 'necktieGroup', targetHandle: 'bodyBuild' },
-  { id: 'e-dress-torso-radius-build', source: 'bodyBuild', sourceHandle: 'value', target: 'dressGroup', targetHandle: 'bodyBuild' },
+  { id: 'e-socks-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'socksGroup', targetHandle: 'legRadius' },
+  { id: 'e-top-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'topGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-top-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'topGroup', targetHandle: 'armRadius' },
+  { id: 'e-bag-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'bagGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-necktie-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'necktieGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-dress-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'dressGroup', targetHandle: 'torsoRadius' },
 
   // garmentPlacement(取り付け位置をジオメトリへ焼き込むノード、nodes/definitions/
   // generic/garmentPlacement.ts 参照)の `anchorY` へ、bodyLayout が計算した5つのアンカー候補

@@ -9,9 +9,9 @@ import '../../definitions';
 // boxGenerator+translate、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
 // チェーンで導出)を merge で1つにまとめる配線が正しいかを検証する(bagGroupNode.ts の
 // コメント参照)。寸法パラメータはグループ内部の numberInput に閉じており、外部から注入できる
-// のは bodyBuild だけ(体の側面の位置と前面の深さに掛かる)。それ以外は既定値での評価結果を検証する。
+// のは torsoRadius だけ(体の側面の位置と前面の深さに掛かる)。それ以外は既定値での評価結果を検証する。
 describe('bagGroup', () => {
-  const DEFAULTS = { hipOffset: 0.26, drop: 0.55, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
+  const DEFAULTS = { torsoRadius: 0.26, hipOffsetRatio: 1, frontDepthRatio: 0.69, drop: 0.55, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('bagGroup').evaluate({}, {});
@@ -41,29 +41,30 @@ describe('bagGroup', () => {
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom, 2);
   });
 
-  it('バッグ本体は bagFrontDepthCalc(= 0.18、ストラップの終端 endZ と共有する固定値)の深さに置かれる', () => {
+  it('バッグ本体は bagFrontDepthCalc(= 0.69 × torsoRadius、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
     // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translate の Z への配線が
     // 正しいことの検証になる。
     const result = getNodeType('bagGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    const bagFrontDepth = 0.18;
+    const bagFrontDepth = DEFAULTS.frontDepthRatio * DEFAULTS.torsoRadius;
     const expectedMaxZ = bagFrontDepth + DEFAULTS.bagDepth / 2;
     expect(geom!.boundingBox!.max.z).toBeCloseTo(expectedMaxZ, 2);
   });
 
-  it('bodyBuild を掛けた分だけ、体の側面の位置(Hip Offset)と前面の深さ(Bag Front Depth)が外へ動く', () => {
-    const bounds = (bodyBuild?: number) => {
-      const result = getNodeType('bagGroup').evaluate(bodyBuild === undefined ? {} : { bodyBuild: { type: 'number', value: bodyBuild } }, {});
+  it('torsoRadius に比例して、体の側面の位置(Hip Offset)と前面の深さ(Bag Front Depth)が外へ動く', () => {
+    const bounds = (torsoRadius?: number) => {
+      const result = getNodeType('bagGroup').evaluate(torsoRadius === undefined ? {} : { torsoRadius: { type: 'number', value: torsoRadius } }, {});
       const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
       geom!.computeBoundingBox();
       return geom!.boundingBox!;
     };
     const base = bounds();
-    const wide = bounds(1.3);
-    // バッグ本体は x = -hipOffset × build、z = 0.18 × build を中心に置かれる(幅・奥行きは不変)。
-    expect(wide.min.x - base.min.x).toBeCloseTo(-DEFAULTS.hipOffset * 0.3, 2);
-    expect(wide.max.z - base.max.z).toBeCloseTo(0.18 * 0.3, 2);
+    const delta = 0.1;
+    const wide = bounds(DEFAULTS.torsoRadius + delta);
+    // バッグ本体は x = -1.0 × torsoRadius、z = 0.69 × torsoRadius を中心に置かれる(幅・奥行きは不変)。
+    expect(wide.min.x - base.min.x).toBeCloseTo(-DEFAULTS.hipOffsetRatio * delta, 2);
+    expect(wide.max.z - base.max.z).toBeCloseTo(DEFAULTS.frontDepthRatio * delta, 2);
   });
 });

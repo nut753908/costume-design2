@@ -10,14 +10,16 @@ function num(v: number) {
 }
 
 // shoes は靴1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Sole Radius
-// (bodyBuild でスケール、y=0)、終点=Cuff Radius(y=Height)、どちらも bodyBuild でスケール)に `scaleZ` で
+// (y=0)、終点=Cuff Radius(y=Height)、どちらも legRadius × 倍率)に `scaleZ` で
 // つま先方向(Z)だけ Toe Length 倍のスケールを掛けてから、mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(shoesGroupNode.ts のコメント参照)。scaleZ は
 // `.scale(1, 1, z)` で Z軸だけを拡大するため(X軸は不変)、mirror 後の最大Xは
 // scaleZ の影響を受けない。
 describe('shoesGroup', () => {
-  const DEFAULTS = { soleRadius: 0.13, cuffRadius: 0.1, height: 0.12, toeLength: 1.5, legSpacing: 0.14, offsetY: 0 };
-  const maxRadius = (bodyBuild: number) => Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius) * bodyBuild;
+  const LEG_RADIUS = 0.11;
+  const DEFAULTS = { soleRadius: 1.18 * LEG_RADIUS, cuffRadius: 0.91 * LEG_RADIUS, height: 0.12, toeLength: 1.5, legSpacing: 0.14, offsetY: 0 };
+  // `k` は既定の legRadius に対する倍率。
+  const maxRadius = (k: number) => Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius) * k;
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('shoesGroup').evaluate({}, {});
@@ -32,15 +34,15 @@ describe('shoesGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(1), 5);
   });
 
-  it('bodyBuild が大きくなるほど Sole Radius がスケールし最大Xを押し広げる', () => {
-    const result = getNodeType('shoesGroup').evaluate({ bodyBuild: num(2) }, {});
+  it('legRadius が大きくなるほど Sole Radius がスケールし最大Xを押し広げる', () => {
+    const result = getNodeType('shoesGroup').evaluate({ legRadius: num(LEG_RADIUS * 2) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(2), 5);
   });
 
-  it('bodyBuild を掛けた Cuff Radius が、履き口(最上端)の半径になる', () => {
-    const result = getNodeType('shoesGroup').evaluate({ bodyBuild: num(1.3) }, {});
+  it('legRadius × 倍率の Cuff Radius が、履き口(最上端)の半径になる', () => {
+    const result = getNodeType('shoesGroup').evaluate({ legRadius: num(LEG_RADIUS * 1.3) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     const position = geom!.getAttribute('position');
     let maxY = -Infinity;

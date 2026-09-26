@@ -70,7 +70,7 @@ describe('migrateGroupToTemplate', () => {
 
   it('型が変わっている同じ id の値は引き継がない', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [n('scale', 'colorInput', { hex: '#fff' })]);
-    expect(migrated.nodes.find((node) => node.id === 'scale')?.data.value).toBe(0.3);
+    expect(migrated.nodes.find((node) => node.id === 'scale')?.data.value).toBe(1.15);
   });
 
   it('同じ id・型の numberInput/colorInput の値を引き継ぐ(最新のテンプレートにも入力ノードがあるグループ)', () => {
@@ -83,11 +83,11 @@ describe('migrateGroupToTemplate', () => {
     const input = template.nodes.find((node) => node.id === 'input')!;
     const edited = {
       ...input,
-      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'bodyBuild' ? { ...sock, default: 1.5 } : sock)) },
+      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'torsoRadius' ? { ...sock, default: 0.4 } : sock)) },
     };
     const migrated = migrateGroupToTemplate('skirtGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'input')?.data.sockets as { id: string; default: unknown }[];
-    expect(sockets.find((sock) => sock.id === 'bodyBuild')?.default).toBe(1.5);
+    expect(sockets.find((sock) => sock.id === 'torsoRadius')?.default).toBe(0.4);
   });
 
   it('同じ id の groupOutput のソケットの既定値(Group Output で編集した値)を引き継ぐ', () => {
@@ -109,6 +109,6 @@ describe('migrateGroupToTemplate', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'numberInput', { value: 0.45 })]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
     expect(byId.has('waistRadiusIn')).toBe(false);
-    expect(byId.get('scale')?.data.value).toBe(0.3);
+    expect(byId.get('scale')?.data.value).toBe(1.15);
   });
 });

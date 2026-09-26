@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyBuildScale } from '../garmentParts';
+import { bodyRadiusScale, bodyRadiusSockets } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** beltRadiusScale(numberMultiply)+material(toonMaterial)+
@@ -8,11 +8,11 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * まとめたグループノード。
  * Radius/Thickness/Bulge/Segments は他のガーメントと共有されない単独パラメータのため、
  * numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Body Build(半径スケーリング用)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
+ * Torso Radius(体の胴体半径、`scale` が倍率を掛ける)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される waistY)は外部ソケットのまま(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'band' });
 
-const scale = bodyBuildScale(0.32);
+const scale = bodyRadiusScale('torsoRadius', 1.23);
 
 defineGroupNode({
   type: 'beltGroup',
@@ -24,7 +24,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
+          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#3a2e26'),
         ],

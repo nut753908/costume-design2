@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyBuildScale } from '../garmentParts';
+import { bodyRadiusScale, bodyRadiusSockets } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** scale(numberMultiply)+profile(easedLatheCurve、肩の Torso Radius から裾の Hem Radius へ
@@ -7,12 +7,12 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * placement(garmentPlacement)+sceneOut(sceneOutput)を1枚に
  * まとめたグループノード。Torso Radius/Hem Radius/Length/Neckline/Neckline Depth は他の
  * ガーメントと共有されない単独パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Body Build(半径スケーリング用)と
+ * Torso Radius(体の胴体半径、`scale` が倍率を掛ける)と
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される shoulderY)は
  * 外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
 
-const scale = bodyBuildScale(0.29);
+const scale = bodyRadiusScale('torsoRadius', 1.12);
 
 defineGroupNode({
   type: 'dressGroup',
@@ -24,7 +24,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'bodyBuild', label: 'Body Build', type: 'number', default: 1 },
+          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#3d7a72'),
         ],

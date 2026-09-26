@@ -142,16 +142,26 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     expect(edge?.sourceHandle).toBe('shoulderSpacing');
   });
 
-  it('necktieGroup.bodyBuild が bodyBuild に接続されている(前面の深さが胴体の壁の拡大に追従する)', () => {
-    const edge = initialEdges.find((e) => e.target === 'necktieGroup' && e.targetHandle === 'bodyBuild');
-    expect(edge?.source).toBe('bodyBuild');
-    expect(edge?.sourceHandle).toBe('value');
-  });
-
-  it('bagGroup.bodyBuild が bodyBuild に接続されている(体の側面の位置と前面の深さが胴体の壁の拡大に追従する)', () => {
-    const edge = initialEdges.find((e) => e.target === 'bagGroup' && e.targetHandle === 'bodyBuild');
-    expect(edge?.source).toBe('bodyBuild');
-    expect(edge?.sourceHandle).toBe('value');
+  // ガーメントの「体に触れる半径」は体の半径(胴体/脚/腕)に倍率を掛けて求めるため、配線が外れると
+  // 体型を変えても服だけ元の大きさのまま残る。
+  it.each([
+    ['skirtGroup', 'torsoRadius'],
+    ['beltGroup', 'torsoRadius'],
+    ['dressGroup', 'torsoRadius'],
+    ['topGroup', 'torsoRadius'],
+    ['topGroup', 'armRadius'],
+    ['jacketGroup', 'torsoRadius'],
+    ['scarfGroup', 'torsoRadius'],
+    ['necktieGroup', 'torsoRadius'],
+    ['bagGroup', 'torsoRadius'],
+    ['pantsGroup', 'legRadius'],
+    ['shoesGroup', 'legRadius'],
+    ['socksGroup', 'legRadius'],
+    ['glovesGroup', 'armRadius'],
+  ])('%s.%s が bodyDimensions の同名の出力に接続されている', (target, handle) => {
+    const edge = initialEdges.find((e) => e.target === target && e.targetHandle === handle);
+    expect(edge?.source).toBe('bodyDimensions');
+    expect(edge?.sourceHandle).toBe(handle);
   });
 
   it('hatGroup/glassesGroup.headRadius が bodyGroup の頭と同じ bodyDimensions.headRadius に接続されている', () => {
