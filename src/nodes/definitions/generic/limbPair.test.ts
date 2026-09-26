@@ -23,10 +23,10 @@ describe('limbPair', () => {
     expect(box.min.x).toBeCloseTo(-(0.3 + 0.1), 3);
   });
 
-  it('centerY を中心に length だけ縦に広がる', () => {
+  it('centerY を中心に length だけ縦に広がり、上端には radius の球(関節)が乗る', () => {
     const box = evaluateBox(base);
     expect(box.min.y).toBeCloseTo(1 - 0.3, 5);
-    expect(box.max.y).toBeCloseTo(1 + 0.3, 5);
+    expect(box.max.y).toBeCloseTo(1 + 0.3 + 0.1, 5);
   });
 
   it('taperRatio は先端側(radiusBottom)だけを細くし、根元の広がりには影響しない', () => {

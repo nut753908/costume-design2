@@ -7,7 +7,10 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 根元の半径 `radius` はそのまま `cylinderGenerator.radiusTop` へ、`taperRatio` を掛けた値を
  * `radiusBottom` へ渡す(`taper`、`numberMultiply`)。`taperRatio` は腕と脚で別々の値を
  * 持てるよう、このグループの内部ではなく呼び出し側(`bodyGroup`)の `numberInput` から外部
- * ソケットとして受け取る。 */
+ * ソケットとして受け取る。
+ *
+ * 根元(上端)には `radius` の球(`joint`)を結合し、円柱の平らな切り口をふさいで肩/股の丸みに
+ * つなぐ(切り口のままだと、なで肩や腰の丸みの外側に平らな面が浮いて見える)。 */
 defineGroupNode({
   type: 'limbPair',
   label: 'Limb Pair',
@@ -27,6 +30,10 @@ defineGroupNode({
     },
     { id: 'taper', type: 'numberMultiply', data: {} },
     { id: 'gen', type: 'cylinderGenerator', data: {} },
+    { id: 'joint', type: 'sphereGenerator', data: {} },
+    { id: 'halfLength', type: 'numberHalf', data: {} },
+    { id: 'jointTranslate', type: 'translate', data: {} },
+    { id: 'withJoint', type: 'mergeGeometry', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'translate', type: 'translate', data: {} },
     {
@@ -43,7 +50,13 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'taperRatio', target: 'taper', targetHandle: 'factor' },
     { source: 'taper', sourceHandle: 'value', target: 'gen', targetHandle: 'radiusBottom' },
     { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'height' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'radius', target: 'joint', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'length', target: 'halfLength', targetHandle: 'value' },
+    { source: 'joint', sourceHandle: 'geometry', target: 'jointTranslate', targetHandle: 'geometry' },
+    { source: 'halfLength', sourceHandle: 'value', target: 'jointTranslate', targetHandle: 'y' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
+    { source: 'jointTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
+    { source: 'withJoint', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'spacing', target: 'mirror', targetHandle: 'offset' },
     { source: 'mirror', sourceHandle: 'geometry', target: 'translate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'centerY', target: 'translate', targetHandle: 'y' },

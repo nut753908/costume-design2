@@ -52,14 +52,14 @@ const dimensions = [
   dimension({ name: 'legSpacing', base: 0.08, scale: BUILD_SCALE }),
   dimension({ name: 'torsoLength', base: 0.28, scale: HEIGHT_SCALE }),
   dimension({ name: 'torsoRadius', base: 0.14, scale: BUILD_SCALE }),
-  dimension({ name: 'armLength', base: 0.68, scale: HEIGHT_SCALE }),
+  dimension({ name: 'armLength', base: 0.64, scale: HEIGHT_SCALE }),
   dimension({ name: 'neckLength', base: 0.08, scale: HEIGHT_SCALE }),
   dimension({ name: 'neckRadius', base: 0.045, scale: BUILD_SCALE }),
   dimension({ name: 'armRadius', base: 0.04, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({
     name: 'shoulderSpacing',
-    base: 0.165,
+    base: 0.15,
     scale: SHOULDER_SCALE,
     preScale: { id: 'shoulderSpacingBuildScale', source: BUILD_SCALE },
   }),

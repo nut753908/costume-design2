@@ -25,11 +25,6 @@ describe('bodyLayoutGroup', () => {
     expect(result.legCenterY).toEqual(num(0.425));
   });
 
-  it('torsoCenterY = waistY + (torsoLength + torsoRadius*2) / 2', () => {
-    const result = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
-    expect(result.torsoCenterY).toEqual(num(1.385));
-  });
-
   it('neckCenterY = shoulderY + neckLength / 2', () => {
     const result = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
     expect(result.neckCenterY?.type === 'number' && result.neckCenterY.value).toBeCloseTo(1.95, 10);
@@ -40,9 +35,9 @@ describe('bodyLayoutGroup', () => {
     expect(result.headCenterY?.type === 'number' && result.headCenterY.value).toBeCloseTo(2.14, 10);
   });
 
-  it('armCenterY = shoulderY - armLength/2 - torsoRadius*0.4', () => {
+  it('armCenterY = shoulderY - armLength/2 - torsoRadius*0.8', () => {
     const result = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
-    expect(result.armCenterY?.type === 'number' && result.armCenterY.value).toBeCloseTo(1.506, 10);
+    expect(result.armCenterY?.type === 'number' && result.armCenterY.value).toBeCloseTo(1.402, 10);
   });
 
   it('feetY を変えると、feetY・waistY・体のすべての Y 座標が同じだけ連動して動く', () => {
@@ -50,7 +45,7 @@ describe('bodyLayoutGroup', () => {
     const raised = getNodeType('bodyLayoutGroup').evaluate({ ...inputs, feetY: num(0.3) }, {});
     const value = (r: Record<string, { type: string; value?: unknown }>, key: string) => (r[key] as { value: number }).value;
     expect(value(raised, 'feetY')).toBeCloseTo(0.3, 10);
-    for (const key of ['waistY', 'legCenterY', 'torsoCenterY', 'neckCenterY', 'headCenterY', 'armCenterY', 'shoulderY', 'wristY']) {
+    for (const key of ['waistY', 'legCenterY', 'neckCenterY', 'headCenterY', 'armCenterY', 'shoulderY', 'wristY']) {
       expect(value(raised, key) - value(base, key), key).toBeCloseTo(0.3, 10);
     }
   });
@@ -64,7 +59,6 @@ describe('bodyLayoutGroup', () => {
   it('未接続なら全入力が0扱いになり、全出力も0になる', () => {
     const result = getNodeType('bodyLayoutGroup').evaluate({}, {});
     expect(result.legCenterY).toEqual(num(0));
-    expect(result.torsoCenterY).toEqual(num(0));
     expect(result.headCenterY).toEqual(num(0));
     expect(result.armCenterY).toEqual(num(0));
   });

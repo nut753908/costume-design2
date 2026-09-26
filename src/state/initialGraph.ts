@@ -20,7 +20,7 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
   // 配線せずグループカードの入力欄から調整する(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyBuild', type: 'numberInput', data: { value: 1} },
 
-  // ボディの寸法(11個)・配置Y座標(9個、うち5個は waist/shoulder/feet/wrist/head の
+  // ボディの寸法(11個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
   // アンカー候補)を計算する2つの共有ノード。bodyGroup と全14ガーメントへ普通の外部
   // ソケットとしてファンアウトする(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyDimensions', type: 'bodyDimensionsGroup', data: {} },
@@ -89,7 +89,7 @@ export const initialEdges: Edge[] = [
 
   // bodyLayout(bodyGroup 自身のメッシュ配置に使う5出力)→ bodyGroup。
   { id: 'e-body-group-leg-center-y', source: 'bodyLayout', sourceHandle: 'legCenterY', target: 'bodyGroup', targetHandle: 'legCenterY' },
-  { id: 'e-body-group-torso-center-y', source: 'bodyLayout', sourceHandle: 'torsoCenterY', target: 'bodyGroup', targetHandle: 'torsoCenterY' },
+  { id: 'e-body-group-waist-y', source: 'bodyLayout', sourceHandle: 'waistY', target: 'bodyGroup', targetHandle: 'waistY' },
   { id: 'e-body-group-neck-center-y', source: 'bodyLayout', sourceHandle: 'neckCenterY', target: 'bodyGroup', targetHandle: 'neckCenterY' },
   { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },
   { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
@@ -111,6 +111,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-socks-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'socksGroup', targetHandle: 'legSpacing' },
   { id: 'e-socks-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'socksGroup', targetHandle: 'legRadius' },
   { id: 'e-top-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'topGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-top-shoulder-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'topGroup', targetHandle: 'shoulderSpacing' },
   { id: 'e-top-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'topGroup', targetHandle: 'armRadius' },
   { id: 'e-bag-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'bagGroup', targetHandle: 'torsoRadius' },
   { id: 'e-necktie-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'necktieGroup', targetHandle: 'torsoRadius' },

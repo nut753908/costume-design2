@@ -21,9 +21,9 @@ describe('bodyDimensionsGroup', () => {
     expect(result.torsoLength).toEqual(num(0.28));
     expect(result.torsoRadius).toEqual(num(0.14));
     expect(result.headRadius).toEqual(num(0.28));
-    expect(result.armLength).toEqual(num(0.68));
+    expect(result.armLength).toEqual(num(0.64));
     expect(result.armRadius).toEqual(num(0.04));
-    expect(result.shoulderSpacing).toEqual(num(0.165));
+    expect(result.shoulderSpacing).toEqual(num(0.15));
     expect(result.neckLength).toEqual(num(NECK_LENGTH));
     expect(result.neckRadius).toEqual(num(NECK_RADIUS));
   });
@@ -33,7 +33,7 @@ describe('bodyDimensionsGroup', () => {
     expect(result.legRadius).toEqual(num(0.06 * 2));
     expect(result.torsoRadius).toEqual(num(0.14 * 2));
     expect(result.armRadius).toEqual(num(0.04 * 2));
-    expect(result.shoulderSpacing).toEqual(num(0.165 * 2));
+    expect(result.shoulderSpacing).toEqual(num(0.15 * 2));
     expect(result.neckRadius).toEqual(num(NECK_RADIUS * 2));
     expect(result.headRadius).toEqual(num(0.28));
     expect(result.legHeight).toEqual(num(1.04));
@@ -43,15 +43,15 @@ describe('bodyDimensionsGroup', () => {
     const result = getNodeType('bodyDimensionsGroup').evaluate({ heightScale: num(1.2) }, {});
     expect(result.legHeight).toEqual(num(1.04 * 1.2));
     expect(result.torsoLength).toEqual(num(0.28 * 1.2));
-    expect(result.armLength).toEqual(num(0.68 * 1.2));
+    expect(result.armLength).toEqual(num(0.64 * 1.2));
     expect(result.neckLength).toEqual(num(NECK_LENGTH * 1.2));
     expect(result.legRadius).toEqual(num(0.06));
-    expect(result.shoulderSpacing).toEqual(num(0.165));
+    expect(result.shoulderSpacing).toEqual(num(0.15));
   });
 
   it('shoulderScale は shoulderSpacing だけをスケールする', () => {
     const result = getNodeType('bodyDimensionsGroup').evaluate({ shoulderScale: num(1.5) }, {});
-    expect(result.shoulderSpacing).toEqual(num(0.165 * 1.5));
+    expect(result.shoulderSpacing).toEqual(num(0.15 * 1.5));
     expect(result.legHeight).toEqual(num(1.04));
     expect(result.torsoRadius).toEqual(num(0.14));
   });

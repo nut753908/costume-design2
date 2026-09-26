@@ -19,7 +19,7 @@ describe('topGroup', () => {
     return geom!.boundingBox!;
   };
 
-  it('torsoRadius × 1.12 が Top の胴体半径と袖の付け根位置の両方へ渡る', () => {
+  it('torsoRadius × 1.12 が Top の胴体半径になり、袖の横位置は shoulderSpacing で決まる', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({ torsoRadius: { type: 'number', value: 0.3 } }, {});
@@ -27,9 +27,10 @@ describe('topGroup', () => {
     } finally {
       spy.mockRestore();
     }
-    // 袖の付け根は胴体半径の0.75倍の位置(sleevePair の Attach Inset)。
-    const wide = sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } });
-    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo((0.3 - 0.14) * 1.12 * 0.75, 5);
+    // 袖は ±shoulderSpacing(腕の中心)に置かれ、胴体半径では横に動かない。
+    expect(sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } }).max.x).toBeCloseTo(sleevesOnly().max.x, 5);
+    const wide = sleevesOnly({ shoulderSpacing: { type: 'number', value: 0.25 } });
+    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo(0.25 - 0.15, 5);
   });
 
   it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.14)になる', () => {
@@ -42,10 +43,9 @@ describe('topGroup', () => {
     }
   });
 
-  it('袖の太さは armRadius に追従し、袖の下端(Y)は torsoRadius では動かない', () => {
-    // 袖の下端は袖の長さと太さで決まる。
+  it('袖の太さは armRadius に追従し、袖の付け根は torsoRadius × 0.5 だけ下がる(腕の上端の関節を覆う高さ)', () => {
     const base = sleevesOnly();
-    expect(sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } }).min.y).toBeCloseTo(base.min.y, 6);
+    expect(sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } }).min.y).toBeCloseTo(base.min.y - (0.3 - 0.14) * 0.5, 5);
     expect(sleevesOnly({ armRadius: { type: 'number', value: 0.15 } }).min.y).toBeLessThan(base.min.y);
   });
 
@@ -67,7 +67,7 @@ describe('topGroup', () => {
     expect(withSleeves).toBeGreaterThan(topOnly);
   });
 
-  it('内部の sleeveGen → merge の配線を切ると、Top 本体だけが描画される', () => {
+  it('内部の sleeveGen からの配線を切ると、Top 本体だけが描画される', () => {
     const def = getNodeType('topGroup');
     const data = def.createDefaultData() as { nodes: unknown[]; edges: { source: string; target: string }[] };
     const withoutSleeves = { ...data, edges: data.edges.filter((e) => e.source !== 'sleeveGen') };

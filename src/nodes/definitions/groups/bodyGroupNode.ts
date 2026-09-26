@@ -9,11 +9,11 @@ import { colorSocket } from '../garmentOutput';
  * 共有ノード)が計算済みの生の値(半径・長さ・Y座標)そのもので、`bodyGroup` 自身は
  * スケール計算を行わない。
  *
- * 胴体(`capsuleGenerator`)・首(`cylinderGenerator`)・頭(`sphereGenerator`)をそれぞれ `translate`(Y だけを配線)で配置し、
+ * 胴体(`torsoShape`、`generic/torsoShape.ts`)・首(`cylinderGenerator`)・頭(`sphereGenerator`)をそれぞれ `translate`(Y だけを配線)で配置し、
  * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
- * 5つを `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
+ * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
- * 形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。5パーツは同じマテリアルなので、個別の
+ * 形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。全パーツが同じマテリアルなので、個別の
  * `sceneOutput`(=個別メッシュ)として描画しても1つに結合してから描画しても見た目は変わらず、
  * 結合した方がノードグラフ上の階層(ネストしたグループ)が1段減る。
  *
@@ -23,7 +23,7 @@ import { colorSocket } from '../garmentOutput';
  *
  * 肌色は他のガーメントと同じ外部ソケット `color`(`colorSocket()`)で、`material`(`toonMaterial`)の
  * `color` へ配線し、`material` から `sceneOut` の `material` へ1本配線するだけでよい
- * (5パーツすべてが同じマテリアルを使う)。 */
+ * (全パーツが同じマテリアルを使う)。 */
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',
@@ -46,7 +46,7 @@ defineGroupNode({
           { id: 'neckLength', label: 'Neck Length', type: 'number', default: 0 },
           { id: 'neckRadius', label: 'Neck Radius', type: 'number', default: 0 },
           { id: 'legCenterY', label: 'Leg Center Y', type: 'number', default: 0 },
-          { id: 'torsoCenterY', label: 'Torso Center Y', type: 'number', default: 0 },
+          { id: 'waistY', label: 'Waist Y', type: 'number', default: 0 },
           { id: 'neckCenterY', label: 'Neck Center Y', type: 'number', default: 0 },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 0 },
           { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0 },
@@ -56,8 +56,8 @@ defineGroupNode({
     },
     { id: 'material', type: 'toonMaterial', data: {} },
 
-    // 胴体(capsuleGenerator)。
-    { id: 'torsoGen', type: 'capsuleGenerator', data: {} },
+    // 胴体(torsoShape、原点が股)。
+    { id: 'torsoGen', type: 'torsoShape', data: {} },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
@@ -74,7 +74,7 @@ defineGroupNode({
     { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.85 } },
     { id: 'legPair', type: 'limbPair', data: { taperRatio: 0.85 } },
 
-    // 5パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
+    // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
     { id: 'merge', type: 'mergeGeometry', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
@@ -82,7 +82,7 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoGen', targetHandle: 'length' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'torsoCenterY', target: 'torsoTranslate', targetHandle: 'y' },
+    { source: 'input', sourceHandle: 'waistY', target: 'torsoTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'neckRadius', target: 'neckGen', targetHandle: 'radiusTop' },
     { source: 'input', sourceHandle: 'neckRadius', target: 'neckGen', targetHandle: 'radiusBottom' },
@@ -99,6 +99,7 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'armLength', target: 'armPair', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armPair', targetHandle: 'spacing' },
     { source: 'input', sourceHandle: 'armCenterY', target: 'armPair', targetHandle: 'centerY' },
+
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legPair', targetHandle: 'length' },

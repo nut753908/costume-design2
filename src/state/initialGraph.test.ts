@@ -38,7 +38,7 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
       expect(edge?.source).toBe('bodyDimensions');
       expect(edge?.sourceHandle).toBe(socket);
     }
-    const layoutSockets = ['legCenterY', 'torsoCenterY', 'neckCenterY', 'headCenterY', 'armCenterY'];
+    const layoutSockets = ['legCenterY', 'waistY', 'neckCenterY', 'headCenterY', 'armCenterY'];
     for (const socket of layoutSockets) {
       const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
       expect(edge?.source).toBe('bodyLayout');
@@ -150,6 +150,7 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     ['dressGroup', 'torsoRadius'],
     ['topGroup', 'torsoRadius'],
     ['topGroup', 'armRadius'],
+    ['topGroup', 'shoulderSpacing'],
     ['jacketGroup', 'torsoRadius'],
     ['scarfGroup', 'neckRadius'],
     ['scarfGroup', 'torsoRadius'],
