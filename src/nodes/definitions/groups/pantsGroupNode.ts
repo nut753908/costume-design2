@@ -20,12 +20,12 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * shoesGroup/socksGroup と共に受け取るため、Torso Radius・Leg Radius・
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)と合わせて
  * 外部ソケットのまま。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
+const output = garmentOutput({ offsetY: 0.1, geometry: 'mirror' });
 
 const scale = bodyRadiusScale('torsoRadius', 0.62);
 const hemScale = bodyRadiusScale('legRadius', 0.91, 'hemScale');
 const waistMin = bodyRadiusScale('legRadius', 1.1, 'waistMin');
-const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'waistRadius', endRadius: 'hemScale', distance: 0.75, segments: 16 });
+const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'waistRadius', endRadius: 'hemScale', distance: 1.04, segments: 16 });
 
 defineGroupNode({
   type: 'pantsGroup',
@@ -37,7 +37,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.14 },
+          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
           bodyRadiusSockets.torsoRadius,
           bodyRadiusSockets.legRadius,
           anchorYSocket,

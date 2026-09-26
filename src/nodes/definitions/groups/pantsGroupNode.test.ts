@@ -14,7 +14,7 @@ function num(v: number) {
 // X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing は
 // bodyDimensions(initialGraph.ts の共有ノード)の legSpacing を受け取る外部ソケットのまま。
 describe('pantsGroup', () => {
-  const DEFAULTS = { torsoRadius: 0.26, waistRatio: 0.62, legRadius: 0.11, waistMinRatio: 1.1, hemRatio: 0.91, inseam: 0.75, legSpacing: 0.14, offsetY: 0 };
+  const DEFAULTS = { torsoRadius: 0.14, waistRatio: 0.62, legRadius: 0.06, waistMinRatio: 1.1, hemRatio: 0.91, inseam: 1.04, legSpacing: 0.08, offsetY: 0.1 };
   const waistRadius = (torsoRadius = DEFAULTS.torsoRadius, legRadius = DEFAULTS.legRadius) =>
     Math.max(DEFAULTS.waistRatio * torsoRadius, DEFAULTS.waistMinRatio * legRadius);
   const maxRadius = (torsoRadius = DEFAULTS.torsoRadius, legRadius = DEFAULTS.legRadius) =>
@@ -68,12 +68,12 @@ describe('pantsGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(0.3 + maxRadius(), 5);
   });
 
-  it('Inseam ぶん下(-Y)に伸びる(Waist側が anchor=0)', () => {
+  it('Inseam ぶん下(-Y)に伸び、Offset Y(既定0.1)だけ全体が押し上げられる', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.inseam, 5);
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(0, 5);
+    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.inseam + DEFAULTS.offsetY, 5);
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.offsetY, 5);
   });
 
   it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {

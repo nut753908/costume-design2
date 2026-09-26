@@ -3,9 +3,10 @@ import type { GraphEdge, GraphNode } from '../types';
 /** ガーメントの「体に触れる半径」が追従する体の半径の外部ソケット(id は `bodyDimensions` の出力と
  * 同じ)。既定値は `bodyDimensions` の基準値と同じなので、未接続でも既定の体型に合った大きさになる。 */
 export const bodyRadiusSockets = {
-  torsoRadius: { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.26 },
-  legRadius: { id: 'legRadius', label: 'Leg Radius', type: 'number', default: 0.11 },
-  armRadius: { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0.075 },
+  torsoRadius: { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.14 },
+  legRadius: { id: 'legRadius', label: 'Leg Radius', type: 'number', default: 0.06 },
+  armRadius: { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0.04 },
+  neckRadius: { id: 'neckRadius', label: 'Neck Radius', type: 'number', default: 0.045 },
 } as const;
 
 export type BodyRadius = keyof typeof bodyRadiusSockets;

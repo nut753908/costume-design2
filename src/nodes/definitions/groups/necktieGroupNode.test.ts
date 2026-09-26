@@ -18,8 +18,8 @@ describe('necktieGroup', () => {
     bladeTopWidth: 0.035,
     bladeBottomWidth: 0.06,
     bladeThickness: 0.008,
-    bladeLength: 0.4,
-    frontDepth: 1.15 * 0.26,
+    bladeLength: 0.3,
+    frontDepth: 1.15 * 0.14,
   };
 
   const geometryOf = (inputs: Record<string, { type: 'number'; value: number }> = {}) => {
@@ -50,7 +50,7 @@ describe('necktieGroup', () => {
   });
 
   it('torsoRadius に比例した Front Depth で結び目・ブレードとも前へ移る(胴体の壁の拡大に追従する)', () => {
-    const geom = geometryOf({ torsoRadius: { type: 'number', value: 0.26 * 1.2 } })!;
+    const geom = geometryOf({ torsoRadius: { type: 'number', value: 0.14 * 1.2 } })!;
     geom.computeBoundingBox();
     expect(geom.boundingBox!.max.z).toBeCloseTo(DEFAULTS.frontDepth * 1.2 + DEFAULTS.knotThickness / 2, 5);
     expect(geom.boundingBox!.min.z).toBeCloseTo(DEFAULTS.frontDepth * 1.2 - DEFAULTS.knotThickness / 2, 5);

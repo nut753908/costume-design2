@@ -15,7 +15,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
  * (0, -bagHeight/2, 0)`は同じ深さ(Z)を共有するため、
  * X: `negatedHipOffset = -(1.0 × torsoRadius)`(`numberNegate`)、Y(本体側): `bagCenterY =
- * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthCalc = 0.69 × torsoRadius` という可視の四則演算
+ * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthCalc = 1.4 × torsoRadius` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
  * `translate` の両方から同じ計算結果を参照する
  * (定数は各ノードの入力欄の値)。ストラップと
@@ -42,13 +42,13 @@ defineGroupNode({
       },
     },
     { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14} },
-    { id: 'bagFrontDepthCalc', type: 'numberMultiply', data: { value: 0.69 } },
+    { id: 'bagFrontDepthCalc', type: 'numberMultiply', data: { value: 1.4 } },
     { id: 'hipOffsetScaled', type: 'numberMultiply', data: { value: 1 } },
     { id: 'strapGen', type: 'alignedBoxGenerator', data: { width: 0.04, thickness: 0.015, startX: 0.08, startZ: 0.05 } },
     { id: 'boxGen', type: 'boxGenerator', data: { width: 0.16, depth: 0.08 } },
     { id: 'negatedHipOffset', type: 'numberNegate', data: {} },
     { id: 'halfBagHeight', type: 'numberHalf', data: {} },
-    { id: 'negatedDrop', type: 'numberNegate', data: { value: 0.55 } },
+    { id: 'negatedDrop', type: 'numberNegate', data: { value: 0.42 } },
     { id: 'bagCenterY', type: 'numberSubtract', data: {} },
     { id: 'bodyTranslate', type: 'translate', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },

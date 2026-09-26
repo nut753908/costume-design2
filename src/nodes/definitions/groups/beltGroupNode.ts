@@ -10,9 +10,9 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  * Torso Radius(体の胴体半径、`scale` が倍率を掛ける)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される waistY)は外部ソケットのまま(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'band' });
+const output = garmentOutput({ offsetY: 0.19, geometry: 'band' });
 
-const scale = bodyRadiusScale('torsoRadius', 1.23);
+const scale = bodyRadiusScale('torsoRadius', 1.05);
 
 defineGroupNode({
   type: 'beltGroup',

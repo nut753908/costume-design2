@@ -11,7 +11,7 @@ import '../../definitions';
 // 体の torsoRadius × 1.12、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('dressGroup', () => {
-  const DEFAULTS = { torsoRadius: 1.12 * 0.26, hemRadius: 1.12 * 0.26 * 1.89, length: 0.9, necklineDepth: 0.12 };
+  const DEFAULTS = { torsoRadius: 1.12 * 0.14, hemRadius: 1.12 * 0.14 * 1.3, length: 0.9, necklineDepth: 0.12 };
 
   /** 直近の buildRingGridGeometry() 呼び出しの引数を、DEFAULTS と同じ名前の値へ戻す。 */
   function ringGridArgs(spy: { mock: { calls: unknown[][] } }) {
@@ -36,7 +36,7 @@ describe('dressGroup', () => {
     expect(result.sceneOutputMaterial0?.type).toBe('material');
   });
 
-  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.26)になる', () => {
+  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.14)になる', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('dressGroup').evaluate({}, {});
@@ -49,7 +49,7 @@ describe('dressGroup', () => {
   it('torsoRadius に比例して Torso Radius と Hem Radius が変化し、Length 等は変わらない', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
-      getNodeType('dressGroup').evaluate({ torsoRadius: { type: 'number', value: 0.26 * 2 } }, {});
+      getNodeType('dressGroup').evaluate({ torsoRadius: { type: 'number', value: 0.14 * 2 } }, {});
       closeTo(ringGridArgs(spy), { ...DEFAULTS, torsoRadius: DEFAULTS.torsoRadius * 2, hemRadius: DEFAULTS.hemRadius * 2 });
     } finally {
       spy.mockRestore();

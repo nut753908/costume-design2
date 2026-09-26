@@ -36,7 +36,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.14 },
+          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
           bodyRadiusSockets.legRadius,
           anchorYSocket,
           colorSocket('#3d3630'),

@@ -105,6 +105,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-gloves-arm-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'glovesGroup', targetHandle: 'armSpacing' },
   { id: 'e-gloves-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'glovesGroup', targetHandle: 'armRadius' },
   { id: 'e-belt-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'beltGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-scarf-neck-radius', source: 'bodyDimensions', sourceHandle: 'neckRadius', target: 'scarfGroup', targetHandle: 'neckRadius' },
   { id: 'e-scarf-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'scarfGroup', targetHandle: 'torsoRadius' },
   { id: 'e-jacket-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'jacketGroup', targetHandle: 'torsoRadius' },
   { id: 'e-socks-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'socksGroup', targetHandle: 'legSpacing' },

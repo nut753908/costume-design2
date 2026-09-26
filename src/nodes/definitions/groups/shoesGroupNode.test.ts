@@ -16,8 +16,8 @@ function num(v: number) {
 // `.scale(1, 1, z)` で Z軸だけを拡大するため(X軸は不変)、mirror 後の最大Xは
 // scaleZ の影響を受けない。
 describe('shoesGroup', () => {
-  const LEG_RADIUS = 0.11;
-  const DEFAULTS = { soleRadius: 1.18 * LEG_RADIUS, cuffRadius: 0.91 * LEG_RADIUS, height: 0.12, toeLength: 1.5, legSpacing: 0.14, offsetY: 0 };
+  const LEG_RADIUS = 0.06;
+  const DEFAULTS = { soleRadius: 1.18 * LEG_RADIUS, cuffRadius: 0.91 * LEG_RADIUS, height: 0.12, toeLength: 1.5, legSpacing: 0.08, offsetY: 0 };
   // `k` は既定の legRadius に対する倍率。
   const maxRadius = (k: number) => Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius) * k;
 

@@ -32,7 +32,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'armSpacing', label: 'Arm Spacing', type: 'number', default: 0.34 },
+          { id: 'armSpacing', label: 'Arm Spacing', type: 'number', default: 0.165 },
           bodyRadiusSockets.armRadius,
           anchorYSocket,
           colorSocket('#b0413e'),

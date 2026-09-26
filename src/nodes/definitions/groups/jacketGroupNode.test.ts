@@ -15,7 +15,7 @@ function num(v: number) {
 // 半径は始点(shoulderRadius)→終点(hemRadius)まで単調に変化するため、LatheGeometry の
 // bounding box の X/Z 半径は必ず max(shoulderRadius, hemRadius) に一致する。
 describe('jacketGroup', () => {
-  const DEFAULTS = { shoulderRadius: 1.31 * 0.26, length: 0.42, hemFlare: 0.15, offsetY: 0 };
+  const DEFAULTS = { shoulderRadius: 1.15 * 0.14, length: 0.46, hemFlare: 0.15, offsetY: 0 };
   const hemRadius = (shoulderScaled: number) => shoulderScaled * (1 + DEFAULTS.hemFlare);
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -32,7 +32,7 @@ describe('jacketGroup', () => {
   });
 
   it('torsoRadius に比例して肩幅/裾どちらもスケールする', () => {
-    const result = getNodeType('jacketGroup').evaluate({ torsoRadius: num(0.26 * 2) }, {});
+    const result = getNodeType('jacketGroup').evaluate({ torsoRadius: num(0.14 * 2) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(hemRadius(DEFAULTS.shoulderRadius * 2), 5);

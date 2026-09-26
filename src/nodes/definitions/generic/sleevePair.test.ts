@@ -21,6 +21,8 @@ const box = (g: THREE.BufferGeometry) => {
   return g.boundingBox!;
 };
 
+const DROOP = (70 * Math.PI) / 180;
+
 describe('sleevePair', () => {
   it('NaN 頂点のない、妥当で退化していないジオメトリを生成する', () => {
     const geometry = sleeves(0.22);
@@ -40,14 +42,14 @@ describe('sleevePair', () => {
     expect(sleeves(0.22).getAttribute('position').count).toBe(2 * 2 * 13);
   });
 
-  it('袖の付け根は attachRadius × 0.75(胴体の壁の内側)から、水平から36°下へ sleeveLength だけ伸びる', () => {
+  it('袖の付け根は attachRadius × 0.75(胴体の壁の内側)から、水平から70°下へ sleeveLength だけ伸びる', () => {
     const length = 0.22;
     const b = box(sleeves(length, ATTACH, 0.085));
     const startX = ATTACH * 0.75;
-    const endX = startX + length * Math.cos(Math.PI / 5);
+    const endX = startX + length * Math.cos(DROOP);
     // 終端側の断面(直径 2×0.085×0.85)は軸に垂直で、X方向には radius × sin(droop) だけ広がる。
-    expect(b.max.x).toBeCloseTo(endX + 0.085 * 0.85 * Math.sin(Math.PI / 5), 5);
-    expect(b.min.y).toBeLessThan(-length * Math.sin(Math.PI / 5) + 1e-6);
+    expect(b.max.x).toBeCloseTo(endX + 0.085 * 0.85 * Math.sin(DROOP), 5);
+    expect(b.min.y).toBeLessThan(-length * Math.sin(DROOP) + 1e-6);
   });
 
   it('sleeveLength が長くなるほど外側へ伸び、(垂れ下がって)低い位置になる', () => {
@@ -61,7 +63,7 @@ describe('sleevePair', () => {
     const length = 0.22;
     const half = (sign: 1 | -1) => {
       const start = new THREE.Vector3(sign * ATTACH * 0.75, 0, 0);
-      const axis = new THREE.Vector3(sign * Math.cos(Math.PI / 5), -Math.sin(Math.PI / 5), 0);
+      const axis = new THREE.Vector3(sign * Math.cos(DROOP), -Math.sin(DROOP), 0);
       return { start, axis };
     };
     expectOutwardWinding(sleeves(length), (centroid, i, total) => {

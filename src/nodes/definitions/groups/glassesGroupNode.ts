@@ -12,7 +12,8 @@ import type { GraphEdge } from '../../types';
  * 置いて各パーツへ配線し、1つのパーツだけが使う値(管の太さ、ブリッジ/テンプルの太さなど)は
  * そのパーツのグループの内部に持つ。
  * 顔の前面の深さ `forwardDepthCalc` は、頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と
- * 同じ値)から定数(0.02)を引いて求めるため、頭の大きさを変えると追従する。
+ * 同じ値)から定数(-0.01、頭の表面より少し前)を引いて求めるため、頭の大きさを変えると追従する。
+ * レンズは平面なので、表面ちょうどだと頭の球面が中心寄りでレンズの輪より前に出て、輪の内側が欠ける。
  * 比率ではなく差にしているのは、レンズの大きさ・間隔が固定で、頭の球面とレンズの平面の
  * ずれが頭半径に比例して広がるのを避けるため(比率だと頭が大きいほどレンズが球面に埋まる)。
  * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
@@ -35,15 +36,15 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.16 },
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.28 },
           anchorYSocket,
           colorSocket('#2a2a2a'),
         ],
       },
     },
-    { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.045} },
-    { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.055} },
-    { id: 'forwardDepthCalc', type: 'numberSubtract', data: { b: 0.02 } },
+    { id: 'lensRadiusIn', type: 'numberInput', data: { value: 0.08} },
+    { id: 'lensSpacingIn', type: 'numberInput', data: { value: 0.1} },
+    { id: 'forwardDepthCalc', type: 'numberSubtract', data: { b: -0.01 } },
     { id: 'lens', type: 'glassesLensPair', data: {} },
     { id: 'temple', type: 'glassesTemplePair', data: {} },
     { id: 'bridge', type: 'glassesBridge', data: {} },

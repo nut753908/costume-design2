@@ -15,8 +15,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `hemRadiusCalc`(`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`)へ展開している。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
 
-const scale = bodyRadiusScale('torsoRadius', 1.31);
-const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 0.42, segments: 20 });
+const scale = bodyRadiusScale('torsoRadius', 1.15);
+const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 0.46, segments: 20 });
 
 defineGroupNode({
   type: 'jacketGroup',

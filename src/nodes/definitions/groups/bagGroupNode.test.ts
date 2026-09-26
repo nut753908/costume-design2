@@ -11,7 +11,7 @@ import '../../definitions';
 // コメント参照)。寸法パラメータはグループ内部の numberInput に閉じており、外部から注入できる
 // のは torsoRadius だけ(体の側面の位置と前面の深さに掛かる)。それ以外は既定値での評価結果を検証する。
 describe('bagGroup', () => {
-  const DEFAULTS = { torsoRadius: 0.26, hipOffsetRatio: 1, frontDepthRatio: 0.69, drop: 0.55, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
+  const DEFAULTS = { torsoRadius: 0.14, hipOffsetRatio: 1, frontDepthRatio: 1.4, drop: 0.42, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('bagGroup').evaluate({}, {});
@@ -30,8 +30,8 @@ describe('bagGroup', () => {
   });
 
   it('バッグ本体は bagCenterY(= -drop - bagHeight/2)の高さまで垂れ下がる', () => {
-    // ストラップ自身の最下点(y = -drop = -0.55)より、バッグ本体の底(bagCenterY -
-    // bagHeight/2 = -0.69)の方が低いため、全体の bounding box の下端はバッグ本体側で決まる。
+    // ストラップ自身の最下点(y = -drop = -0.42)より、バッグ本体の底(bagCenterY -
+    // bagHeight/2 = -0.56)の方が低いため、全体の bounding box の下端はバッグ本体側で決まる。
     // これは negatedDrop/halfBagHeight/bagCenterY の四則演算チェーンが正しい値を計算し、
     // translate の Y へ正しく配線されていることの検証になる。
     const result = getNodeType('bagGroup').evaluate({}, {});
@@ -41,7 +41,7 @@ describe('bagGroup', () => {
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom, 2);
   });
 
-  it('バッグ本体は bagFrontDepthCalc(= 0.69 × torsoRadius、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
+  it('バッグ本体は bagFrontDepthCalc(= 1.4 × torsoRadius、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
     // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translate の Z への配線が
     // 正しいことの検証になる。
@@ -63,7 +63,7 @@ describe('bagGroup', () => {
     const base = bounds();
     const delta = 0.1;
     const wide = bounds(DEFAULTS.torsoRadius + delta);
-    // バッグ本体は x = -1.0 × torsoRadius、z = 0.69 × torsoRadius を中心に置かれる(幅・奥行きは不変)。
+    // バッグ本体は x = -1.0 × torsoRadius、z = 1.4 × torsoRadius を中心に置かれる(幅・奥行きは不変)。
     expect(wide.min.x - base.min.x).toBeCloseTo(-DEFAULTS.hipOffsetRatio * delta, 2);
     expect(wide.max.z - base.max.z).toBeCloseTo(DEFAULTS.frontDepthRatio * delta, 2);
   });

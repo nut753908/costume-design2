@@ -33,7 +33,7 @@ defineGroupNode({
     },
     ...scale.nodes,
     { id: 'neckline', type: 'necklineShapes', data: {} },
-    { id: 'hemRadiusCalc', type: 'flaredRadius', data: { flare: 0.89 } },
+    { id: 'hemRadiusCalc', type: 'flaredRadius', data: { flare: 0.3 } },
     { id: 'profile', type: 'easedLatheCurve', data: { distance: 0.9 } },
     { id: 'gen', type: 'ringGridGenerator', data: { steps: 14, necklineDepth: 0.12 } },
     ...output.nodes,

@@ -43,7 +43,7 @@ defineGroupNode({
     { id: 'knotCenterY', type: 'numberNegate', data: {} },
     { id: 'knotTranslate', type: 'translate', data: {} },
     { id: 'bladeStartY', type: 'numberNegate', data: {} },
-    { id: 'bladeEndY', type: 'numberSubtract', data: { b: 0.4 } },
+    { id: 'bladeEndY', type: 'numberSubtract', data: { b: 0.3 } },
     { id: 'bladeGen', type: 'taperedRectTubeGenerator', data: { startWidth: 0.035, endWidth: 0.06 } },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,

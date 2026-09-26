@@ -29,7 +29,7 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.16 },
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.28 },
           anchorYSocket,
           colorSocket('#4a3b6b'),
         ],

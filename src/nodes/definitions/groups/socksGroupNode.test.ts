@@ -13,8 +13,8 @@ function num(v: number) {
 // 終点=Calf Radius(y=Height)、どちらも legRadius × 倍率)を mirrorPair で
 // ±Leg Spacing だけ X方向に離した左右対称ペアへまとめる(socksGroupNode.ts のコメント参照)。
 describe('socksGroup', () => {
-  const LEG_RADIUS = 0.11;
-  const DEFAULTS = { ankleRadius: 0.82 * LEG_RADIUS, calfRadius: 0.95 * LEG_RADIUS, height: 0.22, legSpacing: 0.14, offsetY: 0 };
+  const LEG_RADIUS = 0.06;
+  const DEFAULTS = { ankleRadius: 0.87 * LEG_RADIUS, calfRadius: 0.95 * LEG_RADIUS, height: 0.22, legSpacing: 0.08, offsetY: 0 };
   // `k` は既定の legRadius に対する倍率。
   const maxRadius = (k: number) => Math.max(DEFAULTS.ankleRadius, DEFAULTS.calfRadius) * k;
 

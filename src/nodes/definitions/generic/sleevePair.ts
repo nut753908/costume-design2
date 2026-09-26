@@ -8,7 +8,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 左右の袖にする(左袖は `mirrorPair` 内の `mirrorX` で鏡像反転される)。`startX` は胴体の壁より
  * 少し内側(`attachRadius × insetIn`)にして、浮かずに壁と重なるようにする(ブーリアン演算や
  * 穴あけはせず、意図的な交差のみ)。終端の直径は始端の `taperIn` 倍(先細り)。
- * `lengthX`/`lengthDrop` の `factor` は、水平から 36°(π/5)下がる袖の向きの cos/sin。
+ * `lengthX`/`lengthDrop` の `factor` は、水平から 70° 下がる袖の向きの cos/sin(体の脇に下ろした腕に沿わせる)。
  * 定数(0.75/0.85/2 など)は各 `numberMultiply` の入力欄の値。 */
 defineGroupNode({
   type: 'sleevePair',
@@ -26,8 +26,8 @@ defineGroupNode({
       },
     },
     { id: 'startX', type: 'numberMultiply', data: { factor: 0.75 } },
-    { id: 'lengthX', type: 'numberMultiply', data: { factor: Math.cos(Math.PI / 5) } },
-    { id: 'lengthDrop', type: 'numberMultiply', data: { factor: Math.sin(Math.PI / 5) } },
+    { id: 'lengthX', type: 'numberMultiply', data: { factor: Math.cos((70 * Math.PI) / 180) } },
+    { id: 'lengthDrop', type: 'numberMultiply', data: { factor: Math.sin((70 * Math.PI) / 180) } },
     { id: 'endY', type: 'numberNegate', data: {} },
     { id: 'startDiameter', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'endDiameter', type: 'numberMultiply', data: { factor: 0.85 } },

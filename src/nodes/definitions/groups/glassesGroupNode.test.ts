@@ -13,7 +13,7 @@ import '../../definitions';
 describe('glassesGroup', () => {
   // offsetYIn の既定値(-0.02)ぶん、garmentPlacement が最終的な geometry 全体をY方向へ
   // 平行移動する(anchorY はここでは未接続のため0にフォールバックする)。
-  const DEFAULTS = { lensRadius: 0.045, frameThickness: 0.008, offsetY: -0.02 };
+  const DEFAULTS = { lensRadius: 0.08, frameThickness: 0.008, offsetY: -0.02 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('glassesGroup').evaluate({}, {});
@@ -49,24 +49,24 @@ describe('glassesGroup', () => {
     expect(geom!.boundingBox!.max.y).toBeCloseTo(expectedMaxY, 2);
   });
 
-  it('顔の前面の深さが headRadius − Forward Depth Inset(0.02)に追従する', () => {
+  it('顔の前面の深さが headRadius − Forward Depth Inset(-0.01)に追従する', () => {
     const maxZ = (headRadius?: number) => {
       const result = getNodeType('glassesGroup').evaluate(headRadius === undefined ? {} : { headRadius: { type: 'number', value: headRadius } }, {});
       const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
       geom!.computeBoundingBox();
       return geom!.boundingBox!.max.z;
     };
-    // 既定の headRadius(0.16)から 0.32 へ 0.16 増やすと、前面(=最大Z)が同じ 0.16 だけ前へ出る。
-    expect(maxZ(0.32) - maxZ()).toBeCloseTo(0.16, 5);
+    // 既定の headRadius(0.28)から 0.44 へ 0.16 増やすと、前面(=最大Z)が同じ 0.16 だけ前へ出る。
+    expect(maxZ(0.44) - maxZ()).toBeCloseTo(0.16, 5);
   });
 
-  it('テンプルが前面(Z=forwardDepth)から後方 templeBackZ(=0)まで伸びる', () => {
-    // レンズは Z=forwardDepth(0.14)付近だけにあるため、全体の最小 Z はテンプルの後端
-    // (templeBackZ = (0.14 - 0.02) - 0.12 = 0)で決まる。alignedBox の太さは軸に垂直な方向にだけ
+  it('テンプルが前面(Z=forwardDepth)から後方 templeBackZ まで伸びる', () => {
+    // レンズは Z=forwardDepth(0.29)付近だけにあるため、全体の最小 Z はテンプルの後端
+    // (templeBackZ = (0.29 - 0.02) - 0.12 = 0.15)で決まる。alignedBox の太さは軸に垂直な方向にだけ
     // 広がるので、後端はちょうど templeBackZ になる。
     const result = getNodeType('glassesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.z).toBeCloseTo(0, 5);
+    expect(geom!.boundingBox!.min.z).toBeCloseTo(0.15, 5);
   });
 });

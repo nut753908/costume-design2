@@ -15,8 +15,8 @@ function num(v: number) {
 // 元のジオメトリ(半径 r で X=0中心)を ±offset へ平行移動するだけなので、結合後の
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
-  const ARM_RADIUS = 0.075;
-  const DEFAULTS = { wristRadius: 1.07 * ARM_RADIUS, handRadius: 1.2 * ARM_RADIUS, length: 0.14, armSpacing: 0.34, offsetY: 0 };
+  const ARM_RADIUS = 0.04;
+  const DEFAULTS = { wristRadius: 1.07 * ARM_RADIUS, handRadius: 1.2 * ARM_RADIUS, length: 0.14, armSpacing: 0.165, offsetY: 0 };
   // `k` は既定の armRadius に対する倍率。
   const maxRadius = (k: number) => Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius) * k;
 

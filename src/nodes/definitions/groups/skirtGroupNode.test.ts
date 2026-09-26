@@ -15,7 +15,7 @@ function num(v: number) {
 // 半径は始点(waistRadius)→終点(hemRadius)まで単調に変化するため、LatheGeometry の
 // bounding box の X/Z 半径は必ず max(waistRadius, hemRadius) に一致する(latheProfile.ts 参照)。
 describe('skirtGroup', () => {
-  const DEFAULTS = { torsoRadius: 0.26, waistRatio: 1.15, length: 0.55, flare: 0.7, offsetY: 0.03 };
+  const DEFAULTS = { torsoRadius: 0.14, waistRatio: 1.15, length: 0.55, flare: 0.6, offsetY: 0.19 };
   const hemRadius = (torsoRadius: number) => torsoRadius * DEFAULTS.waistRatio * (1 + DEFAULTS.flare);
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -38,7 +38,7 @@ describe('skirtGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(hemRadius(0.5), 5);
   });
 
-  it('Length ぶん下(-Y)に伸び、Offset Y(既定0.03)だけ全体が押し上げられる', () => {
+  it('Length ぶん下(-Y)に伸び、Offset Y(既定0.19)だけ全体が押し上げられる', () => {
     const result = getNodeType('skirtGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();

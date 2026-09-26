@@ -29,14 +29,14 @@ describe('topGroup', () => {
     }
     // 袖の付け根は胴体半径の0.75倍の位置(sleevePair の Attach Inset)。
     const wide = sleevesOnly({ torsoRadius: { type: 'number', value: 0.3 } });
-    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo((0.3 - 0.26) * 1.12 * 0.75, 5);
+    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo((0.3 - 0.14) * 1.12 * 0.75, 5);
   });
 
-  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.26)になる', () => {
+  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.14)になる', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({}, {});
-      expect(firstRowRadius(spy)).toBeCloseTo(0.26 * 1.12, 10);
+      expect(firstRowRadius(spy)).toBeCloseTo(0.14 * 1.12, 10);
     } finally {
       spy.mockRestore();
     }
