@@ -11,9 +11,8 @@ const DEFAULTS = { a: 0, b: 0 };
 
 /** `numberAdd`/`numberSubtract`/`numberMultiply` と対になる、`Math.max(a, b)` を計算する
  * 汎用の二項演算ノード。skirt/jacket の `hemRadius = radius * (1 + Math.max(0, flare))`
- * のように、コード上の `Math.max()` によるクランプをノードグラフ上へ展開する際に使う想定
- * (現時点ではまだこのノードをデフォルトのグラフへ配線している箇所は無い、
- * `geometry/CLAUDE.md` 参照)。 */
+ * のように、コード上の `Math.max()` によるクランプをノードグラフ上へ展開する際に使う
+ * (`flaredRadius` のフレアの下限、pants の腰の半径の下限)。 */
 registerNodeType<NumberMaxData>({
   type: 'numberMax',
   label: 'Number Max',

@@ -91,8 +91,9 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
 
   // ガーメント自身の「体に触れる半径」が追従する体の半径(胴体/脚/腕)を、bodyDimensions から
-  // 12種のガーメントへ配線する(各グループの内部で倍率を掛ける)。
+  // 12種のガーメントへ配線する(各グループの内部で倍率を掛ける。pants は腰が胴体・裾が脚)。
   { id: 'e-skirt-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'skirtGroup', targetHandle: 'torsoRadius' },
+  { id: 'e-pants-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'pantsGroup', targetHandle: 'torsoRadius' },
   { id: 'e-pants-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'pantsGroup', targetHandle: 'legRadius' },
   { id: 'e-pants-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'pantsGroup', targetHandle: 'legSpacing' },
   { id: 'e-shoes-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'shoesGroup', targetHandle: 'legSpacing' },

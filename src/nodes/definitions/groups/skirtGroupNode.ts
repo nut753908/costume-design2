@@ -11,7 +11,7 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * から配線される waistY)は外部ソケットのまま。
  *
  * 裾半径(`hemRadius = waistRadius * (1 + Math.max(0, flare))`)は `hemRadiusCalc`
- * (`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`、jacket と共有する可視の
+ * (`flaredRadius`、`nodes/definitions/generic/flaredRadius.ts`、jacket/dress と共有する可視の
  * 配線)が求め、コード側の式としては持たない。 */
 const output = garmentOutput({ offsetY: 0.03, geometry: 'gen' });
 

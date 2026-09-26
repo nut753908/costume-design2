@@ -9,13 +9,16 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// pants は脚1本ぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Waist Radius、
-// 終点=Hem Radius、どちらも legRadius × 倍率)を mirrorPair で ±Leg Spacing だけ
+// pants は脚1本ぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Waist Radius(torsoRadius × 倍率)、
+// 終点=Hem Radius(legRadius × 倍率))を mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing は
 // bodyDimensions(initialGraph.ts の共有ノード)の legSpacing を受け取る外部ソケットのまま。
 describe('pantsGroup', () => {
-  const DEFAULTS = { legRadius: 0.11, waistRatio: 1.45, hemRatio: 0.91, inseam: 0.75, legSpacing: 0.14, offsetY: 0 };
-  const maxRadius = (legRadius: number) => Math.max(DEFAULTS.waistRatio, DEFAULTS.hemRatio) * legRadius;
+  const DEFAULTS = { torsoRadius: 0.26, waistRatio: 0.62, legRadius: 0.11, waistMinRatio: 1.1, hemRatio: 0.91, inseam: 0.75, legSpacing: 0.14, offsetY: 0 };
+  const waistRadius = (torsoRadius = DEFAULTS.torsoRadius, legRadius = DEFAULTS.legRadius) =>
+    Math.max(DEFAULTS.waistRatio * torsoRadius, DEFAULTS.waistMinRatio * legRadius);
+  const maxRadius = (torsoRadius = DEFAULTS.torsoRadius, legRadius = DEFAULTS.legRadius) =>
+    Math.max(waistRadius(torsoRadius, legRadius), DEFAULTS.hemRatio * legRadius);
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
@@ -27,14 +30,21 @@ describe('pantsGroup', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(DEFAULTS.legRadius), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(), 5);
   });
 
-  it('legRadius が大きくなるほど Waist Radius がスケールし最大Xを押し広げる', () => {
-    const result = getNodeType('pantsGroup').evaluate({ legRadius: num(0.2) }, {});
+  it('torsoRadius が大きくなるほど Waist Radius がスケールし最大Xを押し広げる', () => {
+    const result = getNodeType('pantsGroup').evaluate({ torsoRadius: num(0.4) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(0.2), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(0.4), 5);
+  });
+
+  it('胴体を細くしても、Waist Radius は脚の半径 × 1.1 を下回らない(脚に埋もれない)', () => {
+    const result = getNodeType('pantsGroup').evaluate({ torsoRadius: num(0.1) }, {});
+    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+    geom!.computeBoundingBox();
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + DEFAULTS.waistMinRatio * DEFAULTS.legRadius, 5);
   });
 
   it('legRadius × 倍率の Hem Radius が、裾(最下端)の半径になる', () => {
@@ -55,7 +65,7 @@ describe('pantsGroup', () => {
     const result = getNodeType('pantsGroup').evaluate({ legSpacing: num(0.3) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.3 + maxRadius(DEFAULTS.legRadius), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.3 + maxRadius(), 5);
   });
 
   it('Inseam ぶん下(-Y)に伸びる(Waist側が anchor=0)', () => {

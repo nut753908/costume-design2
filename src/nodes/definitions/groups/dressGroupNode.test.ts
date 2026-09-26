@@ -7,11 +7,11 @@ import * as ringGridGeometry from '../../../geometry/ringGrid';
 import '../../definitions';
 
 // dress は easedLatheCurve(肩→裾の半径)→ ringGridGenerator(geometry/ringGrid.ts による
-// ネックライン彫り込み)で組まれる(dressGroupNode.ts のコメント参照)。Torso Radius だけが
-// 体の torsoRadius × 1.12 で決まり、他のパラメータは内部の numberInput のデフォルトのまま
+// ネックライン彫り込み)で組まれる(dressGroupNode.ts のコメント参照)。Torso Radius は
+// 体の torsoRadius × 1.12、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('dressGroup', () => {
-  const DEFAULTS = { torsoRadius: 1.12 * 0.26, hemRadius: 0.55, length: 0.9, necklineDepth: 0.12 };
+  const DEFAULTS = { torsoRadius: 1.12 * 0.26, hemRadius: 1.12 * 0.26 * 1.89, length: 0.9, necklineDepth: 0.12 };
 
   /** 直近の buildRingGridGeometry() 呼び出しの引数を、DEFAULTS と同じ名前の値へ戻す。 */
   function ringGridArgs(spy: { mock: { calls: unknown[][] } }) {
@@ -46,11 +46,11 @@ describe('dressGroup', () => {
     }
   });
 
-  it('torsoRadius が大きくなるほど Torso Radius だけが変化し、Hem Radius/Length 等は変わらない', () => {
+  it('torsoRadius に比例して Torso Radius と Hem Radius が変化し、Length 等は変わらない', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('dressGroup').evaluate({ torsoRadius: { type: 'number', value: 0.26 * 2 } }, {});
-      closeTo(ringGridArgs(spy), { ...DEFAULTS, torsoRadius: DEFAULTS.torsoRadius * 2 });
+      closeTo(ringGridArgs(spy), { ...DEFAULTS, torsoRadius: DEFAULTS.torsoRadius * 2, hemRadius: DEFAULTS.hemRadius * 2 });
     } finally {
       spy.mockRestore();
     }

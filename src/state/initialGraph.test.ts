@@ -154,6 +154,7 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     ['scarfGroup', 'torsoRadius'],
     ['necktieGroup', 'torsoRadius'],
     ['bagGroup', 'torsoRadius'],
+    ['pantsGroup', 'torsoRadius'],
     ['pantsGroup', 'legRadius'],
     ['shoesGroup', 'legRadius'],
     ['socksGroup', 'legRadius'],
