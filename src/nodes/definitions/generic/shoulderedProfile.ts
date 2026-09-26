@@ -5,9 +5,9 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 体の肩は、胸の上端(肩の頂点から `torsoRadius × 0.6` 下)から上を半径 `torsoRadius` の球を
  * 上下 0.6 倍につぶした丸み(`generic/torsoShape.ts`)なので、それに沿わせる:
- * - 肩の丸み(`capCurve`): 胸(`chestRadius`、y = -torsoRadius × 0.6)から首まわり(`neckOpening`、
- *   y = +torsoRadius × 0.1)まで。上端を肩の頂点より少し上にして、体の丸みの外側に収める
- *   (smoothstep は体の楕円より中ほどが細いため、同じ高さで閉じると体が突き抜ける)。
+ * - 肩の丸み(`capCurve`、`ellipticLatheCurve`): 胸(`chestRadius`、y = -torsoRadius × 0.6)から
+ *   首まわり(`neckOpening`、y = +torsoRadius × 0.1)までを楕円の 1/4 で結び、首まわりでは水平に
+ *   閉じ、胸では胴へ垂直につなぐ。上端を肩の頂点より少し上にして、体の丸みの外側に収める。
  * - 胴(`bodyCurve`): 胸から裾(`hemRadius`)まで。裾の高さは肩の頂点から `length` 下で、
  *   肩の丸みを付ける前と同じ丈の意味を保つ。
  * `concatCurve` は `t` を半分ずつに分けるので、受け取る側の `Profile Steps` の半分が肩の丸みに
@@ -35,7 +35,7 @@ defineGroupNode({
     { id: 'bodyLength', type: 'numberSubtract', data: {} },
     { id: 'negChestDrop', type: 'numberNegate', data: {} },
 
-    { id: 'capCurve', type: 'easedLatheCurve', data: {} },
+    { id: 'capCurve', type: 'ellipticLatheCurve', data: {} },
     { id: 'capShifted', type: 'translateCurveY', data: {} },
     { id: 'bodyCurve', type: 'easedLatheCurve', data: {} },
     { id: 'bodyShifted', type: 'translateCurveY', data: {} },

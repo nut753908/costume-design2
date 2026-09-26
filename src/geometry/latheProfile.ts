@@ -33,3 +33,33 @@ export class EasedLatheCurve extends THREE.Curve<THREE.Vector2> {
     return optionalTarget.set(radius, this.direction === 'down' ? -s * this.distance : s * this.distance);
   }
 }
+
+/**
+ * アンカー側(radius=startRadius)から反対側の端(radius=endRadius)まで、楕円の 1/4 で結ぶ
+ * LatheGeometry 用のプロファイルの曲線。アンカー側では接線が水平(半径だけが変わり高さは変わらない)、
+ * 反対側の端では垂直になる。服の肩の丸みを、首まわりでは水平に閉じ、胸では胴へ垂直につなぐために使う
+ * (`EasedLatheCurve` の smoothstep は両端とも垂直なので、首まわりが短い垂直の筒になり、襟の両脇が尖る)。
+ * 向き(`direction`)と点の並び順は `EasedLatheCurve` と同じ。
+ */
+export class EllipticLatheCurve extends THREE.Curve<THREE.Vector2> {
+  private readonly startRadius: number;
+  private readonly endRadius: number;
+  private readonly distance: number;
+  private readonly direction: ProfileDirection;
+
+  constructor(startRadius: number, endRadius: number, distance: number, direction: ProfileDirection) {
+    super();
+    this.startRadius = startRadius;
+    this.endRadius = endRadius;
+    this.distance = distance;
+    this.direction = direction;
+  }
+
+  override getPoint(t: number, optionalTarget: THREE.Vector2 = new THREE.Vector2()): THREE.Vector2 {
+    const s = this.direction === 'down' ? 1 - t : t;
+    const angle = (s * Math.PI) / 2;
+    const radius = this.startRadius + (this.endRadius - this.startRadius) * Math.sin(angle);
+    const offset = this.distance * (1 - Math.cos(angle));
+    return optionalTarget.set(radius, this.direction === 'down' ? -offset : offset);
+  }
+}

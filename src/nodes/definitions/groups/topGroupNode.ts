@@ -39,7 +39,7 @@ defineGroupNode({
     ...sleeveScale.nodes,
     { id: 'neckline', type: 'necklineShapes', data: {} },
     ...body.nodes,
-    { id: 'gen', type: 'ringGridGenerator', data: { steps: 16, necklineDepth: 0.05 } },
+    { id: 'gen', type: 'ringGridGenerator', data: { steps: 16, necklineDepth: 0.02 } },
     { id: 'sleeveGen', type: 'sleevePair', data: { sleeveLength: 0.18 } },
     // 袖の付け根を、腕の上端の関節の球(腕の付け根は肩の頂点から torsoRadius × 0.8 下、
     // `bodyLayoutGroupNode.ts` の `armTorsoOverlap`)を覆い、袖の上端の球が服の肩の線から
