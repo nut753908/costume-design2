@@ -13,8 +13,7 @@ import { colorSocket } from '../garmentOutput';
  * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
  * 4つを `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
- * 形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。トゥーンのアウトライン
- * (`rendering/Outline.tsx`)はワールド原点基準の一様スケール複製のため、4パーツを個別の
+ * 形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。4パーツは同じマテリアルなので、個別の
  * `sceneOutput`(=個別メッシュ)として描画しても1つに結合してから描画しても見た目は変わらず、
  * 結合した方がノードグラフ上の階層(ネストしたグループ)が1段減る。
  *

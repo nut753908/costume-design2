@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import * as THREE from 'three';
-import { Outline } from './Outline';
 
 interface ToonMeshProps {
   geometry: THREE.BufferGeometry;
@@ -9,7 +8,7 @@ interface ToonMeshProps {
   rotation?: [number, number, number];
 }
 
-/** トゥーンシェーディングされたメッシュと、そのインバーテッドハル(法線を反転させた拡大複製)アウトラインをペアにしたもの。
+/** トゥーンシェーディングされたメッシュ。外形線(アウトライン)は描画しない。
  *
  * geometry/material は evaluateGraph が毎回新規に構築したオブジェクトを props 経由で
  * 受け取る(JSX 子要素としては所有していない)ため、R3F の自動 dispose(unmount 時のみ発火)
@@ -23,9 +22,6 @@ export function ToonMesh({ geometry, material, position, rotation }: ToonMeshPro
   }, [geometry, material]);
 
   return (
-    <group position={position} rotation={rotation}>
-      <mesh geometry={geometry} material={material} />
-      <Outline geometry={geometry} />
-    </group>
+    <mesh geometry={geometry} material={material} position={position} rotation={rotation} />
   );
 }
