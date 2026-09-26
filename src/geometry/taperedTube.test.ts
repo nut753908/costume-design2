@@ -76,7 +76,7 @@ describe('buildTaperedTube', () => {
     expect(box.min.y).toBeLessThanOrEqual(-0.3);
   });
 
-  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+  it('全面が外向きの巻き順になっている(手前の面がカリングで消えるのを防ぐ)', () => {
     for (const params of [ELLIPSE, RECTANGLE]) {
       expectOutwardWinding(buildTaperedTube(params), axisPointOf(params.start, params.end));
     }

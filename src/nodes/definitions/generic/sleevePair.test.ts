@@ -61,7 +61,7 @@ describe('sleevePair', () => {
     expect(long.min.y).toBeLessThan(short.min.y);
   });
 
-  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+  it('全面が外向きの巻き順になっている(手前の面がカリングで消えるのを防ぐ)', () => {
     const length = 0.22;
     const half = (sign: 1 | -1) => {
       const start = new THREE.Vector3(sign * SPACING, 0, 0);

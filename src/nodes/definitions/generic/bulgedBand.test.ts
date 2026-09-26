@@ -52,7 +52,7 @@ describe('bulgedBand', () => {
     expect(fine.getAttribute('position').count).toBeGreaterThan(coarse.getAttribute('position').count);
   });
 
-  it('全面が外向きの巻き順になっている(真っ黒なシルエット化を防ぐ)', () => {
+  it('全面が外向きの巻き順になっている(手前の面がカリングで消えるのを防ぐ)', () => {
     expectOutwardWinding(band(0.32, 0.06, 1.15, 24));
   });
 });
