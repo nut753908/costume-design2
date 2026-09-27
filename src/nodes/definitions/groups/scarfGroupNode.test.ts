@@ -12,7 +12,6 @@ import '../../definitions';
 // 検証する。
 describe('scarfGroup', () => {
   const DEFAULTS = {
-    neckRadius: 2.2 * 0.045,
     bandThickness: 0.05,
     tailWidth: 0.09,
     tailLength: 0.35,
