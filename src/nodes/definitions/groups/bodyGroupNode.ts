@@ -66,9 +66,11 @@ defineGroupNode({
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
     { id: 'neckTranslate', type: 'translate', data: {} },
 
-    // 頭(sphereGenerator)。重心を後ろ(Z 負)へずらす(入力欄 `z`。あごが前に出て見えるように、
-    // 頭の球は胴体の中心より後ろに置く)。
+    // 頭(sphereGenerator)。下側をわずかに絞って、あごのすぼまった卵形にする(`headTaper`)。
     { id: 'headGen', type: 'sphereGenerator', data: {} },
+    { id: 'headTaper', type: 'taperY', data: { bottomScale: 0.9, startRatio: 0.86 } },
+    // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、
+    // 頭の球は胴体の中心より後ろに置く)。
     { id: 'headTranslate', type: 'translate', data: { z: -0.065 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
@@ -98,7 +100,8 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'neckCenterY', target: 'neckTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
-    { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
+    { source: 'headGen', sourceHandle: 'geometry', target: 'headTaper', targetHandle: 'geometry' },
+    { source: 'headTaper', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'headCenterY', target: 'headTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'armRadius', target: 'armPair', targetHandle: 'radius' },

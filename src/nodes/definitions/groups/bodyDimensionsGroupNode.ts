@@ -53,8 +53,8 @@ const dimensions = [
   dimension({ name: 'torsoLength', base: 0.33, scale: HEIGHT_SCALE }),
   dimension({ name: 'torsoRadius', base: 0.153, scale: BUILD_SCALE }),
   dimension({ name: 'armLength', base: 0.5, scale: HEIGHT_SCALE }),
-  dimension({ name: 'neckLength', base: 0.005, scale: HEIGHT_SCALE }),
-  dimension({ name: 'neckRadius', base: 0.08, scale: BUILD_SCALE }),
+  dimension({ name: 'neckLength', base: 0.02, scale: HEIGHT_SCALE }),
+  dimension({ name: 'neckRadius', base: 0.048, scale: BUILD_SCALE }),
   dimension({ name: 'armRadius', base: 0.0425, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({
