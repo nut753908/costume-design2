@@ -48,4 +48,13 @@ describe('torsoShape', () => {
     // 肩の球の中ほど(つぶした後の高さの半分)では、半径は sqrt(1 - 0.5²) × radius
     expect(radiusAt(geometry, chestTopY + 0.14 * 0.6 * 0.5, 0.005)).toBeCloseTo(0.14 * Math.sqrt(0.75), 2);
   });
+
+  it('depthRatio は前後(Z)だけを縮め、横幅(X)と高さは変えない', () => {
+    const geometry = evaluateGeometry({ ...base, depthRatio: 0.5 });
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox!;
+    expect(box.max.x).toBeCloseTo(0.14, 3);
+    expect(box.max.z).toBeCloseTo(0.14 * 0.5, 3);
+    expect(box.max.y).toBeCloseTo(0.28 + 2 * 0.14, 5);
+  });
 });

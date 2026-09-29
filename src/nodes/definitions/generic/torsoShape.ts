@@ -12,7 +12,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  *   `easedLatheCurve`(Curve Up)を `translateCurveY` で積み上げて `concatCurve` でつなぎ、
  *   `latheGenerator` で回転体にする(区間の高さは半分ずつ)。
  * 回転体の分割数は球(`sphereGenerator` の widthSegments 20)とそろえる。そろえないと、赤道の
- * 継ぎ目で陰影がギザギザになる。 */
+ * 継ぎ目で陰影がギザギザになる。
+ * - 最後に全体を Z(前後)方向だけ `depthRatio` 倍して、断面を円から楕円にする(1 なら円)。 */
 defineGroupNode({
   type: 'torsoShape',
   label: 'Torso Shape',
@@ -26,6 +27,7 @@ defineGroupNode({
           { id: 'length', label: 'Length', type: 'number', default: 0 },
           { id: 'waistRatio', label: 'Waist Ratio', type: 'number', default: 0.88 },
           { id: 'shoulderSquash', label: 'Shoulder Squash', type: 'number', default: 0.6 },
+          { id: 'depthRatio', label: 'Depth Ratio', type: 'number', default: 1 },
         ],
       },
     },
@@ -52,6 +54,7 @@ defineGroupNode({
     { id: 'gen', type: 'latheGenerator', data: { steps: 12, segments: 20 } },
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
+    { id: 'depthScale', type: 'scale', data: {} },
     {
       id: 'output',
       type: 'groupOutput',
@@ -106,6 +109,8 @@ defineGroupNode({
     { source: 'hipTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'shoulderTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'merge', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
+    { source: 'merge', sourceHandle: 'geometry', target: 'depthScale', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'depthRatio', target: 'depthScale', targetHandle: 'z' },
+    { source: 'depthScale', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });
