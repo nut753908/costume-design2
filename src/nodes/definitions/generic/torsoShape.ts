@@ -1,19 +1,15 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
-/** 胴体の形を、腰の丸み(球)・肩の丸み(上下につぶした球)と、その間のくびれた回転体で作る
- * グループノード。`bodyGroupNode.ts` が使う。原点が胴体の下端(股)で、+Y へ `length + 2 × radius`
- * の高さまで伸びる(カプセルと同じ高さ)。
+/** 胴体の形を、幅(X)と奥行き(Z)の2本の輪郭曲線から作る、`bodyGroupNode.ts` 用のグループノード。
+ * 原点が胴体の下端(股)で、+Y へ `length + 2 × radius` の高さまで伸びる(カプセルと同じ高さ)。
  *
- * - `hip`(`sphereGenerator`、半径 `radius`)を `y = radius` に置き、下半分を股の丸みにする。
- * - `shoulder` は同じ半径の球を Y 方向に `shoulderSquash` 倍つぶして、上端がちょうど
- *   `length + 2 × radius` に来る高さに置き、上半分をなで肩にする(胸から首まで長く細らせると、
- *   肩の無い瓶の首のような形になるため)。
- * - 2つの球の赤道の間は、腰 → くびれ(`radius × waistRatio`)→ 胸(`radius`)の2区間の
- *   `easedLatheCurve`(Curve Up)を `translateCurveY` で積み上げて `concatCurve` でつなぎ、
- *   `latheGenerator` で回転体にする(区間の高さは半分ずつ)。
- * 回転体の分割数は球(`sphereGenerator` の widthSegments 20)とそろえる。そろえないと、赤道の
- * 継ぎ目で陰影がギザギザになる。
- * - 最後に全体を Z(前後)方向だけ `depthRatio` 倍して、断面を円から楕円にする(1 なら円)。 */
+ * - `xProfile`/`zProfile`(どちらも `profileCurve`)が、高さを 8 等分した 9 点の半径
+ *   (`radius` の `r0`〜`r8` 倍、両端 `r0`/`r8` は 0 で丸く閉じる)をなめらかにつないだ輪郭曲線を作る。
+ *   `xProfile` は左右(X)方向の半径、`zProfile` は前後(Z)方向の半径で、腰の丸み・くびれ・胸・なで肩の
+ *   形と胴の薄さは、この2枚のカードの入力欄の値そのもの。
+ * - `gen`(`loftGenerator`)が2本の曲線から、断面が楕円の回転体のような形を1つのジオメトリとして作る。
+ *
+ * 外部の半径 `radius` に比例するので、体の太さ(Build)を変えると形が相似のまま追従する。 */
 defineGroupNode({
   type: 'torsoShape',
   label: 'Torso Shape',
@@ -25,36 +21,26 @@ defineGroupNode({
         sockets: [
           { id: 'radius', label: 'Radius', type: 'number', default: 0 },
           { id: 'length', label: 'Length', type: 'number', default: 0 },
-          { id: 'waistRatio', label: 'Waist Ratio', type: 'number', default: 0.88 },
-          { id: 'shoulderSquash', label: 'Shoulder Squash', type: 'number', default: 0.6 },
-          { id: 'depthRatio', label: 'Depth Ratio', type: 'number', default: 1 },
         ],
       },
     },
-    { id: 'hip', type: 'sphereGenerator', data: {} },
-    { id: 'hipTranslate', type: 'translate', data: {} },
+    { id: 'radiusDoubled', type: 'numberMultiply', data: { factor: 2 } },
+    { id: 'height', type: 'numberAdd', data: {} },
 
-    // 肩の球の中心 = 胸の上端 = radius + span、span = length + radius × (1 - shoulderSquash)
-    { id: 'shoulder', type: 'sphereGenerator', data: {} },
-    { id: 'shoulderScale', type: 'scale', data: {} },
-    { id: 'shoulderTranslate', type: 'translate', data: {} },
-    { id: 'oneMinusSquash', type: 'numberSubtract', data: { a: 1 } },
-    { id: 'squashGap', type: 'numberMultiply', data: {} },
-    { id: 'span', type: 'numberAdd', data: {} },
-    { id: 'halfSpan', type: 'numberHalf', data: {} },
-    { id: 'chestTopY', type: 'numberAdd', data: {} },
-    { id: 'waistY', type: 'numberAdd', data: {} },
+    // 幅(X)方向の半径。値は `radius` に対する比。
+    {
+      id: 'xProfile',
+      type: 'profileCurve',
+      data: { r0: 0, r1: 1.136, r2: 1.007, r3: 0.897, r4: 0.819, r5: 0.786, r6: 0.801, r7: 0.87, r8: 0 },
+    },
+    // 前後(Z)方向の半径。値は `radius` に対する比(幅のおよそ 0.6〜0.8 倍の薄い胴)。
+    {
+      id: 'zProfile',
+      type: 'profileCurve',
+      data: { r0: 0, r1: 0.696, r2: 0.66, r3: 0.611, r4: 0.568, r5: 0.576, r6: 0.639, r7: 0.7, r8: 0 },
+    },
+    { id: 'gen', type: 'loftGenerator', data: { steps: 24, segments: 24 } },
 
-    { id: 'waistRadius', type: 'numberMultiply', data: {} },
-    { id: 'hipToWaistCurve', type: 'easedLatheCurve', data: {} },
-    { id: 'hipToWaistShifted', type: 'translateCurveY', data: {} },
-    { id: 'waistToChestCurve', type: 'easedLatheCurve', data: {} },
-    { id: 'waistToChestShifted', type: 'translateCurveY', data: {} },
-    { id: 'profile', type: 'concatCurve', data: {} },
-    { id: 'gen', type: 'latheGenerator', data: { steps: 12, segments: 20 } },
-
-    { id: 'merge', type: 'mergeGeometry', data: {} },
-    { id: 'depthScale', type: 'scale', data: {} },
     {
       id: 'output',
       type: 'groupOutput',
@@ -64,53 +50,18 @@ defineGroupNode({
     },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'radius', target: 'hip', targetHandle: 'radius' },
-    { source: 'hip', sourceHandle: 'geometry', target: 'hipTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'radius', target: 'hipTranslate', targetHandle: 'y' },
+    // height = length + radius × 2(カプセルと同じ高さ)
+    { source: 'input', sourceHandle: 'radius', target: 'radiusDoubled', targetHandle: 'value' },
+    { source: 'input', sourceHandle: 'length', target: 'height', targetHandle: 'a' },
+    { source: 'radiusDoubled', sourceHandle: 'value', target: 'height', targetHandle: 'b' },
 
-    // span = length + radius × (1 - shoulderSquash)
-    { source: 'input', sourceHandle: 'shoulderSquash', target: 'oneMinusSquash', targetHandle: 'b' },
-    { source: 'input', sourceHandle: 'radius', target: 'squashGap', targetHandle: 'value' },
-    { source: 'oneMinusSquash', sourceHandle: 'value', target: 'squashGap', targetHandle: 'factor' },
-    { source: 'input', sourceHandle: 'length', target: 'span', targetHandle: 'a' },
-    { source: 'squashGap', sourceHandle: 'value', target: 'span', targetHandle: 'b' },
-    { source: 'span', sourceHandle: 'value', target: 'halfSpan', targetHandle: 'value' },
-    // chestTopY = radius + span、waistY = radius + span / 2
-    { source: 'input', sourceHandle: 'radius', target: 'chestTopY', targetHandle: 'a' },
-    { source: 'span', sourceHandle: 'value', target: 'chestTopY', targetHandle: 'b' },
-    { source: 'input', sourceHandle: 'radius', target: 'waistY', targetHandle: 'a' },
-    { source: 'halfSpan', sourceHandle: 'value', target: 'waistY', targetHandle: 'b' },
+    { source: 'input', sourceHandle: 'radius', target: 'xProfile', targetHandle: 'radius' },
+    { source: 'height', sourceHandle: 'value', target: 'xProfile', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'radius', target: 'zProfile', targetHandle: 'radius' },
+    { source: 'height', sourceHandle: 'value', target: 'zProfile', targetHandle: 'length' },
 
-    { source: 'input', sourceHandle: 'radius', target: 'shoulder', targetHandle: 'radius' },
-    { source: 'shoulder', sourceHandle: 'geometry', target: 'shoulderScale', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'shoulderSquash', target: 'shoulderScale', targetHandle: 'y' },
-    { source: 'shoulderScale', sourceHandle: 'geometry', target: 'shoulderTranslate', targetHandle: 'geometry' },
-    { source: 'chestTopY', sourceHandle: 'value', target: 'shoulderTranslate', targetHandle: 'y' },
-
-    { source: 'input', sourceHandle: 'radius', target: 'waistRadius', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'waistRatio', target: 'waistRadius', targetHandle: 'factor' },
-
-    { source: 'input', sourceHandle: 'radius', target: 'hipToWaistCurve', targetHandle: 'startRadius' },
-    { source: 'waistRadius', sourceHandle: 'value', target: 'hipToWaistCurve', targetHandle: 'endRadius' },
-    { source: 'halfSpan', sourceHandle: 'value', target: 'hipToWaistCurve', targetHandle: 'distance' },
-    { source: 'hipToWaistCurve', sourceHandle: 'up', target: 'hipToWaistShifted', targetHandle: 'curve' },
-    { source: 'input', sourceHandle: 'radius', target: 'hipToWaistShifted', targetHandle: 'y' },
-
-    { source: 'waistRadius', sourceHandle: 'value', target: 'waistToChestCurve', targetHandle: 'startRadius' },
-    { source: 'input', sourceHandle: 'radius', target: 'waistToChestCurve', targetHandle: 'endRadius' },
-    { source: 'halfSpan', sourceHandle: 'value', target: 'waistToChestCurve', targetHandle: 'distance' },
-    { source: 'waistToChestCurve', sourceHandle: 'up', target: 'waistToChestShifted', targetHandle: 'curve' },
-    { source: 'waistY', sourceHandle: 'value', target: 'waistToChestShifted', targetHandle: 'y' },
-
-    { source: 'hipToWaistShifted', sourceHandle: 'curve', target: 'profile', targetHandle: 'curveA' },
-    { source: 'waistToChestShifted', sourceHandle: 'curve', target: 'profile', targetHandle: 'curveB' },
-    { source: 'profile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
-
-    { source: 'hipTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'shoulderTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'merge', sourceHandle: 'geometry', target: 'depthScale', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'depthRatio', target: 'depthScale', targetHandle: 'z' },
-    { source: 'depthScale', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
+    { source: 'xProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
+    { source: 'zProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
+    { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

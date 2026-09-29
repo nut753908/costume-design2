@@ -57,7 +57,7 @@ defineGroupNode({
     { id: 'material', type: 'toonMaterial', data: {} },
 
     // 胴体(torsoShape、原点が股)。
-    { id: 'torsoGen', type: 'torsoShape', data: { waistRatio: 0.76, shoulderSquash: 0.87, depthRatio: 0.7 } },
+    { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
     { id: 'torsoTilt', type: 'rotate', data: { x: -5.2 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
@@ -73,15 +73,15 @@ defineGroupNode({
     { id: 'headTaper', type: 'taperY', data: { bottomScale: 0.85, startRatio: 0.9 } },
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、
     // 頭の球は胴体の中心より後ろに置く)。
-    { id: 'headTranslate', type: 'translate', data: { z: -0.097 } },
+    { id: 'headTranslate', type: 'translate', data: { z: -0.096 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.99, endRatio: 1.11, endScaleY: 1.1, endScaleZ: 0.85, endShiftY: -0.5, swingAngle: 16.2, pitchAngle: -13.2, centerZ: -0.1 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.94, endRatio: 1.19, endScaleY: 1, endScaleZ: 0.85, endShiftY: -0.5, swingAngle: 16, pitchAngle: -13.4, centerZ: -0.1 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.49, endRatio: 1.1, endScaleY: 0.6, endScaleZ: 1.08, endShiftY: 0.6, endShiftZ: 0.73, swingAngle: 2.2, pitchAngle: 8, centerZ: 0.024 },
+      data: { taperRatio: 0.48, endRatio: 0.98, endScaleY: 0.6, endScaleZ: 1.27, endShiftY: 0.51, endShiftZ: 0.79, swingAngle: 2.1, pitchAngle: 8.1, centerZ: 0.026 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
