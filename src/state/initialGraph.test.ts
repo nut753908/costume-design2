@@ -13,7 +13,7 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('bodyGroup、bodyDimensions/bodyLayout、およびそこへ配線するシードノードが存在する', () => {
+  it('bodyGroup、bodyDimensions/bodyLayout が存在する', () => {
     // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
     // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
@@ -22,13 +22,7 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     // Body Shoulder は bodyDimensions からしか参照されない単独パラメータのため、この階層には
     // 現れず bodyDimensionsGroup 内部の numberInput として持つ(bodyDimensionsGroupNode.test.ts
     // 参照)。
-    expect(['bodyBuild', 'bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
-  });
-
-  it('bodyBuild が bodyDimensions へ配線されている', () => {
-    const edge = initialEdges.find((e) => e.target === 'bodyDimensions' && e.targetHandle === 'buildScale');
-    expect(edge?.source).toBe('bodyBuild');
-    expect(edge?.sourceHandle).toBe('value');
+    expect(['bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
   });
 
   it('bodyDimensions/bodyLayout が計算済みの値を bodyGroup へ配線している(bodyGroup 自身は寸法を計算しない)', () => {
@@ -134,10 +128,10 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     expect(after.get('bodyDimensions')).toBe(before.get('bodyDimensions'));
   });
 
-  it('変更した bodyBuild に依存する bodyGroup は、正しく再評価されて結果が変わる', () => {
+  it('bodyDimensions の buildScale を変えると、依存する bodyGroup は再評価されて結果が変わる', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'bodyBuild' ? { ...n, data: { ...n.data, value: 1.2 } } : n,
+      n.id === 'bodyDimensions' ? { ...n, data: { ...n.data, buildScale: 1.2 } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 

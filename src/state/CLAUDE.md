@@ -43,7 +43,7 @@
 
 `state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、体の半径の配線、socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
 
-初期状態のグラフは体だけで、`bodyBuild`(`bodyDimensions` の `buildScale` へ配線される)・`bodyDimensions`・`bodyLayout`・`bodyGroup` の4ノードから成ります(体の作り込みに専念するため、ガーメントのグループノードは置かない)。ガーメントの定義(`<name>GroupNode.ts`)は残っており、ノード追加メニューから追加できます。追加したガーメントは、体の半径・`anchorY` などの外部入力ソケットを `bodyDimensions`/`bodyLayout` から手で配線する必要があります(配線パターンは [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。
+初期状態のグラフは体だけで、`bodyDimensions`・`bodyLayout`・`bodyGroup` の3ノードから成ります(Build/Height/Shoulder のスケールは `bodyDimensions` の外部ソケットで、グループカードの入力欄から調整します)(体の作り込みに専念するため、ガーメントのグループノードは置かない)。ガーメントの定義(`<name>GroupNode.ts`)は残っており、ノード追加メニューから追加できます。追加したガーメントは、体の半径・`anchorY` などの外部入力ソケットを `bodyDimensions`/`bodyLayout` から手で配線する必要があります(配線パターンは [`src/nodes/CLAUDE.md`](../nodes/CLAUDE.md) の「値が複数グループで共有される場合」節)。
 
 `initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
 

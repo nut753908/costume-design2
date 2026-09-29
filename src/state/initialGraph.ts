@@ -18,12 +18,9 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 // 専念するため)。ガーメントは各 <name>GroupNode.ts の定義が残っており、ノード追加メニューから
 // 追加できる。
 const initialNodeDefs: Omit<Node, 'position'>[] = [
-  // bodyBuild は慣例的な id を持つシードノードで、`bodyDimensions`(下記)へ配線される。
-  // Height/Shoulder は `bodyDimensions` からしか参照されない単独パラメータのため、
-  // `bodyDimensionsGroup` の外部ソケット(`heightScale`/`shoulderScale`)として、この階層では
+  // Build/Height/Shoulder の各スケールは `bodyDimensionsGroup` の外部ソケット
+  // (`buildScale`/`heightScale`/`shoulderScale`、未接続時の既定値1)として、この階層では
   // 配線せずグループカードの入力欄から調整する(nodes/CLAUDE.md の「グループノード」節参照)。
-  { id: 'bodyBuild', type: 'numberInput', data: { value: 1} },
-
   // ボディの寸法(11個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
   // アンカー候補)を計算する2つの共有ノード。bodyGroup へ普通の外部
   // ソケットとして渡す(nodes/CLAUDE.md の「グループノード」節参照)。
@@ -38,9 +35,6 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
 ];
 
 export const initialEdges: Edge[] = [
-  // bodyBuild → bodyDimensions(共有の寸法計算ノード)。
-  { id: 'e-body-dims-build', source: 'bodyBuild', sourceHandle: 'value', target: 'bodyDimensions', targetHandle: 'buildScale' },
-
   // bodyDimensions → bodyLayout(共有の配置Y座標計算ノード)。bodyLayoutGroup が入力に
   // 使う6個の寸法だけを配線する(nodes/definitions/groups/bodyLayoutGroupNode.ts 参照)。
   { id: 'e-body-layout-leg-height', source: 'bodyDimensions', sourceHandle: 'legHeight', target: 'bodyLayout', targetHandle: 'legHeight' },
