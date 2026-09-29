@@ -47,19 +47,19 @@ function dimension(config: {
 }
 
 const dimensions = [
-  dimension({ name: 'legHeight', base: 0.62, scale: HEIGHT_SCALE }),
-  dimension({ name: 'legRadius', base: 0.051, scale: BUILD_SCALE }),
-  dimension({ name: 'legSpacing', base: 0.092, scale: BUILD_SCALE }),
-  dimension({ name: 'torsoLength', base: 0.33, scale: HEIGHT_SCALE }),
-  dimension({ name: 'torsoRadius', base: 0.153, scale: BUILD_SCALE }),
-  dimension({ name: 'armLength', base: 0.5, scale: HEIGHT_SCALE }),
+  dimension({ name: 'legHeight', base: 0.612, scale: HEIGHT_SCALE }),
+  dimension({ name: 'legRadius', base: 0.067, scale: BUILD_SCALE }),
+  dimension({ name: 'legSpacing', base: 0.11, scale: BUILD_SCALE }),
+  dimension({ name: 'torsoLength', base: 0.328, scale: HEIGHT_SCALE }),
+  dimension({ name: 'torsoRadius', base: 0.156, scale: BUILD_SCALE }),
+  dimension({ name: 'armLength', base: 0.474, scale: HEIGHT_SCALE }),
   dimension({ name: 'neckLength', base: 0.02, scale: HEIGHT_SCALE }),
-  dimension({ name: 'neckRadius', base: 0.048, scale: BUILD_SCALE }),
-  dimension({ name: 'armRadius', base: 0.0425, scale: BUILD_SCALE }),
+  dimension({ name: 'neckRadius', base: 0.042, scale: BUILD_SCALE }),
+  dimension({ name: 'armRadius', base: 0.056, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({
     name: 'shoulderSpacing',
-    base: 0.122,
+    base: 0.105,
     scale: SHOULDER_SCALE,
     preScale: { id: 'shoulderSpacingBuildScale', source: BUILD_SCALE },
   }),
@@ -74,7 +74,7 @@ const dimensions = [
  * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
  * Height/Shoulder スケールは、ルートで配線するのではなく、グループカードの
  * 入力欄(未接続時の既定値 1)から調整する。`headRadius` はスケール無しで、`groupOutput` の
- * `headRadius` の入力欄の値(0.289)がそのまま出力になる。 */
+ * `headRadius` の入力欄の値(0.302)がそのまま出力になる。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',
@@ -102,7 +102,7 @@ defineGroupNode({
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number' },
           { id: 'torsoLength', label: 'Torso Length', type: 'number' },
           { id: 'torsoRadius', label: 'Torso Radius', type: 'number' },
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.289 },
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.302 },
           { id: 'armLength', label: 'Arm Length', type: 'number' },
           { id: 'armRadius', label: 'Arm Radius', type: 'number' },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number' },

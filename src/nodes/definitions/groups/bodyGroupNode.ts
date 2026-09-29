@@ -57,29 +57,31 @@ defineGroupNode({
     { id: 'material', type: 'toonMaterial', data: {} },
 
     // 胴体(torsoShape、原点が股)。
-    { id: 'torsoGen', type: 'torsoShape', data: { waistRatio: 0.76, shoulderSquash: 0.68, depthRatio: 0.8 } },
+    { id: 'torsoGen', type: 'torsoShape', data: { waistRatio: 0.76, shoulderSquash: 0.87, depthRatio: 0.7 } },
+    // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
+    { id: 'torsoTilt', type: 'rotate', data: { x: -5.2 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
-    { id: 'neckTranslate', type: 'translate', data: {} },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.04 } },
 
     // 頭(sphereGenerator)。下側をわずかに絞って、あごのすぼまった卵形にする(`headTaper`)。
     { id: 'headGen', type: 'sphereGenerator', data: {} },
-    { id: 'headTaper', type: 'taperY', data: { bottomScale: 0.9, startRatio: 0.86 } },
+    { id: 'headTaper', type: 'taperY', data: { bottomScale: 0.85, startRatio: 0.9 } },
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、
     // 頭の球は胴体の中心より後ろに置く)。
-    { id: 'headTranslate', type: 'translate', data: { z: -0.065 } },
+    { id: 'headTranslate', type: 'translate', data: { z: -0.097 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.98, endRatio: 1, endScaleY: 1.1, endScaleZ: 0.85, endShiftY: -0.5, swingAngle: 10 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.99, endRatio: 1.11, endScaleY: 1.1, endScaleZ: 0.85, endShiftY: -0.5, swingAngle: 16.2, pitchAngle: -13.2, centerZ: -0.1 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.7, endRatio: 1.1, endScaleY: 0.6, endScaleZ: 1.5, endShiftY: 0.6, endShiftZ: 0.6, swingAngle: 2.5 },
+      data: { taperRatio: 0.49, endRatio: 1.1, endScaleY: 0.6, endScaleZ: 1.08, endShiftY: 0.6, endShiftZ: 0.73, swingAngle: 2.2, pitchAngle: 8, centerZ: 0.024 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -89,7 +91,8 @@ defineGroupNode({
   internalEdges: [
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoGen', targetHandle: 'length' },
-    { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
+    { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTilt', targetHandle: 'geometry' },
+    { source: 'torsoTilt', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'waistY', target: 'torsoTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'neckRadius', target: 'neckGen', targetHandle: 'radiusTop' },
