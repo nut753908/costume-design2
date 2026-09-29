@@ -66,12 +66,12 @@ defineGroupNode({
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.0395 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.035 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
-    { id: 'headGen', type: 'headShape', data: { heightRatio: 0.996 } },
+    { id: 'headGen', type: 'headShape', data: { heightRatio: 0.9963 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
     { id: 'headTranslate', type: 'translate', data: { z: -0.1067 } },
 
@@ -83,11 +83,11 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.8702, endRatio: 1.17, endScaleY: 1.3, endScaleZ: 0.85, endShiftY: -0.7895, swingAngle: 16.55, pitchAngle: -13.14, centerZ: -0.1 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.8764, endRatio: 1.18, endScaleY: 1.18, endScaleZ: 0.85, endShiftY: -0.749, swingAngle: 16.84, pitchAngle: -13, centerZ: -0.1 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4526, endRatio: 0.9142, endScaleY: 0.6285, endScaleZ: 1.307, endShiftY: 0.3626, endShiftZ: 0.9363, swingAngle: 2.482, pitchAngle: 8.678, centerZ: 0.0235 },
+      data: { taperRatio: 0.398, endRatio: 0.9142, endScaleY: 0.6297, endScaleZ: 1.272, endShiftY: 0.3821, endShiftZ: 0.9393, swingAngle: 2.452, pitchAngle: 8.678, centerZ: 0.0243 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
