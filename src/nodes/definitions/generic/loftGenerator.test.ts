@@ -1,12 +1,12 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-import { PchipProfileCurve } from '../../../geometry/pchipProfile';
+import { SplineProfileCurve } from '../../../geometry/splineProfile';
 import './loftGenerator';
 
 const num = (value: number) => ({ type: 'number' as const, value });
 const RADII = [0, 0.8, 1, 0.7, 1, 0.8, 0];
-const curve = (scale: number) => ({ type: 'curve' as const, value: new PchipProfileCurve(RADII.map((r) => r * scale), 1) });
+const curve = (scale: number) => ({ type: 'curve' as const, value: new SplineProfileCurve(RADII.map((r) => r * scale), 1) });
 
 function loft(inputs: Record<string, unknown>) {
   const result = getNodeType('loftGenerator').evaluate(inputs as never, {});
@@ -32,7 +32,7 @@ describe('loftGenerator', () => {
   it('高さごとに幅と奥行きの比が変わる(くびれの高さでだけ奥行きを絞れる)', () => {
     const wide = curve(0.5).value;
     // 高さ 0.5(r3 = 0.7 の点)の奥行きだけを 0.1 にする
-    const depth = { type: 'curve' as const, value: new PchipProfileCurve([0, 0.4, 0.5, 0.1, 0.5, 0.4, 0], 1) };
+    const depth = { type: 'curve' as const, value: new SplineProfileCurve([0, 0.4, 0.5, 0.1, 0.5, 0.4, 0], 1) };
     const geometry = loft({ profile: { type: 'curve', value: wide }, depthProfile: depth, steps: num(24), segments: num(24) })!;
     const position = geometry.getAttribute('position');
     let zAtMiddle = 0;
@@ -77,5 +77,19 @@ describe('loftGenerator', () => {
     const geometry = loft({ profile: curve(0.5), steps: num(6), segments: num(8) })!;
     expect(geometry.getAttribute('position').count).toBe(7 * 9);
     expect(geometry).toBeInstanceOf(THREE.BufferGeometry);
+  });
+
+  it('backProfile を繋ぐと、前(+Z)側は depthProfile、後ろ(-Z)側は backProfile の半径になる', () => {
+    const geometry = loft({ profile: curve(0.5), depthProfile: curve(0.3), backProfile: curve(0.1) })!;
+    geometry.computeBoundingBox();
+    expect(geometry.boundingBox!.max.z).toBeCloseTo(0.3, 2);
+    expect(geometry.boundingBox!.min.z).toBeCloseTo(-0.1, 2);
+    expect(geometry.boundingBox!.max.x).toBeCloseTo(0.5, 2);
+  });
+
+  it('backProfile が未接続なら、前後とも depthProfile(左右対称)', () => {
+    const geometry = loft({ profile: curve(0.5), depthProfile: curve(0.3) })!;
+    geometry.computeBoundingBox();
+    expect(geometry.boundingBox!.min.z).toBeCloseTo(-0.3, 2);
   });
 });
