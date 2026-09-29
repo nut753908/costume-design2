@@ -14,7 +14,11 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * 先端(下端)には手/足になる球(`end`)を結合する。半径は `radius × endRatio`、`endScaleY`/`endScaleZ`
  * で上下・前後につぶし/伸ばし、中心を先端から `endShiftY`/`endShiftZ`(端の球の半径を単位にした量)
- * だけずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。 */
+ * だけずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
+ *
+ * `swingAngle`(度)は、付け根(関節の球の中心)を支点にして先端を外(+X 側、左右対称ペアの
+ * 外側)へ振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度に
+ * よらず有効。 */
 defineGroupNode({
   type: 'limbPair',
   label: 'Limb Pair',
@@ -34,6 +38,7 @@ defineGroupNode({
           { id: 'endScaleZ', label: 'End Scale Z', type: 'number', default: 1 },
           { id: 'endShiftY', label: 'End Shift Y', type: 'number', default: 0 },
           { id: 'endShiftZ', label: 'End Shift Z', type: 'number', default: 0 },
+          { id: 'swingAngle', label: 'Swing Angle (deg)', type: 'number', default: 0 },
         ],
       },
     },
@@ -52,6 +57,10 @@ defineGroupNode({
     { id: 'endZ', type: 'numberMultiply', data: {} },
     { id: 'endTranslate', type: 'translate', data: {} },
     { id: 'withJoint', type: 'mergeGeometry', data: {} },
+    // 付け根(関節の球の中心)を支点に、先端を外(+X 側)へ swingAngle 度だけ振る。
+    { id: 'pivotDown', type: 'translate', data: {} },
+    { id: 'swing', type: 'rotate', data: {} },
+    { id: 'pivotUp', type: 'translate', data: {} },
     { id: 'mirror', type: 'mirrorPair', data: {} },
     { id: 'translate', type: 'translate', data: {} },
     {
@@ -92,7 +101,13 @@ defineGroupNode({
     { source: 'endScale', sourceHandle: 'geometry', target: 'endTranslate', targetHandle: 'geometry' },
     { source: 'endY', sourceHandle: 'value', target: 'endTranslate', targetHandle: 'y' },
     { source: 'endZ', sourceHandle: 'value', target: 'endTranslate', targetHandle: 'z' },
-    { source: 'withJoint', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
+    { source: 'withJoint', sourceHandle: 'geometry', target: 'pivotDown', targetHandle: 'geometry' },
+    { source: 'negHalfLength', sourceHandle: 'value', target: 'pivotDown', targetHandle: 'y' },
+    { source: 'pivotDown', sourceHandle: 'geometry', target: 'swing', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'swingAngle', target: 'swing', targetHandle: 'z' },
+    { source: 'swing', sourceHandle: 'geometry', target: 'pivotUp', targetHandle: 'geometry' },
+    { source: 'halfLength', sourceHandle: 'value', target: 'pivotUp', targetHandle: 'y' },
+    { source: 'pivotUp', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'spacing', target: 'mirror', targetHandle: 'offset' },
     { source: 'mirror', sourceHandle: 'geometry', target: 'translate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'centerY', target: 'translate', targetHandle: 'y' },

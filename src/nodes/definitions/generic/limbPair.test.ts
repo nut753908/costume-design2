@@ -42,4 +42,15 @@ describe('limbPair', () => {
     expect(tapered.max.x).toBeCloseTo(straight.max.x, 5);
     expect(tapered.min.x).toBeCloseTo(straight.min.x, 5);
   });
+
+  it('swingAngle は付け根を支点に先端を外へ振り、付け根の位置は変えない', () => {
+    const straight = evaluateBox(base);
+    const swung = evaluateBox({ ...base, swingAngle: 30 });
+    // 上端(付け根)は動かず、先端が外へ広がる。
+    expect(swung.max.y).toBeCloseTo(straight.max.y, 3);
+    expect(swung.max.x).toBeGreaterThan(straight.max.x + 0.1);
+    expect(swung.min.x).toBeCloseTo(-swung.max.x, 5);
+    // 振った分だけ先端は少し上がる。
+    expect(swung.min.y).toBeGreaterThan(straight.min.y);
+  });
 });
