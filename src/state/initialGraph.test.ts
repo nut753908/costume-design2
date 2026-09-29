@@ -46,33 +46,6 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     }
   });
 
-  // どのアンカーを使うかは bodyLayout のどの出力を anchorY へ配線するかというグラフ上の
-  // 配線そのものが仕様(garmentPlacement.ts のコメント参照)。各ガーメントが正しい
-  // アンカー候補に繋がっているかをピンポイントで検証する。
-  it('各ガーメントの anchorY が bodyLayout の正しいアンカー候補に接続されている', () => {
-    const expected: [string, string][] = [
-      ['skirtGroup', 'waistY'],
-      ['pantsGroup', 'waistY'],
-      ['beltGroup', 'waistY'],
-      ['dressGroup', 'shoulderY'],
-      ['necktieGroup', 'shoulderY'],
-      ['bagGroup', 'shoulderY'],
-      ['jacketGroup', 'shoulderY'],
-      ['topGroup', 'shoulderY'],
-      ['scarfGroup', 'shoulderY'],
-      ['socksGroup', 'feetY'],
-      ['shoesGroup', 'feetY'],
-      ['glovesGroup', 'wristY'],
-      ['hatGroup', 'headCenterY'],
-      ['glassesGroup', 'headCenterY'],
-    ];
-    for (const [target, sourceHandle] of expected) {
-      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'anchorY');
-      expect(edge?.source).toBe('bodyLayout');
-      expect(edge?.sourceHandle).toBe(sourceHandle);
-    }
-  });
-
   it('ノードidに重複が無い', () => {
     const counts = new Map<string, number>();
     for (const n of initialNodes) counts.set(n.id, (counts.get(n.id) ?? 0) + 1);
@@ -133,64 +106,12 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     }));
     expect(() => evaluateGraph(graphNodes, graphEdges)).not.toThrow();
   });
-
-  // pants/shoes/socks の脚の間隔が bodyGroup の脚と食い違うと、Body Build を変えたときに体だけ
-  // 脚が広がる。このエッジが静かに外れないよう、接続関係をピンポイントで検証する。
-  it('glovesGroup.armSpacing が bodyGroup の腕と同じ bodyDimensions.shoulderSpacing に接続されている', () => {
-    const edge = initialEdges.find((e) => e.target === 'glovesGroup' && e.targetHandle === 'armSpacing');
-    expect(edge?.source).toBe('bodyDimensions');
-    expect(edge?.sourceHandle).toBe('shoulderSpacing');
-  });
-
-  // ガーメントの「体に触れる半径」は体の半径(胴体/脚/腕)に倍率を掛けて求めるため、配線が外れると
-  // 体型を変えても服だけ元の大きさのまま残る。
-  it.each([
-    ['skirtGroup', 'torsoRadius'],
-    ['beltGroup', 'torsoRadius'],
-    ['dressGroup', 'torsoRadius'],
-    ['topGroup', 'torsoRadius'],
-    ['topGroup', 'armRadius'],
-    ['topGroup', 'shoulderSpacing'],
-    ['topGroup', 'neckRadius'],
-    ['dressGroup', 'neckRadius'],
-    ['jacketGroup', 'neckRadius'],
-    ['jacketGroup', 'torsoRadius'],
-    ['scarfGroup', 'neckRadius'],
-    ['scarfGroup', 'torsoRadius'],
-    ['necktieGroup', 'torsoRadius'],
-    ['bagGroup', 'torsoRadius'],
-    ['pantsGroup', 'torsoRadius'],
-    ['pantsGroup', 'legRadius'],
-    ['shoesGroup', 'legRadius'],
-    ['socksGroup', 'legRadius'],
-    ['glovesGroup', 'armRadius'],
-  ])('%s.%s が bodyDimensions の同名の出力に接続されている', (target, handle) => {
-    const edge = initialEdges.find((e) => e.target === target && e.targetHandle === handle);
-    expect(edge?.source).toBe('bodyDimensions');
-    expect(edge?.sourceHandle).toBe(handle);
-  });
-
-  it('hatGroup/glassesGroup.headRadius が bodyGroup の頭と同じ bodyDimensions.headRadius に接続されている', () => {
-    for (const target of ['hatGroup', 'glassesGroup']) {
-      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'headRadius');
-      expect(edge?.source).toBe('bodyDimensions');
-      expect(edge?.sourceHandle).toBe('headRadius');
-    }
-  });
-
-  it('pantsGroup/shoesGroup/socksGroup.legSpacing が bodyGroup と同じ bodyDimensions.legSpacing に接続されている', () => {
-    for (const target of ['pantsGroup', 'shoesGroup', 'socksGroup']) {
-      const edge = initialEdges.find((e) => e.target === target && e.targetHandle === 'legSpacing');
-      expect(edge?.source).toBe('bodyDimensions');
-      expect(edge?.sourceHandle).toBe('legSpacing');
-    }
-  });
 });
 
 // evaluateGraph.ts のノード単位メモ化キャッシュ(nodes/CLAUDE.md の「ノードグラフエンジン」節
-// 参照)が、この15グループ・数百ノードからなる実際のデフォルトグラフの上でも意図どおりに
+// 参照)が、実際のデフォルトグラフの上でも意図どおりに
 // 効くことを検証する — 合成テストの小さなグラフ(evaluateGraph.test.ts)だけでなく、実際に
-// 「1つのスライダーを動かすと無関係なグループは再評価されない」が成立していることの
+// 「1つの値を動かすと無関係なグループは再評価されない」が成立していることの
 // 回帰テスト。
 describe('initialNodes/initialEdges でのノード単位メモ化', () => {
   // evaluateGraph() が要求する GraphNode[]/GraphEdge[] へ変換する(上の「evaluateGraph が
@@ -203,25 +124,24 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     targetHandle: e.targetHandle,
   }));
 
-  it('無関係なトップレベルノード(hatGroup)の data だけを差し替えても、skirtGroup の描画結果は同じ参照のまま再利用される', () => {
+  it('無関係なトップレベルノード(bodyLayout)の data だけを差し替えても、bodyDimensions の結果は同じ参照のまま再利用される', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'hatGroup' ? { ...n, data: { ...n.data, memo: 'changed' } } : n,
+      n.id === 'bodyLayout' ? { ...n, data: { ...n.data, memo: 'changed' } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
-    expect(after.get('skirtGroup')?.sceneOutputGeometry0).toBe(before.get('skirtGroup')?.sceneOutputGeometry0);
-    expect(after.get('skirtGroup')?.sceneOutputMaterial0).toBe(before.get('skirtGroup')?.sceneOutputMaterial0);
+    expect(after.get('bodyDimensions')).toBe(before.get('bodyDimensions'));
   });
 
-  it('変更した bodyBuild に依存する pantsGroup は、正しく再評価されて結果が変わる', () => {
+  it('変更した bodyBuild に依存する bodyGroup は、正しく再評価されて結果が変わる', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
       n.id === 'bodyBuild' ? { ...n, data: { ...n.data, value: 1.2 } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
-    expect(after.get('pantsGroup')?.sceneOutputGeometry0).not.toBe(before.get('pantsGroup')?.sceneOutputGeometry0);
+    expect(after.get('bodyGroup')?.sceneOutputGeometry0).not.toBe(before.get('bodyGroup')?.sceneOutputGeometry0);
   });
 });
 
