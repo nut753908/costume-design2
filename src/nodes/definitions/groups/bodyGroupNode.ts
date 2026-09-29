@@ -59,7 +59,7 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -5.2 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -6 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
@@ -70,18 +70,24 @@ defineGroupNode({
 
     // 頭(sphereGenerator)。下側をわずかに絞って、あごのすぼまった卵形にする(`headTaper`)。
     { id: 'headGen', type: 'sphereGenerator', data: {} },
-    { id: 'headTaper', type: 'taperY', data: { bottomScale: 0.85, startRatio: 0.9 } },
+    { id: 'headTaper', type: 'taperY', data: { bottomScale: 0.87, startRatio: 0.9 } },
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、
     // 頭の球は胴体の中心より後ろに置く)。
     { id: 'headTranslate', type: 'translate', data: { z: -0.096 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.94, endRatio: 1.19, endScaleY: 1, endScaleZ: 0.85, endShiftY: -0.5, swingAngle: 16, pitchAngle: -13.4, centerZ: -0.1 } },
+    // 腕の付け根を `armDropIn` だけ下げる(付け根の関節の球を胴体の中へ埋め、肩の上に盛り上がって
+    // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
+    { id: 'armDropIn', type: 'numberInput', data: { value: 0.05 } },
+    { id: 'armDropHalf', type: 'numberHalf', data: {} },
+    { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
+    { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 1, endRatio: 1.16, endScaleY: 1, endScaleZ: 0.85, endShiftY: -0.63, swingAngle: 17.8, pitchAngle: -14.5, centerZ: -0.093 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.48, endRatio: 0.98, endScaleY: 0.6, endScaleZ: 1.27, endShiftY: 0.51, endShiftZ: 0.79, swingAngle: 2.1, pitchAngle: 8.1, centerZ: 0.026 },
+      data: { taperRatio: 0.47, endRatio: 0.98, endScaleY: 0.594, endScaleZ: 1.25, endShiftY: 0.5, endShiftZ: 0.875, swingAngle: 2.1, pitchAngle: 7.9, centerZ: 0.026 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -108,9 +114,14 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'headCenterY', target: 'headTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'armRadius', target: 'armPair', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'armLength', target: 'armPair', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'armLength', target: 'armLengthAdjusted', targetHandle: 'a' },
+    { source: 'armDropIn', sourceHandle: 'value', target: 'armLengthAdjusted', targetHandle: 'b' },
+    { source: 'armLengthAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'length' },
+    { source: 'armDropIn', sourceHandle: 'value', target: 'armDropHalf', targetHandle: 'value' },
+    { source: 'input', sourceHandle: 'armCenterY', target: 'armCenterYAdjusted', targetHandle: 'a' },
+    { source: 'armDropHalf', sourceHandle: 'value', target: 'armCenterYAdjusted', targetHandle: 'b' },
     { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armPair', targetHandle: 'spacing' },
-    { source: 'input', sourceHandle: 'armCenterY', target: 'armPair', targetHandle: 'centerY' },
+    { source: 'armCenterYAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'centerY' },
 
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
