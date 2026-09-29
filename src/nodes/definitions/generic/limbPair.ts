@@ -18,7 +18,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * `swingAngle`(度)は、付け根(関節の球の中心)を支点にして先端を外(+X 側、左右対称ペアの
  * 外側)へ振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度に
- * よらず有効。 */
+ * よらず有効。`pitchAngle`(度)は同じ支点で先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、
+ * `centerZ` は左右ペア全体の前後位置。 */
 defineGroupNode({
   type: 'limbPair',
   label: 'Limb Pair',
@@ -39,6 +40,8 @@ defineGroupNode({
           { id: 'endShiftY', label: 'End Shift Y', type: 'number', default: 0 },
           { id: 'endShiftZ', label: 'End Shift Z', type: 'number', default: 0 },
           { id: 'swingAngle', label: 'Swing Angle (deg)', type: 'number', default: 0 },
+          { id: 'pitchAngle', label: 'Pitch Angle (deg)', type: 'number', default: 0 },
+          { id: 'centerZ', label: 'Center Z', type: 'number', default: 0 },
         ],
       },
     },
@@ -105,12 +108,14 @@ defineGroupNode({
     { source: 'negHalfLength', sourceHandle: 'value', target: 'pivotDown', targetHandle: 'y' },
     { source: 'pivotDown', sourceHandle: 'geometry', target: 'swing', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'swingAngle', target: 'swing', targetHandle: 'z' },
+    { source: 'input', sourceHandle: 'pitchAngle', target: 'swing', targetHandle: 'x' },
     { source: 'swing', sourceHandle: 'geometry', target: 'pivotUp', targetHandle: 'geometry' },
     { source: 'halfLength', sourceHandle: 'value', target: 'pivotUp', targetHandle: 'y' },
     { source: 'pivotUp', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'spacing', target: 'mirror', targetHandle: 'offset' },
     { source: 'mirror', sourceHandle: 'geometry', target: 'translate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'centerY', target: 'translate', targetHandle: 'y' },
+    { source: 'input', sourceHandle: 'centerZ', target: 'translate', targetHandle: 'z' },
     { source: 'translate', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

@@ -53,4 +53,20 @@ describe('limbPair', () => {
     // 振った分だけ先端は少し上がる。
     expect(swung.min.y).toBeGreaterThan(straight.min.y);
   });
+
+  it('pitchAngle は付け根を支点に先端を後ろ(-Z)へ振り、付け根の位置は変えない', () => {
+    const straight = evaluateBox(base);
+    const pitched = evaluateBox({ ...base, pitchAngle: 30 });
+    expect(pitched.max.y).toBeCloseTo(straight.max.y, 3);
+    expect(pitched.min.z).toBeLessThan(straight.min.z - 0.1);
+    // 負の角度なら前へ振る。
+    expect(evaluateBox({ ...base, pitchAngle: -30 }).max.z).toBeGreaterThan(straight.max.z + 0.1);
+  });
+
+  it('centerZ は左右ペア全体を前後へ平行移動する', () => {
+    const straight = evaluateBox(base);
+    const shifted = evaluateBox({ ...base, centerZ: 0.2 });
+    expect(shifted.min.z).toBeCloseTo(straight.min.z + 0.2, 5);
+    expect(shifted.max.z).toBeCloseTo(straight.max.z + 0.2, 5);
+  });
 });
