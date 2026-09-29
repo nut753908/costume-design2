@@ -27,6 +27,12 @@ function extentAt(geometry: THREE.BufferGeometry, y: number, tolerance = 0.004):
   return { x, z };
 }
 
+/** テンプレートの `xProfile` の、制御点 `r<k>`(`radius` に対する比)。 */
+function xRatio(k: number): number {
+  const data = getNodeType('torsoShape').createDefaultData() as { nodes: { id: string; data: Record<string, number> }[] };
+  return data.nodes.find((n) => n.id === 'xProfile')!.data[`r${k}`];
+}
+
 describe('torsoShape', () => {
   const base = { radius: 0.15, length: 0.3 };
   const height = 0.3 + 2 * 0.15;
@@ -43,17 +49,16 @@ describe('torsoShape', () => {
     const geometry = evaluateGeometry(base);
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
-    // 最も広い制御点(r1 = 1.119)が幅の最大
-    expect(box.max.x).toBeCloseTo(0.15 * 1.119, 2);
+    // 最も広い制御点(r1)が幅の最大
+    expect(box.max.x).toBeCloseTo(0.15 * xRatio(1), 2);
     expect(box.max.z).toBeLessThan(box.max.x * 0.8);
     expect(box.max.z).toBeGreaterThan(box.max.x * 0.5);
   });
 
   it('輪郭の制御点(高さを 8 等分した点)の高さでは、幅は radius × xProfile の r に一致する', () => {
     const geometry = evaluateGeometry(base);
-    // r2(高さ 2/8)= 1.012、r4(高さ 4/8、くびれ)= 0.85
-    expect(extentAt(geometry, (2 / 8) * height).x).toBeCloseTo(0.15 * 1.012, 2);
-    expect(extentAt(geometry, (4 / 8) * height).x).toBeCloseTo(0.15 * 0.85, 2);
+    expect(extentAt(geometry, (2 / 8) * height).x).toBeCloseTo(0.15 * xRatio(2), 2);
+    expect(extentAt(geometry, (4 / 8) * height).x).toBeCloseTo(0.15 * xRatio(4), 2);
   });
 
   it('両端は丸く閉じる(下端・上端の近くで半径が小さくなる)', () => {

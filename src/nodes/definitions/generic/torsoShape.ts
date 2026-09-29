@@ -31,13 +31,13 @@ defineGroupNode({
     {
       id: 'xProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 1.119, r2: 1.012, r3: 0.915, r4: 0.85, r5: 0.833, r6: 0.873, r7: 0.974, r8: 0 },
+      data: { r0: 0, r1: 1.017, r2: 0.9898, r3: 0.9634, r4: 0.9373, r5: 0.9127, r6: 0.8892, r7: 0.8685, r8: 0 },
     },
     // 前後(Z)方向の半径。値は `radius` に対する比(幅のおよそ 0.6〜0.8 倍の薄い胴)。
     {
       id: 'zProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.716, r2: 0.679, r3: 0.635, r4: 0.575, r5: 0.543, r6: 0.539, r7: 0.56, r8: 0 },
+      data: { r0: 0, r1: 0.7193, r2: 0.682, r3: 0.6404, r4: 0.59, r5: 0.543, r6: 0.5164, r7: 0.5001, r8: 0 },
     },
     { id: 'gen', type: 'loftGenerator', data: { steps: 24, segments: 24 } },
 
