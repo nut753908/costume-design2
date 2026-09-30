@@ -45,7 +45,7 @@ defineGroupNode({
       type: 'profileCurve',
       data: { r0: 0, r1: 0.4474, r2: 0.4179, r3: 0.395, r4: 0.4195, r5: 0.5176, r6: 0.6836, r7: 0.8774, r8: 0 },
     },
-    { id: 'gen', type: 'loftGenerator', data: { steps: 24, segments: 24 } },
+    { id: 'gen', type: 'loftGenerator', data: { steps: 48, segments: 64 } },
 
     {
       id: 'output',

@@ -8,7 +8,32 @@ export interface LoftGeneratorData extends Record<string, unknown> {
   steps?: number;
 }
 
-/** `profile`(幅方向 X の半径)と `depthProfile`(前後方向 Z の半径)の2つの `(半径, 高さ)` の曲線から、
+/** 位置が重なる頂点(回転体の始点と終点の継ぎ目、極)の法線を平均し、継ぎ目に縦の筋(陰影の段差)が出ないようにする。
+ * `computeVertexNormals()` は共有されていない頂点ごとに法線を求めるので、継ぎ目の両側で法線が食い違う。 */
+function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
+  const position = geometry.getAttribute('position');
+  const normal = geometry.getAttribute('normal');
+  const groups = new Map<string, number[]>();
+  // -0 と 0 が別のキーにならないよう `+ 0` で正規化し、丸め誤差は 1e-5 で吸収する。
+  const round = (v: number) => (Math.round(v * 1e5) / 1e5 + 0).toFixed(5);
+  for (let i = 0; i < position.count; i++) {
+    const key = `${round(position.getX(i))},${round(position.getY(i))},${round(position.getZ(i))}`;
+    const group = groups.get(key);
+    if (group) group.push(i);
+    else groups.set(key, [i]);
+  }
+  const sum = new THREE.Vector3();
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+    sum.set(0, 0, 0);
+    for (const i of group) sum.x += normal.getX(i), (sum.y += normal.getY(i)), (sum.z += normal.getZ(i));
+    sum.normalize();
+    for (const i of group) normal.setXYZ(i, sum.x, sum.y, sum.z);
+  }
+  normal.needsUpdate = true;
+}
+
+/** `profile`(幅方向 X の半径）と `depthProfile`(前後方向 Z の半径)の2つの `(半径, 高さ)` の曲線から、
  * 断面が楕円で、高さごとに幅と奥行きが変わる回転体のような形を作る汎用ノード。`latheGenerator` と同じく
  * `profile` を `steps` 分割した点列から `THREE.LatheGeometry` を作り、各リングの Z を
  * `depthProfile の半径 / profile の半径` 倍する(巻き順は Z が正の倍率のあいだ保たれる)。
@@ -49,6 +74,7 @@ registerNodeType<LoftGeneratorData>({
       }
       position.needsUpdate = true;
       geometry.computeVertexNormals();
+      smoothCoincidentNormals(geometry);
     }
     return { geometry: { type: 'geometry', value: geometry } };
   },
