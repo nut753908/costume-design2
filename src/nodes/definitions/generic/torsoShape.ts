@@ -1,13 +1,13 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
-/** 胴体の形を、幅(X)と奥行き(Z)の2本の輪郭曲線から作る、`bodyGroupNode.ts` 用のグループノード。
+/** 胴体の形を、幅(X)・前側(+Z)・後ろ側(-Z)の3本の輪郭曲線から作る、`bodyGroupNode.ts` 用のグループノード。
  * 原点が胴体の下端(股)で、+Y へ `length + 2 × radius` の高さまで伸びる(カプセルと同じ高さ)。
  *
- * - `xProfile`/`zProfile`(どちらも `profileCurve`)が、高さを 8 等分した 9 点の半径
+ * - `xProfile`/`frontProfile`/`backProfile`(いずれも `profileCurve`)が、高さを 8 等分した 9 点の半径
  *   (`radius` の `r0`〜`r8` 倍、両端 `r0`/`r8` は 0 で丸く閉じる)をなめらかにつないだ輪郭曲線を作る。
- *   `xProfile` は左右(X)方向の半径、`zProfile` は前後(Z)方向の半径で、腰の丸み・くびれ・胸・なで肩の
- *   形と胴の薄さは、この2枚のカードの入力欄の値そのもの。
- * - `gen`(`loftGenerator`)が2本の曲線から、断面が楕円の回転体のような形を1つのジオメトリとして作る。
+ *   `xProfile` は左右(X)方向、`frontProfile`/`backProfile` は前側/後ろ側の半径で、腰の丸み・くびれ・胸・
+ *   なで肩の形と胴の薄さ、胸・腹と背中の非対称は、この3枚のカードの入力欄の値そのもの。
+ * - `gen`(`loftGenerator`)が3本の曲線から、断面が楕円の回転体のような形を1つのジオメトリとして作る。
  *
  * 外部の半径 `radius` に比例するので、体の太さ(Build)を変えると形が相似のまま追従する。 */
 defineGroupNode({
@@ -31,13 +31,19 @@ defineGroupNode({
     {
       id: 'xProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 1.031, r2: 0.9993, r3: 0.9697, r4: 0.9421, r5: 0.9175, r6: 0.8932, r7: 0.8676, r8: 0 },
+      data: { r0: 0, r1: 1.186, r2: 1.08, r3: 0.9888, r4: 0.9172, r5: 0.8711, r6: 0.8353, r7: 0.8333, r8: 0 },
     },
-    // 前後(Z)方向の半径。値は `radius` に対する比(幅のおよそ 0.6〜0.8 倍の薄い胴)。
+    // 前側(+Z)・後ろ側(-Z)の半径。値は `radius` に対する比(幅のおよそ 0.6〜0.8 倍の薄い胴)。
+    // 前後を別々にして、胸・腹の出っ張りと背中の反りの非対称を表す。
     {
-      id: 'zProfile',
+      id: 'frontProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.7195, r2: 0.682, r3: 0.6404, r4: 0.5869, r5: 0.543, r6: 0.5167, r7: 0.5, r8: 0 },
+      data: { r0: 0, r1: 0.7141, r2: 0.6818, r3: 0.6425, r4: 0.5953, r5: 0.5653, r6: 0.4311, r7: 0.4, r8: 0 },
+    },
+    {
+      id: 'backProfile',
+      type: 'profileCurve',
+      data: { r0: 0, r1: 0.5747, r2: 0.4843, r3: 0.4363, r4: 0.4559, r5: 0.543, r6: 0.6974, r7: 0.871, r8: 0 },
     },
     { id: 'gen', type: 'loftGenerator', data: { steps: 24, segments: 24 } },
 
@@ -57,11 +63,14 @@ defineGroupNode({
 
     { source: 'input', sourceHandle: 'radius', target: 'xProfile', targetHandle: 'radius' },
     { source: 'height', sourceHandle: 'value', target: 'xProfile', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'radius', target: 'zProfile', targetHandle: 'radius' },
-    { source: 'height', sourceHandle: 'value', target: 'zProfile', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'radius', target: 'frontProfile', targetHandle: 'radius' },
+    { source: 'height', sourceHandle: 'value', target: 'frontProfile', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'radius', target: 'backProfile', targetHandle: 'radius' },
+    { source: 'height', sourceHandle: 'value', target: 'backProfile', targetHandle: 'length' },
 
     { source: 'xProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
-    { source: 'zProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
+    { source: 'frontProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
+    { source: 'backProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'backProfile' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

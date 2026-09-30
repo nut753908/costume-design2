@@ -11,16 +11,16 @@ function num(v: number) {
 // buildScale/heightScale/shoulderScale はどれも groupInput の外部ソケットで、未接続なら既定値1になる。
 const BASE = {
   legHeight: 0.6281,
-  legRadius: 0.0711,
-  legSpacing: 0.1094,
+  legRadius: 0.071,
+  legSpacing: 0.1089,
   torsoLength: 0.3355,
-  torsoRadius: 0.1576,
+  torsoRadius: 0.1578,
   headRadius: 0.2936,
-  armLength: 0.4631,
-  armRadius: 0.0617,
-  shoulderSpacing: 0.1071,
-  neckLength: 0.0286,
-  neckRadius: 0.053,
+  armLength: 0.4634,
+  armRadius: 0.062,
+  shoulderSpacing: 0.1072,
+  neckLength: 0.0285,
+  neckRadius: 0.0532,
 };
 
 describe('bodyDimensionsGroup', () => {
