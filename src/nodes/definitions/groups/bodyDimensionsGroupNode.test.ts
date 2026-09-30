@@ -12,7 +12,7 @@ function num(v: number) {
 const BASE = {
   legHeight: 0.6281,
   legRadius: 0.0695,
-  legSpacing: 0.1074,
+  legSpacing: 0.108,
   torsoLength: 0.3354,
   torsoRadius: 0.1578,
   headRadius: 0.2956,

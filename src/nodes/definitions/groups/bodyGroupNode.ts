@@ -66,7 +66,7 @@ defineGroupNode({
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.0391 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1216 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -79,15 +79,15 @@ defineGroupNode({
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
     // 腕の付け根を `armDropIn` だけ下げる(付け根の関節の球を胴体の中へ埋め、肩の上に盛り上がって
     // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
-    { id: 'armDropIn', type: 'numberInput', data: { value: 0.05 } },
+    { id: 'armDropIn', type: 'numberInput', data: { value: 0.0501 } },
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.884, endRatio: 1.248, endScaleY: 0.9787, endScaleZ: 0.85, endShiftY: -0.781, swingAngle: 16.82, pitchAngle: -12.85, centerZ: -0.099 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.884, endRatio: 1.248, endScaleY: 0.9787, endScaleZ: 0.85, endShiftY: -0.778, swingAngle: 16.81, pitchAngle: -12.85, centerZ: -0.099 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4048, endRatio: 0.8799, endScaleY: 0.6338, endScaleZ: 1.304, endShiftY: 0.4075, endShiftZ: 1, swingAngle: 2.843, pitchAngle: 8.345, centerZ: 0.022 },
+      data: { taperRatio: 0.4039, endRatio: 0.8799, endScaleY: 0.6338, endScaleZ: 1.304, endShiftY: 0.4117, endShiftZ: 0.9942, swingAngle: 2.845, pitchAngle: 8.35, centerZ: 0.0218 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
