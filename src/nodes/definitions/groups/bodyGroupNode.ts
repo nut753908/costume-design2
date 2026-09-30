@@ -85,11 +85,11 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.8105, endRatio: 1.074, endScaleY: 0.9382, endScaleZ: 0.85, endShiftY: -0.6785, swingAngle: 17.36, pitchAngle: -12.78, centerZ: -0.0999 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.8105, endRatio: 1.073, endScaleY: 0.9842, endScaleZ: 0.85, endShiftY: -0.6669, swingAngle: 17.36, pitchAngle: -12.78, centerZ: -0.0999, endScaleX: 1.016, endPitch: -15.08 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4076, endRatio: 0.8324, endScaleY: 0.7035, endScaleZ: 1.389, endShiftY: 0.3883, endShiftZ: 1, swingAngle: 2.662, pitchAngle: 8.188, centerZ: 0.0147 },
+      data: { taperRatio: 0.4076, endRatio: 0.8618, endScaleY: 0.6816, endScaleZ: 1.483, endShiftY: 0.3822, endShiftZ: 0.9558, swingAngle: 2.662, pitchAngle: 8.188, centerZ: 0.0147, endScaleX: 0.9083, endPitch: 5.587 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
