@@ -59,21 +59,23 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.376 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.375 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1216 } },
+    // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
+    { id: 'neckTilt', type: 'rotate', data: { x: 12.57 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1261 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
-    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.006 } },
+    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.004 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
-    { id: 'headTranslate', type: 'translate', data: { z: -0.1058 } },
+    { id: 'headTranslate', type: 'translate', data: { z: -0.1073 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
@@ -83,11 +85,11 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.884, endRatio: 1.248, endScaleY: 0.9787, endScaleZ: 0.85, endShiftY: -0.778, swingAngle: 16.81, pitchAngle: -12.85, centerZ: -0.099 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.8419, endRatio: 1.074, endScaleY: 0.9356, endScaleZ: 0.85, endShiftY: -0.7962, swingAngle: 16.94, pitchAngle: -13.03, centerZ: -0.0999 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4039, endRatio: 0.8799, endScaleY: 0.6338, endScaleZ: 1.304, endShiftY: 0.4117, endShiftZ: 0.9942, swingAngle: 2.845, pitchAngle: 8.35, centerZ: 0.0218 },
+      data: { taperRatio: 0.4071, endRatio: 0.8785, endScaleY: 0.6007, endScaleZ: 1.39, endShiftY: 0.4291, endShiftZ: 1, swingAngle: 2.637, pitchAngle: 8.188, centerZ: 0.0161 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -105,7 +107,8 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'neckRadius', target: 'neckGen', targetHandle: 'radiusBottom' },
     { source: 'input', sourceHandle: 'neckLength', target: 'neckHeight', targetHandle: 'value' },
     { source: 'neckHeight', sourceHandle: 'value', target: 'neckGen', targetHandle: 'height' },
-    { source: 'neckGen', sourceHandle: 'geometry', target: 'neckTranslate', targetHandle: 'geometry' },
+    { source: 'neckGen', sourceHandle: 'geometry', target: 'neckTilt', targetHandle: 'geometry' },
+    { source: 'neckTilt', sourceHandle: 'geometry', target: 'neckTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'neckCenterY', target: 'neckTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },

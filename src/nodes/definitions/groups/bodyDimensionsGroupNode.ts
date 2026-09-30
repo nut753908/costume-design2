@@ -48,18 +48,18 @@ function dimension(config: {
 
 const dimensions = [
   dimension({ name: 'legHeight', base: 0.6281, scale: HEIGHT_SCALE }),
-  dimension({ name: 'legRadius', base: 0.0695, scale: BUILD_SCALE }),
-  dimension({ name: 'legSpacing', base: 0.108, scale: BUILD_SCALE }),
-  dimension({ name: 'torsoLength', base: 0.3354, scale: HEIGHT_SCALE }),
-  dimension({ name: 'torsoRadius', base: 0.1578, scale: BUILD_SCALE }),
+  dimension({ name: 'legRadius', base: 0.0696, scale: BUILD_SCALE }),
+  dimension({ name: 'legSpacing', base: 0.1094, scale: BUILD_SCALE }),
+  dimension({ name: 'torsoLength', base: 0.3352, scale: HEIGHT_SCALE }),
+  dimension({ name: 'torsoRadius', base: 0.1526, scale: BUILD_SCALE }),
   dimension({ name: 'armLength', base: 0.4634, scale: HEIGHT_SCALE }),
-  dimension({ name: 'neckLength', base: 0.0277, scale: HEIGHT_SCALE }),
-  dimension({ name: 'neckRadius', base: 0.0516, scale: BUILD_SCALE }),
-  dimension({ name: 'armRadius', base: 0.0613, scale: BUILD_SCALE }),
+  dimension({ name: 'neckLength', base: 0.05, scale: HEIGHT_SCALE }),
+  dimension({ name: 'neckRadius', base: 0.0515, scale: BUILD_SCALE }),
+  dimension({ name: 'armRadius', base: 0.0646, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({
     name: 'shoulderSpacing',
-    base: 0.1105,
+    base: 0.1148,
     scale: SHOULDER_SCALE,
     preScale: { id: 'shoulderSpacingBuildScale', source: BUILD_SCALE },
   }),

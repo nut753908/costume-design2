@@ -40,8 +40,13 @@ describe('bodyGroup', () => {
     );
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    // 他のパーツは未接続(寸法0・原点付近)なので、上端は首の上端で決まる。
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(3 + 0.1, 5);
+    // 他のパーツは未接続(寸法0・原点付近)なので、上端は首の上端で決まる。首は中心を支点に
+    // `neckTilt` の角度だけ前へ傾いているので、上端の縁は 半高さ × cos + 半径 × sin だけ中心より上にある。
+    const tilt = (getNodeType('bodyGroup').createDefaultData() as { nodes: { id: string; data: { x: number } }[] }).nodes.find(
+      (n) => n.id === 'neckTilt',
+    )!.data.x;
+    const theta = (tilt * Math.PI) / 180;
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(3 + 0.1 * Math.cos(theta) + 0.05 * Math.sin(theta), 3);
     expect(geom!.boundingBox!.max.x).toBeCloseTo(0.05, 5);
   });
 
