@@ -47,7 +47,9 @@ describe('bodyGroup', () => {
     )!.data.x;
     const theta = (tilt * Math.PI) / 180;
     expect(geom!.boundingBox!.max.y).toBeCloseTo(3 + 0.1 * Math.cos(theta) + 0.05 * Math.sin(theta), 3);
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.05, 5);
+    // 肩の盛り上がり(`yoke`)は他のパーツと同じく未接続(半径 0)でも位置が外接箱に入るので、首の半径を下限にする。
+    expect(geom!.boundingBox!.max.x).toBeGreaterThanOrEqual(0.05 - 1e-5);
+    expect(geom!.boundingBox!.max.x).toBeLessThan(0.15);
   });
 
   it('headCenterY が大きくなるほど結合済みジオメトリの上端(頭)が上がる', () => {

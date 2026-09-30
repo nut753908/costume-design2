@@ -59,7 +59,7 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.375 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.378 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
@@ -67,8 +67,16 @@ defineGroupNode({
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 20.55 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1309 } },
+    { id: 'neckTilt', type: 'rotate', data: { x: 20.76 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1304 } },
+
+    // 首の後ろの肩の盛り上がり(僧帽筋のあたり)を補う楕円体1対。`torsoRadius` の球を `yokeScale` で楕円体にし、
+    // `yokeMirror` で左右へ `offset` だけ離した対にして、首の中心から `yokeDY` だけ上、`z` に置く(肩に埋め込む)。
+    { id: 'yokeGen', type: 'sphereGenerator', data: {} },
+    { id: 'yokeScale', type: 'scale', data: { x: 0.4495, y: 0.4788, z: 0.3954 } },
+    { id: 'yokeMirror', type: 'mirrorPair', data: { offset: 0.0771 } },
+    { id: 'yokeY', type: 'numberAdd', data: { b: -0.1168 } },
+    { id: 'yokeTranslate', type: 'translate', data: { z: -0.1309 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -85,7 +93,7 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.7631, endRatio: 1.165, endScaleY: 0.9478, endScaleZ: 0.85, endShiftY: -0.7223, swingAngle: 17.07, pitchAngle: -13.22, centerZ: -0.1, endScaleX: 0.9776, endPitch: -17.68 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.7631, endRatio: 1.165, endScaleY: 0.9478, endScaleZ: 0.85, endShiftY: -0.7223, swingAngle: 17.1, pitchAngle: -13.22, centerZ: -0.1, endScaleX: 0.9776, endPitch: -17.68 } },
     {
       id: 'legPair',
       type: 'limbPair',
@@ -110,6 +118,14 @@ defineGroupNode({
     { source: 'neckGen', sourceHandle: 'geometry', target: 'neckTilt', targetHandle: 'geometry' },
     { source: 'neckTilt', sourceHandle: 'geometry', target: 'neckTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'neckCenterY', target: 'neckTranslate', targetHandle: 'y' },
+
+    { source: 'input', sourceHandle: 'torsoRadius', target: 'yokeGen', targetHandle: 'radius' },
+    { source: 'yokeGen', sourceHandle: 'geometry', target: 'yokeScale', targetHandle: 'geometry' },
+    { source: 'yokeScale', sourceHandle: 'geometry', target: 'yokeMirror', targetHandle: 'geometry' },
+    { source: 'yokeMirror', sourceHandle: 'geometry', target: 'yokeTranslate', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'neckCenterY', target: 'yokeY', targetHandle: 'a' },
+    { source: 'yokeY', sourceHandle: 'value', target: 'yokeTranslate', targetHandle: 'y' },
+    { source: 'yokeTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
     { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },

@@ -13,14 +13,14 @@ const BASE = {
   legHeight: 0.6173,
   legRadius: 0.07,
   legSpacing: 0.1094,
-  torsoLength: 0.3352,
-  torsoRadius: 0.1533,
+  torsoLength: 0.3364,
+  torsoRadius: 0.1536,
   headRadius: 0.2968,
   armLength: 0.4641,
-  armRadius: 0.0577,
-  shoulderSpacing: 0.1227,
-  neckLength: 0.0595,
-  neckRadius: 0.0522,
+  armRadius: 0.0548,
+  shoulderSpacing: 0.1263,
+  neckLength: 0.0582,
+  neckRadius: 0.0517,
 };
 
 describe('bodyDimensionsGroup', () => {
