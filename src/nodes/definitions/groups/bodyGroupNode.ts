@@ -67,15 +67,15 @@ defineGroupNode({
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 26.78 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1273 } },
+    { id: 'neckTilt', type: 'rotate', data: { x: 20.55 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1309 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
-    { id: 'headGen', type: 'headShape', data: { heightRatio: 0.9842 } },
+    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.004 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
-    { id: 'headTranslate', type: 'translate', data: { z: -0.1073 } },
+    { id: 'headTranslate', type: 'translate', data: { z: -0.1054 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
@@ -85,11 +85,11 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.8105, endRatio: 1.073, endScaleY: 0.9842, endScaleZ: 0.85, endShiftY: -0.6669, swingAngle: 17.36, pitchAngle: -12.78, centerZ: -0.0999, endScaleX: 1.016, endPitch: -15.08 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.7631, endRatio: 1.165, endScaleY: 0.9478, endScaleZ: 0.85, endShiftY: -0.7223, swingAngle: 17.07, pitchAngle: -13.22, centerZ: -0.1, endScaleX: 0.9776, endPitch: -17.68 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4076, endRatio: 0.8618, endScaleY: 0.6816, endScaleZ: 1.483, endShiftY: 0.3822, endShiftZ: 0.9558, swingAngle: 2.662, pitchAngle: 8.188, centerZ: 0.0147, endScaleX: 0.9083, endPitch: 5.587 },
+      data: { taperRatio: 0.4083, endRatio: 0.8629, endScaleY: 0.6731, endScaleZ: 1.587, endShiftY: 0.3822, endShiftZ: 0.9969, swingAngle: 2.593, pitchAngle: 8.207, centerZ: 0.0163, endScaleX: 0.7559, endPitch: 9.874 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
