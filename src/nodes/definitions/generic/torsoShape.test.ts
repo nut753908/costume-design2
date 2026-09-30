@@ -49,8 +49,10 @@ describe('torsoShape', () => {
     const geometry = evaluateGeometry(base);
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
-    // 最も広い制御点(r1)が幅の最大
-    expect(box.max.x).toBeCloseTo(0.15 * xRatio(1), 2);
+    // 最も広い制御点の値の付近(スプラインの膨らみで少しはみ出す)が幅の最大
+    const widest = Math.max(...[1, 2, 3, 4, 5, 6, 7].map(xRatio));
+    expect(box.max.x).toBeGreaterThan(0.15 * widest * 0.98);
+    expect(box.max.x).toBeLessThan(0.15 * widest * 1.06);
     expect(box.max.z).toBeLessThan(box.max.x * 0.8);
     expect(box.max.z).toBeGreaterThan(box.max.x * 0.5);
   });

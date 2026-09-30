@@ -59,21 +59,21 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.141 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.376 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.0351 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.0391 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
-    { id: 'headGen', type: 'headShape', data: { heightRatio: 0.9961 } },
+    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.006 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
-    { id: 'headTranslate', type: 'translate', data: { z: -0.1067 } },
+    { id: 'headTranslate', type: 'translate', data: { z: -0.1058 } },
 
     // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
@@ -83,11 +83,11 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.875, endRatio: 1.194, endScaleY: 1.122, endScaleZ: 0.85, endShiftY: -0.7706, swingAngle: 16.86, pitchAngle: -12.9, centerZ: -0.1 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.884, endRatio: 1.248, endScaleY: 0.9787, endScaleZ: 0.85, endShiftY: -0.781, swingAngle: 16.82, pitchAngle: -12.85, centerZ: -0.099 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.3993, endRatio: 0.8952, endScaleY: 0.6345, endScaleZ: 1.286, endShiftY: 0.3823, endShiftZ: 0.956, swingAngle: 2.516, pitchAngle: 8.567, centerZ: 0.0242 },
+      data: { taperRatio: 0.4048, endRatio: 0.8799, endScaleY: 0.6338, endScaleZ: 1.304, endShiftY: 0.4075, endShiftZ: 1, swingAngle: 2.843, pitchAngle: 8.345, centerZ: 0.022 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
