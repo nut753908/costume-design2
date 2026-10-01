@@ -1,17 +1,18 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
-/** 腕/脚1本の軸(`armShaft`/`legShaft`、`limbShaft.ts`)を外部入力 `shaft` で受け取り、付け根の関節の球と先端の
- * 手/足の球を結合して、±spacing だけ X方向に離した左右対称ペアにして Y方向へ配置するグループノード。
+/** 腕/脚1本の軸(`armShaft`/`legShaft`、`limbShaft.ts`)を外部入力 `shaft` で受け取り、先端の手/足の球を
+ * 結合して、±spacing だけ X方向に離した左右対称ペアにして Y方向へ配置するグループノード。
  * `bodyGroupNode.ts` が腕1組・脚1組の2箇所で使う。
  *
- * 根元(上端)には `radius` の球(`joint`)を結合し、軸の切り口をふさいで肩/股の丸みにつなぐ。先端(下端)には
- * 手/足になる球(`end`)を結合する。半径は `radius × endRatio`、`endScaleX`/`endScaleY`/`endScaleZ` で幅・上下・前後に
- * つぶし/伸ばし、`endPitch`(度)で前後へ傾け、中心を先端から `endShiftY`/`endShiftZ`(端の球の半径を単位にした量)
- * だけずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
+ * 根元(上端)の肩/股の丸みは、軸が球の半径ぶん外側まで伸びて自分で丸く閉じるので、関節の球は別に付けない
+ * (付けると、球と軸の太さの違いが継ぎ目の輪になる)。先端(下端)には手/足になる球(`end`)を結合する。
+ * 半径は `radius × endRatio`、`endScaleX`/`endScaleY`/`endScaleZ` で幅・上下・前後につぶし/伸ばし、
+ * `endPitch`(度)で前後へ傾け、中心を先端から `endShiftY`/`endShiftZ`(端の球の半径を単位にした量)だけ
+ * ずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
  *
- * `swingAngle`(度)は、付け根(関節の球の中心)を支点にして先端を外(+X 側、左右対称ペアの外側)へ振る角度。
- * 支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度によらず有効。`pitchAngle`(度)は同じ支点で
- * 先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、`centerZ` は左右ペア全体の前後位置。 */
+ * `swingAngle`(度)は、付け根(軸の上端の丸みの中心)を支点にして先端を外(+X 側、左右対称ペアの外側)へ
+ * 振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度によらず有効。`pitchAngle`(度)は
+ * 同じ支点で先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、`centerZ` は左右ペア全体の前後位置。 */
 defineGroupNode({
   type: 'limbPair',
   label: 'Limb Pair',
@@ -39,9 +40,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'joint', type: 'sphereGenerator', data: {} },
     { id: 'halfLength', type: 'numberHalf', data: {} },
-    { id: 'jointTranslate', type: 'translate', data: {} },
     // 先端の球: 中心 = (0, -length/2 + endRadius × endShiftY, endRadius × endShiftZ)
     { id: 'endRadius', type: 'numberMultiply', data: {} },
     { id: 'end', type: 'sphereGenerator', data: {} },
@@ -53,7 +52,7 @@ defineGroupNode({
     { id: 'endZ', type: 'numberMultiply', data: {} },
     { id: 'endTranslate', type: 'translate', data: {} },
     { id: 'withJoint', type: 'mergeGeometry', data: {} },
-    // 付け根(関節の球の中心)を支点に、先端を外(+X 側)へ swingAngle 度だけ振る。
+    // 付け根(軸の上端の丸みの中心)を支点に、先端を外(+X 側)へ swingAngle 度だけ振る。
     { id: 'pivotDown', type: 'translate', data: {} },
     { id: 'swing', type: 'rotate', data: {} },
     { id: 'pivotUp', type: 'translate', data: {} },
@@ -68,12 +67,8 @@ defineGroupNode({
     },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'radius', target: 'joint', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'length', target: 'halfLength', targetHandle: 'value' },
-    { source: 'joint', sourceHandle: 'geometry', target: 'jointTranslate', targetHandle: 'geometry' },
-    { source: 'halfLength', sourceHandle: 'value', target: 'jointTranslate', targetHandle: 'y' },
     { source: 'input', sourceHandle: 'shaft', target: 'withJoint', targetHandle: 'geometries' },
-    { source: 'jointTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
     { source: 'endTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
 
     { source: 'input', sourceHandle: 'radius', target: 'endRadius', targetHandle: 'value' },

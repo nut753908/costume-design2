@@ -12,7 +12,7 @@ function num(v: number) {
 const BASE = {
   legHeight: 0.5839,
   legRadius: 0.0691,
-  legSpacing: 0.1105,
+  legSpacing: 0.111,
   torsoLength: 0.3343,
   torsoRadius: 0.1536,
   headRadius: 0.2966,
@@ -20,7 +20,7 @@ const BASE = {
   armRadius: 0.0517,
   shoulderSpacing: 0.1442,
   neckLength: 0.0585,
-  neckRadius: 0.0553,
+  neckRadius: 0.053,
 };
 
 describe('bodyDimensionsGroup', () => {

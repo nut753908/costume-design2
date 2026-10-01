@@ -49,12 +49,12 @@ function dimension(config: {
 const dimensions = [
   dimension({ name: 'legHeight', base: 0.5839, scale: HEIGHT_SCALE }),
   dimension({ name: 'legRadius', base: 0.0691, scale: BUILD_SCALE }),
-  dimension({ name: 'legSpacing', base: 0.1105, scale: BUILD_SCALE }),
+  dimension({ name: 'legSpacing', base: 0.111, scale: BUILD_SCALE }),
   dimension({ name: 'torsoLength', base: 0.3343, scale: HEIGHT_SCALE }),
   dimension({ name: 'torsoRadius', base: 0.1536, scale: BUILD_SCALE }),
   dimension({ name: 'armLength', base: 0.4683, scale: HEIGHT_SCALE }),
   dimension({ name: 'neckLength', base: 0.0585, scale: HEIGHT_SCALE }),
-  dimension({ name: 'neckRadius', base: 0.0553, scale: BUILD_SCALE }),
+  dimension({ name: 'neckRadius', base: 0.053, scale: BUILD_SCALE }),
   dimension({ name: 'armRadius', base: 0.0517, scale: BUILD_SCALE }),
   // shoulderSpacing = shoulderSpacingBase * buildScale * shoulderScale
   dimension({

@@ -66,8 +66,8 @@ defineGroupNode({
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 15.19 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1303 } },
+    { id: 'neckTilt', type: 'rotate', data: { x: 15.34 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1309 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -78,7 +78,7 @@ defineGroupNode({
 
     // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
-    // 腕の付け根を `armDropIn` だけ下げる(付け根の関節の球を胴体の中へ埋め、肩の上に盛り上がって
+    // 腕の付け根を `armDropIn` だけ下げる(付け根の丸みを胴体の中へ埋め、肩の上に盛り上がって
     // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
     { id: 'armDropIn', type: 'numberInput', data: { value: 0.0307 } },
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
@@ -89,11 +89,11 @@ defineGroupNode({
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
     { id: 'legShaftGen', type: 'legShaft', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 1.091, endScaleZ: 0.85, endShiftY: -0.7437, swingAngle: 18.24, pitchAngle: -12.18, centerZ: -0.1, endScaleX: 1.098, endPitch: -33.46 } },
+    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 1.091, endScaleZ: 0.85, endShiftY: -0.7416, swingAngle: 18.24, pitchAngle: -12.22, centerZ: -0.1, endScaleX: 1.098, endPitch: -32.02 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { endRatio: 0.8603, endScaleY: 0.7407, endScaleZ: 1.591, endShiftY: 0, endShiftZ: 0.996, swingAngle: 2.489, pitchAngle: 9.174, centerZ: 0.021, endScaleX: 0.8177, endPitch: 18.96 },
+      data: { endRatio: 0.8603, endScaleY: 0.7407, endScaleZ: 1.591, endShiftY: 0, endShiftZ: 0.996, swingAngle: 2.448, pitchAngle: 9.174, centerZ: 0.0205, endScaleX: 0.7605, endPitch: 18.96 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
