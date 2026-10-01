@@ -64,9 +64,9 @@ function defineLimbShaft(config: { type: string; label: string; profile: string 
 // 値はいずれも `radius` に対する比(`r1` が下端側、`r7` が上端側)。
 const PROFILES: Record<string, { x: Record<string, number>; front: Record<string, number>; back: Record<string, number> }> = {
   armShaft: {
-    x: { r0: 0, r1: 0.8394, r2: 0.8542, r3: 0.8584, r4: 0.9015, r5: 0.9218, r6: 1.01, r7: 0.9984, r8: 0 },
-    front: { r0: 0, r1: 1.109, r2: 1.064, r3: 1.022, r4: 0.9832, r5: 0.9363, r6: 0.9162, r7: 0.7931, r8: 0 },
-    back: { r0: 0, r1: 0.9422, r2: 0.8687, r3: 0.8189, r4: 0.8608, r5: 0.9218, r6: 0.9861, r7: 0.9819, r8: 0 },
+    x: { r0: 0, r1: 0.7344, r2: 0.7643, r3: 0.8183, r4: 0.8779, r5: 0.9436, r6: 0.9295, r7: 0.7655, r8: 0 },
+    front: { r0: 0, r1: 0.8417, r2: 0.9636, r3: 1.023, r4: 0.9568, r5: 0.7855, r6: 0.666, r7: 0.519, r8: 0 },
+    back: { r0: 0, r1: 0.703, r2: 0.7566, r3: 0.8492, r4: 0.9323, r5: 0.9379, r6: 1.012, r7: 1.191, r8: 0 },
   },
   legShaft: {
     x: { r0: 0, r1: 0.5311, r2: 0.6016, r3: 0.6826, r4: 0.7604, r5: 0.8352, r6: 0.887, r7: 0.9683, r8: 0 },

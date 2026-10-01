@@ -58,7 +58,7 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.431 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.596 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
@@ -66,16 +66,8 @@ defineGroupNode({
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 19.09 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1297 } },
-
-    // 首の後ろの肩の盛り上がり(僧帽筋のあたり)を補う楕円体1対。`torsoRadius` の球を `yokeScale` で楕円体にし、
-    // `yokeMirror` で左右へ `offset` だけ離した対にして、首の中心から `yokeDY` だけ上、`z` に置く(肩に埋め込む)。
-    { id: 'yokeGen', type: 'sphereGenerator', data: {} },
-    { id: 'yokeScale', type: 'scale', data: { x: 0.4944, y: 0.6021, z: 0.3977 } },
-    { id: 'yokeMirror', type: 'mirrorPair', data: { offset: 0.055 } },
-    { id: 'yokeY', type: 'numberAdd', data: { b: -0.1188 } },
-    { id: 'yokeTranslate', type: 'translate', data: { z: -0.1381 } },
+    { id: 'neckTilt', type: 'rotate', data: { x: 15.19 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1303 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -88,13 +80,16 @@ defineGroupNode({
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
     // 腕の付け根を `armDropIn` だけ下げる(付け根の関節の球を胴体の中へ埋め、肩の上に盛り上がって
     // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
-    { id: 'armDropIn', type: 'numberInput', data: { value: 0.0501 } },
+    { id: 'armDropIn', type: 'numberInput', data: { value: 0.0307 } },
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
+    // 腕の付け根(軸の上端)を首側(内側)へ `armInsetIn` だけ寄せる。手の位置は `swingAngle` で保つ。
+    { id: 'armInsetIn', type: 'numberInput', data: { value: 0.0282 } },
+    { id: 'armSpacingAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
     { id: 'legShaftGen', type: 'legShaft', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 0.9815, endScaleZ: 0.85, endShiftY: -0.769, swingAngle: 16.61, pitchAngle: -12.67, centerZ: -0.1, endScaleX: 1.056, endPitch: -42.71 } },
+    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 1.091, endScaleZ: 0.85, endShiftY: -0.7437, swingAngle: 18.24, pitchAngle: -12.18, centerZ: -0.1, endScaleX: 1.098, endPitch: -33.46 } },
     {
       id: 'legPair',
       type: 'limbPair',
@@ -120,14 +115,6 @@ defineGroupNode({
     { source: 'neckTilt', sourceHandle: 'geometry', target: 'neckTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'neckCenterY', target: 'neckTranslate', targetHandle: 'y' },
 
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'yokeGen', targetHandle: 'radius' },
-    { source: 'yokeGen', sourceHandle: 'geometry', target: 'yokeScale', targetHandle: 'geometry' },
-    { source: 'yokeScale', sourceHandle: 'geometry', target: 'yokeMirror', targetHandle: 'geometry' },
-    { source: 'yokeMirror', sourceHandle: 'geometry', target: 'yokeTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'neckCenterY', target: 'yokeY', targetHandle: 'a' },
-    { source: 'yokeY', sourceHandle: 'value', target: 'yokeTranslate', targetHandle: 'y' },
-    { source: 'yokeTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
     { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'headCenterY', target: 'headBottomY', targetHandle: 'a' },
@@ -144,7 +131,9 @@ defineGroupNode({
     { source: 'armDropIn', sourceHandle: 'value', target: 'armDropHalf', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'armCenterY', target: 'armCenterYAdjusted', targetHandle: 'a' },
     { source: 'armDropHalf', sourceHandle: 'value', target: 'armCenterYAdjusted', targetHandle: 'b' },
-    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armPair', targetHandle: 'spacing' },
+    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armSpacingAdjusted', targetHandle: 'a' },
+    { source: 'armInsetIn', sourceHandle: 'value', target: 'armSpacingAdjusted', targetHandle: 'b' },
+    { source: 'armSpacingAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'spacing' },
     { source: 'armCenterYAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'centerY' },
 
 

@@ -16,11 +16,11 @@ const BASE = {
   torsoLength: 0.3343,
   torsoRadius: 0.1536,
   headRadius: 0.2966,
-  armLength: 0.4704,
-  armRadius: 0.0498,
-  shoulderSpacing: 0.1305,
-  neckLength: 0.0582,
-  neckRadius: 0.0522,
+  armLength: 0.4683,
+  armRadius: 0.0517,
+  shoulderSpacing: 0.1442,
+  neckLength: 0.0585,
+  neckRadius: 0.0553,
 };
 
 describe('bodyDimensionsGroup', () => {
