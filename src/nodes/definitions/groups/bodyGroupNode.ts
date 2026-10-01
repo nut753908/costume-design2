@@ -17,9 +17,8 @@ import { colorSocket } from '../garmentOutput';
  * `sceneOutput`(=個別メッシュ)として描画しても1つに結合してから描画しても見た目は変わらず、
  * 結合した方がノードグラフ上の階層(ネストしたグループ)が1段減る。
  *
- * 腕/脚とも手首/足首側を根元よりわずかに細くするテーパー比率を持つが、値は左右独立ではなく
- * 部位ごと(腕1本の左右ペアで共通、脚1本の左右ペアで共通)で、`armPair`/`legPair`(`limbPair`)の
- * `Taper Ratio` 入力欄の値として別々に持つ(腕用/脚用は別のノードなので区別できる)。
+ * 腕/脚の軸は `armShaft`/`legShaft`(`generic/limbShaft.ts`)で、太ももや腕の付け根の太さの変化は、それぞれの
+ * 3枚の `profileCurve` カードの値として別々に持つ(腕用/脚用は別のノードなので区別できる)。
  *
  * 肌色は他のガーメントと同じ外部ソケット `color`(`colorSocket()`)で、`material`(`toonMaterial`)の
  * `color` へ配線し、`material` から `sceneOut` の `material` へ1本配線するだけでよい
@@ -59,7 +58,7 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.378 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.431 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
 
     // 首(cylinderGenerator)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
@@ -85,7 +84,7 @@ defineGroupNode({
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
     { id: 'headTranslate', type: 'translate', data: { z: -0.1054 } },
 
-    // 腕1組・脚1組(limbPair)。テーパー比率と先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
+    // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
     // 腕の付け根を `armDropIn` だけ下げる(付け根の関節の球を胴体の中へ埋め、肩の上に盛り上がって
     // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
@@ -93,11 +92,13 @@ defineGroupNode({
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.7654, endRatio: 1.201, endScaleY: 0.961, endScaleZ: 0.85, endShiftY: -0.716, swingAngle: 16.68, pitchAngle: -13.06, centerZ: -0.1, endScaleX: 1.029, endPitch: -20.22 } },
+    { id: 'armShaftGen', type: 'armShaft', data: {} },
+    { id: 'legShaftGen', type: 'legShaft', data: {} },
+    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 0.9815, endScaleZ: 0.85, endShiftY: -0.769, swingAngle: 16.61, pitchAngle: -12.67, centerZ: -0.1, endScaleX: 1.056, endPitch: -42.71 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4368, endRatio: 0.8629, endScaleY: 0.6828, endScaleZ: 1.591, endShiftY: 0.3822, endShiftZ: 0.996, swingAngle: 2.51, pitchAngle: 8.27, centerZ: 0.0163, endScaleX: 0.725, endPitch: 9.1 },
+      data: { endRatio: 0.8603, endScaleY: 0.7407, endScaleZ: 1.591, endShiftY: 0, endShiftZ: 0.996, swingAngle: 2.489, pitchAngle: 9.174, centerZ: 0.021, endScaleX: 0.8177, endPitch: 18.96 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -134,6 +135,9 @@ defineGroupNode({
     { source: 'headBottomY', sourceHandle: 'value', target: 'headTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'armRadius', target: 'armPair', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'armRadius', target: 'armShaftGen', targetHandle: 'radius' },
+    { source: 'armLengthAdjusted', sourceHandle: 'value', target: 'armShaftGen', targetHandle: 'length' },
+    { source: 'armShaftGen', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'shaft' },
     { source: 'input', sourceHandle: 'armLength', target: 'armLengthAdjusted', targetHandle: 'a' },
     { source: 'armDropIn', sourceHandle: 'value', target: 'armLengthAdjusted', targetHandle: 'b' },
     { source: 'armLengthAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'length' },
@@ -145,6 +149,9 @@ defineGroupNode({
 
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'legHeight', target: 'legShaftGen', targetHandle: 'length' },
+    { source: 'legShaftGen', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'shaft' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legPair', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'legPair', targetHandle: 'spacing' },
     { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },

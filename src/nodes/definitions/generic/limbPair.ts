@@ -1,25 +1,17 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
-/** 手首/足首側を根元よりわずかに細くしたテーパー円柱1本を、±spacing だけ X方向に離した左右
- * 対称ペアにして Y方向へ配置するグループノード。`bodyGroupNode.ts` が腕1組・脚1組の
- * 2箇所で使う(同じ4段の構成が2回並ぶ重複をまとめたもの)。
+/** 腕/脚1本の軸(`armShaft`/`legShaft`、`limbShaft.ts`)を外部入力 `shaft` で受け取り、付け根の関節の球と先端の
+ * 手/足の球を結合して、±spacing だけ X方向に離した左右対称ペアにして Y方向へ配置するグループノード。
+ * `bodyGroupNode.ts` が腕1組・脚1組の2箇所で使う。
  *
- * 根元の半径 `radius` はそのまま `cylinderGenerator.radiusTop` へ、`taperRatio` を掛けた値を
- * `radiusBottom` へ渡す(`taper`、`numberMultiply`)。`taperRatio` は腕と脚で別々の値を
- * 持てるよう、このグループの内部ではなく呼び出し側(`bodyGroup`)の `numberInput` から外部
- * ソケットとして受け取る。
- *
- * 根元(上端)には `radius` の球(`joint`)を結合し、円柱の平らな切り口をふさいで肩/股の丸みに
- * つなぐ(切り口のままだと、なで肩や腰の丸みの外側に平らな面が浮いて見える)。
- *
- * 先端(下端)には手/足になる球(`end`)を結合する。半径は `radius × endRatio`、`endScaleY`/`endScaleZ`
- * で上下・前後につぶし/伸ばし、中心を先端から `endShiftY`/`endShiftZ`(端の球の半径を単位にした量)
+ * 根元(上端)には `radius` の球(`joint`)を結合し、軸の切り口をふさいで肩/股の丸みにつなぐ。先端(下端)には
+ * 手/足になる球(`end`)を結合する。半径は `radius × endRatio`、`endScaleX`/`endScaleY`/`endScaleZ` で幅・上下・前後に
+ * つぶし/伸ばし、`endPitch`(度)で前後へ傾け、中心を先端から `endShiftY`/`endShiftZ`(端の球の半径を単位にした量)
  * だけずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
  *
- * `swingAngle`(度)は、付け根(関節の球の中心)を支点にして先端を外(+X 側、左右対称ペアの
- * 外側)へ振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度に
- * よらず有効。`pitchAngle`(度)は同じ支点で先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、
- * `centerZ` は左右ペア全体の前後位置。 */
+ * `swingAngle`(度)は、付け根(関節の球の中心)を支点にして先端を外(+X 側、左右対称ペアの外側)へ振る角度。
+ * 支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度によらず有効。`pitchAngle`(度)は同じ支点で
+ * 先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、`centerZ` は左右ペア全体の前後位置。 */
 defineGroupNode({
   type: 'limbPair',
   label: 'Limb Pair',
@@ -29,11 +21,11 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
+          { id: 'shaft', label: 'Shaft', type: 'geometry' },
           { id: 'radius', label: 'Radius', type: 'number', default: 0 },
           { id: 'length', label: 'Length', type: 'number', default: 0 },
           { id: 'spacing', label: 'Spacing', type: 'number', default: 0 },
           { id: 'centerY', label: 'Center Y', type: 'number', default: 0 },
-          { id: 'taperRatio', label: 'Taper Ratio', type: 'number', default: 1 },
           { id: 'endRatio', label: 'End Ratio', type: 'number', default: 1 },
           { id: 'endScaleX', label: 'End Scale X', type: 'number', default: 1 },
           { id: 'endScaleY', label: 'End Scale Y', type: 'number', default: 1 },
@@ -47,8 +39,6 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'taper', type: 'numberMultiply', data: {} },
-    { id: 'gen', type: 'cylinderGenerator', data: {} },
     { id: 'joint', type: 'sphereGenerator', data: {} },
     { id: 'halfLength', type: 'numberHalf', data: {} },
     { id: 'jointTranslate', type: 'translate', data: {} },
@@ -78,16 +68,11 @@ defineGroupNode({
     },
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'radius', target: 'gen', targetHandle: 'radiusTop' },
-    { source: 'input', sourceHandle: 'radius', target: 'taper', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'taperRatio', target: 'taper', targetHandle: 'factor' },
-    { source: 'taper', sourceHandle: 'value', target: 'gen', targetHandle: 'radiusBottom' },
-    { source: 'input', sourceHandle: 'length', target: 'gen', targetHandle: 'height' },
     { source: 'input', sourceHandle: 'radius', target: 'joint', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'length', target: 'halfLength', targetHandle: 'value' },
     { source: 'joint', sourceHandle: 'geometry', target: 'jointTranslate', targetHandle: 'geometry' },
     { source: 'halfLength', sourceHandle: 'value', target: 'jointTranslate', targetHandle: 'y' },
-    { source: 'gen', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
+    { source: 'input', sourceHandle: 'shaft', target: 'withJoint', targetHandle: 'geometries' },
     { source: 'jointTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
     { source: 'endTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
 
