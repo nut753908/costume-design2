@@ -73,10 +73,10 @@ defineGroupNode({
     // 首の後ろの肩の盛り上がり(僧帽筋のあたり)を補う楕円体1対。`torsoRadius` の球を `yokeScale` で楕円体にし、
     // `yokeMirror` で左右へ `offset` だけ離した対にして、首の中心から `yokeDY` だけ上、`z` に置く(肩に埋め込む)。
     { id: 'yokeGen', type: 'sphereGenerator', data: {} },
-    { id: 'yokeScale', type: 'scale', data: { x: 0.4495, y: 0.4788, z: 0.3954 } },
-    { id: 'yokeMirror', type: 'mirrorPair', data: { offset: 0.0771 } },
-    { id: 'yokeY', type: 'numberAdd', data: { b: -0.1168 } },
-    { id: 'yokeTranslate', type: 'translate', data: { z: -0.1309 } },
+    { id: 'yokeScale', type: 'scale', data: { x: 0.4996, y: 0.6032, z: 0.399 } },
+    { id: 'yokeMirror', type: 'mirrorPair', data: { offset: 0.055 } },
+    { id: 'yokeY', type: 'numberAdd', data: { b: -0.1192 } },
+    { id: 'yokeTranslate', type: 'translate', data: { z: -0.138 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
