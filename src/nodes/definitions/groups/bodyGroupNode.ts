@@ -67,16 +67,16 @@ defineGroupNode({
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'cylinderGenerator', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 20.76 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1304 } },
+    { id: 'neckTilt', type: 'rotate', data: { x: 19.09 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1297 } },
 
     // 首の後ろの肩の盛り上がり(僧帽筋のあたり)を補う楕円体1対。`torsoRadius` の球を `yokeScale` で楕円体にし、
     // `yokeMirror` で左右へ `offset` だけ離した対にして、首の中心から `yokeDY` だけ上、`z` に置く(肩に埋め込む)。
     { id: 'yokeGen', type: 'sphereGenerator', data: {} },
-    { id: 'yokeScale', type: 'scale', data: { x: 0.4996, y: 0.6032, z: 0.399 } },
+    { id: 'yokeScale', type: 'scale', data: { x: 0.4944, y: 0.6021, z: 0.3977 } },
     { id: 'yokeMirror', type: 'mirrorPair', data: { offset: 0.055 } },
-    { id: 'yokeY', type: 'numberAdd', data: { b: -0.1192 } },
-    { id: 'yokeTranslate', type: 'translate', data: { z: -0.138 } },
+    { id: 'yokeY', type: 'numberAdd', data: { b: -0.1188 } },
+    { id: 'yokeTranslate', type: 'translate', data: { z: -0.1381 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -89,15 +89,15 @@ defineGroupNode({
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
     // 腕の付け根を `armDropIn` だけ下げる(付け根の関節の球を胴体の中へ埋め、肩の上に盛り上がって
     // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
-    { id: 'armDropIn', type: 'numberInput', data: { value: 0.05 } },
+    { id: 'armDropIn', type: 'numberInput', data: { value: 0.0501 } },
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.7631, endRatio: 1.165, endScaleY: 0.9478, endScaleZ: 0.85, endShiftY: -0.7223, swingAngle: 17.1, pitchAngle: -13.22, centerZ: -0.1, endScaleX: 0.9776, endPitch: -17.68 } },
+    { id: 'armPair', type: 'limbPair', data: { taperRatio: 0.7654, endRatio: 1.201, endScaleY: 0.961, endScaleZ: 0.85, endShiftY: -0.716, swingAngle: 16.68, pitchAngle: -13.06, centerZ: -0.1, endScaleX: 1.029, endPitch: -20.22 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { taperRatio: 0.4083, endRatio: 0.8629, endScaleY: 0.6731, endScaleZ: 1.587, endShiftY: 0.3822, endShiftZ: 0.9969, swingAngle: 2.593, pitchAngle: 8.207, centerZ: 0.0163, endScaleX: 0.7559, endPitch: 9.874 },
+      data: { taperRatio: 0.4368, endRatio: 0.8629, endScaleY: 0.6828, endScaleZ: 1.591, endShiftY: 0.3822, endShiftZ: 0.996, swingAngle: 2.51, pitchAngle: 8.27, centerZ: 0.0163, endScaleX: 0.725, endPitch: 9.1 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
