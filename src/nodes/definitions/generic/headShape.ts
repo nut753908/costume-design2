@@ -34,7 +34,7 @@ defineGroupNode({
     {
       id: 'frontProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.7864, r2: 0.7558, r3: 0.8482, r4: 0.9495, r5: 0.9771, r6: 0.9131, r7: 0.7409, r8: 0 },
+      data: { r0: 0, r1: 0.7864, r2: 0.7558, r3: 0.8482, r4: 0.9495, r5: 0.9571, r6: 0.8831, r7: 0.7109, r8: 0 },
     },
     {
       id: 'backProfile',
