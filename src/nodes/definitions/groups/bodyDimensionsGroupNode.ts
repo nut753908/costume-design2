@@ -47,7 +47,7 @@ function dimension(config: {
 }
 
 const dimensions = [
-  dimension({ name: 'legHeight', base: 0.5839, scale: HEIGHT_SCALE }),
+  dimension({ name: 'legHeight', base: 0.5754, scale: HEIGHT_SCALE }),
   dimension({ name: 'legRadius', base: 0.0691, scale: BUILD_SCALE }),
   dimension({ name: 'legSpacing', base: 0.111, scale: BUILD_SCALE }),
   dimension({ name: 'torsoLength', base: 0.3343, scale: HEIGHT_SCALE }),

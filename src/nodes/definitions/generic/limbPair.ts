@@ -23,6 +23,7 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'shaft', label: 'Shaft', type: 'geometry' },
+          { id: 'foot', label: 'Foot', type: 'geometry' },
           { id: 'radius', label: 'Radius', type: 'number', default: 0 },
           { id: 'length', label: 'Length', type: 'number', default: 0 },
           { id: 'spacing', label: 'Spacing', type: 'number', default: 0 },
@@ -32,6 +33,9 @@ defineGroupNode({
           { id: 'endScaleY', label: 'End Scale Y', type: 'number', default: 1 },
           { id: 'endScaleZ', label: 'End Scale Z', type: 'number', default: 1 },
           { id: 'endPitch', label: 'End Pitch (deg)', type: 'number', default: 0 },
+          { id: 'footY', label: 'Foot Y', type: 'number', default: 0 },
+          { id: 'footZ', label: 'Foot Z', type: 'number', default: 0 },
+          { id: 'footPitch', label: 'Foot Pitch (deg)', type: 'number', default: 0 },
           { id: 'endShiftY', label: 'End Shift Y', type: 'number', default: 0 },
           { id: 'endShiftZ', label: 'End Shift Z', type: 'number', default: 0 },
           { id: 'swingAngle', label: 'Swing Angle (deg)', type: 'number', default: 0 },
@@ -46,6 +50,10 @@ defineGroupNode({
     { id: 'end', type: 'sphereGenerator', data: {} },
     { id: 'endScale', type: 'scale', data: {} },
     { id: 'endTilt', type: 'rotate', data: {} },
+    // 足(`foot`、かかとが原点の形)を先端の高さに置く: y = -length/2 + footY、z = footZ(footPitch 度だけ前後へ傾ける)。
+    { id: 'footTilt', type: 'rotate', data: {} },
+    { id: 'footBaseY', type: 'numberAdd', data: {} },
+    { id: 'footTranslate', type: 'translate', data: {} },
     { id: 'negHalfLength', type: 'numberNegate', data: {} },
     { id: 'endLift', type: 'numberMultiply', data: {} },
     { id: 'endY', type: 'numberAdd', data: {} },
@@ -70,6 +78,14 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'length', target: 'halfLength', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'shaft', target: 'withJoint', targetHandle: 'geometries' },
     { source: 'endTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
+    { source: 'input', sourceHandle: 'foot', target: 'footTilt', targetHandle: 'geometry' },
+    { source: 'input', sourceHandle: 'footPitch', target: 'footTilt', targetHandle: 'x' },
+    { source: 'footTilt', sourceHandle: 'geometry', target: 'footTranslate', targetHandle: 'geometry' },
+    { source: 'negHalfLength', sourceHandle: 'value', target: 'footBaseY', targetHandle: 'a' },
+    { source: 'input', sourceHandle: 'footY', target: 'footBaseY', targetHandle: 'b' },
+    { source: 'footBaseY', sourceHandle: 'value', target: 'footTranslate', targetHandle: 'y' },
+    { source: 'input', sourceHandle: 'footZ', target: 'footTranslate', targetHandle: 'z' },
+    { source: 'footTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
 
     { source: 'input', sourceHandle: 'radius', target: 'endRadius', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'endRatio', target: 'endRadius', targetHandle: 'factor' },

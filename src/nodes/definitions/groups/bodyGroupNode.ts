@@ -89,11 +89,14 @@ defineGroupNode({
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
     { id: 'legShaftGen', type: 'legShaft', data: {} },
+    // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
+    { id: 'footGen', type: 'footShape', data: {} },
+    { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
     { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 1.091, endScaleZ: 0.85, endShiftY: -0.7416, swingAngle: 18.24, pitchAngle: -12.22, centerZ: -0.1, endScaleX: 1.098, endPitch: -32.02 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { endRatio: 0.8603, endScaleY: 0.7407, endScaleZ: 1.591, endShiftY: 0, endShiftZ: 0.996, swingAngle: 2.448, pitchAngle: 9.174, centerZ: 0.0205, endScaleX: 0.7605, endPitch: 18.96 },
+      data: { endRatio: 0.02, swingAngle: 2.448, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0375, footY: -0.012, footPitch: 0.3789 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -141,6 +144,10 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legShaftGen', targetHandle: 'length' },
     { source: 'legShaftGen', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'shaft' },
+    { source: 'input', sourceHandle: 'legRadius', target: 'footGen', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'legRadius', target: 'footLength', targetHandle: 'value' },
+    { source: 'footLength', sourceHandle: 'value', target: 'footGen', targetHandle: 'length' },
+    { source: 'footGen', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'foot' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legPair', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'legPair', targetHandle: 'spacing' },
     { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
