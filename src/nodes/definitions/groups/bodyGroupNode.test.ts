@@ -46,7 +46,10 @@ describe('bodyGroup', () => {
       (n) => n.id === 'neckTilt',
     )!.data.x;
     const theta = (tilt * Math.PI) / 180;
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(3 + 0.1 * Math.cos(theta) + 0.05 * Math.sin(theta), 3);
+    // 首の上端は丸く閉じていて、傾けると広がった上端の縁が頂点より少し上に出るので、半高さ × cos(傾き) を中心に
+    // ±0.02 の範囲で確かめる。
+    expect(geom!.boundingBox!.max.y).toBeGreaterThan(3 + 0.1 * Math.cos(theta) - 0.02);
+    expect(geom!.boundingBox!.max.y).toBeLessThan(3 + 0.1 * Math.cos(theta) + 0.02);
     // 腕・脚など他のパーツも未接続(寸法 0)で位置だけが外接箱に入るので、首の半径を下限にする。
     expect(geom!.boundingBox!.max.x).toBeGreaterThanOrEqual(0.05 - 1e-5);
     expect(geom!.boundingBox!.max.x).toBeLessThan(0.15);

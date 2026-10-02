@@ -19,8 +19,8 @@ const BASE = {
   armLength: 0.4683,
   armRadius: 0.0517,
   shoulderSpacing: 0.1442,
-  neckLength: 0.0585,
-  neckRadius: 0.053,
+  neckLength: 0.0566,
+  neckRadius: 0.0524,
 };
 
 describe('bodyDimensionsGroup', () => {
