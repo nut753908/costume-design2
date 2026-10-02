@@ -35,17 +35,25 @@ describe('headShape', () => {
     expect(double.max.x).toBeCloseTo(box.max.x * 2, 2);
   });
 
-  it('後ろ側のあご(下端)付近は前側より引き込まれ、あごが前に出た形になる', () => {
+  it('輪郭は凸で、あごから最も張った高さまで広がり続け、その後は頭頂へ狭まり続ける(へこみがない)', () => {
+    // へこみがあるとトゥーンの帯が島状のまだらに割れるので、各高さの前後・左右の広がりが単峰であることを確かめる。
     const geometry = evaluateGeometry({ radius: 0.3 });
     const position = geometry.getAttribute('position');
-    let front = 0;
-    let back = 0;
+    const rows = new Map<string, { x: number; front: number; back: number }>();
     for (let i = 0; i < position.count; i++) {
-      if (Math.abs(position.getY(i) - 0.075) < 0.01) {
-        front = Math.max(front, position.getZ(i));
-        back = Math.max(back, -position.getZ(i));
-      }
+      const key = position.getY(i).toFixed(4);
+      const row = rows.get(key) ?? { x: 0, front: 0, back: 0 };
+      row.x = Math.max(row.x, Math.abs(position.getX(i)));
+      row.front = Math.max(row.front, position.getZ(i));
+      row.back = Math.max(row.back, -position.getZ(i));
+      rows.set(key, row);
     }
-    expect(front).toBeGreaterThan(back);
+    const ordered = [...rows.entries()].sort((a, b) => Number(a[0]) - Number(b[0])).map(([, row]) => row);
+    for (const key of ['x', 'front', 'back'] as const) {
+      const widths = ordered.map((row) => row[key]);
+      const peak = widths.indexOf(Math.max(...widths));
+      for (let i = 1; i <= peak; i++) expect(widths[i]).toBeGreaterThanOrEqual(widths[i - 1] - 1e-4);
+      for (let i = peak + 1; i < widths.length; i++) expect(widths[i]).toBeLessThanOrEqual(widths[i - 1] + 1e-4);
+    }
   });
 });

@@ -5,9 +5,11 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 下端を首の上端に合わせて配置する。
  *
  * `xProfile`/`frontProfile`/`backProfile`(いずれも `profileCurve`)が、高さを 8 等分した 9 点の半径
- * (`radius` の `r0`〜`r8` 倍、両端は 0 で丸く閉じる)をなめらかにつなぐ。前側と後ろ側を別々にして、
- * 後頭部の張り出しやあごの引き込みのような前後非対称の形を、2枚の `profileCurve` カードの値で表す
- * (`torsoShape.ts` と同じ作り。前後を別々にできる点だけが違う)。 */
+ * (`radius` の `r0`〜`r8` 倍、両端は 0 で丸く閉じる)をなめらかにつなぐ。前側と後ろ側を別々にできるので、
+ * 後頭部の張り出しやあごの引き込みのような前後非対称の形も表せる(`torsoShape.ts` と同じ作り)。
+ *
+ * 初期値は、へこみのないなめらかなたまご形 `r(t) = A × sin(π × t^p)^q`(t はあご 0〜頭頂 1)の値。輪郭に
+ * へこみがあると、トゥーンの4段階の帯が不規則な島状のまだらに割れて見えるので、凸に保っている。 */
 defineGroupNode({
   type: 'headShape',
   label: 'Head Shape',
@@ -25,21 +27,21 @@ defineGroupNode({
     { id: 'diameter', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'height', type: 'numberMultiply', data: {} },
 
-    // 値はいずれも `radius` に対する比(球の輪郭から±0.06以内に収めて、丸い頭のまま前後のずれだけ取り込んでいる)。
+    // 値はいずれも `radius` に対する比。
     {
       id: 'xProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.6874, r2: 0.8194, r3: 0.843, r4: 0.8951, r5: 0.908, r6: 0.8531, r7: 0.746, r8: 0 },
+      data: { r0: 0, r1: 0.6063, r2: 0.7658, r3: 0.8587, r4: 0.9037, r5: 0.9024, r6: 0.8476, r7: 0.7139, r8: 0 },
     },
     {
       id: 'frontProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.7864, r2: 0.7558, r3: 0.8482, r4: 0.9495, r5: 0.9771, r6: 0.9131, r7: 0.7409, r8: 0 },
+      data: { r0: 0, r1: 0.6642, r2: 0.839, r3: 0.9408, r4: 0.9901, r5: 0.9887, r6: 0.9286, r7: 0.7821, r8: 0 },
     },
     {
       id: 'backProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.4937, r2: 0.9199, r3: 1.014, r4: 1.015, r5: 1.008, r6: 0.9417, r7: 0.8225, r8: 0 },
+      data: { r0: 0, r1: 0.6651, r2: 0.8401, r3: 0.942, r4: 0.9914, r5: 0.9899, r6: 0.9298, r7: 0.7832, r8: 0 },
     },
     { id: 'gen', type: 'loftGenerator', data: { steps: 48, segments: 64 } },
 

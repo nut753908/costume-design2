@@ -74,7 +74,7 @@ const dimensions = [
  * 実際の四則演算グラフがそのまま見える(`nodes/CLAUDE.md` の「グループノード」節参照)。
  * Height/Shoulder スケールは、ルートで配線するのではなく、グループカードの
  * 入力欄(未接続時の既定値 1)から調整する。`headRadius` はスケール無しで、`groupOutput` の
- * `headRadius` の入力欄の値(0.2966)がそのまま出力になる。 */
+ * `headRadius` の入力欄の値(0.2991)がそのまま出力になる。 */
 defineGroupNode({
   type: 'bodyDimensionsGroup',
   label: 'Body Dimensions',
@@ -102,7 +102,7 @@ defineGroupNode({
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number' },
           { id: 'torsoLength', label: 'Torso Length', type: 'number' },
           { id: 'torsoRadius', label: 'Torso Radius', type: 'number' },
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.2966 },
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.2991 },
           { id: 'armLength', label: 'Arm Length', type: 'number' },
           { id: 'armRadius', label: 'Arm Radius', type: 'number' },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number' },
