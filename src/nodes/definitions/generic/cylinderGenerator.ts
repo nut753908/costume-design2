@@ -2,11 +2,9 @@ import { buildCylinderGeometry } from '../../../geometry/primitives';
 import { defineGeneratorNode } from '../generatorNodeFactory';
 
 /** 円柱(上下の半径を独立指定できるテーパー円柱)を生成する汎用プリミティブノード。
- * 特定のガーメント/パーツに紐付かない(`limbPair.ts` が腕/脚として使っているが、
- * それに限らない)。radiusTop/radiusBottom をそのまま2つのソケットとして公開しているため、
+ * 特定のガーメント/パーツに紐付かない。radiusTop/radiusBottom をそのまま2つのソケットとして公開しているため、
  * 「根元より先端側をわずかに細くする」といったテーパー比率はこのノード自身は関知せず、
- * 呼び出し側のグラフ配線(`numberMultiply` 等)で表現する(`limbPair.ts` の
- * `taper` ノード参照)。 */
+ * 呼び出し側のグラフ配線(`numberMultiply` 等)で表現する。 */
 defineGeneratorNode({
   type: 'cylinderGenerator',
   label: 'Cylinder',
