@@ -26,7 +26,11 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
   for (const group of groups.values()) {
     if (group.length < 2) continue;
     sum.set(0, 0, 0);
-    for (const i of group) sum.x += normal.getX(i), (sum.y += normal.getY(i)), (sum.z += normal.getZ(i));
+    for (const i of group) {
+      sum.x += normal.getX(i);
+      sum.y += normal.getY(i);
+      sum.z += normal.getZ(i);
+    }
     sum.normalize();
     for (const i of group) normal.setXYZ(i, sum.x, sum.y, sum.z);
   }
