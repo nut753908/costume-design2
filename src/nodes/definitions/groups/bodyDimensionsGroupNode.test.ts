@@ -16,7 +16,7 @@ const BASE = {
   torsoLength: 0.3343,
   torsoRadius: 0.1536,
   headRadius: 0.2966,
-  armLength: 0.4682,
+  armLength: 0.4683,
   armRadius: 0.0517,
   shoulderSpacing: 0.1442,
   neckLength: 0.0566,
