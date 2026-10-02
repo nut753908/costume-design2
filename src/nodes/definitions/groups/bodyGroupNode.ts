@@ -66,15 +66,15 @@ defineGroupNode({
     { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'neckGen', type: 'neckShape', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 15 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.124 } },
+    { id: 'neckTilt', type: 'rotate', data: { x: 16.27 } },
+    { id: 'neckTranslate', type: 'translate', data: { z: -0.1245 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
-    { id: 'headGen', type: 'headShape', data: { heightRatio: 0.9979 } },
+    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.004 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
-    { id: 'headTranslate', type: 'translate', data: { z: -0.1128 } },
+    { id: 'headTranslate', type: 'translate', data: { z: -0.1054 } },
 
     // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
