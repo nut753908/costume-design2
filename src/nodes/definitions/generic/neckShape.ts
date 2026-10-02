@@ -23,9 +23,9 @@ defineGroupNode({
     { id: 'halfLength', type: 'numberHalf', data: {} },
     { id: 'negHalfLength', type: 'numberNegate', data: {} },
     // 値はいずれも `radius` に対する比(`r1` が下端側、`r7` が上端側)。
-    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.9605, r2: 0.9429, r3: 0.9323, r4: 0.92, r5: 0.9505, r6: 1.039, r7: 1.152, r8: 0 } },
-    { id: 'frontProfile', type: 'profileCurve', data: { r0: 0, r1: 0.708, r2: 0.791, r3: 0.8973, r4: 1.027, r5: 1.174, r6: 1.302, r7: 1.4, r8: 0 } },
-    { id: 'backProfile', type: 'profileCurve', data: { r0: 0, r1: 0.8956, r2: 0.9315, r3: 0.9582, r4: 0.9762, r5: 1.045, r6: 1.2, r7: 1.4, r8: 0 } },
+    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.9607, r2: 0.9557, r3: 0.9371, r4: 0.9141, r5: 0.9362, r6: 1.03, r7: 1.139, r8: 0 } },
+    { id: 'frontProfile', type: 'profileCurve', data: { r0: 0, r1: 0.6943, r2: 0.785, r3: 0.8973, r4: 1.026, r5: 1.173, r6: 1.303, r7: 1.4, r8: 0 } },
+    { id: 'backProfile', type: 'profileCurve', data: { r0: 0, r1: 0.8952, r2: 0.9493, r3: 0.9598, r4: 0.9808, r5: 1.062, r6: 1.203, r7: 1.397, r8: 0 } },
     { id: 'gen', type: 'loftGenerator', data: { steps: 32, segments: 32 } },
     // 原点が下端の輪郭を、中心が原点になるよう半分の長さだけ下げる。
     { id: 'center', type: 'translate', data: {} },
