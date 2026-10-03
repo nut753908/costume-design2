@@ -25,9 +25,9 @@ defineGroupNode({
       },
     },
     // 値はいずれも `radius` に対する比(`r1` がかかと側、`r7` がつま先側)。
-    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.1943, r2: 0.6065, r3: 0.63, r4: 0.6427, r5: 0.6345, r6: 0.6292, r7: 0.6144, r8: 0 } },
-    { id: 'soleProfile', type: 'profileCurve', data: { r0: 0, r1: 0.3702, r2: 0.7453, r3: 0.7436, r4: 0.8101, r5: 0.7795, r6: 0.6977, r7: 0.6657, r8: 0 } },
-    { id: 'topProfile', type: 'profileCurve', data: { r0: 0, r1: 0.8404, r2: 0.8418, r3: 0.7457, r4: 0.5931, r5: 0.4152, r6: 0.3097, r7: 0.1552, r8: 0 } },
+    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.1943, r2: 0.558, r3: 0.5332, r4: 0.5913, r5: 0.537, r6: 0.6002, r7: 0.52, r8: 0 } },
+    { id: 'soleProfile', type: 'profileCurve', data: { r0: 0, r1: 0.2546, r2: 0.6036, r3: 0.7115, r4: 0.7453, r5: 0.7171, r6: 0.6419, r7: 0.6124, r8: 0 } },
+    { id: 'topProfile', type: 'profileCurve', data: { r0: 0, r1: 0.9802, r2: 0.7745, r3: 0.8698, r4: 0.5931, r5: 0.3514, r6: 0.2412, r7: 0.116, r8: 0 } },
     { id: 'gen', type: 'loftGenerator', data: { steps: 32, segments: 32 } },
     { id: 'orient', type: 'rotate', data: { x: 90 } },
     {
