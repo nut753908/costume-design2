@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SplineProfileCurve } from './splineProfile';
+import { SignedSplineCurve, SplineProfileCurve } from './splineProfile';
 
 describe('SplineProfileCurve', () => {
   it('高さは t × length で、制御点(等間隔の高さ)の半径をそのまま通る', () => {
@@ -45,5 +45,22 @@ describe('SplineProfileCurve', () => {
     const curve = new SplineProfileCurve([0.1, 0.5, 0.2], 1);
     expect(curve.getPoint(-1).y).toBe(0);
     expect(curve.getPoint(2).y).toBe(1);
+  });
+});
+
+describe('SignedSplineCurve', () => {
+  it('負の値も含めて制御値をそのまま通り、高さは t × length', () => {
+    const values = [0, 0.4, -0.3, 0.2, 0];
+    const curve = new SignedSplineCurve(values, 2);
+    for (let i = 0; i < 5; i++) {
+      const point = curve.getPoint(i / 4);
+      expect(point.y).toBeCloseTo((i / 4) * 2, 10);
+      expect(point.x).toBeCloseTo(values[i], 10);
+    }
+  });
+
+  it('制御値がすべて 0 なら、途中も常に 0', () => {
+    const curve = new SignedSplineCurve(new Array<number>(9).fill(0), 1);
+    for (let t = 0; t <= 1; t += 0.05) expect(curve.getPoint(t).x).toBe(0);
   });
 });

@@ -40,6 +40,39 @@ export class SplineProfileCurve extends THREE.Curve<THREE.Vector2> {
   }
 }
 
+/**
+ * 等間隔の高さに置いた制御値 `values`(正負どちらでも可)を、値そのものに対する曲率連続の3次スプライン
+ * (両端は2次式で打ち切る)でなめらかにつなぐ曲線。`getPoint(t)` は `(値, 高さ)` で、高さは `t × length`。
+ * `SplineProfileCurve` は半径の2乗を補間するので 0 未満を表せないが、これは輪の前後のずらし量のような
+ * 符号付きの量を表すために使う。全制御値が 0 なら曲線は常に値 0。
+ */
+export class SignedSplineCurve extends THREE.Curve<THREE.Vector2> {
+  private readonly values: number[];
+  private readonly secondDerivatives: number[];
+  private readonly length: number;
+
+  constructor(values: number[], length: number) {
+    super();
+    this.length = length;
+    this.values = values.slice();
+    this.secondDerivatives = splineSecondDerivatives(this.values);
+  }
+
+  override getPoint(t: number, optionalTarget: THREE.Vector2 = new THREE.Vector2()): THREE.Vector2 {
+    const n = this.values.length;
+    const clamped = Math.min(1, Math.max(0, t));
+    if (n === 0) return optionalTarget.set(0, clamped * this.length);
+    if (n === 1) return optionalTarget.set(this.values[0], clamped * this.length);
+    const position = clamped * (n - 1);
+    const i = Math.min(n - 2, Math.floor(position));
+    const u = position - i;
+    const [y0, y1] = [this.values[i], this.values[i + 1]];
+    const [m0, m1] = [this.secondDerivatives[i], this.secondDerivatives[i + 1]];
+    const value = y0 * (1 - u) + y1 * u + (m0 * ((1 - u) ** 3 - (1 - u)) + m1 * (u ** 3 - u)) / 6;
+    return optionalTarget.set(value, clamped * this.length);
+  }
+}
+
 /** 等間隔(間隔 1)の値列 `y` の3次スプラインの各点の2階微分。両端は隣の点と同じ2階微分(端の区間が2次式)。 */
 function splineSecondDerivatives(y: number[]): number[] {
   const n = y.length;

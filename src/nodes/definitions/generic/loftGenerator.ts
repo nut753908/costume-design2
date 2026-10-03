@@ -55,6 +55,7 @@ registerNodeType<LoftGeneratorData>({
     { id: 'depthProfile', label: 'Depth Profile (Z, front)', type: 'curve' },
     { id: 'backProfile', label: 'Back Profile (Z, back)', type: 'curve' },
     { id: 'dropProfile', label: 'Drop Profile (Y)', type: 'curve' },
+    { id: 'offsetZProfile', label: 'Offset Profile (Z)', type: 'curve' },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -76,10 +77,15 @@ registerNodeType<LoftGeneratorData>({
       // `dropProfile` の値(曲線の x)だけ、各高さの輪を丸ごと下げる(頭の下面のように、輪の形は保ったまま高さだけを
       // ずらす)。極の頂点も含めて全周を同じ量だけ動かすので、前後の境目やしわは出ない。
       const drops = inputs.dropProfile?.type === 'curve' ? inputs.dropProfile.value.getPoints(steps).map((dropPoint) => dropPoint.x) : null;
+      // `offsetZProfile` の値(曲線の x、符号付き)だけ、各高さの輪を丸ごと前(+Z)へずらす。前後を別々の半径にせず
+      // 1つの楕円のまま前後非対称の形を表せるので、前後の継ぎ目に稜線(エッジ)ができない。
+      const offsets =
+        inputs.offsetZProfile?.type === 'curve' ? inputs.offsetZProfile.value.getPoints(steps).map((offsetPoint) => offsetPoint.x) : null;
       for (let i = 0; i < position.count; i++) {
         const ring = i % points.length;
         if (drops) position.setY(i, position.getY(i) - drops[ring]);
-        position.setZ(i, position.getZ(i) * (position.getZ(i) >= 0 ? frontRatios[ring] : backRatios[ring]));
+        const z = position.getZ(i);
+        position.setZ(i, z * (z >= 0 ? frontRatios[ring] : backRatios[ring]) + (offsets ? offsets[ring] : 0));
       }
       position.needsUpdate = true;
       geometry.computeVertexNormals();

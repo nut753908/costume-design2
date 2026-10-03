@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-import { SplineProfileCurve } from '../../../geometry/splineProfile';
+import { SignedSplineCurve, SplineProfileCurve } from '../../../geometry/splineProfile';
 import './loftGenerator';
 
 const num = (value: number) => ({ type: 'number' as const, value });
@@ -122,5 +122,32 @@ describe('loftGenerator', () => {
     for (let i = 0; i < before.count; i++) if (before.getY(i) > 0.9) atTop = Math.max(atTop, Math.abs(after.getY(i) - before.getY(i)));
     expect(atTop).toBeLessThan(0.02);
     expect(after.getY(0) - before.getY(0)).toBeLessThan(-0.05);
+  });
+
+  it('offsetZProfile を繋ぐと、各高さの輪が丸ごとその値だけ前後にずれ、形(X の広がり・Z の幅)は変わらない', () => {
+    const base = loft({ profile: curve(0.5), depthProfile: curve(0.5) })!;
+    const shifted = loft({
+      profile: curve(0.5),
+      depthProfile: curve(0.5),
+      offsetZProfile: { type: 'curve', value: new SignedSplineCurve([0, 0.1, 0.1, 0.1, -0.05, 0.1, 0.1, 0.1, 0], 1) },
+    })!;
+    const before = base.getAttribute('position');
+    const after = shifted.getAttribute('position');
+    let moved = 0;
+    for (let i = 0; i < before.count; i++) {
+      expect(after.getX(i)).toBeCloseTo(before.getX(i), 10);
+      expect(after.getY(i)).toBeCloseTo(before.getY(i), 10);
+      moved = Math.max(moved, Math.abs(after.getZ(i) - before.getZ(i)));
+    }
+    expect(moved).toBeGreaterThan(0.05);
+    // 高さ 1/8 の輪(制御点 r1 = 0.1 の高さ)の全頂点が、同じ 0.1 だけ前へずれている
+    const ring = 3; // steps 24 の既定で、全 25 リングのうち高さ 3/24 = 1/8 のリング
+    for (let i = ring; i < before.count; i += 25) expect(after.getZ(i) - before.getZ(i)).toBeCloseTo(0.1, 6);
+  });
+
+  it('offsetZProfile が未接続なら形は変わらない', () => {
+    const a = loft({ profile: curve(0.5), depthProfile: curve(0.2) })!;
+    const b = loft({ profile: curve(0.5), depthProfile: curve(0.2), offsetZProfile: { type: 'curve', value: new SignedSplineCurve(new Array<number>(7).fill(0), 1) } })!;
+    expect(Array.from(b.getAttribute('position').array)).toEqual(Array.from(a.getAttribute('position').array));
   });
 });
