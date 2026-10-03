@@ -58,8 +58,12 @@ defineGroupNode({
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
     // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.596 } },
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.599 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
+    // 胴体の下端(股の高さ)だけを `torsoLift` ぶん上げる(長さを短くし、上端が動かないよう同じだけ持ち上げる)。
+    { id: 'torsoLift', type: 'numberInput', data: { value: 0.048 } },
+    { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
+    { id: 'torsoY', type: 'numberAdd', data: {} },
 
     // 首(neckShape)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
@@ -102,7 +106,7 @@ defineGroupNode({
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { endRatio: 0.02, swingAngle: 2.488, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.012, footPitch: 0.2989 },
+      data: { endRatio: 0.02, swingAngle: 2.328, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.012, footPitch: 0.2989 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -111,10 +115,14 @@ defineGroupNode({
   ],
   internalEdges: [
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'torsoLength', target: 'torsoGen', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'torsoLength', target: 'torsoLengthLifted', targetHandle: 'a' },
+    { source: 'torsoLift', sourceHandle: 'value', target: 'torsoLengthLifted', targetHandle: 'b' },
+    { source: 'torsoLengthLifted', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'length' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTilt', targetHandle: 'geometry' },
     { source: 'torsoTilt', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'waistY', target: 'torsoTranslate', targetHandle: 'y' },
+    { source: 'input', sourceHandle: 'waistY', target: 'torsoY', targetHandle: 'a' },
+    { source: 'torsoLift', sourceHandle: 'value', target: 'torsoY', targetHandle: 'b' },
+    { source: 'torsoY', sourceHandle: 'value', target: 'torsoTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'neckRadius', target: 'neckGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'neckLength', target: 'neckHeight', targetHandle: 'value' },
