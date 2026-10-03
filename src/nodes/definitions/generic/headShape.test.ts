@@ -19,9 +19,10 @@ function boundingBoxOf(geometry: THREE.BufferGeometry): THREE.Box3 {
 }
 
 describe('headShape', () => {
-  it('原点(あご)から radius × 2 の高さまで伸び、heightRatio で縦に伸縮する', () => {
+  it('原点(あご)から radius × 2 の高さまで伸び(下面は dropProfile で原点より少し下がる)、heightRatio で縦に伸縮する', () => {
     const box = boundingBoxOf(evaluateGeometry({ radius: 0.3 }));
-    expect(box.min.y).toBeCloseTo(0, 5);
+    expect(box.min.y).toBeLessThan(0);
+    expect(box.min.y).toBeGreaterThan(-0.3 * 0.1);
     expect(box.max.y).toBeCloseTo(0.6, 5);
     expect(boundingBoxOf(evaluateGeometry({ radius: 0.3, heightRatio: 1.2 })).max.y).toBeCloseTo(0.72, 5);
   });

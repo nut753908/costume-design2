@@ -54,6 +54,7 @@ registerNodeType<LoftGeneratorData>({
     { id: 'profile', label: 'Profile (X)', type: 'curve' },
     { id: 'depthProfile', label: 'Depth Profile (Z, front)', type: 'curve' },
     { id: 'backProfile', label: 'Back Profile (Z, back)', type: 'curve' },
+    { id: 'dropProfile', label: 'Drop Profile (Y)', type: 'curve' },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -72,8 +73,12 @@ registerNodeType<LoftGeneratorData>({
       const backRatios = inputs.backProfile?.type === 'curve' ? ratioOf(inputs.backProfile.value) : frontRatios;
       const position = geometry.getAttribute('position');
       // LatheGeometry の頂点は「セグメント(周方向)ごとに、輪郭の点を下から順に」並ぶ。
+      // `dropProfile` の値(曲線の x)だけ、各高さの輪を丸ごと下げる(頭の下面のように、輪の形は保ったまま高さだけを
+      // ずらす)。極の頂点も含めて全周を同じ量だけ動かすので、前後の境目やしわは出ない。
+      const drops = inputs.dropProfile?.type === 'curve' ? inputs.dropProfile.value.getPoints(steps).map((dropPoint) => dropPoint.x) : null;
       for (let i = 0; i < position.count; i++) {
         const ring = i % points.length;
+        if (drops) position.setY(i, position.getY(i) - drops[ring]);
         position.setZ(i, position.getZ(i) * (position.getZ(i) >= 0 ? frontRatios[ring] : backRatios[ring]));
       }
       position.needsUpdate = true;

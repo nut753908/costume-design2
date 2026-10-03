@@ -1,8 +1,8 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
 /** 頭の形を、幅(X)・前側(+Z)・後ろ側(-Z)の3本の輪郭曲線から作る、`bodyGroupNode.ts` 用のグループノード。
- * 原点が頭の下端(あご)で、+Y へ `radius × 2 × heightRatio` の高さまで伸びる。`bodyGroupNode.ts` が
- * 下端を首の上端に合わせて配置する。
+ * 原点が頭の下端(あご)で、+Y へ `radius × 2 × heightRatio` の高さまで伸びる(下面は `dropProfile`
+ * の分だけ原点より下がる)。`bodyGroupNode.ts` が下端を首の上端に合わせて配置する。
  *
  * `xProfile`/`frontProfile`/`backProfile`(いずれも `profileCurve`)が、高さを 8 等分した 9 点の半径
  * (`radius` の `r0`〜`r8` 倍、両端は 0 で丸く閉じる)をなめらかにつなぐ。前側と後ろ側を別々にして、
@@ -39,7 +39,13 @@ defineGroupNode({
     {
       id: 'backProfile',
       type: 'profileCurve',
-      data: { r0: 0, r1: 0.4937, r2: 0.8899, r3: 0.9844, r4: 1.015, r5: 1.008, r6: 0.9417, r7: 0.8077, r8: 0 },
+      data: { r0: 0, r1: 0.4542, r2: 0.8721, r3: 0.9844, r4: 1.015, r5: 1.008, r6: 0.9417, r7: 0.8077, r8: 0 },
+    },
+    // 高さごとに輪を丸ごと下げる量(`radius` に対する比)。下側の数点だけを非ゼロにして、あごの下面を下げる。
+    {
+      id: 'dropProfile',
+      type: 'profileCurve',
+      data: { r0: 0.0456, r1: 0.0067, r2: 0.0332, r3: 0, r4: 0, r5: 0, r6: 0, r7: 0, r8: 0 },
     },
     { id: 'gen', type: 'loftGenerator', data: { steps: 48, segments: 64 } },
 
@@ -64,9 +70,13 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'radius', target: 'backProfile', targetHandle: 'radius' },
     { source: 'height', sourceHandle: 'value', target: 'backProfile', targetHandle: 'length' },
 
+    { source: 'input', sourceHandle: 'radius', target: 'dropProfile', targetHandle: 'radius' },
+    { source: 'height', sourceHandle: 'value', target: 'dropProfile', targetHandle: 'length' },
+
     { source: 'xProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
     { source: 'frontProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
     { source: 'backProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'backProfile' },
+    { source: 'dropProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'dropProfile' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

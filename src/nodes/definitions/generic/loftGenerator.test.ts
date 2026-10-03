@@ -92,4 +92,35 @@ describe('loftGenerator', () => {
     geometry.computeBoundingBox();
     expect(geometry.boundingBox!.min.z).toBeCloseTo(-0.3, 2);
   });
+
+  it('dropProfile を繋ぐと、各高さの輪が丸ごと(極を含めて)その値だけ下がり、形(X・Z の広がり)は変わらない', () => {
+    const base = loft({ profile: curve(0.5), depthProfile: curve(0.5) })!;
+    const dropped = loft({
+      profile: curve(0.5),
+      depthProfile: curve(0.5),
+      dropProfile: { type: 'curve', value: new SplineProfileCurve([0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1], 1) },
+    })!;
+    const before = base.getAttribute('position');
+    const after = dropped.getAttribute('position');
+    for (let i = 0; i < before.count; i++) {
+      expect(after.getY(i)).toBeCloseTo(before.getY(i) - 0.1, 6);
+      expect(after.getX(i)).toBeCloseTo(before.getX(i), 10);
+      expect(after.getZ(i)).toBeCloseTo(before.getZ(i), 10);
+    }
+  });
+
+  it('dropProfile が高さによって変わると、その高さの輪だけが下がる(未接続なら変化なし)', () => {
+    const base = loft({ profile: curve(0.5), depthProfile: curve(0.5) })!;
+    const dropped = loft({
+      profile: curve(0.5),
+      depthProfile: curve(0.5),
+      dropProfile: { type: 'curve', value: new SplineProfileCurve([0.1, 0.1, 0, 0, 0, 0, 0], 1) },
+    })!;
+    const before = base.getAttribute('position');
+    const after = dropped.getAttribute('position');
+    let atTop = 0;
+    for (let i = 0; i < before.count; i++) if (before.getY(i) > 0.9) atTop = Math.max(atTop, Math.abs(after.getY(i) - before.getY(i)));
+    expect(atTop).toBeLessThan(0.02);
+    expect(after.getY(0) - before.getY(0)).toBeLessThan(-0.05);
+  });
 });
