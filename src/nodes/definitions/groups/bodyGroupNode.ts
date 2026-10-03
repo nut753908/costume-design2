@@ -88,7 +88,13 @@ defineGroupNode({
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
+    // 脚の軸は下端だけを `legTrim` ぶん上げる(長さを短くし、上端が動かないよう `legTrim / 2` だけ持ち上げる)。
+    // 足の後ろ下から軸の下端の角がはみ出すのを防ぐ。
+    { id: 'legTrim', type: 'numberInput', data: { value: 0.02 } },
+    { id: 'legTrimHalf', type: 'numberHalf', data: {} },
+    { id: 'legShaftLength', type: 'numberSubtract', data: {} },
     { id: 'legShaftGen', type: 'legShaft', data: {} },
+    { id: 'legShaftLift', type: 'translate', data: {} },
     // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
     { id: 'footGen', type: 'footShape', data: {} },
     { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
@@ -141,8 +147,13 @@ defineGroupNode({
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'legHeight', target: 'legShaftGen', targetHandle: 'length' },
-    { source: 'legShaftGen', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'shaft' },
+    { source: 'input', sourceHandle: 'legHeight', target: 'legShaftLength', targetHandle: 'a' },
+    { source: 'legTrim', sourceHandle: 'value', target: 'legShaftLength', targetHandle: 'b' },
+    { source: 'legShaftLength', sourceHandle: 'value', target: 'legShaftGen', targetHandle: 'length' },
+    { source: 'legTrim', sourceHandle: 'value', target: 'legTrimHalf', targetHandle: 'value' },
+    { source: 'legShaftGen', sourceHandle: 'geometry', target: 'legShaftLift', targetHandle: 'geometry' },
+    { source: 'legTrimHalf', sourceHandle: 'value', target: 'legShaftLift', targetHandle: 'y' },
+    { source: 'legShaftLift', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'shaft' },
     { source: 'input', sourceHandle: 'legRadius', target: 'footGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legRadius', target: 'footLength', targetHandle: 'value' },
     { source: 'footLength', sourceHandle: 'value', target: 'footGen', targetHandle: 'length' },
