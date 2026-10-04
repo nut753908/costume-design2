@@ -23,3 +23,14 @@ describe('signedProfileCurve', () => {
     for (let t = 0; t <= 1; t += 0.1) expect(curve.getPoint(t).x).toBe(0);
   });
 });
+
+describe('signedProfileCurve13 / signedProfileCurve17', () => {
+  it('制御点の数は 13 / 17 個で、負の値も通る', () => {
+    for (const [type, points] of [['signedProfileCurve13', 13], ['signedProfileCurve17', 17]] as const) {
+      const node = getNodeType(type);
+      expect(node.inputs.filter((i) => /^r\d+$/.test(i.id))).toHaveLength(points);
+      const curve = node.evaluate({ radius: num(2), length: num(4), r1: num(-0.5) }, {}).curve;
+      expect(curve?.type === 'curve' && curve.value.getPoint(1 / (points - 1)).x).toBeCloseTo(-1, 10);
+    }
+  });
+});

@@ -26,3 +26,17 @@ describe('profileCurve', () => {
     expect(curve.getPoint(0.5).y).toBeCloseTo(0.5, 10);
   });
 });
+
+describe('profileCurve13 / profileCurve17', () => {
+  it('制御点の数は 13 / 17 個で、高さを 12 / 16 等分する', () => {
+    for (const [type, points] of [['profileCurve13', 13], ['profileCurve17', 17]] as const) {
+      const node = getNodeType(type);
+      expect(node.inputs.filter((i) => /^r\d+$/.test(i.id))).toHaveLength(points);
+      const inputs: Record<string, ReturnType<typeof num>> = { radius: num(2), length: num(4) };
+      for (let i = 0; i < points; i++) inputs[`r${i}`] = num(i === 0 || i === points - 1 ? 0 : 1);
+      const curve = node.evaluate(inputs, {}).curve;
+      expect(curve?.type === 'curve' && curve.value.getPoint(1 / (points - 1)).x).toBeCloseTo(2, 10);
+      expect(curve?.type === 'curve' && curve.value.getPoint(1 / (points - 1)).y).toBeCloseTo(4 / (points - 1), 10);
+    }
+  });
+});
