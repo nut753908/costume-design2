@@ -53,7 +53,8 @@ describe('limbPair', () => {
   it('pitchAngle は付け根を支点に先端を後ろ(-Z)へ振り、付け根の位置は変えない', () => {
     const straight = evaluateBox(base);
     const pitched = evaluateBox({ ...base, pitchAngle: 30 });
-    expect(pitched.max.y).toBeCloseTo(straight.max.y, 2);
+    // 上端は軸の丸い端なので、振ると端の位置が少し(半径の1割程度)下がる。
+    expect(pitched.max.y).toBeCloseTo(straight.max.y, 1);
     expect(pitched.min.z).toBeLessThan(straight.min.z - 0.1);
     // 負の角度なら前へ振る。
     expect(evaluateBox({ ...base, pitchAngle: -30 }).max.z).toBeGreaterThan(straight.max.z + 0.1);

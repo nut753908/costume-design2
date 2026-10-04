@@ -87,7 +87,7 @@ defineGroupNode({
     { id: 'armDropIn', type: 'numberInput', data: { value: 0.0293 } },
     { id: 'armDropHalf', type: 'numberHalf', data: {} },
     // 腕の付け根(軸の上端)を首側(内側)へ `armInsetIn` だけ寄せる。手の位置は `swingAngle` で保つ。
-    { id: 'armInsetIn', type: 'numberInput', data: { value: 0.0279 } },
+    { id: 'armInsetIn', type: 'numberInput', data: { value: 0.01843 } },
     { id: 'armSpacingAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
     { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
@@ -102,7 +102,7 @@ defineGroupNode({
     // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
     { id: 'footGen', type: 'footShape', data: {} },
     { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
-    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.201, endScaleY: 1.101, endScaleZ: 0.85, endShiftY: -0.7102, swingAngle: 17.8, pitchAngle: -11.9, centerZ: -0.1, endScaleX: 1.07, endPitch: -19.42 } },
+    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.189, endScaleY: 0.9909, endScaleZ: 1.131, endShiftY: -0.6747, swingAngle: 16.62, pitchAngle: -15.47, centerZ: -0.1151, endScaleX: 0.78, endPitch: -22.48 } },
     {
       id: 'legPair',
       type: 'limbPair',
