@@ -42,9 +42,8 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
  * `profile` を `steps` 分割した点列から `THREE.LatheGeometry` を作り、各リングの Z を
  * `depthProfile の半径 / profile の半径` 倍する(巻き順は Z が正の倍率のあいだ保たれる)。
  * `depthProfile` が未接続なら円断面(= `latheGenerator` と同じ)。半径が 0 のリング(極)は Z を変えない。
- * `backProfile` を繋ぐと、`depthProfile` は前(+Z)側だけ、`backProfile` は後ろ(-Z)側だけの半径になり、
- * 断面は前後で別々の楕円の半分ずつを合わせた形になる(前後の厚みや中心のずれ、後頭部の張り出しや
- * 足の突き出しのような前後非対称の形を、負の値を使わずに表せる)。未接続なら前後とも `depthProfile`。
+ * 前後非対称の形(後頭部の張り出しや足の突き出しなど)は、前後別々の半径ではなく、`offsetZProfile` で各リングを
+ * 前後へずらして表す(前後で別々の半径にすると、側面の継ぎ目に稜線が立つ)。
  * 曲線は同じ高さの範囲を持つこと(同じ `t` で同じ高さを指すこと)を前提にする。 */
 registerNodeType<LoftGeneratorData>({
   type: 'loftGenerator',
@@ -53,7 +52,6 @@ registerNodeType<LoftGeneratorData>({
   inputs: [
     { id: 'profile', label: 'Profile (X)', type: 'curve' },
     { id: 'depthProfile', label: 'Depth Profile (Z, front)', type: 'curve' },
-    { id: 'backProfile', label: 'Back Profile (Z, back)', type: 'curve' },
     { id: 'dropProfile', label: 'Drop Profile (Y)', type: 'curve' },
     { id: 'offsetZProfile', label: 'Offset Profile (Z)', type: 'curve' },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
@@ -70,8 +68,7 @@ registerNodeType<LoftGeneratorData>({
     if (inputs.depthProfile?.type === 'curve') {
       const ratioOf = (curve: THREE.Curve<THREE.Vector2>) =>
         curve.getPoints(steps).map((depthPoint, i) => (points[i].x > 1e-9 ? Math.max(0, depthPoint.x) / points[i].x : 1));
-      const frontRatios = ratioOf(inputs.depthProfile.value);
-      const backRatios = inputs.backProfile?.type === 'curve' ? ratioOf(inputs.backProfile.value) : frontRatios;
+      const ratios = ratioOf(inputs.depthProfile.value);
       const position = geometry.getAttribute('position');
       // LatheGeometry の頂点は「セグメント(周方向)ごとに、輪郭の点を下から順に」並ぶ。
       // `dropProfile` の値(曲線の x)だけ、各高さの輪を丸ごと下げる(頭の下面のように、輪の形は保ったまま高さだけを
@@ -84,8 +81,7 @@ registerNodeType<LoftGeneratorData>({
       for (let i = 0; i < position.count; i++) {
         const ring = i % points.length;
         if (drops) position.setY(i, position.getY(i) - drops[ring]);
-        const z = position.getZ(i);
-        position.setZ(i, z * (z >= 0 ? frontRatios[ring] : backRatios[ring]) + (offsets ? offsets[ring] : 0));
+        position.setZ(i, position.getZ(i) * ratios[ring] + (offsets ? offsets[ring] : 0));
       }
       position.needsUpdate = true;
       geometry.computeVertexNormals();

@@ -79,15 +79,7 @@ describe('loftGenerator', () => {
     expect(geometry).toBeInstanceOf(THREE.BufferGeometry);
   });
 
-  it('backProfile を繋ぐと、前(+Z)側は depthProfile、後ろ(-Z)側は backProfile の半径になる', () => {
-    const geometry = loft({ profile: curve(0.5), depthProfile: curve(0.3), backProfile: curve(0.1) })!;
-    geometry.computeBoundingBox();
-    expect(geometry.boundingBox!.max.z).toBeCloseTo(0.3, 2);
-    expect(geometry.boundingBox!.min.z).toBeCloseTo(-0.1, 2);
-    expect(geometry.boundingBox!.max.x).toBeCloseTo(0.5, 2);
-  });
-
-  it('backProfile が未接続なら、前後とも depthProfile(左右対称)', () => {
+  it('前後とも depthProfile の半径(左右対称)', () => {
     const geometry = loft({ profile: curve(0.5), depthProfile: curve(0.3) })!;
     geometry.computeBoundingBox();
     expect(geometry.boundingBox!.min.z).toBeCloseTo(-0.3, 2);
