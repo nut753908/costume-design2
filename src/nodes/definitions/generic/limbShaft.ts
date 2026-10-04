@@ -62,6 +62,7 @@ function defineLimbShaft(config: { type: string; label: string; profile: string 
 }
 
 // 値はいずれも `radius` に対する比(`r1` が下端側、`r7` が上端側)。`offset` は輪を前(+Z)へずらす量。
+// 脚の `r2`〜`r6` は、参照を脚の軸に垂直な面で切った断面から直接測った値(両端の `r1`/`r7` は足・胴体と断面が融合して測れないので、探索で合わせた値)。
 const PROFILES: Record<string, { x: Record<string, number>; depth: Record<string, number>; offset: Record<string, number> }> = {
   armShaft: {
     x: { r0: 0, r1: 0.7355, r2: 0.7479, r3: 0.9191, r4: 0.8854, r5: 0.9001, r6: 0.8982, r7: 0.9919, r8: 0 },
@@ -69,9 +70,9 @@ const PROFILES: Record<string, { x: Record<string, number>; depth: Record<string
     offset: { r0: 0, r1: 0.1045, r2: 0.0669, r3: 0.07416, r4: 0.00645, r5: -0.09303, r6: -0.211, r7: -0.2471, r8: 0 },
   },
   legShaft: {
-    x: { r0: 0, r1: 0.441, r2: 0.487, r3: 0.6192, r4: 0.6895, r5: 0.684, r6: 0.8126, r7: 1.049, r8: 0 },
-    depth: { r0: 0, r1: 0.4759, r2: 0.5391, r3: 0.6551, r4: 0.7748, r5: 0.7731, r6: 0.8691, r7: 1, r8: 0 },
-    offset: { r0: 0, r1: 0.1579, r2: 0.01759, r3: -0.07613, r4: -0.08494, r5: 0.05168, r6: 0.02106, r7: -0.08258, r8: 0 },
+    x: { r0: 0, r1: 0.441, r2: 0.5151, r3: 0.6021, r4: 0.701, r5: 0.7057, r6: 0.8259, r7: 1.049, r8: 0 },
+    depth: { r0: 0, r1: 0.4759, r2: 0.509, r3: 0.6305, r4: 0.7631, r5: 0.7644, r6: 0.8764, r7: 1, r8: 0 },
+    offset: { r0: 0, r1: 0.1579, r2: 0.04127, r3: -0.03871, r4: -0.099, r5: 0.03937, r6: -0.005724, r7: -0.08258, r8: 0 },
   },
 };
 
