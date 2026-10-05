@@ -47,7 +47,7 @@ defineGroupNode({
           { id: 'waistY', label: 'Waist Y', type: 'number', default: 0 },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 0 },
           { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0 },
-          colorSocket('#f2c9a0'),
+          colorSocket('#fae6da'),
         ],
       },
     },

@@ -62,12 +62,12 @@ describe('bodyGroup', () => {
     expect(highGeom!.boundingBox!.max.y).toBeGreaterThan(lowGeom!.boundingBox!.max.y);
   });
 
-  it('color ソケットの既定値(#f2c9a0)が結合済みメッシュのマテリアルに使われ、注入した色で上書きできる', () => {
+  it('color ソケットの既定値(#fae6da)が結合済みメッシュのマテリアルに使われ、注入した色で上書きできる', () => {
     const colorOf = (inputs: Parameters<ReturnType<typeof getNodeType>['evaluate']>[0]) => {
       const material = getNodeType('bodyGroup').evaluate(inputs, {}).sceneOutputMaterial0;
       return material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color.getHexString() : undefined;
     };
-    expect(colorOf({})).toBe(new THREE.Color('#f2c9a0').getHexString());
+    expect(colorOf({})).toBe(new THREE.Color('#fae6da').getHexString());
     expect(colorOf({ color: { type: 'color', value: new THREE.Color('#112233') } })).toBe('112233');
   });
 });
