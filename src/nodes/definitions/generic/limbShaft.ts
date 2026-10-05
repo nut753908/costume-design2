@@ -66,7 +66,7 @@ function defineLimbShaft(config: { type: string; label: string; profile: string 
 // 腕の `r2`〜`r7` も同様に、参照の腕の軸(取り付け位置と向きは、腕の断面の中心を結んだ直線から求めたもの)に垂直な断面から測った値(`r1` は胴体の輪が混ざるので探索値)。
 const PROFILES: Record<string, { x: Record<string, number>; depth: Record<string, number>; offset: Record<string, number> }> = {
   armShaft: {
-    x: { r0: 0, r1: 0.7355, r2: 0.7528, r3: 0.8646, r4: 0.8276, r5: 0.7686, r6: 0.7427, r7: 0.794, r8: 0 },
+    x: { r0: 0, r1: 0.6755, r2: 0.7528, r3: 0.8646, r4: 0.8276, r5: 0.7686, r6: 0.7427, r7: 0.794, r8: 0 },
     depth: { r0: 0, r1: 0.9424, r2: 0.7892, r3: 0.8595, r4: 0.8295, r5: 0.7603, r6: 0.8155, r7: 0.8571, r8: 0 },
     offset: { r0: 0, r1: 0.1045, r2: -0.006838, r3: 0.08646, r4: 0.01435, r5: -0.05349, r6: -0.001213, r7: 0.04746, r8: 0 },
   },
