@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 import '../../definitions';
@@ -46,6 +47,21 @@ describe('limbPair', () => {
     // 90 度傾けると、X に長い楕円体が縦に長くなり、先端が下へ伸びる。
     const rolled = evaluateBox({ ...base, endRatio: 1.2, endScaleX: 2, endScaleY: 0.5, endRoll: 90 });
     expect(rolled.min.y).toBeLessThan(flat.min.y - 0.05);
+  });
+
+  it('footX は足だけを(外側を+として)左右へずらし、軸は動かさない', () => {
+    const bbox = (footX: number) => {
+      const shaft = getNodeType('armShaft').evaluate({ radius: num(0.1), length: num(0.6) }, {}).geometry;
+      const foot = { type: 'geometry' as const, value: new THREE.BoxGeometry(0.05, 0.05, 0.05) };
+      const inputs = { radius: num(0.1), length: num(0.6), spacing: num(0.3), centerY: num(1), endRatio: num(0.01), footX: num(footX), shaft, foot };
+      const g = (getNodeType('limbPair').evaluate(inputs, {}).geometry as { value: THREE.BufferGeometry }).value;
+      g.computeBoundingBox();
+      return g.boundingBox!;
+    };
+    // 外側へ 0.2 ずらすと全体の右端が広がる。内側へずらしても、右端は軸が決めるので変わらない。
+    expect(bbox(-0.05).min.x).toBeCloseTo(bbox(0).min.x, 5);
+    expect(bbox(0.2).max.x).toBeGreaterThan(bbox(0).max.x + 0.1);
+    expect(bbox(-0.2).max.x).toBeCloseTo(bbox(0).max.x, 5);
   });
 
   it('swingAngle は付け根を支点に先端を外へ振り、付け根の位置は変えない', () => {

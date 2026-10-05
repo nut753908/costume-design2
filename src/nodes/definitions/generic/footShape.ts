@@ -26,7 +26,7 @@ defineGroupNode({
       },
     },
     // 値はいずれも `radius` に対する比(`r1` がかかと側、`r7` がつま先側)。
-    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.1943, r2: 0.5544, r3: 0.5546, r4: 0.5913, r5: 0.58, r6: 0.5301, r7: 0.5616, r8: 0 } },
+    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.1943, r2: 0.5244, r3: 0.5246, r4: 0.5313, r5: 0.52, r6: 0.5301, r7: 0.5016, r8: 0 } },
     { id: 'depthProfile', type: 'profileCurve', data: { r0: 0, r1: 0.6668, r2: 0.689, r3: 0.7906, r4: 0.6692, r5: 0.5343, r6: 0.4415, r7: 0.3642, r8: 0 } },
     { id: 'offsetProfile', type: 'signedProfileCurve', data: { r0: 0, r1: -0.3338, r2: -0.09228, r3: -0.07915, r4: 0.0761, r5: 0.1975, r6: 0.2029, r7: 0.2375, r8: 0 } },
     { id: 'gen', type: 'loftGenerator', data: { steps: 32, segments: 32 } },

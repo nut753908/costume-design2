@@ -35,6 +35,7 @@ defineGroupNode({
           { id: 'endPitch', label: 'End Pitch (deg)', type: 'number', default: 0 },
           { id: 'footY', label: 'Foot Y', type: 'number', default: 0 },
           { id: 'footZ', label: 'Foot Z', type: 'number', default: 0 },
+          { id: 'footX', label: 'Foot X', type: 'number', default: 0 },
           { id: 'footPitch', label: 'Foot Pitch (deg)', type: 'number', default: 0 },
           { id: 'endShiftY', label: 'End Shift Y', type: 'number', default: 0 },
           { id: 'endShiftZ', label: 'End Shift Z', type: 'number', default: 0 },
@@ -52,7 +53,7 @@ defineGroupNode({
     { id: 'end', type: 'sphereGenerator', data: {} },
     { id: 'endScale', type: 'scale', data: {} },
     { id: 'endTilt', type: 'rotate', data: {} },
-    // 足(`foot`、かかとが原点の形)を先端の高さに置く: y = -length/2 + footY、z = footZ(footPitch 度だけ前後へ傾ける)。
+    // 足(`foot`、かかとが原点の形)を先端の高さに置く: y = -length/2 + footY、z = footZ、x = footX(+が外側、footPitch 度だけ前後へ傾ける)。
     { id: 'footTilt', type: 'rotate', data: {} },
     { id: 'footBaseY', type: 'numberAdd', data: {} },
     { id: 'footTranslate', type: 'translate', data: {} },
@@ -88,6 +89,7 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'footY', target: 'footBaseY', targetHandle: 'b' },
     { source: 'footBaseY', sourceHandle: 'value', target: 'footTranslate', targetHandle: 'y' },
     { source: 'input', sourceHandle: 'footZ', target: 'footTranslate', targetHandle: 'z' },
+    { source: 'input', sourceHandle: 'footX', target: 'footTranslate', targetHandle: 'x' },
     { source: 'footTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
 
     { source: 'input', sourceHandle: 'radius', target: 'endRadius', targetHandle: 'value' },

@@ -110,7 +110,7 @@ defineGroupNode({
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { endRatio: 0.02, swingAngle: 2.288, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footPitch: 0.297 },
+      data: { endRatio: 0.02, swingAngle: 2.288, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footX: -0.004, footPitch: 0.297 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
