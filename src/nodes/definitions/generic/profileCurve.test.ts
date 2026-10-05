@@ -27,9 +27,9 @@ describe('profileCurve', () => {
   });
 });
 
-describe('profileCurve13 / profileCurve17 / profileCurve25', () => {
-  it('制御点の数は 13 / 17 / 25 個で、高さを 12 / 16 / 24 等分する', () => {
-    for (const [type, points] of [['profileCurve13', 13], ['profileCurve17', 17], ['profileCurve25', 25]] as const) {
+describe('profileCurve13 / 17 / 25 / 33', () => {
+  it('制御点の数は 13 / 17 / 25 / 33 個で、高さを 12 / 16 / 24 / 32 等分する', () => {
+    for (const [type, points] of [['profileCurve13', 13], ['profileCurve17', 17], ['profileCurve25', 25], ['profileCurve33', 33]] as const) {
       const node = getNodeType(type);
       expect(node.inputs.filter((i) => /^r\d+$/.test(i.id))).toHaveLength(points);
       const inputs: Record<string, ReturnType<typeof num>> = { radius: num(2), length: num(4) };

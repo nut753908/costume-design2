@@ -24,9 +24,9 @@ describe('signedProfileCurve', () => {
   });
 });
 
-describe('signedProfileCurve13 / signedProfileCurve17 / signedProfileCurve25', () => {
-  it('制御点の数は 13 / 17 / 25 個で、負の値も通る', () => {
-    for (const [type, points] of [['signedProfileCurve13', 13], ['signedProfileCurve17', 17], ['signedProfileCurve25', 25]] as const) {
+describe('signedProfileCurve13 / 17 / 25 / 33', () => {
+  it('制御点の数は 13 / 17 / 25 / 33 個で、負の値も通る', () => {
+    for (const [type, points] of [['signedProfileCurve13', 13], ['signedProfileCurve17', 17], ['signedProfileCurve25', 25], ['signedProfileCurve33', 33]] as const) {
       const node = getNodeType(type);
       expect(node.inputs.filter((i) => /^r\d+$/.test(i.id))).toHaveLength(points);
       const curve = node.evaluate({ radius: num(2), length: num(4), r1: num(-0.5) }, {}).curve;
