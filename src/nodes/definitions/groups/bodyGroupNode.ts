@@ -95,8 +95,12 @@ defineGroupNode({
     // 脚の軸は下端だけを `legTrim` ぶん上げる(長さを短くし、上端が動かないよう `legTrim / 2` だけ持ち上げる)。
     // 足の後ろ下から軸の下端の角がはみ出すのを防ぐ。
     { id: 'legTrim', type: 'numberInput', data: { value: 0.02 } },
+    // 上端だけを `legRaise` ぶん上げる(長さを増やし、下端が動かないよう `legRaise / 2` 余分に持ち上げる)。胴体の下端との重なりを増やす。
+    { id: 'legRaise', type: 'numberInput', data: { value: 0.04 } },
+    { id: 'legLiftSum', type: 'numberAdd', data: {} },
     { id: 'legTrimHalf', type: 'numberHalf', data: {} },
     { id: 'legShaftLength', type: 'numberSubtract', data: {} },
+    { id: 'legShaftLengthRaised', type: 'numberAdd', data: {} },
     { id: 'legShaftGen', type: 'legShaft', data: {} },
     { id: 'legShaftLift', type: 'translate', data: {} },
     // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
@@ -157,8 +161,12 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legShaftLength', targetHandle: 'a' },
     { source: 'legTrim', sourceHandle: 'value', target: 'legShaftLength', targetHandle: 'b' },
-    { source: 'legShaftLength', sourceHandle: 'value', target: 'legShaftGen', targetHandle: 'length' },
-    { source: 'legTrim', sourceHandle: 'value', target: 'legTrimHalf', targetHandle: 'value' },
+    { source: 'legShaftLength', sourceHandle: 'value', target: 'legShaftLengthRaised', targetHandle: 'a' },
+    { source: 'legRaise', sourceHandle: 'value', target: 'legShaftLengthRaised', targetHandle: 'b' },
+    { source: 'legShaftLengthRaised', sourceHandle: 'value', target: 'legShaftGen', targetHandle: 'length' },
+    { source: 'legTrim', sourceHandle: 'value', target: 'legLiftSum', targetHandle: 'a' },
+    { source: 'legRaise', sourceHandle: 'value', target: 'legLiftSum', targetHandle: 'b' },
+    { source: 'legLiftSum', sourceHandle: 'value', target: 'legTrimHalf', targetHandle: 'value' },
     { source: 'legShaftGen', sourceHandle: 'geometry', target: 'legShaftLift', targetHandle: 'geometry' },
     { source: 'legTrimHalf', sourceHandle: 'value', target: 'legShaftLift', targetHandle: 'y' },
     { source: 'legShaftLift', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'shaft' },
