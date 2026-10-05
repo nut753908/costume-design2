@@ -59,7 +59,7 @@ defineGroupNode({
     { id: 'torsoTilt', type: 'rotate', data: { x: -8.599 } },
     { id: 'torsoTranslate', type: 'translate', data: {} },
     // 胴体の下端(股の高さ)だけを `torsoLift` ぶん上げる(長さを短くし、上端が動かないよう同じだけ持ち上げる)。
-    { id: 'torsoLift', type: 'numberInput', data: { value: 0.048 } },
+    { id: 'torsoLift', type: 'numberInput', data: { value: 0.0465 } },
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
     { id: 'torsoY', type: 'numberAdd', data: {} },
 
@@ -89,7 +89,7 @@ defineGroupNode({
     // 足の後ろ下から軸の下端の角がはみ出すのを防ぐ。
     { id: 'legTrim', type: 'numberInput', data: { value: 0.02 } },
     // 上端だけを `legRaise` ぶん上げる(長さを増やし、下端が動かないよう `legRaise / 2` 余分に持ち上げる)。胴体の下端との重なりを増やす。
-    { id: 'legRaise', type: 'numberInput', data: { value: 0.04 } },
+    { id: 'legRaise', type: 'numberInput', data: { value: 0.05 } },
     { id: 'legLiftSum', type: 'numberAdd', data: {} },
     { id: 'legTrimHalf', type: 'numberHalf', data: {} },
     { id: 'legShaftLength', type: 'numberSubtract', data: {} },
@@ -103,7 +103,7 @@ defineGroupNode({
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { endRatio: 0.02, swingAngle: 2.288, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footX: -0.004, footPitch: 0.297 },
+      data: { endRatio: 0.02, swingAngle: 2.388, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footX: -0.004, footPitch: 0.297 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
