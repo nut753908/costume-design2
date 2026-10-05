@@ -9,7 +9,7 @@ import { colorSocket } from '../garmentOutput';
  * 共有ノード)が計算済みの生の値(半径・長さ・Y座標)そのもので、`bodyGroup` 自身は
  * スケール計算を行わない。
  *
- * 胴体(`torsoShape`、`generic/torsoShape.ts`)・首(`neckShape`)・頭(`sphereGenerator`)をそれぞれ `translate`(Y だけを配線)で配置し、
+ * 胴体と首は1本の連続した輪郭(`torsoShape`、`generic/torsoShape.ts`。首は胴体の延長で、`extra` に首の長さの 1.9 倍を渡す)・頭(`headShape`)をそれぞれ `translate`(Y だけを配線)で配置し、
  * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
  * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
@@ -43,10 +43,8 @@ defineGroupNode({
           { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0 },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number', default: 0 },
           { id: 'neckLength', label: 'Neck Length', type: 'number', default: 0 },
-          { id: 'neckRadius', label: 'Neck Radius', type: 'number', default: 0 },
           { id: 'legCenterY', label: 'Leg Center Y', type: 'number', default: 0 },
           { id: 'waistY', label: 'Waist Y', type: 'number', default: 0 },
-          { id: 'neckCenterY', label: 'Neck Center Y', type: 'number', default: 0 },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 0 },
           { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0 },
           colorSocket('#f2c9a0'),
@@ -65,13 +63,8 @@ defineGroupNode({
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
     { id: 'torsoY', type: 'numberAdd', data: {} },
 
-    // 首(neckShape)。高さを首の長さの2.2倍にして、上下を頭と胴体の丸みに食い込ませる
-    // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
-    { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2.2 } },
-    { id: 'neckGen', type: 'neckShape', data: {} },
-    // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'neckTilt', type: 'rotate', data: { x: 16.18 } },
-    { id: 'neckTranslate', type: 'translate', data: { z: -0.1245 } },
+    // 首は胴体の延長として `torsoGen` が作る(`torsoShape` の `extra`)。延長の長さは首の長さの 1.9 倍で、先端は頭の中に埋まる。
+    { id: 'neckExtension', type: 'numberMultiply', data: { factor: 1.9 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -122,18 +115,14 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoLengthLifted', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoLengthLifted', targetHandle: 'b' },
     { source: 'torsoLengthLifted', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'neckLength', target: 'neckExtension', targetHandle: 'value' },
+    { source: 'neckExtension', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'extra' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTilt', targetHandle: 'geometry' },
     { source: 'torsoTilt', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'waistY', target: 'torsoY', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoY', targetHandle: 'b' },
     { source: 'torsoY', sourceHandle: 'value', target: 'torsoTranslate', targetHandle: 'y' },
 
-    { source: 'input', sourceHandle: 'neckRadius', target: 'neckGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'neckLength', target: 'neckHeight', targetHandle: 'value' },
-    { source: 'neckHeight', sourceHandle: 'value', target: 'neckGen', targetHandle: 'length' },
-    { source: 'neckGen', sourceHandle: 'geometry', target: 'neckTilt', targetHandle: 'geometry' },
-    { source: 'neckTilt', sourceHandle: 'geometry', target: 'neckTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'neckCenterY', target: 'neckTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
     { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
@@ -179,7 +168,6 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
 
     { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'neckTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'armPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'legPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },

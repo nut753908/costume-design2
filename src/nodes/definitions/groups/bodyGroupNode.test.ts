@@ -29,30 +29,27 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
-  it('首は neckCenterY を中心に、首の長さの2倍の高さ(上下を頭と胴体に食い込ませる)で結合される', () => {
-    const result = getNodeType('bodyGroup').evaluate(
-      {
-        neckRadius: { type: 'number', value: 0.05 },
-        neckLength: { type: 'number', value: 0.1 },
-        neckCenterY: { type: 'number', value: 3 },
-      },
-      {},
-    );
-    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-    geom!.computeBoundingBox();
-    // 他のパーツは未接続(寸法0・原点付近)なので、上端は首の上端で決まる。首は中心を支点に
-    // `neckTilt` の角度だけ前へ傾いているので、上端の縁は 半高さ × cos + 半径 × sin だけ中心より上にある。
+  it('首は胴体の延長として作られ、neckLength の 1.9 倍だけ胴体の上端が高くなる', () => {
+    const topOf = (neckLength: number) => {
+      const result = getNodeType('bodyGroup').evaluate(
+        {
+          torsoRadius: { type: 'number', value: 0.15 },
+          torsoLength: { type: 'number', value: 0.3 },
+          neckLength: { type: 'number', value: neckLength },
+        },
+        {},
+      );
+      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+      geom!.computeBoundingBox();
+      return geom!.boundingBox!.max.y;
+    };
+    // 胴体は股(原点)を支点に `torsoTilt` の角度だけ後ろへ傾いているので、延長の分は cos(傾き) 倍だけ上がる。
     const tilt = (getNodeType('bodyGroup').createDefaultData() as { nodes: { id: string; data: { x: number } }[] }).nodes.find(
-      (n) => n.id === 'neckTilt',
+      (n) => n.id === 'torsoTilt',
     )!.data.x;
-    const theta = (tilt * Math.PI) / 180;
-    // 首の上端は丸く閉じていて、傾けると広がった上端の縁が頂点より少し上に出るので、半高さ × cos(傾き) を中心に
-    // ±0.02 の範囲で確かめる。
-    expect(geom!.boundingBox!.max.y).toBeGreaterThan(3 + 0.1 * Math.cos(theta) - 0.02);
-    expect(geom!.boundingBox!.max.y).toBeLessThan(3 + 0.1 * Math.cos(theta) + 0.02);
-    // 腕・脚など他のパーツも未接続(寸法 0)で位置だけが外接箱に入るので、首の半径を下限にする。
-    expect(geom!.boundingBox!.max.x).toBeGreaterThanOrEqual(0.05 - 1e-5);
-    expect(geom!.boundingBox!.max.x).toBeLessThan(0.15);
+    const rise = topOf(0.1) - topOf(0);
+    expect(rise).toBeGreaterThan(1.9 * 0.1 * Math.cos((tilt * Math.PI) / 180) - 0.02);
+    expect(rise).toBeLessThan(1.9 * 0.1 + 0.02);
   });
 
   it('headCenterY が大きくなるほど結合済みジオメトリの上端(頭)が上がる', () => {

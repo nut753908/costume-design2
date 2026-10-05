@@ -56,12 +56,10 @@ export const initialEdges: Edge[] = [
   { id: 'e-body-group-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'bodyGroup', targetHandle: 'armRadius' },
   { id: 'e-body-group-shoulder-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'bodyGroup', targetHandle: 'shoulderSpacing' },
   { id: 'e-body-group-neck-length', source: 'bodyDimensions', sourceHandle: 'neckLength', target: 'bodyGroup', targetHandle: 'neckLength' },
-  { id: 'e-body-group-neck-radius', source: 'bodyDimensions', sourceHandle: 'neckRadius', target: 'bodyGroup', targetHandle: 'neckRadius' },
 
   // bodyLayout(bodyGroup 自身のメッシュ配置に使う5出力)→ bodyGroup。
   { id: 'e-body-group-leg-center-y', source: 'bodyLayout', sourceHandle: 'legCenterY', target: 'bodyGroup', targetHandle: 'legCenterY' },
   { id: 'e-body-group-waist-y', source: 'bodyLayout', sourceHandle: 'waistY', target: 'bodyGroup', targetHandle: 'waistY' },
-  { id: 'e-body-group-neck-center-y', source: 'bodyLayout', sourceHandle: 'neckCenterY', target: 'bodyGroup', targetHandle: 'neckCenterY' },
   { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },
   { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
 ];

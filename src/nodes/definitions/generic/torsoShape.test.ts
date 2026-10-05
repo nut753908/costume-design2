@@ -27,7 +27,7 @@ function extentAt(geometry: THREE.BufferGeometry, y: number, tolerance = 0.004):
   return { x, z };
 }
 
-/** テンプレートの `xProfile`(17 点)の、制御点 `r<k>`(高さを 16 等分した位置、`radius` に対する比)。 */
+/** テンプレートの `xProfile`(25 点)の、制御点 `r<k>`(高さを 24 等分した位置、`radius` に対する比)。 */
 function xRatio(k: number): number {
   const data = getNodeType('torsoShape').createDefaultData() as { nodes: { id: string; data: Record<string, number> }[] };
   return data.nodes.find((n) => n.id === 'xProfile')!.data[`r${k}`];
@@ -50,17 +50,27 @@ describe('torsoShape', () => {
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
     // 最も広い制御点の値の付近(スプラインの膨らみで少しはみ出す)が幅の最大
-    const widest = Math.max(...Array.from({ length: 15 }, (_, i) => xRatio(i + 1)));
+    const widest = Math.max(...Array.from({ length: 23 }, (_, i) => xRatio(i + 1)));
     expect(box.max.x).toBeGreaterThan(0.15 * widest * 0.98);
     expect(box.max.x).toBeLessThan(0.15 * widest * 1.06);
     expect(box.max.z).toBeLessThan(box.max.x * 0.8);
     expect(box.max.z).toBeGreaterThan(box.max.x * 0.5);
   });
 
-  it('輪郭の制御点(高さを 16 等分した点)の高さでは、幅は radius × xProfile の r に一致する', () => {
+  it('輪郭の制御点(高さを 24 等分した点)の高さでは、幅は radius × xProfile の r に一致する', () => {
     const geometry = evaluateGeometry(base);
-    expect(extentAt(geometry, (4 / 16) * height).x).toBeCloseTo(0.15 * xRatio(4), 2);
-    expect(extentAt(geometry, (8 / 16) * height).x).toBeCloseTo(0.15 * xRatio(8), 2);
+    expect(extentAt(geometry, (6 / 24) * height).x).toBeCloseTo(0.15 * xRatio(6), 2);
+    expect(extentAt(geometry, (12 / 24) * height).x).toBeCloseTo(0.15 * xRatio(12), 2);
+  });
+
+  it('extra だけ上端が伸び(首の延長)、先端は細く(首の太さ)なって丸く閉じる', () => {
+    const geometry = evaluateGeometry({ ...base, extra: 0.1 });
+    geometry.computeBoundingBox();
+    expect(geometry.boundingBox!.max.y).toBeCloseTo(height + 0.1, 5);
+    // 首のあたり(延長の中ほど)の幅は、胴体の最大幅よりずっと細い
+    expect(extentAt(geometry, height + 0.04, 0.006).x).toBeLessThan(0.15 * 0.6);
+    // 先端の近くで半径が小さくなる
+    expect(extentAt(geometry, height + 0.1 - 0.004).x).toBeLessThan(0.15 * 0.3);
   });
 
   it('両端は丸く閉じる(下端・上端の近くで半径が小さくなる)', () => {
