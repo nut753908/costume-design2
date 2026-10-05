@@ -95,12 +95,8 @@ defineGroupNode({
     // 脚の軸は下端だけを `legTrim` ぶん上げる(長さを短くし、上端が動かないよう `legTrim / 2` だけ持ち上げる)。
     // 足の後ろ下から軸の下端の角がはみ出すのを防ぐ。
     { id: 'legTrim', type: 'numberInput', data: { value: 0.02 } },
-    // 上端だけを `legRaise` ぶん上げる(長さを増やし、下端が動かないよう `legRaise / 2` 余分に持ち上げる)。胴体の下端との重なりを増やす。
-    { id: 'legRaise', type: 'numberInput', data: { value: 0.04 } },
-    { id: 'legLiftSum', type: 'numberAdd', data: {} },
     { id: 'legTrimHalf', type: 'numberHalf', data: {} },
     { id: 'legShaftLength', type: 'numberSubtract', data: {} },
-    { id: 'legShaftLengthRaised', type: 'numberAdd', data: {} },
     { id: 'legShaftGen', type: 'legShaft', data: {} },
     { id: 'legShaftLift', type: 'translate', data: {} },
     // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
@@ -113,13 +109,7 @@ defineGroupNode({
       data: { endRatio: 0.02, swingAngle: 2.288, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footPitch: 0.297 },
     },
 
-    // 胴体と脚だけを結合して、股まわり(胴体の下端と脚の上端)を1枚の面に作り直す(腕・手が箱の縁に
-    // 掛かって欠けないよう、作り直しの対象に含めない)。箱の中心の高さは胴体の下端(`torsoY`)。
-    { id: 'lowerMerge', type: 'mergeGeometry', data: {} },
-    // 箱の横幅は胴体の半径に追従させる(体型を変えても腰の側面が箱の縁を横切らないように)。
-    { id: 'hipHalfWidth', type: 'numberMultiply', data: { factor: 1.32 } },
-    { id: 'hipRemesh', type: 'voxelRemesh', data: {} },
-    // 全パーツを1つのジオメトリへ結合して単一の sceneOutput へ。
+    // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
     { id: 'merge', type: 'mergeGeometry', data: {} },
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
@@ -167,12 +157,8 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legShaftLength', targetHandle: 'a' },
     { source: 'legTrim', sourceHandle: 'value', target: 'legShaftLength', targetHandle: 'b' },
-    { source: 'legShaftLength', sourceHandle: 'value', target: 'legShaftLengthRaised', targetHandle: 'a' },
-    { source: 'legRaise', sourceHandle: 'value', target: 'legShaftLengthRaised', targetHandle: 'b' },
-    { source: 'legShaftLengthRaised', sourceHandle: 'value', target: 'legShaftGen', targetHandle: 'length' },
-    { source: 'legTrim', sourceHandle: 'value', target: 'legLiftSum', targetHandle: 'a' },
-    { source: 'legRaise', sourceHandle: 'value', target: 'legLiftSum', targetHandle: 'b' },
-    { source: 'legLiftSum', sourceHandle: 'value', target: 'legTrimHalf', targetHandle: 'value' },
+    { source: 'legShaftLength', sourceHandle: 'value', target: 'legShaftGen', targetHandle: 'length' },
+    { source: 'legTrim', sourceHandle: 'value', target: 'legTrimHalf', targetHandle: 'value' },
     { source: 'legShaftGen', sourceHandle: 'geometry', target: 'legShaftLift', targetHandle: 'geometry' },
     { source: 'legTrimHalf', sourceHandle: 'value', target: 'legShaftLift', targetHandle: 'y' },
     { source: 'legShaftLift', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'shaft' },
@@ -184,17 +170,12 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legSpacing', target: 'legPair', targetHandle: 'spacing' },
     { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
 
-    { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'lowerMerge', targetHandle: 'geometries' },
-    { source: 'legPair', sourceHandle: 'geometry', target: 'lowerMerge', targetHandle: 'geometries' },
-    { source: 'lowerMerge', sourceHandle: 'geometry', target: 'hipRemesh', targetHandle: 'geometry' },
-    { source: 'hipRemesh', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'neckTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'armPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'legPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
-    { source: 'torsoY', sourceHandle: 'value', target: 'hipRemesh', targetHandle: 'centerY' },
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'hipHalfWidth', targetHandle: 'value' },
-    { source: 'hipHalfWidth', sourceHandle: 'value', target: 'hipRemesh', targetHandle: 'halfWidth' },
     { source: 'merge', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
