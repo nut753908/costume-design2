@@ -58,7 +58,7 @@ describe('migrateGroupToTemplate', () => {
   it('同じ id・型のノードの入力欄の値を引き継ぐ', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [
       n('scale', 'numberMultiply', { value: 0.45 }),
-      n('material', 'toonMaterial', { color: '#123456' }),
+      n('material', 'toonShadowMaterial', { color: '#123456' }),
       n('removedNode', 'numberInput', { value: 7 }),
     ]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
