@@ -106,7 +106,7 @@ defineGroupNode({
     // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
     { id: 'footGen', type: 'footShape', data: {} },
     { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
-    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.189, endScaleY: 0.9909, endScaleZ: 1.131, endShiftY: -0.6747, swingAngle: 16.62, pitchAngle: -15.47, centerZ: -0.1151, endScaleX: 0.78, endPitch: -22.48 } },
+    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.229, endScaleY: 0.9909, endScaleZ: 1.131, endShiftY: -0.6447, swingAngle: 16.62, pitchAngle: -14.87, centerZ: -0.1151, endScaleX: 0.82, endPitch: -22.48 } },
     {
       id: 'legPair',
       type: 'limbPair',
