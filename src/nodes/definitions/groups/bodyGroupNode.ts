@@ -65,9 +65,9 @@ defineGroupNode({
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
     { id: 'torsoY', type: 'numberAdd', data: {} },
 
-    // 首(neckShape)。高さを首の長さの2倍にして、上下を頭と胴体の丸みに食い込ませる
+    // 首(neckShape)。高さを首の長さの2.2倍にして、上下を頭と胴体の丸みに食い込ませる
     // (長さちょうどだと、首の縁と胴体の上端の丸みの間に隙間が見える)。
-    { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2 } },
+    { id: 'neckHeight', type: 'numberMultiply', data: { factor: 2.2 } },
     { id: 'neckGen', type: 'neckShape', data: {} },
     // 首の中心を支点に、上端を前後へ傾ける(`neckTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
     { id: 'neckTilt', type: 'rotate', data: { x: 16.18 } },

@@ -25,7 +25,7 @@ defineGroupNode({
     { id: 'halfLength', type: 'numberHalf', data: {} },
     { id: 'negHalfLength', type: 'numberNegate', data: {} },
     // 値はいずれも `radius` に対する比(`r1` が下端側、`r7` が上端側)。
-    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 1.323, r2: 1.002, r3: 0.894, r4: 0.8661, r5: 0.8987, r6: 0.9856, r7: 1.156, r8: 0 } },
+    { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 1.323, r2: 0.962, r3: 0.894, r4: 0.8661, r5: 0.8987, r6: 0.9856, r7: 1.156, r8: 0 } },
     { id: 'depthProfile', type: 'profileCurve', data: { r0: 0, r1: 1.022, r2: 0.9455, r3: 0.895, r4: 0.8744, r5: 0.9203, r6: 1.075, r7: 1.54, r8: 0 } },
     // 各高さの輪を前(+Z)へずらす量(`radius` に対する比)。
     { id: 'offsetProfile', type: 'signedProfileCurve', data: { r0: 0, r1: 0.07733, r2: -0.01702, r3: -0.0792, r4: -0.09083, r5: -0.07867, r6: -0.09443, r7: 0.1293, r8: 0 } },
