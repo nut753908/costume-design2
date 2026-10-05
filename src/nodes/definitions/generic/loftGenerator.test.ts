@@ -143,3 +143,45 @@ describe('loftGenerator', () => {
     expect(Array.from(b.getAttribute('position').array)).toEqual(Array.from(a.getAttribute('position').array));
   });
 });
+
+describe('loftGenerator の tiltProfile', () => {
+  const circle = (r: number) => new THREE.LineCurve(new THREE.Vector2(r, 0), new THREE.Vector2(r, 1));
+  const constant = (value: number) => ({ type: 'curve' as const, value: new THREE.LineCurve(new THREE.Vector2(value, 0), new THREE.Vector2(value, 1)) });
+  const run = (tilt?: number) => {
+    const inputs: Record<string, never> = {
+      profile: { type: 'curve', value: circle(1) },
+      depthProfile: { type: 'curve', value: circle(1) },
+      steps: { type: 'number', value: 2 },
+      segments: { type: 'number', value: 16 },
+      ...(tilt === undefined ? {} : { tiltProfile: constant(tilt) }),
+    } as never;
+    const out = getNodeType('loftGenerator').evaluate(inputs, {}).geometry;
+    return out?.type === 'geometry' ? out.value : undefined;
+  };
+
+  it('正の角度で輪の後ろ側(-Z)が上がり、前側(+Z)が下がる', () => {
+    const flat = run()!.getAttribute('position');
+    const tilted = run(30)!.getAttribute('position');
+    let front = -1;
+    let back = -1;
+    for (let i = 0; i < flat.count; i++) {
+      if (Math.abs(flat.getY(i) - 0.5) > 1e-6) continue;
+      if (flat.getZ(i) > 0.99) front = i;
+      if (flat.getZ(i) < -0.99) back = i;
+    }
+    const s = Math.sin((30 * Math.PI) / 180);
+    expect(tilted.getY(front)).toBeCloseTo(flat.getY(front) - s, 5);
+    expect(tilted.getY(back)).toBeCloseTo(flat.getY(back) + s, 5);
+    // 傾けた分だけ前後の広がりは cos 倍に縮む(輪の面が傾くので、真上から見た奥行きは短くなる)
+    expect(tilted.getZ(front)).toBeCloseTo(Math.cos((30 * Math.PI) / 180), 5);
+  });
+
+  it('tiltProfile が未接続、または 0 度なら、輪は水平のまま', () => {
+    const a = run()!.getAttribute('position');
+    const b = run(0)!.getAttribute('position');
+    for (let i = 0; i < a.count; i++) {
+      expect(b.getY(i)).toBeCloseTo(a.getY(i), 8);
+      expect(b.getZ(i)).toBeCloseTo(a.getZ(i), 8);
+    }
+  });
+});

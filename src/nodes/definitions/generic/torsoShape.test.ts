@@ -42,7 +42,9 @@ describe('torsoShape', () => {
     geometry.computeBoundingBox();
     const box = geometry.boundingBox!;
     expect(box.min.y).toBeCloseTo(0, 5);
-    expect(box.max.y).toBeCloseTo(height, 5);
+    // 首の輪は前へ傾けてあり、輪の後ろ側の縁が極より少し(輪の半径 × sin 傾き)高くなる
+    expect(box.max.y).toBeGreaterThanOrEqual(height - 1e-5);
+    expect(box.max.y).toBeLessThan(height + 0.02);
   });
 
   it('幅(X)は radius に比例し、前後(Z)はそれより薄い(楕円断面)', () => {
@@ -66,11 +68,12 @@ describe('torsoShape', () => {
   it('extra だけ上端が伸び(首の延長)、先端は細く(首の太さ)なって丸く閉じる', () => {
     const geometry = evaluateGeometry({ ...base, extra: 0.1 });
     geometry.computeBoundingBox();
-    expect(geometry.boundingBox!.max.y).toBeCloseTo(height + 0.1, 5);
+    expect(geometry.boundingBox!.max.y).toBeGreaterThanOrEqual(height + 0.1 - 1e-5);
+    expect(geometry.boundingBox!.max.y).toBeLessThan(height + 0.1 + 0.02);
     // 首のあたり(延長の中ほど)の幅は、胴体の最大幅よりずっと細い
     expect(extentAt(geometry, height + 0.04, 0.006).x).toBeLessThan(0.15 * 0.6);
     // 先端の近くで半径が小さくなる
-    expect(extentAt(geometry, height + 0.1 - 0.004).x).toBeLessThan(0.15 * 0.3);
+    expect(extentAt(geometry, height + 0.1 - 0.004).x).toBeLessThan(0.15 * 0.4);
   });
 
   it('両端は丸く閉じる(下端・上端の近くで半径が小さくなる)', () => {

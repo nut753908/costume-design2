@@ -44,6 +44,8 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
  * `depthProfile` が未接続なら円断面(= `latheGenerator` と同じ)。半径が 0 のリング(極)は Z を変えない。
  * 前後非対称の形(後頭部の張り出しや足の突き出しなど)は、前後別々の半径ではなく、`offsetZProfile` で各リングを
  * 前後へずらして表す(前後で別々の半径にすると、側面の継ぎ目に稜線が立つ)。
+ * `tiltProfile`(符号付きの曲線、値は度数)を繋ぐと、各高さの輪を輪の中心まわりに前後へ傾ける(正で輪の面の法線が前(+Z)を向き、
+ * 輪の後ろ側が上がり前側が下がる)。軸が斜めに曲がった部分(胴体から前へ傾く首)の輪を、軸に垂直にするためのもの。
  * 曲線は同じ高さの範囲を持つこと(同じ `t` で同じ高さを指すこと)を前提にする。 */
 registerNodeType<LoftGeneratorData>({
   type: 'loftGenerator',
@@ -54,6 +56,7 @@ registerNodeType<LoftGeneratorData>({
     { id: 'depthProfile', label: 'Depth Profile (Z, front)', type: 'curve' },
     { id: 'dropProfile', label: 'Drop Profile (Y)', type: 'curve' },
     { id: 'offsetZProfile', label: 'Offset Profile (Z)', type: 'curve' },
+    { id: 'tiltProfile', label: 'Tilt Profile (deg)', type: 'curve' },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -78,10 +81,19 @@ registerNodeType<LoftGeneratorData>({
       // 1つの楕円のまま前後非対称の形を表せるので、前後の継ぎ目に稜線(エッジ)ができない。
       const offsets =
         inputs.offsetZProfile?.type === 'curve' ? inputs.offsetZProfile.value.getPoints(steps).map((offsetPoint) => offsetPoint.x) : null;
+      // `tiltProfile` の値(度)だけ、各高さの輪を輪の中心まわりに X 軸方向へ傾ける。
+      const tilts =
+        inputs.tiltProfile?.type === 'curve'
+          ? inputs.tiltProfile.value.getPoints(steps).map((tiltPoint) => (tiltPoint.x * Math.PI) / 180)
+          : null;
       for (let i = 0; i < position.count; i++) {
         const ring = i % points.length;
+        const depth = position.getZ(i) * ratios[ring];
         if (drops) position.setY(i, position.getY(i) - drops[ring]);
-        position.setZ(i, position.getZ(i) * ratios[ring] + (offsets ? offsets[ring] : 0));
+        if (tilts) {
+          position.setY(i, position.getY(i) - depth * Math.sin(tilts[ring]));
+          position.setZ(i, depth * Math.cos(tilts[ring]) + (offsets ? offsets[ring] : 0));
+        } else position.setZ(i, depth + (offsets ? offsets[ring] : 0));
       }
       position.needsUpdate = true;
       geometry.computeVertexNormals();
