@@ -7,8 +7,8 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 根元(上端)の肩/股の丸みは、軸が球の半径ぶん外側まで伸びて自分で丸く閉じるので、関節の球は別に付けない
  * (付けると、球と軸の太さの違いが継ぎ目の輪になる)。先端(下端)には手/足になる球(`end`)を結合する(脚は代わりに `foot` を受け取るので、`endRatio` を小さくして球を隠す)。
  * 半径は `radius × endRatio`、`endScaleX`/`endScaleY`/`endScaleZ` で幅・上下・前後につぶし/伸ばし、
- * `endPitch`(度)で前後へ傾け、中心を先端から `endShiftY`/`endShiftZ`(端の球の半径を単位にした量)だけ
- * ずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
+ * `endPitch`(度)で前後へ、`endRoll`(度)で左右へ傾け、中心を先端から `endShiftX`/`endShiftY`/`endShiftZ`(端の球の半径を単位にした量、
+ * X は +が外側)だけずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
  *
  * `swingAngle`(度)は、付け根(軸の上端の丸みの中心)を支点にして先端を外(+X 側、左右対称ペアの外側)へ
  * 振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度によらず有効。`pitchAngle`(度)は
@@ -38,6 +38,8 @@ defineGroupNode({
           { id: 'footPitch', label: 'Foot Pitch (deg)', type: 'number', default: 0 },
           { id: 'endShiftY', label: 'End Shift Y', type: 'number', default: 0 },
           { id: 'endShiftZ', label: 'End Shift Z', type: 'number', default: 0 },
+          { id: 'endShiftX', label: 'End Shift X', type: 'number', default: 0 },
+          { id: 'endRoll', label: 'End Roll (deg)', type: 'number', default: 0 },
           { id: 'swingAngle', label: 'Swing Angle (deg)', type: 'number', default: 0 },
           { id: 'pitchAngle', label: 'Pitch Angle (deg)', type: 'number', default: 0 },
           { id: 'centerZ', label: 'Center Z', type: 'number', default: 0 },
@@ -58,6 +60,7 @@ defineGroupNode({
     { id: 'endLift', type: 'numberMultiply', data: {} },
     { id: 'endY', type: 'numberAdd', data: {} },
     { id: 'endZ', type: 'numberMultiply', data: {} },
+    { id: 'endX', type: 'numberMultiply', data: {} },
     { id: 'endTranslate', type: 'translate', data: {} },
     { id: 'withJoint', type: 'mergeGeometry', data: {} },
     // 付け根(軸の上端の丸みの中心)を支点に、先端を外(+X 側)へ swingAngle 度だけ振る。
@@ -101,6 +104,10 @@ defineGroupNode({
     { source: 'endLift', sourceHandle: 'value', target: 'endY', targetHandle: 'b' },
     { source: 'endRadius', sourceHandle: 'value', target: 'endZ', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'endShiftZ', target: 'endZ', targetHandle: 'factor' },
+    { source: 'endRadius', sourceHandle: 'value', target: 'endX', targetHandle: 'value' },
+    { source: 'input', sourceHandle: 'endShiftX', target: 'endX', targetHandle: 'factor' },
+    { source: 'endX', sourceHandle: 'value', target: 'endTranslate', targetHandle: 'x' },
+    { source: 'input', sourceHandle: 'endRoll', target: 'endTilt', targetHandle: 'z' },
     { source: 'endScale', sourceHandle: 'geometry', target: 'endTilt', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'endPitch', target: 'endTilt', targetHandle: 'x' },
     { source: 'endTilt', sourceHandle: 'geometry', target: 'endTranslate', targetHandle: 'geometry' },

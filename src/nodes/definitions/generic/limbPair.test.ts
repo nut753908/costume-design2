@@ -38,6 +38,16 @@ describe('limbPair', () => {
     expect(box.max.z).toBeCloseTo(0.12 + 0.12, 5);
   });
 
+  it('endShiftX は先端の球を(端の半径を単位に)外側へずらし、endRoll は左右へ傾ける', () => {
+    const flat = evaluateBox({ ...base, endRatio: 1.2, endScaleX: 2, endScaleY: 0.5 });
+    // 球は X に2倍、Y に半分: 外側へ 1 × 0.12 だけずらすと、外側の端がその分だけ広がる。
+    const shifted = evaluateBox({ ...base, endRatio: 1.2, endScaleX: 2, endScaleY: 0.5, endShiftX: 1 });
+    expect(shifted.max.x).toBeCloseTo(flat.max.x + 0.12, 5);
+    // 90 度傾けると、X に長い楕円体が縦に長くなり、先端が下へ伸びる。
+    const rolled = evaluateBox({ ...base, endRatio: 1.2, endScaleX: 2, endScaleY: 0.5, endRoll: 90 });
+    expect(rolled.min.y).toBeLessThan(flat.min.y - 0.05);
+  });
+
   it('swingAngle は付け根を支点に先端を外へ振り、付け根の位置は変えない', () => {
     const straight = evaluateBox(base);
     const swung = evaluateBox({ ...base, swingAngle: 30 });
