@@ -76,7 +76,7 @@ defineGroupNode({
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
-    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.003 } },
+    { id: 'headGen', type: 'headShape', data: { heightRatio: 1.005 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
     { id: 'headTranslate', type: 'translate', data: { z: -0.1054 } },
 
