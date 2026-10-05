@@ -15,9 +15,9 @@ function evaluateBox(inputs: Record<string, number>) {
 describe('earPair', () => {
   const base = { radius: 0.3, centerY: 1.5, centerZ: -0.1 };
 
-  it('頭の中心から左右に ±radius × 0.795 の位置へ、左右対称に置かれる', () => {
+  it('頭の中心から左右に ±radius × 0.777 の位置へ、左右対称に置かれる', () => {
     const box = evaluateBox(base);
-    expect(box.max.x).toBeGreaterThan(0.3 * 0.795);
+    expect(box.max.x).toBeGreaterThan(0.3 * 0.777);
     expect(box.min.x).toBeCloseTo(-box.max.x, 5);
   });
 
