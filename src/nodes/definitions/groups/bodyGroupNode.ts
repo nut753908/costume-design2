@@ -51,7 +51,9 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'material', type: 'toonMaterial', data: {} },
+    // 肌は影が暗くなるだけでなく暖かい色へ移る塗りにする(`toonShadowMaterial`)。影の色は肌の色から `shade` で作る。
+    { id: 'shade', type: 'shadeColor', data: {} },
+    { id: 'material', type: 'toonShadowMaterial', data: {} },
 
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
@@ -183,6 +185,8 @@ defineGroupNode({
 
     { source: 'merge', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
+    { source: 'input', sourceHandle: 'color', target: 'shade', targetHandle: 'color' },
+    { source: 'shade', sourceHandle: 'color', target: 'material', targetHandle: 'shadowColor' },
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
   ],
 });
