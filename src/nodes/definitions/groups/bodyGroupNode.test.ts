@@ -29,7 +29,7 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
-  it('首は胴体の延長として作られ、neckLength の 1.9 倍だけ胴体の上端が高くなる', () => {
+  it('首は胴体の延長として作られ、neckLength の 2.4 倍だけ胴体の上端が高くなる', () => {
     const topOf = (neckLength: number) => {
       const result = getNodeType('bodyGroup').evaluate(
         {
@@ -48,8 +48,8 @@ describe('bodyGroup', () => {
       (n) => n.id === 'torsoTilt',
     )!.data.x;
     const rise = topOf(0.1) - topOf(0);
-    expect(rise).toBeGreaterThan(1.9 * 0.1 * Math.cos((tilt * Math.PI) / 180) - 0.02);
-    expect(rise).toBeLessThan(1.9 * 0.1 + 0.02);
+    expect(rise).toBeGreaterThan(2.4 * 0.1 * Math.cos((tilt * Math.PI) / 180) - 0.02);
+    expect(rise).toBeLessThan(2.4 * 0.1 + 0.02);
   });
 
   it('headCenterY が大きくなるほど結合済みジオメトリの上端(頭)が上がる', () => {

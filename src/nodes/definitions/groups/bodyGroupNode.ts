@@ -9,7 +9,7 @@ import { colorSocket } from '../garmentOutput';
  * 共有ノード)が計算済みの生の値(半径・長さ・Y座標)そのもので、`bodyGroup` 自身は
  * スケール計算を行わない。
  *
- * 胴体と首は1本の連続した輪郭(`torsoShape`、`generic/torsoShape.ts`。首は胴体の延長で、`extra` に首の長さの 1.9 倍を渡す)・頭(`headShape`)をそれぞれ `translate`(Y だけを配線)で配置し、
+ * 胴体と首は1本の連続した輪郭(`torsoShape`、`generic/torsoShape.ts`。首は胴体の延長で、`extra` に首の長さの 2.4 倍を渡す)・頭(`headShape`)をそれぞれ `translate`(Y だけを配線)で配置し、
  * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
  * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
@@ -63,8 +63,8 @@ defineGroupNode({
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
     { id: 'torsoY', type: 'numberAdd', data: {} },
 
-    // 首は胴体の延長として `torsoGen` が作る(`torsoShape` の `extra`)。延長の長さは首の長さの 1.9 倍で、先端は頭の中に埋まる。
-    { id: 'neckExtension', type: 'numberMultiply', data: { factor: 1.9 } },
+    // 首は胴体の延長として `torsoGen` が作る(`torsoShape` の `extra`)。延長の長さは首の長さの 2.4 倍で、先端は頭の中に埋まる。
+    { id: 'neckExtension', type: 'numberMultiply', data: { factor: 2.4 } },
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
