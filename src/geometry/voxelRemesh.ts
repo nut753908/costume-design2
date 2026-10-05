@@ -15,6 +15,9 @@ export interface VoxelRemeshParams {
   overlap: number;
 }
 
+/** 作り直した面を内側へ沈める量(ボクセルの大きさに対する比)。 */
+const SINK_RATIO = 0.1;
+
 /** ボクセル数の上限(これを超える場合は voxelSize を粗くして収める)。 */
 const MAX_CELLS = 6_000_000;
 
@@ -332,5 +335,38 @@ export function voxelRemesh(geometry: THREE.BufferGeometry, params: VoxelRemeshP
   out.setAttribute('position', new THREE.Float32BufferAttribute(outPos, 3));
   out.setIndex(outIdx);
   out.computeVertexNormals();
+
+  // 作り直した頂点の法線は、マーチングキューブの不揃いな三角形の面法線の平均ではなく、ぼかした
+  // 占有率の勾配(内側ほど大きい)から求める。陰影の境界が波打たない。
+  const normal = out.getAttribute('normal') as THREE.BufferAttribute;
+  const sample = (x: number, y: number, z: number) => {
+    const fx = Math.min(nx - 1.001, Math.max(0, (x - x0) / h - 0.5));
+    const fy = Math.min(ny - 1.001, Math.max(0, (y - y0) / h - 0.5));
+    const fz = Math.min(nz - 1.001, Math.max(0, (z - z0) / h - 0.5));
+    const i = Math.floor(fx), j = Math.floor(fy), k = Math.floor(fz);
+    const tx = fx - i, ty = fy - j, tz = fz - k;
+    let acc = 0;
+    for (let c = 0; c < 8; c++) {
+      const [di, dj, dk] = CORNERS[c];
+      const w = (di ? tx : 1 - tx) * (dj ? ty : 1 - ty) * (dk ? tz : 1 - tz);
+      acc += w * field[((i + di) * ny + (j + dj)) * nz + (k + dk)];
+    }
+    return acc;
+  };
+  for (let v = 0; v < newPos.length / 3; v++) {
+    const x = outPos[(nVerts + v) * 3], y = outPos[(nVerts + v) * 3 + 1], z = outPos[(nVerts + v) * 3 + 2];
+    const gx = sample(x + h, y, z) - sample(x - h, y, z);
+    const gy = sample(x, y + h, z) - sample(x, y - h, z);
+    const gz = sample(x, y, z + h) - sample(x, y, z - h);
+    const len = Math.hypot(gx, gy, gz);
+    if (len > 1e-9) normal.setXYZ(nVerts + v, -gx / len, -gy / len, -gz / len);
+  }
+  // 境目で重ねた元の面と作り直した面がほぼ同じ位置になるため、そのままだと深度が競合して陰影が
+  // ちらつく。作り直した面をわずかに内側へ沈め、重なる帯では常に元の面が手前に来るようにする。
+  const sink = SINK_RATIO * h;
+  const posOut = out.getAttribute('position') as THREE.BufferAttribute;
+  for (let v = nVerts; v < posOut.count; v++) {
+    posOut.setXYZ(v, posOut.getX(v) - normal.getX(v) * sink, posOut.getY(v) - normal.getY(v) * sink, posOut.getZ(v) - normal.getZ(v) * sink);
+  }
   return out;
 }

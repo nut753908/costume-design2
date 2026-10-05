@@ -64,11 +64,23 @@ describe('voxelRemesh', () => {
     let checked = 0;
     for (let i = sphere.getAttribute('position').count; i < p.count; i++) {
       if (Math.abs(p.getY(i) - 0.3) > 0.01) continue;
-      // 元の球は多角形近似なので、半径 0.6 から球面の弦の分(約 2mm)までのずれは許す
-      expect(Math.abs(Math.hypot(p.getX(i), p.getY(i), p.getZ(i)) - 0.6)).toBeLessThan(0.004);
+      // 元の球は多角形近似なので球面の弦の分(約 2mm)のずれと、内側へ沈める分(0.1 ボクセル)は許す
+      expect(Math.abs(Math.hypot(p.getX(i), p.getY(i), p.getZ(i)) - 0.6)).toBeLessThan(0.004 + 0.1 * PARAMS.voxelSize);
       checked++;
     }
     expect(checked).toBeGreaterThan(10);
+  });
+
+  it('作り直した頂点の法線は球の外向きにそろう', () => {
+    const sphere = new THREE.SphereGeometry(0.6, 32, 24);
+    const out = voxelRemesh(sphere, { ...PARAMS, overlap: 0.001 });
+    const p = out.getAttribute('position');
+    const n = out.getAttribute('normal');
+    for (let i = sphere.getAttribute('position').count; i < p.count; i++) {
+      const r = Math.hypot(p.getX(i), p.getY(i), p.getZ(i));
+      const dot = (p.getX(i) * n.getX(i) + p.getY(i) * n.getY(i) + p.getZ(i) * n.getZ(i)) / r;
+      expect(dot).toBeGreaterThan(0.97);
+    }
   });
 
   it('頂点が無い・箱が空のときは何もしない(複製を返す)', () => {
