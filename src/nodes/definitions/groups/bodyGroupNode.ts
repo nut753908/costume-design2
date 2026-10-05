@@ -71,7 +71,11 @@ defineGroupNode({
     // 胴体の中心より後ろに置く)。
     { id: 'headGen', type: 'headShape', data: { heightRatio: 1.005 } },
     { id: 'headBottomY', type: 'numberSubtract', data: {} },
-    { id: 'headTranslate', type: 'translate', data: { z: -0.1054 } },
+    // 頭の前後位置は、耳(`earGen`)と共有する。
+    { id: 'headZIn', type: 'numberInput', data: { value: -0.1054 } },
+    { id: 'headTranslate', type: 'translate', data: {} },
+    // 頭の側面の耳(左右の小さな楕円体)。
+    { id: 'earGen', type: 'earPair', data: {} },
 
     // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
@@ -129,6 +133,10 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'headCenterY', target: 'headBottomY', targetHandle: 'a' },
     { source: 'input', sourceHandle: 'headRadius', target: 'headBottomY', targetHandle: 'b' },
     { source: 'headBottomY', sourceHandle: 'value', target: 'headTranslate', targetHandle: 'y' },
+    { source: 'headZIn', sourceHandle: 'value', target: 'headTranslate', targetHandle: 'z' },
+    { source: 'input', sourceHandle: 'headRadius', target: 'earGen', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'headCenterY', target: 'earGen', targetHandle: 'centerY' },
+    { source: 'headZIn', sourceHandle: 'value', target: 'earGen', targetHandle: 'centerZ' },
 
     { source: 'input', sourceHandle: 'armRadius', target: 'armPair', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'armRadius', target: 'armShaftGen', targetHandle: 'radius' },
@@ -169,6 +177,7 @@ defineGroupNode({
 
     { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'earGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'armPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'legPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
