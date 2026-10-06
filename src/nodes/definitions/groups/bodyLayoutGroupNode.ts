@@ -9,9 +9,9 @@ import { defineGroupNode } from '../groupNodeFactory';
  * 地面のY座標 `feetY`(外部ソケット、既定値 0)は `waistY`(= `feetY + legHeight`)と
  * `legCenterY`(= `feetY + legHeight / 2`)に加算され、そこから積み上がる胴体/頭/腕の
  * Y座標もすべて連動するため、`feetY` を変えると体全体が上下する。
- * `feetY`/`waistY`/`shoulderY`/`wristY`/`headCenterY` は `bodyGroup` 自身のメッシュ配置には
- * 使わないが、14ガーメント共通のアンカー候補として `garmentPlacement.ts` の `anchorY` へ
- * 配線されるため出力に含めている。 */
+ * 出力のうち `legCenterY`/`headCenterY`/`armCenterY`/`waistY` は `bodyGroup` が胴体・頭・腕・脚の配置に使い、
+ * `feetY`/`waistY`/`shoulderY`/`wristY`/`headCenterY` は14ガーメント共通のアンカー候補として
+ * `garmentPlacement.ts` の `anchorY` へ配線される。 */
 defineGroupNode({
   type: 'bodyLayoutGroup',
   label: 'Body Layout',
