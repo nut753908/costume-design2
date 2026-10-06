@@ -7,7 +7,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  *
  * `xProfile`/`depthProfile`(いずれも `profileCurve`)と、輪を前後へずらす `offsetProfile`(`signedProfileCurve`)が、高さを 8 等分した 9 点の値
  * (`radius` の `r0`〜`r8` 倍、`r0` が下端で `r8` が上端、両端は 0 で丸く閉じる)をなめらかにつなぐ。
- * 太ももの太さや腕の付け根のなだらかさは、この3枚のカードの入力欄の値そのもの(`headShape.ts` と同じ作り)。
+ * 太ももの太さや腕の付け根のなだらかさは、この3枚のカードの入力欄の値そのもの(`headShape.ts` と同じ作り)。輪は `ringSpacing` の曲線で置く(24 段)。
  * 腕と脚は形が違うので、同じ構成で別の値を持つ別ノードにしている。 */
 function defineLimbShaft(config: { type: string; label: string; profile: string }): void {
   const curve = (id: string, data: Record<string, number>) => ({ id, type: 'profileCurve', data });
@@ -32,7 +32,10 @@ function defineLimbShaft(config: { type: string; label: string; profile: string 
       curve('xProfile', PROFILES[config.type].x),
       curve('depthProfile', PROFILES[config.type].depth),
       { id: 'offsetProfile', type: 'signedProfileCurve', data: PROFILES[config.type].offset },
-      { id: 'gen', type: 'loftGenerator', data: { steps: 48, segments: 48 } },
+      // 輪を置く高さの割合(`ringSpacingCurve`)。端の丸みや曲線が急に曲がる所へ輪を密に置いて、24 段で、等間隔の
+      // 48 段よりプロファイル曲線からのずれを小さくしている(腕は最大 2.9 → 0.8 mm、脚は 3.9 → 0.7 mm)。
+      { id: 'ringSpacing', type: 'ringSpacingCurve', data: RING[config.type] },
+      { id: 'gen', type: 'loftGenerator', data: { steps: 24, segments: 48 } },
       // 原点が下端の輪郭を、中心が原点になるよう半分の高さだけ下げる。
       { id: 'center', type: 'translate', data: {} },
       {
@@ -54,12 +57,18 @@ function defineLimbShaft(config: { type: string; label: string; profile: string 
       { source: 'xProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
       { source: 'depthProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
       { source: 'offsetProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'offsetZProfile' },
+      { source: 'ringSpacing', sourceHandle: 'curve', target: 'gen', targetHandle: 'ringProfile' },
       { source: 'gen', sourceHandle: 'geometry', target: 'center', targetHandle: 'geometry' },
       { source: 'negHalfHeight', sourceHandle: 'value', target: 'center', targetHandle: 'y' },
       { source: 'center', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
     ],
   });
 }
+
+const RING: Record<string, Record<string, number>> = {
+  armShaft: { r0: 0, r1: 0.015, r2: 0.0637, r3: 0.098, r4: 0.1767, r5: 0.26, r6: 0.3625, r7: 0.4837, r8: 0.6411, r9: 0.8213, r10: 0.9228, r11: 0.9857, r12: 1 },
+  legShaft: { r0: 0, r1: 0.0127, r2: 0.0745, r3: 0.1492, r4: 0.3387, r5: 0.4727, r6: 0.6098, r7: 0.7113, r8: 0.8313, r9: 0.9007, r10: 0.9545, r11: 0.9898, r12: 1 },
+};
 
 // 値はいずれも `radius` に対する比(`r1` が下端側、`r7` が上端側)。`offset` は輪を前(+Z)へずらす量。
 // 脚の `r2`〜`r6` は、参照を脚の軸に垂直な面で切った断面から直接測った値(両端の `r1`/`r7` は足・胴体と断面が融合して測れないので、探索で合わせた値)。脚の厚み(`depth`)だけは、脚全体の体積が参照に合うよう測った値を 1.02 倍している。

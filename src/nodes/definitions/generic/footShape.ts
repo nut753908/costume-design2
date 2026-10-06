@@ -30,7 +30,9 @@ defineGroupNode({
     { id: 'xProfile', type: 'profileCurve', data: { r0: 0, r1: 0.1943, r2: 0.5244, r3: 0.5246, r4: 0.5313, r5: 0.52, r6: 0.5301, r7: 0.5016, r8: 0 } },
     { id: 'depthProfile', type: 'profileCurve', data: { r0: 0, r1: 0.6668, r2: 0.689, r3: 0.7906, r4: 0.6692, r5: 0.5343, r6: 0.4415, r7: 0.3642, r8: 0 } },
     { id: 'offsetProfile', type: 'signedProfileCurve', data: { r0: 0, r1: -0.3338, r2: -0.09228, r3: -0.07915, r4: 0.0761, r5: 0.1975, r6: 0.2029, r7: 0.2375, r8: 0.25 } },
-    { id: 'gen', type: 'loftGenerator', data: { steps: 32, segments: 32 } },
+    // 輪を置く高さの割合。つま先やかかとの丸みへ輪を密に置いて、24 段で、等間隔の 32 段よりずれを小さくしている(最大 2.4 → 0.9 mm)。
+    { id: 'ringSpacing', type: 'ringSpacingCurve', data: { r0: 0, r1: 0.0187, r2: 0.0967, r3: 0.1313, r4: 0.1933, r5: 0.2302, r6: 0.3052, r7: 0.3907, r8: 0.529, r9: 0.6613, r10: 0.8103, r11: 0.9518, r12: 1 } },
+    { id: 'gen', type: 'loftGenerator', data: { steps: 24, segments: 32 } },
     { id: 'orient', type: 'rotate', data: { x: 90 } },
     {
       id: 'output',
@@ -46,6 +48,7 @@ defineGroupNode({
     { source: 'xProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
     { source: 'depthProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
     { source: 'offsetProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'offsetZProfile' },
+    { source: 'ringSpacing', sourceHandle: 'curve', target: 'gen', targetHandle: 'ringProfile' },
     { source: 'gen', sourceHandle: 'geometry', target: 'orient', targetHandle: 'geometry' },
     { source: 'orient', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
