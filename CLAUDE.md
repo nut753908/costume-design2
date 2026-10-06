@@ -46,7 +46,7 @@ WebGL に触れない React フック(zustand ストアの購読 + useMemo/useRe
 
 ### Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる
 
-Body は専用のノードタイプ・専用の描画コンポーネントを持たず、他14種のガーメントと全く同じ「`<name>Group`」パターン(`bodyGroup`)で表現されています。ボディの寸法は固定値(`src/nodes/definitions/bodyDimensionDefaults.ts` の `BODY_DIMENSIONS`)で、可変の入力はありません。配置Y座標の計算(`bodyLayout`)はトップレベル共有ノードとして1組だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされます。取り付け位置はこの `bodyLayout` が計算した5つのアンカー候補のうち1つを `anchorY` で受け取り、`garmentPlacement` が焼き込みます。内部構造の詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節、ジオメトリ関数は [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md) を参照してください。
+Body は専用のノードタイプ・専用の描画コンポーネントを持たず、他14種のガーメントと全く同じ「`<name>Group`」パターン(`bodyGroup`)で表現されています。ボディの寸法は固定値(`src/nodes/definitions/bodyDimensionDefaults.ts` の `BODY_DIMENSIONS`)で、`bodyGroup` の外部ソケットの既定値として持ちます(`bodyLayout` は同じ値を内部の `numberInput` に持つので、寸法を変えるときは両方を揃えます)。配置Y座標の計算(`bodyLayout`)はトップレベル共有ノードとして1組だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされます。取り付け位置はこの `bodyLayout` が計算した5つのアンカー候補のうち1つを `anchorY` で受け取り、`garmentPlacement` が焼き込みます。内部構造の詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節、ジオメトリ関数は [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md) を参照してください。
 
 **Body の見た目の目標は、アットゲームズ/ポケットランドのアバター「セルフィ」のようなモデルです。** 約3頭身で、大きく丸い(あごが少しすぼまった)頭・短めで前へ傾いた首・なで肩でくびれのある薄い胴(前後が幅より薄い楕円断面)・体の脇から少し外へ開き、やや前へ出した細い腕・細めで短めの脚・小さく丸い手足を持ちます。セルフィ自体は 2D イラストのアバターなので、この形を 3D で再解釈しています。寸法と比率は、元画像から画像生成 AI で起こした参照メッシュを左右で平均した形の、正面・側面・斜め・上面のシルエットと、体積に対する一致度(IoU)が最大になるように調整した値です。体型や服の形を変えるときは、この目標から外れないかを確認してください。
 

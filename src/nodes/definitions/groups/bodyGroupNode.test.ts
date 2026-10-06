@@ -10,11 +10,9 @@ import '../../definitions';
 // 共有ノード bodyLayout から外部ソケットとして受け取る(bodyGroupNode.ts のコメント参照)。
 // 胴体/頭/腕/脚の4パーツは mergeGeometry で1つのジオメトリへ結合してから単一の
 // sceneOutput へ配線しているため、描画対象は常に1パーツ(インデックス0)だけになる。
-// 寸法は内部の numberInput ノード(id は寸法名)の入力欄の値。テストではその値を差し替えた data で評価する。
-function dataWith(values: Record<string, number>) {
-  const template = getNodeType('bodyGroup').createDefaultData() as { nodes: { id: string; data: Record<string, unknown> }[] };
-  return { ...template, nodes: template.nodes.map((n) => (n.id in values ? { ...n, data: { ...n.data, value: values[n.id] } } : n)) };
-}
+// 寸法(半径・長さ・間隔)は外部ソケットで、未接続なら BODY_DIMENSIONS の値が既定値になる。
+const inputs = (values: Record<string, number>) =>
+  Object.fromEntries(Object.entries(values).map(([key, value]) => [key, { type: 'number' as const, value }]));
 
 describe('bodyGroup', () => {
   it('未接続でも結合済みの1パーツが描画対象として出力される', () => {
@@ -24,9 +22,9 @@ describe('bodyGroup', () => {
     expect(result.sceneOutputGeometry1).toBeUndefined();
   });
 
-  it('寸法 torsoRadius の値が大きくなるほど結合済みジオメトリ全体が外側に広がる', () => {
-    const narrow = getNodeType('bodyGroup').evaluate({}, dataWith({ torsoRadius: 0.2 }));
-    const wide = getNodeType('bodyGroup').evaluate({}, dataWith({ torsoRadius: 0.3 }));
+  it('torsoRadius が大きくなるほど結合済みジオメトリ全体が外側に広がる', () => {
+    const narrow = getNodeType('bodyGroup').evaluate(inputs({ torsoRadius: 0.2 }), {});
+    const wide = getNodeType('bodyGroup').evaluate(inputs({ torsoRadius: 0.3 }), {});
     const narrowGeom = narrow.sceneOutputGeometry0?.type === 'geometry' ? narrow.sceneOutputGeometry0.value : undefined;
     const wideGeom = wide.sceneOutputGeometry0?.type === 'geometry' ? wide.sceneOutputGeometry0.value : undefined;
     narrowGeom!.computeBoundingBox();
@@ -36,7 +34,7 @@ describe('bodyGroup', () => {
 
   it('首は胴体の延長として作られ、neckLength の 2.4 倍だけ胴体の上端が高くなる', () => {
     const topOf = (neckLength: number) => {
-      const result = getNodeType('bodyGroup').evaluate({}, dataWith({ torsoRadius: 0.15, torsoLength: 0.3, neckLength }));
+      const result = getNodeType('bodyGroup').evaluate(inputs({ torsoRadius: 0.15, torsoLength: 0.3, neckLength }), {});
       const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
       geom!.computeBoundingBox();
       return geom!.boundingBox!.max.y;
