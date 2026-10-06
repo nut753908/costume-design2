@@ -22,15 +22,6 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     expect(['bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
   });
 
-  it('bodyLayout が計算済みの配置Y座標を bodyGroup へ配線している(寸法は bodyGroup 内部の固定値)', () => {
-    const layoutSockets = ['legCenterY', 'waistY', 'headCenterY', 'armCenterY'];
-    for (const socket of layoutSockets) {
-      const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
-      expect(edge?.source).toBe('bodyLayout');
-      expect(edge?.sourceHandle).toBe(socket);
-    }
-  });
-
   it('ノードidに重複が無い', () => {
     const counts = new Map<string, number>();
     for (const n of initialNodes) counts.set(n.id, (counts.get(n.id) ?? 0) + 1);
@@ -117,14 +108,6 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     const after = evaluateGraph(changedNodes, graphEdges);
 
     expect(after.get('bodyLayout')).toBe(before.get('bodyLayout'));
-  });
-
-  it('bodyLayout の feetY を変えると、依存する bodyGroup は再評価されて結果が変わる', () => {
-    const before = evaluateGraph(graphNodes, graphEdges);
-    const changedNodes = graphNodes.map((n) => (n.id === 'bodyLayout' ? { ...n, data: { ...n.data, feetY: 0.3 } } : n));
-    const after = evaluateGraph(changedNodes, graphEdges);
-
-    expect(after.get('bodyGroup')?.sceneOutputGeometry0).not.toBe(before.get('bodyGroup')?.sceneOutputGeometry0);
   });
 });
 

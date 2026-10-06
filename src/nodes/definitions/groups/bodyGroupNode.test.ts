@@ -34,7 +34,7 @@ describe('bodyGroup', () => {
 
   it('首は胴体の延長として作られ、neckLength の 2.4 倍だけ胴体の上端が高くなる', () => {
     const topOf = (neckLength: number) => {
-      const result = getNodeType('bodyGroup').evaluate(inputs({ torsoRadius: 0.15, torsoLength: 0.3, neckLength }), {});
+      const result = getNodeType('bodyGroup').evaluate(inputs({ torsoRadius: 0.15, torsoLength: 0.3, neckLength, waistY: 0, headCenterY: 0, legCenterY: 0, armCenterY: 0 }), {});
       const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
       geom!.computeBoundingBox();
       return geom!.boundingBox!.max.y;

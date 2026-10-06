@@ -7,8 +7,8 @@ import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
  * `bodyGroup` もガーメントと全く同じ経路でシーンへ描画される(ルート CLAUDE.md 参照)。
  *
  * 外部ソケットのうち、寸法(半径・長さ・間隔)は `bodyDimensionDefaults.ts` の固定値を既定値に持つ
- * (ボディの寸法はここだけにあり、グループカードの入力欄から調整する)。Y座標は `bodyLayout`
- * (`state/initialGraph.ts` のトップレベル共有ノード)が計算済みの値で、`bodyGroup` 自身は配置の計算を行わない。
+ * (グループカードの入力欄から調整する)。胴体・頭・腕・脚のY座標(`legCenterY`/`waistY`/`headCenterY`/`armCenterY`)も
+ * 外部ソケットで、寸法とは連動しない固定値(寸法を変えたときは、これも手で直す)を既定値に持つ。
  *
  * 部位ごとの構成:
  * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で `extra` に首の長さの 2.4 倍を渡す)を
@@ -42,10 +42,10 @@ defineGroupNode({
           { id: 'armRadius', label: 'Arm Radius', type: 'number', default: BODY_DIMENSIONS.armRadius },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number', default: BODY_DIMENSIONS.shoulderSpacing },
           { id: 'neckLength', label: 'Neck Length', type: 'number', default: BODY_DIMENSIONS.neckLength },
-          { id: 'legCenterY', label: 'Leg Center Y', type: 'number', default: 0 },
-          { id: 'waistY', label: 'Waist Y', type: 'number', default: 0 },
-          { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 0 },
-          { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0 },
+          { id: 'legCenterY', label: 'Leg Center Y', type: 'number', default: 0.2877 },
+          { id: 'waistY', label: 'Waist Y', type: 'number', default: 0.5754 },
+          { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 1.5699999999999998 },
+          { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0.8598699999999999 },
           colorSocket('#fae6da'),
         ],
       },

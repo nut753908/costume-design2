@@ -24,17 +24,11 @@ const initialNodeDefs: Omit<Node, 'position'>[] = [
 
   // Body(3Dモデル本体)。ガーメントと同じグループノードで、胴体/頭/腕/脚を
   // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。寸法は
-  // 固定値(bodyDimensionDefaults.ts)で、配置Y座標は bodyLayout が計算済みの値を外部ソケットとして受け取る。
+  // 固定値(bodyDimensionDefaults.ts)、配置Y座標も固定値で、どちらも外部ソケットの既定値として持つ。
   { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 ];
 
-export const initialEdges: Edge[] = [
-  // bodyLayout(bodyGroup 自身のメッシュ配置に使う4出力)→ bodyGroup。
-  { id: 'e-body-group-leg-center-y', source: 'bodyLayout', sourceHandle: 'legCenterY', target: 'bodyGroup', targetHandle: 'legCenterY' },
-  { id: 'e-body-group-waist-y', source: 'bodyLayout', sourceHandle: 'waistY', target: 'bodyGroup', targetHandle: 'waistY' },
-  { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },
-  { id: 'e-body-group-arm-center-y', source: 'bodyLayout', sourceHandle: 'armCenterY', target: 'bodyGroup', targetHandle: 'armCenterY' },
-];
+export const initialEdges: Edge[] = [];
 
 const initialPositions = computeAutoLayout(
   initialNodeDefs.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data })),
