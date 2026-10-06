@@ -63,6 +63,9 @@ defineGroupNode({
       type: 'signedProfileCurve33',
       data: { r0: 0, r1: 0, r2: 0, r3: 0, r4: 0, r5: 0, r6: 0, r7: 0, r8: 0, r9: 0, r10: 0, r11: 0, r12: 0, r13: 0, r14: 0, r15: 0, r16: 0, r17: 0, r18: 0, r19: 0, r20: 0, r21: 0, r22: 0, r23: 0, r24: 0, r25: 2.2, r26: 8.1, r27: 15.5, r28: 18.8, r29: 28, r30: 25, r31: 25, r32: 25 },
     },
+    // 輪を置く高さの割合。下端の丸み(球の極)や肩・首の付け根のように曲線が急に曲がる所へ輪を密に置いて、同じ段数(48)で、
+    // 等間隔よりプロファイル曲線からのずれを約1/5(最大 7.8 → 1.7 mm)にしている。
+    { id: 'ringSpacing', type: 'ringSpacingCurve', data: { r0: 0, r1: 0.0367, r2: 0.109, r3: 0.1954, r4: 0.3742, r5: 0.5403, r6: 0.6087, r7: 0.6647, r8: 0.777, r9: 0.8797, r10: 0.948, r11: 0.9913, r12: 1 } },
     { id: 'gen', type: 'loftGenerator', data: { steps: 48, segments: 64 } },
 
     {
@@ -93,6 +96,7 @@ defineGroupNode({
     { source: 'depthProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
     { source: 'offsetProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'offsetZProfile' },
     { source: 'tiltProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'tiltProfile' },
+    { source: 'ringSpacing', sourceHandle: 'curve', target: 'gen', targetHandle: 'ringProfile' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

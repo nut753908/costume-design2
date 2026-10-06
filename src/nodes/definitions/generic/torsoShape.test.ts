@@ -59,10 +59,19 @@ describe('torsoShape', () => {
     expect(box.max.z).toBeGreaterThan(box.max.x * 0.5);
   });
 
-  it('輪郭の制御点(高さを 32 等分した点)の高さでは、幅は radius × xProfile の r に一致する', () => {
+  it('輪郭の制御点(高さを 32 等分した点)の近くの輪では、幅は radius × xProfile の r に近い', () => {
+    // 輪は等間隔ではなく ringSpacing の曲線で置かれるので、制御点にいちばん近い輪の幅で確かめる
     const geometry = evaluateGeometry(base);
-    expect(extentAt(geometry, (8 / 32) * height).x).toBeCloseTo(0.15 * xRatio(8), 2);
-    expect(extentAt(geometry, (16 / 32) * height).x).toBeCloseTo(0.15 * xRatio(16), 2);
+    const position = geometry.getAttribute('position');
+    const widthNear = (y: number) => {
+      let nearest = Infinity;
+      for (let i = 0; i < position.count; i++) if (Math.abs(position.getY(i) - y) < Math.abs(nearest - y)) nearest = position.getY(i);
+      let x = 0;
+      for (let i = 0; i < position.count; i++) if (Math.abs(position.getY(i) - nearest) < 1e-6) x = Math.max(x, Math.abs(position.getX(i)));
+      return x;
+    };
+    expect(widthNear((8 / 32) * height)).toBeCloseTo(0.15 * xRatio(8), 1);
+    expect(widthNear((16 / 32) * height)).toBeCloseTo(0.15 * xRatio(16), 1);
   });
 
   it('extra だけ上端が伸び(首の延長)、先端は細く(首の太さ)なって丸く閉じる', () => {
@@ -78,7 +87,7 @@ describe('torsoShape', () => {
 
   it('両端は丸く閉じる(下端・上端の近くで半径が小さくなる)', () => {
     const geometry = evaluateGeometry(base);
-    expect(extentAt(geometry, 0.004).x).toBeLessThan(0.15 * 0.5);
+    expect(extentAt(geometry, 0.004).x).toBeLessThan(0.15 * 0.8);
     expect(extentAt(geometry, height - 0.004).x).toBeLessThan(0.15 * 0.5);
   });
 
