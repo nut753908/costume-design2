@@ -100,8 +100,8 @@ describe('migrateGroupToTemplate', () => {
     const migrated = migrateGroupToTemplate('bodyDimensionsGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'output')?.data.sockets as { id: string; default: unknown }[];
     expect(sockets.find((sock) => sock.id === 'headRadius')?.default).toBe(0.5);
-    // 既定値を持たないソケットは既定値を持たないまま
-    expect(sockets.find((sock) => sock.id === 'legHeight')?.default).toBeUndefined();
+    // 編集していないソケットはテンプレートの既定値のまま
+    expect(sockets.find((sock) => sock.id === 'legHeight')?.default).toBe(0.5754);
   });
 
   it('値の置き場所が別のノードへ移っている場合は追跡せず、最新のテンプレートの既定値になる', () => {

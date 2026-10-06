@@ -18,9 +18,6 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 // 専念するため)。ガーメントは各 <name>GroupNode.ts の定義が残っており、ノード追加メニューから
 // 追加できる。
 const initialNodeDefs: Omit<Node, 'position'>[] = [
-  // Build/Height/Shoulder の各スケールは `bodyDimensionsGroup` の外部ソケット
-  // (`buildScale`/`heightScale`/`shoulderScale`、未接続時の既定値1)として、この階層では
-  // 配線せずグループカードの入力欄から調整する(nodes/CLAUDE.md の「グループノード」節参照)。
   // ボディの寸法(11個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
   // アンカー候補)を計算する2つの共有ノード。bodyGroup へ普通の外部
   // ソケットとして渡す(nodes/CLAUDE.md の「グループノード」節参照)。

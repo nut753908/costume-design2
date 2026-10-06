@@ -8,7 +8,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// hat は headRadius が bodyDimensionsGroup の中で buildScale の影響を受けないため、他の
+// hat は体の太さへの追従(numberMultiply の倍率)の対象外のため、他の
 // ガーメントと違い Body Build 入力を持たない。つばの半径は headRadius × Brim Ratio(既定 1.25、
 // 既定の headRadius 0.28 で 0.35)で決まる(hatGroupNode.ts のコメント参照)。
 // `Up` 出力の easedLatheCurve は始点(つば=brimRadius、y=0)→終点(クラウン=

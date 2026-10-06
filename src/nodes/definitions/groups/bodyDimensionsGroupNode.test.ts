@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
-// bodyDimensionsGroup の埋め込みサブグラフが参照する numberInput/numberMultiply を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
 
@@ -8,7 +7,7 @@ function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// buildScale/heightScale/shoulderScale はどれも groupInput の外部ソケットで、未接続なら既定値1になる。
+// 各値は `groupOutput` のソケットの入力欄の値(基準値)がそのまま出力される。
 const BASE = {
   legHeight: 0.5754,
   legRadius: 0.0691,
@@ -24,7 +23,7 @@ const BASE = {
 };
 
 describe('bodyDimensionsGroup', () => {
-  it('未接続なら heightScale/buildScale/shoulderScale が1として基準値(BASE_DIMENSIONS)がそのまま出力される', () => {
+  it('基準値がそのまま出力される', () => {
     const result = getNodeType('bodyDimensionsGroup').evaluate({}, {});
     expect(result.legHeight).toEqual(num(BASE.legHeight));
     expect(result.legRadius).toEqual(num(BASE.legRadius));
@@ -37,33 +36,5 @@ describe('bodyDimensionsGroup', () => {
     expect(result.shoulderSpacing).toEqual(num(BASE.shoulderSpacing));
     expect(result.neckLength).toEqual(num(BASE.neckLength));
     expect(result.neckRadius).toEqual(num(BASE.neckRadius));
-  });
-
-  it('buildScale は半径・間隔(shoulderSpacing含む)をスケールし、headRadius・縦方向には影響しない', () => {
-    const result = getNodeType('bodyDimensionsGroup').evaluate({ buildScale: num(2) }, {});
-    expect(result.legRadius).toEqual(num(BASE.legRadius * 2));
-    expect(result.torsoRadius).toEqual(num(BASE.torsoRadius * 2));
-    expect(result.armRadius).toEqual(num(BASE.armRadius * 2));
-    expect(result.shoulderSpacing).toEqual(num(BASE.shoulderSpacing * 2));
-    expect(result.neckRadius).toEqual(num(BASE.neckRadius * 2));
-    expect(result.headRadius).toEqual(num(BASE.headRadius));
-    expect(result.legHeight).toEqual(num(BASE.legHeight));
-  });
-
-  it('heightScale は縦方向の長さ(legHeight/torsoLength/armLength/neckLength)だけをスケールする', () => {
-    const result = getNodeType('bodyDimensionsGroup').evaluate({ heightScale: num(1.2) }, {});
-    expect(result.legHeight).toEqual(num(BASE.legHeight * 1.2));
-    expect(result.torsoLength).toEqual(num(BASE.torsoLength * 1.2));
-    expect(result.armLength).toEqual(num(BASE.armLength * 1.2));
-    expect(result.neckLength).toEqual(num(BASE.neckLength * 1.2));
-    expect(result.legRadius).toEqual(num(BASE.legRadius));
-    expect(result.shoulderSpacing).toEqual(num(BASE.shoulderSpacing));
-  });
-
-  it('shoulderScale は shoulderSpacing だけをスケールする', () => {
-    const result = getNodeType('bodyDimensionsGroup').evaluate({ shoulderScale: num(1.5) }, {});
-    expect(result.shoulderSpacing).toEqual(num(BASE.shoulderSpacing * 1.5));
-    expect(result.legHeight).toEqual(num(BASE.legHeight));
-    expect(result.torsoRadius).toEqual(num(BASE.torsoRadius));
   });
 });

@@ -18,10 +18,7 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
     // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
     // id の存在自体をここで保証する。肌色は bodyGroup の外部ソケット `color` の既定値として
-    // 持つため、ここには現れない(bodyGroupNode.test.ts 参照)。Body Height/
-    // Body Shoulder は bodyDimensions からしか参照されない単独パラメータのため、この階層には
-    // 現れず bodyDimensionsGroup 内部の numberInput として持つ(bodyDimensionsGroupNode.test.ts
-    // 参照)。
+    // 持つため、ここには現れない(bodyGroupNode.test.ts 参照)。
     expect(['bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
   });
 
@@ -128,11 +125,17 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     expect(after.get('bodyDimensions')).toBe(before.get('bodyDimensions'));
   });
 
-  it('bodyDimensions の buildScale を変えると、依存する bodyGroup は再評価されて結果が変わる', () => {
+  it('bodyDimensions の torsoRadius の値を変えると、依存する bodyGroup は再評価されて結果が変わる', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
-    const changedNodes = graphNodes.map((n) =>
-      n.id === 'bodyDimensions' ? { ...n, data: { ...n.data, buildScale: 1.2 } } : n,
+    const template = getNodeType('bodyDimensionsGroup').createDefaultData?.() as {
+      nodes: { id: string; data: { sockets?: { id: string; default?: number }[] } }[];
+    };
+    const nodes = template.nodes.map((inner) =>
+      inner.id === 'output'
+        ? { ...inner, data: { sockets: inner.data.sockets!.map((sock) => (sock.id === 'torsoRadius' ? { ...sock, default: 0.2 } : sock)) } }
+        : inner,
     );
+    const changedNodes = graphNodes.map((n) => (n.id === 'bodyDimensions' ? { ...n, data: { ...n.data, ...template, nodes } } : n));
     const after = evaluateGraph(changedNodes, graphEdges);
 
     expect(after.get('bodyGroup')?.sceneOutputGeometry0).not.toBe(before.get('bodyGroup')?.sceneOutputGeometry0);

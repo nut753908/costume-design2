@@ -2,8 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** hat は bodyBuild によるスケーリング対象外(headRadius が `bodyDimensionsGroup` の中で
- * buildScale の影響を受けないため)なので Body Build 入力は無い。頭に被さるつばの半径は、
+/** hat は体の太さへの追従(`numberMultiply` の倍率)の対象外なので Body Build 入力は無い。頭に被さるつばの半径は、
  * 頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と同じ値)に Brim Ratio を掛けて
  * 求める(`brimRadiusCalc`)ため、頭の大きさを変えるとつばも追従する。
  * profile(easedLatheCurve)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+

@@ -18,7 +18,7 @@ import { defineGroupNode } from '../groupNodeFactory';
  * - `gen`(`loftGenerator`)が3本の曲線から、断面が楕円の回転体のような形を1つのジオメトリとして作る。
  *   腰の丸み・くびれ・胸・なで肩・首の形と胴の薄さは、3枚のカードの入力欄の値そのもの。
  *
- * 外部の半径 `radius` に比例するので、体の太さ(Build)を変えると形が相似のまま追従する。 */
+ * 外部の半径 `radius` に比例するので、`torsoRadius` を変えると形が相似のまま追従する。 */
 defineGroupNode({
   type: 'torsoShape',
   label: 'Torso Shape',

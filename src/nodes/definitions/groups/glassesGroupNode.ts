@@ -2,7 +2,7 @@ import { defineGroupNode } from '../groupNodeFactory';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 import type { GraphEdge } from '../../types';
 
-/** glasses は bodyBuild によるスケーリング対象外の独立したスタイル寄りの寸法のみを持つ。
+/** glasses は体の太さへの追従(`numberMultiply` の倍率)の対象外の独立したスタイル寄りの寸法のみを持つ。
  * 3つのパーツ(レンズ・テンプル・ブリッジ)は、それぞれ別のグループノード
  * (`glassesLensPair`/`glassesTemplePair`/`glassesBridge`、`nodes/definitions/generic/`)に
  * 分けて作り、3つの geometry を `mergeAll`(`mergeGeometry`)で結合する。
