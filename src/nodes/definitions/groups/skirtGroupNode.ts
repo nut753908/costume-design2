@@ -1,8 +1,8 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { fixedBodyRadius, latheBody } from '../garmentParts';
+import { radiusInput, latheBody } from '../garmentParts';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
-/** skirtWaistScale(numberInput、ボディの基準寸法 × 倍率の固定値)+profile(easedLatheCurve)+gen(latheGenerator)+
+/** skirtWaistScale(numberInput、固定値)+profile(easedLatheCurve)+gen(latheGenerator)+
  * skirtMaterial(toonMaterial)+placement(translate)+
  * sceneOut(sceneOutput)の8ノード(+裾半径を求める `flaredRadius`)を1枚にまとめたグループノード。
  * Waist Radius/Length/Flare/Segments は他のガーメントと共有されない単独パラメータの
@@ -13,7 +13,7 @@ import { colorSocket, garmentOutput } from '../garmentOutput';
  * 配線)が求め、コード側の式としては持たない。 */
 const output = garmentOutput({ y: 0.7654, geometry: 'gen' });
 
-const scale = fixedBodyRadius('torsoRadius', 1.15);
+const scale = radiusInput(0.17664);
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 12, startRadius: 'scale', endRadius: 'hemRadiusCalc', distance: 0.55, segments: 28 });
 
 defineGroupNode({

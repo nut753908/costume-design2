@@ -1,10 +1,9 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** bag の寸法の大半は独立したスタイル寄りの値だが、体の側面の位置(Hip Offset、胴体半径と
  * 同程度)と前面の深さ(`bagFrontDepthCalc`)だけは、胴体の壁の外側に置く必要があるため、
- * ボディの胴体半径に倍率を掛けた固定値(`hipOffsetScaled`/`bagFrontDepthCalc`、`numberInput`)にする。
+ * 固定値(`hipOffsetScaled`/`bagFrontDepthCalc`、`numberInput`)にする。
  * ストラップ・バッグ本体のどちらも完全にノードグラフへ展開されている。ストラップは
  * `alignedBoxGenerator`(`nodes/definitions/generic/alignedBoxGenerator.ts`、`geometry/
  * alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
@@ -38,8 +37,8 @@ defineGroupNode({
       },
     },
     { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14} },
-    { id: 'bagFrontDepthCalc', type: 'numberInput', data: { value: 1.4 * BODY_DIMENSIONS.torsoRadius } },
-    { id: 'hipOffsetScaled', type: 'numberInput', data: { value: BODY_DIMENSIONS.torsoRadius } },
+    { id: 'bagFrontDepthCalc', type: 'numberInput', data: { value: 0.21504 } },
+    { id: 'hipOffsetScaled', type: 'numberInput', data: { value: 0.1536 } },
     { id: 'strapGen', type: 'alignedBoxGenerator', data: { width: 0.04, thickness: 0.015, startX: 0.08, startZ: 0.05 } },
     { id: 'boxGen', type: 'boxGenerator', data: { width: 0.16, depth: 0.08 } },
     { id: 'negatedHipOffset', type: 'numberNegate', data: {} },

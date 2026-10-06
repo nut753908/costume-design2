@@ -3,14 +3,13 @@ import { getNodeType } from '../../registry';
 // hatGroup の埋め込みサブグラフが参照する numberInput/easedLatheCurve/latheGenerator/
 // toonMaterial/translate/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
-// つばの半径はボディの基準の頭半径 × 1.25 の固定値(hatGroupNode.ts のコメント参照)。
+// つばの半径は固定値(0.37075)(hatGroupNode.ts のコメント参照)。
 // `Up` 出力の easedLatheCurve は始点(つば=brimRadius、y=0)→終点(クラウン=
 // crownRadius、y=height)まで半径が単調に変化するため、bounding box の X/Z 半径は必ず
 // max(brimRadius, crownRadius) に一致する(既定値では brim の方が大きい)。
 describe('hatGroup', () => {
-  const DEFAULTS = { brimRadius: BODY_DIMENSIONS.headRadius * 1.25, crownRadius: 0.02, height: 0.35, placementY: 1.67 };
+  const DEFAULTS = { brimRadius: 0.37075, crownRadius: 0.02, height: 0.35, placementY: 1.67 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('hatGroup').evaluate({}, {});

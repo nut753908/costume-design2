@@ -4,7 +4,6 @@ import { getNodeType } from '../../registry';
 // latheGenerator/mirrorPair/toonMaterial/translate/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 /** 内部の numberInput(`id`)の入力欄の値だけを差し替えた data で評価する。 */
 function evaluateWithInput(type: string, id: string, value: number) {
@@ -15,12 +14,13 @@ function evaluateWithInput(type: string, id: string, value: number) {
 }
 
 // gloves は手袋1つぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Wrist Radius、
-// 終点=Hand Radius、どちらもボディの基準の腕の半径 × 倍率の固定値)を mirrorPair で ±Arm Spacing だけ
+// 終点=Hand Radius、どちらも固定値)を mirrorPair で ±Arm Spacing だけ
 // X方向に離した左右対称ペアへまとめる(glovesGroupNode.ts のコメント参照)。mirrorPair は
 // 元のジオメトリ(半径 r で X=0中心)を ±offset へ平行移動するだけなので、結合後の
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
-  const ARM_RADIUS = BODY_DIMENSIONS.armRadius;
+  const ARM_SPACING = 0.1443;
+  const ARM_RADIUS = 0.0523;
   const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, placementY: 0.66572 };
   const maxRadius = Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius);
 
@@ -34,7 +34,7 @@ describe('glovesGroup', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(BODY_DIMENSIONS.shoulderSpacing + maxRadius, 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(ARM_SPACING + maxRadius, 5);
   });
 
   it('armSpacing の値を変えると左右の間隔になる', () => {

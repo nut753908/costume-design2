@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import './definitions';
 import { getNodeType } from './registry';
 import { defineGroupNode } from './definitions/groupNodeFactory';
-import { BODY_DIMENSIONS } from './definitions/bodyDimensionDefaults';
 import type { GraphNode } from './types';
 import {
   fingerprintGroupStructure,
@@ -30,7 +29,7 @@ defineGroupNode({
   internalEdges: [],
 });
 
-const SKIRT_SCALE = BODY_DIMENSIONS.torsoRadius * 1.15;
+const SKIRT_SCALE = 0.17664;
 const n = (id: string, type: string, data: Record<string, unknown> = {}): GraphNode => ({ id, type, data });
 
 describe('fingerprintGroupStructure', () => {

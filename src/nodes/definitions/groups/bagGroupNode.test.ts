@@ -4,7 +4,6 @@ import { getNodeType } from '../../registry';
 // numberMultiply/translate/mergeGeometry/toonMaterial/sceneOutput を
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 // ストラップ(ノードグラフ側の alignedBoxGenerator)とバッグ本体(ノードグラフ側の
 // boxGenerator+translate、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
@@ -13,7 +12,7 @@ import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 describe('bagGroup', () => {
   // ガーメントを置く高さ(`placement`(translate)の `y`)。
   const PLACEMENT_Y = 1.2169;
-  const DEFAULTS = { torsoRadius: BODY_DIMENSIONS.torsoRadius, hipOffsetRatio: 1, frontDepthRatio: 1.4, drop: 0.42, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
+  const DEFAULTS = { torsoRadius: 0.1536, hipOffsetRatio: 1, frontDepthRatio: 1.4, drop: 0.42, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('bagGroup').evaluate({}, {});
@@ -43,7 +42,7 @@ describe('bagGroup', () => {
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom + PLACEMENT_Y, 2);
   });
 
-  it('バッグ本体は bagFrontDepthCalc(= 1.4 × ボディの基準の胴体半径、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
+  it('バッグ本体は bagFrontDepthCalc(固定値 0.21504、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
     // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translate の Z への配線が
     // 正しいことの検証になる。

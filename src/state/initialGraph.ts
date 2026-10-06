@@ -19,8 +19,8 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 // 追加できる。
 const initialNodeDefs: Omit<Node, 'position'>[] = [
   // Body(3Dモデル本体)。ガーメントと同じグループノードで、胴体/頭/腕/脚を
-  // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。寸法は
-  // 固定値(bodyDimensionDefaults.ts)、配置Y座標も固定値で、どちらも外部ソケットの既定値として持つ。
+  // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。
+  // 寸法も配置Y座標も固定値で、どちらも外部ソケットの既定値として持つ。
   { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 ];
 

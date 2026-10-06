@@ -1,10 +1,10 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { fixedBodyRadius } from '../garmentParts';
+import { radiusInput } from '../garmentParts';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** necktie の結び目・ブレードの大きさはスタイル寄りの独立した寸法だが、前面の深さ
  * (`scale`)だけは、胴体の壁より前に出す必要があるため、他のガーメントの「体に触れる半径」と
- * 同じくボディの胴体半径に倍率を掛けた固定値にする。
+ * 同じく固定値(`numberInput`)にする。
  * 全体は完全にノードグラフへ展開されている: 結び目(`knotGen`、`boxGenerator`)は
  * `knotTranslate`(`translate`)で `(0, -knotHeight/2, frontDepth)` へ置き、ブレード(`bladeGen`、
  * `taperedRectTubeGenerator`)は結び目の下端 `(0, -knotHeight, frontDepth)` から
@@ -16,7 +16,7 @@ import { colorSocket, garmentOutput } from '../garmentOutput';
 // 結び目を肩の頂点より少し下(服の襟ぐりの底)に置く。
 const output = garmentOutput({ y: 1.1769, geometry: 'merge' });
 
-const scale = fixedBodyRadius('torsoRadius', 1.15);
+const scale = radiusInput(0.17664);
 
 defineGroupNode({
   type: 'necktieGroup',

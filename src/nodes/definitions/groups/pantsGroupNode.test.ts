@@ -4,7 +4,6 @@ import { getNodeType } from '../../registry';
 // latheGenerator/mirrorPair/toonMaterial/translate/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 /** 内部の numberInput(`id`)の入力欄の値だけを差し替えた data で評価する。 */
 function evaluateWithInput(type: string, id: string, value: number) {
@@ -14,14 +13,13 @@ function evaluateWithInput(type: string, id: string, value: number) {
   return def.evaluate({}, { ...data, nodes });
 }
 
-// pants は脚1本ぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Waist Radius(BODY_DIMENSIONS.torsoRadius × 倍率、脚の半径 × 1.1 を下回らない)、
-// 終点=Hem Radius(BODY_DIMENSIONS.legRadius × 倍率)。いずれも固定値)を mirrorPair で ±Leg Spacing だけ
-// X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing は BODY_DIMENSIONS.legSpacing の固定値。
+// pants は脚1本ぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Waist Radius(固定値、脚側の下限 `waistMin` を下回らない)、
+// 終点=Hem Radius(固定値))を mirrorPair で ±Leg Spacing だけ
+// X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing も固定値。
 describe('pantsGroup', () => {
-  const DEFAULTS = { waistRatio: 0.62, waistMinRatio: 1.1, hemRatio: 0.91, inseam: 1.04, y: 0.6754 };
-  const { torsoRadius, legRadius } = BODY_DIMENSIONS;
-  const waistRadius = Math.max(DEFAULTS.waistRatio * torsoRadius, DEFAULTS.waistMinRatio * legRadius);
-  const maxRadius = Math.max(waistRadius, DEFAULTS.hemRatio * legRadius);
+  const DEFAULTS = { waistRadius: 0.095232, waistMinRadius: 0.07601, hemRadius: 0.062881, legSpacing: 0.1109, inseam: 1.04, y: 0.6754 };
+  const waistRadius = Math.max(DEFAULTS.waistRadius, DEFAULTS.waistMinRadius);
+  const maxRadius = Math.max(waistRadius, DEFAULTS.hemRadius);
 
   it('未接続でも描画対象として出力される', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
@@ -33,10 +31,10 @@ describe('pantsGroup', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(BODY_DIMENSIONS.legSpacing + maxRadius, 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius, 5);
   });
 
-  it('legRadius × 倍率の Hem Radius が、裾(最下端)の半径になる', () => {
+  it('固定値の Hem Radius が、裾(最下端)の半径になる', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     const position = geom!.getAttribute('position');
@@ -45,9 +43,9 @@ describe('pantsGroup', () => {
     // 最下端の頂点のうち右脚(x > 0)の、脚の中心(x = +legSpacing)からの最大の距離が裾の半径。
     let hem = 0;
     for (let i = 0; i < position.count; i++) {
-      if (position.getX(i) > 0 && Math.abs(position.getY(i) - minY) < 1e-6) hem = Math.max(hem, Math.abs(position.getX(i) - BODY_DIMENSIONS.legSpacing));
+      if (position.getX(i) > 0 && Math.abs(position.getY(i) - minY) < 1e-6) hem = Math.max(hem, Math.abs(position.getX(i) - DEFAULTS.legSpacing));
     }
-    expect(hem).toBeCloseTo(DEFAULTS.hemRatio * legRadius, 4);
+    expect(hem).toBeCloseTo(DEFAULTS.hemRadius, 4);
   });
 
   it('legSpacing の値を変えると左右の間隔がそのまま最大Xへ反映される', () => {

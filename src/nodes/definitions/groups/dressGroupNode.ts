@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { fixedBodyRadius, shoulderedBody } from '../garmentParts';
+import { radiusInput, shoulderedBody } from '../garmentParts';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** scale(numberInput、胸の半径)+hemRadiusCalc(flaredRadius、裾半径 = 肩の半径 × (1 + flare))+
@@ -7,12 +7,12 @@ import { colorSocket, garmentOutput } from '../garmentOutput';
  * `shoulderedBody()`)+gen(ringGridGenerator、ネックラインを彫り込む)+material(toonMaterial)+
  * placement(translate)+sceneOut(sceneOutput)を1枚に
  * まとめたグループノード。裾半径は肩の半径から導出する。
- * 半径(ボディの基準寸法 × 倍率の固定値、`fixedBodyRadius()`)/Flare/Length/Neckline/Neckline Depth は他の
+ * 半径(固定値)/Flare/Length/Neckline/Neckline Depth は他の
  * ガーメントと共有されない単独パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。 */
 const output = garmentOutput({ y: 1.2169, geometry: 'gen' });
 
-const scale = fixedBodyRadius('torsoRadius', 1.12);
-const body = shoulderedBody({ length: 0.9, hemRadius: 'hemRadiusCalc', neckOpeningRatio: 1.8 });
+const scale = radiusInput(0.172032);
+const body = shoulderedBody({ length: 0.9, hemRadius: 'hemRadiusCalc', neckOpening: 0.0945 });
 
 defineGroupNode({
   type: 'dressGroup',

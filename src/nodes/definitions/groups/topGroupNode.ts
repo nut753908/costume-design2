@@ -1,6 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { fixedBodyRadius, shoulderedBody } from '../garmentParts';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
+import { radiusInput, shoulderedBody } from '../garmentParts';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** profile(shoulderedProfile、肩の丸みで首まわりまで閉じた筒、`garmentParts.ts` の `shoulderedBody()`)+
@@ -9,12 +8,12 @@ import { colorSocket, garmentOutput } from '../garmentOutput';
  * 袖は腕を覆うよう、横位置に体の肩幅(外部ソケット `shoulderSpacing`、腕の中心と同じ値)を使う。
  * 袖なしにしたい場合は `sleeveTranslate → merge` の配線を切る(`mergeGeometry` は1つだけでもそのまま通す)。
  * Sleeve Length を 0 にするとチューブが根元で潰れるだけで頂点が残るため、min は 0 にしない。
- * 袖の太さ(`sleeveScale`)・袖の付け根の下がり(`sleeveDrop`)・胴体と首の半径は、ボディの基準寸法 × 倍率の固定値。 */
+ * 袖の太さ(`sleeveScale`)・袖の付け根の下がり(`sleeveDrop`)・胴体と首の半径は、固定値。 */
 const output = garmentOutput({ y: 1.2169, geometry: 'merge' });
 
-const scale = fixedBodyRadius('torsoRadius', 1.12);
-const sleeveScale = fixedBodyRadius('armRadius', 1.25, 'sleeveScale');
-const body = shoulderedBody({ length: 0.5, hemRadius: 'scale', neckOpeningRatio: 1.8 });
+const scale = radiusInput(0.172032);
+const sleeveScale = radiusInput(0.065375, 'sleeveScale');
+const body = shoulderedBody({ length: 0.5, hemRadius: 'scale', neckOpening: 0.0945 });
 
 defineGroupNode({
   type: 'topGroup',
@@ -30,7 +29,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'shoulderSpacing', type: 'numberInput', data: { value: BODY_DIMENSIONS.shoulderSpacing } },
+    { id: 'shoulderSpacing', type: 'numberInput', data: { value: 0.1443 } },
     ...scale.nodes,
     ...sleeveScale.nodes,
     { id: 'neckline', type: 'necklineShapes', data: {} },
@@ -39,7 +38,7 @@ defineGroupNode({
     { id: 'sleeveGen', type: 'sleevePair', data: { sleeveLength: 0.18 } },
     // 袖の付け根を、腕の上端の関節の球(腕の付け根は肩の頂点から torsoRadius × 0.8 下)を覆い、袖の上端の球が服の肩の線から
     // 出ない高さまで下げる。
-    { id: 'sleeveDrop', type: 'numberInput', data: { value: BODY_DIMENSIONS.torsoRadius * -0.7 } },
+    { id: 'sleeveDrop', type: 'numberInput', data: { value: -0.10752 } },
     { id: 'sleeveTranslate', type: 'translate', data: {} },
     { id: 'merge', type: 'mergeGeometry', data: {} },
     ...output.nodes,

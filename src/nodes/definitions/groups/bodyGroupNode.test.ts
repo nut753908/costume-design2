@@ -10,7 +10,7 @@ import '../../definitions';
 // (bodyGroupNode.ts のコメント参照)。
 // 胴体/頭/腕/脚の4パーツは mergeGeometry で1つのジオメトリへ結合してから単一の
 // sceneOutput へ配線しているため、描画対象は常に1パーツ(インデックス0)だけになる。
-// 寸法(半径・長さ・間隔)は外部ソケットで、未接続なら BODY_DIMENSIONS の値が既定値になる。
+// 寸法(半径・長さ・間隔)は外部ソケットで、未接続なら固定値が既定値になる。
 const inputs = (values: Record<string, number>) =>
   Object.fromEntries(Object.entries(values).map(([key, value]) => [key, { type: 'number' as const, value }]));
 

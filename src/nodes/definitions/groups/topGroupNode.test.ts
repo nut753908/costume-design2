@@ -3,10 +3,9 @@ import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // topGroup の埋め込みサブグラフが参照する numberInput/
 // translate/easedLatheCurve/ringGridGenerator/sleevePair を含め、全ノードタイプを登録する。
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
-// topGroup は Top 本体と袖を1つのガーメントとして持つ。胴体半径(BODY_DIMENSIONS.torsoRadius × 1.12)が
+// topGroup は Top 本体と袖を1つのガーメントとして持つ。胴体半径(固定値 0.172032)が
 // Top の胴体半径と袖の付け根半径の両方に渡る。
 describe('topGroup', () => {
   /** 内部の gen → merge の配線を切り、袖だけを描画させたときのジオメトリ。 */
@@ -26,30 +25,30 @@ describe('topGroup', () => {
     return geom!.boundingBox!;
   };
 
-  it('Top の胴体半径は BODY_DIMENSIONS.torsoRadius × 1.12 の固定値で、袖の横位置は shoulderSpacing で決まる', () => {
+  it('Top の胴体半径は固定値で、袖の横位置は shoulderSpacing で決まる', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({}, {});
-      expect(chestRowRadius(spy)).toBeCloseTo(BODY_DIMENSIONS.torsoRadius * 1.12, 10);
+      expect(chestRowRadius(spy)).toBeCloseTo(0.172032, 10);
     } finally {
       spy.mockRestore();
     }
     const wide = sleevesOnly(0.25);
-    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo(0.25 - BODY_DIMENSIONS.shoulderSpacing, 5);
+    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo(0.25 - 0.1443, 5);
   });
 
-  it('最上段は、BODY_DIMENSIONS.neckRadius × 1.8 の首まわりの開口', () => {
+  it('最上段は、固定値(0.0945)の首まわりの開口', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('topGroup').evaluate({}, {});
       const rows = spy.mock.calls[0][0] as { radius: number }[];
-      expect(rows[0].radius).toBeCloseTo(BODY_DIMENSIONS.neckRadius * 1.8, 10);
+      expect(rows[0].radius).toBeCloseTo(0.0945, 10);
     } finally {
       spy.mockRestore();
     }
   });
 
-  it('袖の付け根は BODY_DIMENSIONS.torsoRadius × 0.7 だけ下がる(腕の上端の関節を覆い、肩の線から出ない高さ)', () => {
+  it('袖の付け根は `sleeveDrop`(-0.10752)だけ下がる(腕の上端の関節を覆い、肩の線から出ない高さ)', () => {
     const def = getNodeType('topGroup');
     const data = def.createDefaultData() as { nodes: { id: string; data: Record<string, unknown> }[]; edges: { source: string; target: string }[] };
     const sleeveMinY = (drop: number) => {
@@ -60,7 +59,7 @@ describe('topGroup', () => {
       geom!.computeBoundingBox();
       return geom!.boundingBox!.min.y;
     };
-    expect(sleeveMinY(-BODY_DIMENSIONS.torsoRadius * 0.7)).toBeCloseTo(sleeveMinY(0) - BODY_DIMENSIONS.torsoRadius * 0.7, 5);
+    expect(sleeveMinY(-0.10752)).toBeCloseTo(sleeveMinY(0) - 0.10752, 5);
   });
 
   it('Top と袖は1つのジオメトリへ結合され、sceneOutputGeometry0/sceneOutputMaterial0 の1組だけが出力される(取り付け位置は `placement` の `y` が内部で消費して座標へ焼き込む)', () => {

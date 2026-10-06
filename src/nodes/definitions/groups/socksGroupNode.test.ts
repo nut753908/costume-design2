@@ -4,14 +4,12 @@ import { getNodeType } from '../../registry';
 // latheGenerator/mirrorPair/toonMaterial/translate/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 // socks は靴下1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Ankle Radius(y=0)、
-// 終点=Calf Radius(y=Height)、どちらも BODY_DIMENSIONS.legRadius × 倍率の固定値)を mirrorPair で
+// 終点=Calf Radius(y=Height)、どちらも固定値)を mirrorPair で
 // ±Leg Spacing だけ X方向に離した左右対称ペアへまとめる(socksGroupNode.ts のコメント参照)。
 describe('socksGroup', () => {
-  const { legRadius } = BODY_DIMENSIONS;
-  const DEFAULTS = { ankleRadius: 0.92 * legRadius, calfRadius: 0.95 * legRadius, height: 0.22, y: 0.09 };
+  const DEFAULTS = { ankleRadius: 0.063572, calfRadius: 0.065645, legSpacing: 0.1109, height: 0.22, y: 0.09 };
   const maxRadius = Math.max(DEFAULTS.ankleRadius, DEFAULTS.calfRadius);
 
   it('未接続でも描画対象として出力される', () => {
@@ -24,7 +22,7 @@ describe('socksGroup', () => {
     const result = getNodeType('socksGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(BODY_DIMENSIONS.legSpacing + maxRadius, 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius, 5);
   });
 
   it('足の上(取り付け位置 y、既定0.09)から Height ぶん上(+Y、ふくらはぎ側)に伸びる', () => {

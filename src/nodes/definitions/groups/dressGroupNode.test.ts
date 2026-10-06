@@ -4,15 +4,14 @@ import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // dressGroup の埋め込みサブグラフが参照する numberInput/colorInput/numberMultiply/
 // easedLatheCurve/ringGridGenerator/toonMaterial/translate/sceneOutput を含め、全ノードタイプを登録する。
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
 // dress は easedLatheCurve(肩→裾の半径)→ ringGridGenerator(geometry/ringGrid.ts による
 // ネックライン彫り込み)で組まれる(dressGroupNode.ts のコメント参照)。Torso Radius は
-// BODY_DIMENSIONS.torsoRadius × 1.12、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
+// 固定の胸の半径(0.172032)、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('dressGroup', () => {
-  const DEFAULTS = { torsoRadius: 1.12 * BODY_DIMENSIONS.torsoRadius, hemRadius: 1.12 * BODY_DIMENSIONS.torsoRadius * 1.3, length: 0.9, necklineDepth: 0.02 };
+  const DEFAULTS = { torsoRadius: 0.172032, hemRadius: 0.172032 * 1.3, length: 0.9, necklineDepth: 0.02 };
 
   /** 直近の buildRingGridGeometry() 呼び出しの引数を、DEFAULTS と同じ名前の値へ戻す。 */
   function ringGridArgs(spy: { mock: { calls: unknown[][] } }) {

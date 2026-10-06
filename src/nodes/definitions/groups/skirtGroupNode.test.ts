@@ -4,16 +4,15 @@ import { getNodeType } from '../../registry';
 // easedLatheCurve/latheGenerator/toonMaterial/translate/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
-// skirt は geometry/skirt.ts のような専用の build*Geometry() を持たず、waistRadius(= BODY_DIMENSIONS.torsoRadius × 倍率の固定値)→
+// skirt は geometry/skirt.ts のような専用の build*Geometry() を持たず、waistRadius(固定値)→
 // hemRadius(= waistRadius × (1 + flare))という裾半径の導出も含めてすべて可視のノードグラフへ
 // 展開されている(skirtGroupNode.ts のコメント参照)。`Down` 出力の easedLatheCurve の
 // 半径は始点(waistRadius)→終点(hemRadius)まで単調に変化するため、LatheGeometry の
 // bounding box の X/Z 半径は必ず max(waistRadius, hemRadius) に一致する(latheProfile.ts 参照)。
 describe('skirtGroup', () => {
-  const DEFAULTS = { waistRatio: 1.15, length: 0.55, flare: 0.6, y: 0.7654 };
-  const hemRadius = BODY_DIMENSIONS.torsoRadius * DEFAULTS.waistRatio * (1 + DEFAULTS.flare);
+  const DEFAULTS = { waistRadius: 0.17664, length: 0.55, flare: 0.6, y: 0.7654 };
+  const hemRadius = DEFAULTS.waistRadius * (1 + DEFAULTS.flare);
 
   it('未接続でも描画対象として出力される', () => {
     const result = getNodeType('skirtGroup').evaluate({}, {});

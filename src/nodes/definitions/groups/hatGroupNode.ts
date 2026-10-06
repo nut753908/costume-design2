@@ -1,9 +1,8 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { latheBody } from '../garmentParts';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
-/** 頭に被さるつばの半径(`brimRadiusCalc`)は、ボディの頭半径(`BODY_DIMENSIONS.headRadius`)× 1.25 の固定値。
+/** 頭に被さるつばの半径(`brimRadiusCalc`)は固定値(0.37075)。
  * profile(easedLatheCurve)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
  * placement(translate)+sceneOut(sceneOutput) を1枚に
  * まとめる。Crown Radius/Height は他のガーメントと共有されない単独
@@ -29,7 +28,7 @@ defineGroupNode({
         ],
       },
     },
-    { id: 'brimRadiusCalc', type: 'numberInput', data: { value: BODY_DIMENSIONS.headRadius * 1.25 } },
+    { id: 'brimRadiusCalc', type: 'numberInput', data: { value: 0.37075 } },
     ...lathe.nodes,
     ...output.nodes,
   ],

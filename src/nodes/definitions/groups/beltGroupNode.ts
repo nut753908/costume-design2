@@ -1,8 +1,8 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { fixedBodyRadius } from '../garmentParts';
+import { radiusInput } from '../garmentParts';
 import { colorSocket, garmentOutput } from '../garmentOutput';
 
-/** scale(numberInput、ボディの基準寸法 × 倍率の固定値)+material(toonMaterial)+
+/** scale(numberInput、固定値)+material(toonMaterial)+
  * placement(translate)+sceneOut(sceneOutput)に加え、山なりのバックル部分の帯を作る
  * `band`(`bulgedBand`、`nodes/definitions/generic/bulgedBand.ts`、scarf と共有)を1枚に
  * まとめたグループノード。
@@ -11,7 +11,7 @@ import { colorSocket, garmentOutput } from '../garmentOutput';
  * 取り付け位置(`placement` の `y`)は固定値(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 const output = garmentOutput({ y: 0.7654, geometry: 'band' });
 
-const scale = fixedBodyRadius('torsoRadius', 1.05);
+const scale = radiusInput(0.16128);
 
 defineGroupNode({
   type: 'beltGroup',

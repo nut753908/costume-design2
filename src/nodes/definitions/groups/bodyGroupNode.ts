@@ -1,12 +1,11 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { colorSocket, shadowMaterialParts } from '../garmentOutput';
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 /** Body を他14種のガーメントと同じ「`<name>Group` ノード」パターンで表現する。
  * `Garments.tsx` はノードの型を問わず内部の `sceneOutput` だけを見て描画するため、
  * `bodyGroup` もガーメントと全く同じ経路でシーンへ描画される(ルート CLAUDE.md 参照)。
  *
- * 外部ソケットのうち、寸法(半径・長さ・間隔)は `bodyDimensionDefaults.ts` の固定値を既定値に持つ
+ * 外部ソケットのうち、寸法(半径・長さ・間隔)は固定値のリテラルを既定値に持つ
  * (グループカードの入力欄から調整する)。胴体・頭・腕・脚のY座標(`legCenterY`/`waistY`/`headCenterY`/`armCenterY`)も
  * 外部ソケットで、寸法とは連動しない固定値(寸法を変えたときは、これも手で直す)を既定値に持つ。
  *
@@ -32,16 +31,16 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'legHeight', label: 'Leg Height', type: 'number', default: BODY_DIMENSIONS.legHeight },
-          { id: 'legRadius', label: 'Leg Radius', type: 'number', default: BODY_DIMENSIONS.legRadius },
-          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: BODY_DIMENSIONS.legSpacing },
-          { id: 'torsoLength', label: 'Torso Length', type: 'number', default: BODY_DIMENSIONS.torsoLength },
-          { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: BODY_DIMENSIONS.torsoRadius },
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: BODY_DIMENSIONS.headRadius },
-          { id: 'armLength', label: 'Arm Length', type: 'number', default: BODY_DIMENSIONS.armLength },
-          { id: 'armRadius', label: 'Arm Radius', type: 'number', default: BODY_DIMENSIONS.armRadius },
-          { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number', default: BODY_DIMENSIONS.shoulderSpacing },
-          { id: 'neckLength', label: 'Neck Length', type: 'number', default: BODY_DIMENSIONS.neckLength },
+          { id: 'legHeight', label: 'Leg Height', type: 'number', default: 0.5754 },
+          { id: 'legRadius', label: 'Leg Radius', type: 'number', default: 0.0691 },
+          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.1109 },
+          { id: 'torsoLength', label: 'Torso Length', type: 'number', default: 0.3343 },
+          { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.1536 },
+          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.2966 },
+          { id: 'armLength', label: 'Arm Length', type: 'number', default: 0.4683 },
+          { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0.0523 },
+          { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number', default: 0.1443 },
+          { id: 'neckLength', label: 'Neck Length', type: 'number', default: 0.0565 },
           { id: 'legCenterY', label: 'Leg Center Y', type: 'number', default: 0.2877 },
           { id: 'waistY', label: 'Waist Y', type: 'number', default: 0.5754 },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 1.5699999999999998 },

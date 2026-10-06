@@ -59,7 +59,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`translate`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
 - `colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `color`(既定の色 `hex`)ソケット定義。`garmentOutput({ y, geometry })`(同ファイル)— `material`(toonShadowMaterial、色は `input.color` から配線)→`sceneOut` と `placement`(translate、`y` 入力欄が取り付け位置)→`sceneOut` のノードと配線。`geometry` には最終的な geometry を出力するノードの id を渡す。
-- `fixedBodyRadius(radius, ratio)`(`garmentParts.ts`)— 「体に触れる半径」の固定値。ボディの基準寸法(`bodyDimensionDefaults.ts` の `BODY_DIMENSIONS`、`radius` は `'torsoRadius'`/`'legRadius'`/`'armRadius'`/`'neckRadius'`/`'headRadius'`)× 倍率(`ratio`)を、`scale`(`numberInput`)の入力欄の値として持つ。体の寸法を変えてもガーメントは追従しない(ガーメントに体の半径の外部ソケットは無い)。
+- `radiusInput(value, id?)`(`garmentParts.ts`)— 「体に触れる半径」などの固定値を、`id`(既定 `scale`)の `numberInput` の入力欄の値として持つノード。出力は `<id>.value`。ガーメントはボディの寸法に追従しないので、値はボディの大きさに合わせて自由に決める(ガーメントに体の半径の外部ソケットは無い)。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheCurve`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。ガーメントの外部ソケットは `color` だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
@@ -67,10 +67,10 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
 import { colorSocket, garmentOutput } from '../garmentOutput';
-import { fixedBodyRadius, latheBody } from '../garmentParts';
+import { radiusInput, latheBody } from '../garmentParts';
 
 const output = garmentOutput({ y: 1.2169, geometry: 'gen' });
-const scale = fixedBodyRadius('torsoRadius', 1.15);
+const scale = radiusInput(0.17664);
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 0.2, distance: 0.5, segments: 24 });
 
 defineGroupNode({
@@ -100,7 +100,7 @@ defineGroupNode({
 
 ## 5. initialGraph.ts への配線(慣例)
 
-既存14種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。ガーメントの外部入力は `color` だけなので、配線は不要(取り付け位置は `placement` の `y` の固定値)。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`fixedBodyRadius()` で固定値にすること(体の寸法には追従しない)。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、そのまま入力欄の値でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
+既存14種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。ガーメントの外部入力は `color` だけなので、配線は不要(取り付け位置は `placement` の `y` の固定値)。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`radiusInput()` で固定値にすること(ボディの寸法には追従しない)。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、そのまま入力欄の値でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
 
 新しいガーメントが、複数のグループで共有される値を必要とする場合は、その値を生パラメータのグループへ内包せず、`src/state/initialGraph.ts` 側に外部の共有ノードとして置き、関係する各グループの `groupInput` ソケットへファンアウトすること。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 

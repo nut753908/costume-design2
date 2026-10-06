@@ -4,12 +4,11 @@ import { getNodeType } from '../../registry';
 import { expectOutwardWinding } from '../../../geometry/windingTestHelpers';
 // necktieGroup の埋め込みサブグラフが参照する numberInput/colorInput/boxGenerator/translate/
 // taperedRectTubeGenerator/mergeGeometry/toonMaterial/translate/sceneOutput を含め、全ノードタイプを登録する。
-import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
 // necktie は結び目(boxGenerator+translate)とブレード(taperedRectTubeGenerator)を mergeGeometry で
 // 結合する(necktieGroupNode.ts のコメント参照)。寸法はグループ内部の numberInput に閉じ、
-// 前面の深さ(Front Depth)だけが BODY_DIMENSIONS.torsoRadius × 1.15 の固定値で決まる。既定値での評価結果の
+// 前面の深さ(Front Depth)は固定値(0.17664)。既定値での評価結果の
 // バウンディングボックスで、各パラメータの配線先(X/Y/Z・幅/厚み)を検証する。
 describe('necktieGroup', () => {
   const DEFAULTS = {
@@ -20,7 +19,7 @@ describe('necktieGroup', () => {
     bladeBottomWidth: 0.06,
     bladeThickness: 0.008,
     bladeLength: 0.3,
-    frontDepth: 1.15 * BODY_DIMENSIONS.torsoRadius,
+    frontDepth: 0.17664,
     y: 1.1769,
   };
 
