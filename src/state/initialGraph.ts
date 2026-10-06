@@ -18,43 +18,18 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 // 専念するため)。ガーメントは各 <name>GroupNode.ts の定義が残っており、ノード追加メニューから
 // 追加できる。
 const initialNodeDefs: Omit<Node, 'position'>[] = [
-  // ボディの寸法(11個)・配置Y座標(8個、うち5個は waist/shoulder/feet/wrist/head の
-  // アンカー候補)を計算する2つの共有ノード。bodyGroup へ普通の外部
-  // ソケットとして渡す(nodes/CLAUDE.md の「グループノード」節参照)。
-  { id: 'bodyDimensions', type: 'bodyDimensionsGroup', data: {} },
+  // 配置Y座標(7個、うち5個は waist/shoulder/feet/wrist/head のアンカー候補)を計算する共有ノード。
+  // bodyGroup へ普通の外部ソケットとして渡す(nodes/CLAUDE.md の「グループノード」節参照)。
   { id: 'bodyLayout', type: 'bodyLayoutGroup', data: {} },
 
   // Body(3Dモデル本体)。ガーメントと同じグループノードで、胴体/頭/腕/脚を
-  // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。bodyDimensions/bodyLayout
-  // が計算済みの生の値(半径・長さ・Y座標)を外部ソケットとして直接受け取るだけで、
-  // 自分ではスケール計算を一切行わない。
+  // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。寸法は
+  // 固定値(bodyDimensionDefaults.ts)で、配置Y座標は bodyLayout が計算済みの値を外部ソケットとして受け取る。
   { id: 'bodyGroup', type: 'bodyGroup', data: {} },
 ];
 
 export const initialEdges: Edge[] = [
-  // bodyDimensions → bodyLayout(共有の配置Y座標計算ノード)。bodyLayoutGroup が入力に
-  // 使う6個の寸法だけを配線する(nodes/definitions/groups/bodyLayoutGroupNode.ts 参照)。
-  { id: 'e-body-layout-leg-height', source: 'bodyDimensions', sourceHandle: 'legHeight', target: 'bodyLayout', targetHandle: 'legHeight' },
-  { id: 'e-body-layout-torso-length', source: 'bodyDimensions', sourceHandle: 'torsoLength', target: 'bodyLayout', targetHandle: 'torsoLength' },
-  { id: 'e-body-layout-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'bodyLayout', targetHandle: 'torsoRadius' },
-  { id: 'e-body-layout-head-radius', source: 'bodyDimensions', sourceHandle: 'headRadius', target: 'bodyLayout', targetHandle: 'headRadius' },
-  { id: 'e-body-layout-arm-length', source: 'bodyDimensions', sourceHandle: 'armLength', target: 'bodyLayout', targetHandle: 'armLength' },
-  { id: 'e-body-layout-neck-length', source: 'bodyDimensions', sourceHandle: 'neckLength', target: 'bodyLayout', targetHandle: 'neckLength' },
-
-  // bodyDimensions(11出力すべて)→ bodyGroup。bodyGroup 自身は寸法を計算せず、
-  // 計算済みの値をそのままジェネレーターへ渡すだけ(bodyGroupNode.ts 参照)。
-  { id: 'e-body-group-leg-height', source: 'bodyDimensions', sourceHandle: 'legHeight', target: 'bodyGroup', targetHandle: 'legHeight' },
-  { id: 'e-body-group-leg-radius', source: 'bodyDimensions', sourceHandle: 'legRadius', target: 'bodyGroup', targetHandle: 'legRadius' },
-  { id: 'e-body-group-leg-spacing', source: 'bodyDimensions', sourceHandle: 'legSpacing', target: 'bodyGroup', targetHandle: 'legSpacing' },
-  { id: 'e-body-group-torso-length', source: 'bodyDimensions', sourceHandle: 'torsoLength', target: 'bodyGroup', targetHandle: 'torsoLength' },
-  { id: 'e-body-group-torso-radius', source: 'bodyDimensions', sourceHandle: 'torsoRadius', target: 'bodyGroup', targetHandle: 'torsoRadius' },
-  { id: 'e-body-group-head-radius', source: 'bodyDimensions', sourceHandle: 'headRadius', target: 'bodyGroup', targetHandle: 'headRadius' },
-  { id: 'e-body-group-arm-length', source: 'bodyDimensions', sourceHandle: 'armLength', target: 'bodyGroup', targetHandle: 'armLength' },
-  { id: 'e-body-group-arm-radius', source: 'bodyDimensions', sourceHandle: 'armRadius', target: 'bodyGroup', targetHandle: 'armRadius' },
-  { id: 'e-body-group-shoulder-spacing', source: 'bodyDimensions', sourceHandle: 'shoulderSpacing', target: 'bodyGroup', targetHandle: 'shoulderSpacing' },
-  { id: 'e-body-group-neck-length', source: 'bodyDimensions', sourceHandle: 'neckLength', target: 'bodyGroup', targetHandle: 'neckLength' },
-
-  // bodyLayout(bodyGroup 自身のメッシュ配置に使う5出力)→ bodyGroup。
+  // bodyLayout(bodyGroup 自身のメッシュ配置に使う4出力)→ bodyGroup。
   { id: 'e-body-group-leg-center-y', source: 'bodyLayout', sourceHandle: 'legCenterY', target: 'bodyGroup', targetHandle: 'legCenterY' },
   { id: 'e-body-group-waist-y', source: 'bodyLayout', sourceHandle: 'waistY', target: 'bodyGroup', targetHandle: 'waistY' },
   { id: 'e-body-group-head-center-y', source: 'bodyLayout', sourceHandle: 'headCenterY', target: 'bodyGroup', targetHandle: 'headCenterY' },

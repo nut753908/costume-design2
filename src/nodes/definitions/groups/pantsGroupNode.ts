@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
@@ -16,9 +17,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`limbPair.ts` の腕/脚の
  * `cylinderGenerator`→`mirrorPair` と同じ形、`nodes/CLAUDE.md` 参照)。
  *
- * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を
- * shoesGroup/socksGroup と共に受け取るため、Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)と合わせて
- * 外部ソケットのまま。 */
+ * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)は外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0.1, geometry: 'mirror' });
 
 const scale = fixedBodyRadius('torsoRadius', 0.62);
@@ -36,12 +36,12 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
           anchorYSocket,
           colorSocket('#9c7b4f'),
         ],
       },
     },
+    { id: 'legSpacing', type: 'numberInput', data: { value: BODY_DIMENSIONS.legSpacing } },
     ...scale.nodes,
     ...waistMin.nodes,
     { id: 'waistRadius', type: 'numberMax', data: {} },
@@ -58,7 +58,7 @@ defineGroupNode({
     ...hemScale.edges,
     ...lathe.edges,
     { source: 'legGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
+    { source: 'legSpacing', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
     ...output.edges,
   ],
 });

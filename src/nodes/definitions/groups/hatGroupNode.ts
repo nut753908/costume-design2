@@ -3,7 +3,7 @@ import { latheBody } from '../garmentParts';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** 頭に被さるつばの半径(`brimRadiusCalc`)は、ボディの頭半径(`bodyDimensions.headRadius` の基準値)× 1.25 の固定値。
+/** 頭に被さるつばの半径(`brimRadiusCalc`)は、ボディの頭半径(`BODY_DIMENSIONS.headRadius`)× 1.25 の固定値。
  * profile(easedLatheCurve)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput) を1枚に
  * まとめる。Crown Radius/Height は他のガーメントと共有されない単独

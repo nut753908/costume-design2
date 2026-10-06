@@ -13,22 +13,16 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('bodyGroup、bodyDimensions/bodyLayout が存在する', () => {
+  it('bodyGroup、bodyLayout が存在する', () => {
     // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
     // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
     // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
     // id の存在自体をここで保証する。肌色は bodyGroup の外部ソケット `color` の既定値として
     // 持つため、ここには現れない(bodyGroupNode.test.ts 参照)。
-    expect(['bodyDimensions', 'bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
+    expect(['bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
   });
 
-  it('bodyDimensions/bodyLayout が計算済みの値を bodyGroup へ配線している(bodyGroup 自身は寸法を計算しない)', () => {
-    const dimsSockets = ['legHeight', 'legRadius', 'legSpacing', 'torsoLength', 'torsoRadius', 'headRadius', 'armLength', 'armRadius', 'shoulderSpacing', 'neckLength'];
-    for (const socket of dimsSockets) {
-      const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
-      expect(edge?.source).toBe('bodyDimensions');
-      expect(edge?.sourceHandle).toBe(socket);
-    }
+  it('bodyLayout が計算済みの配置Y座標を bodyGroup へ配線している(寸法は bodyGroup 内部の固定値)', () => {
     const layoutSockets = ['legCenterY', 'waistY', 'headCenterY', 'armCenterY'];
     for (const socket of layoutSockets) {
       const edge = initialEdges.find((e) => e.target === 'bodyGroup' && e.targetHandle === socket);
@@ -115,27 +109,19 @@ describe('initialNodes/initialEdges でのノード単位メモ化', () => {
     targetHandle: e.targetHandle,
   }));
 
-  it('無関係なトップレベルノード(bodyLayout)の data だけを差し替えても、bodyDimensions の結果は同じ参照のまま再利用される', () => {
+  it('無関係なトップレベルノード(bodyGroup)の data だけを差し替えても、bodyLayout の結果は同じ参照のまま再利用される', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
     const changedNodes = graphNodes.map((n) =>
-      n.id === 'bodyLayout' ? { ...n, data: { ...n.data, memo: 'changed' } } : n,
+      n.id === 'bodyGroup' ? { ...n, data: { ...n.data, memo: 'changed' } } : n,
     );
     const after = evaluateGraph(changedNodes, graphEdges);
 
-    expect(after.get('bodyDimensions')).toBe(before.get('bodyDimensions'));
+    expect(after.get('bodyLayout')).toBe(before.get('bodyLayout'));
   });
 
-  it('bodyDimensions の torsoRadius の値を変えると、依存する bodyGroup は再評価されて結果が変わる', () => {
+  it('bodyLayout の feetY を変えると、依存する bodyGroup は再評価されて結果が変わる', () => {
     const before = evaluateGraph(graphNodes, graphEdges);
-    const template = getNodeType('bodyDimensionsGroup').createDefaultData?.() as {
-      nodes: { id: string; data: { sockets?: { id: string; default?: number }[] } }[];
-    };
-    const nodes = template.nodes.map((inner) =>
-      inner.id === 'output'
-        ? { ...inner, data: { sockets: inner.data.sockets!.map((sock) => (sock.id === 'torsoRadius' ? { ...sock, default: 0.2 } : sock)) } }
-        : inner,
-    );
-    const changedNodes = graphNodes.map((n) => (n.id === 'bodyDimensions' ? { ...n, data: { ...n.data, ...template, nodes } } : n));
+    const changedNodes = graphNodes.map((n) => (n.id === 'bodyLayout' ? { ...n, data: { ...n.data, feetY: 0.3 } } : n));
     const after = evaluateGraph(changedNodes, graphEdges);
 
     expect(after.get('bodyGroup')?.sceneOutputGeometry0).not.toBe(before.get('bodyGroup')?.sceneOutputGeometry0);

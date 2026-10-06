@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
@@ -8,9 +9,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Wrist Radius/Hand Radius/Length は他のガーメントと共有されない単独
  * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Arm Spacing(bodyGroup の腕と同じ
- * `bodyDimensions.shoulderSpacing`)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される wristY)は外部ソケットのまま。
+ * Arm Spacing(`armSpacing`)は bodyGroup の腕と同じ値(ボディの肩幅の基準寸法)の固定値。
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される wristY)は外部ソケットのまま。
  *
  * 手袋1つぶんのジオメトリ(`profile`→`gloveGen`)と、それを ±armSpacing だけ X方向に離した
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`pantsGroupNode.ts`/
@@ -31,12 +31,12 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'armSpacing', label: 'Arm Spacing', type: 'number', default: 0.15 },
           anchorYSocket,
           colorSocket('#b0413e'),
         ],
       },
     },
+    { id: 'armSpacing', type: 'numberInput', data: { value: BODY_DIMENSIONS.shoulderSpacing } },
     ...scale.nodes,
     ...handScale.nodes,
     ...lathe.nodes,
@@ -48,7 +48,7 @@ defineGroupNode({
     ...handScale.edges,
     ...lathe.edges,
     { source: 'gloveGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'armSpacing', target: 'mirror', targetHandle: 'offset' },
+    { source: 'armSpacing', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
     ...output.edges,
   ],
 });

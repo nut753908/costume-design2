@@ -10,11 +10,17 @@ import '../../definitions';
 // Top の胴体半径と袖の付け根半径の両方に渡る。
 describe('topGroup', () => {
   /** 内部の gen → merge の配線を切り、袖だけを描画させたときのジオメトリ。 */
-  const sleevesOnly = (inputs: Record<string, { type: 'number'; value: number }> = {}) => {
+  const sleevesOnly = (shoulderSpacing?: number) => {
     const def = getNodeType('topGroup');
-    const data = def.createDefaultData() as { nodes: unknown[]; edges: { source: string; target: string }[] };
+    const data = def.createDefaultData() as {
+      nodes: { id: string; data: Record<string, unknown> }[];
+      edges: { source: string; target: string }[];
+    };
     const edges = data.edges.filter((e) => !(e.source === 'gen' && e.target === 'merge'));
-    const result = def.evaluate(inputs, { ...data, edges });
+    const nodes = data.nodes.map((node) =>
+      node.id === 'shoulderSpacing' && shoulderSpacing !== undefined ? { ...node, data: { ...node.data, value: shoulderSpacing } } : node,
+    );
+    const result = def.evaluate({}, { ...data, nodes, edges });
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     return geom!.boundingBox!;
@@ -28,8 +34,8 @@ describe('topGroup', () => {
     } finally {
       spy.mockRestore();
     }
-    const wide = sleevesOnly({ shoulderSpacing: { type: 'number', value: 0.25 } });
-    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo(0.25 - 0.15, 5);
+    const wide = sleevesOnly(0.25);
+    expect(wide.max.x - sleevesOnly().max.x).toBeCloseTo(0.25 - BODY_DIMENSIONS.shoulderSpacing, 5);
   });
 
   it('最上段は、BODY_DIMENSIONS.neckRadius × 1.8 の首まわりの開口', () => {

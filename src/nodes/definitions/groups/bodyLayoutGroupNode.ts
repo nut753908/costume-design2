@@ -1,8 +1,9 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 /** `src/state/initialGraph.ts` 側のトップレベル共有ノード(id: `bodyLayout`)としてただ1組
  * だけ存在し、`bodyGroup` と全14ガーメントへファンアウトされる計算グループ —
- * `bodyDimensionsGroupNode.ts` が求めた各部位の半径・長さから、胴体/首/頭/腕/脚をどのY座標に
+ * ボディの寸法(`bodyDimensionDefaults.ts` の固定値)から、胴体/首/頭/腕/脚をどのY座標に
  * 置けば継ぎ目なく積み上がるかを numberAdd/numberSubtract/numberMultiply の四則演算
  * チェーンで求める。
  *
@@ -23,15 +24,16 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'feetY', label: 'Feet Y', type: 'number', default: 0 },
-          { id: 'legHeight', label: 'Leg Height', type: 'number', default: 0 },
-          { id: 'torsoLength', label: 'Torso Length', type: 'number', default: 0 },
-          { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0 },
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0 },
-          { id: 'armLength', label: 'Arm Length', type: 'number', default: 0 },
-          { id: 'neckLength', label: 'Neck Length', type: 'number', default: 0 },
         ],
       },
     },
+    // ボディの寸法(固定値。`bodyDimensionDefaults.ts`)。
+    { id: 'legHeight', type: 'numberInput', data: { value: BODY_DIMENSIONS.legHeight } },
+    { id: 'torsoLength', type: 'numberInput', data: { value: BODY_DIMENSIONS.torsoLength } },
+    { id: 'torsoRadius', type: 'numberInput', data: { value: BODY_DIMENSIONS.torsoRadius } },
+    { id: 'headRadius', type: 'numberInput', data: { value: BODY_DIMENSIONS.headRadius } },
+    { id: 'armLength', type: 'numberInput', data: { value: BODY_DIMENSIONS.armLength } },
+    { id: 'neckLength', type: 'numberInput', data: { value: BODY_DIMENSIONS.neckLength } },
     // 四則演算チェーンの比率は各 `numberMultiply` の Factor 入力欄の値: 2 は胴体の高さ(`length + 2 × radius`)の「両端の丸みぶん」
     // (`torsoRadiusDoubled`)、0.8 は腕の付け根を肩の頂点から
     // 肩の丸みが始まる高さ(胸の上端)まで下げる割合(`armTorsoOverlap`、`generic/torsoShape.ts` 参照)。
@@ -69,19 +71,19 @@ defineGroupNode({
   ],
   internalEdges: [
     // legCenterY = feetY + legHeight * half
-    { source: 'input', sourceHandle: 'legHeight', target: 'legHeightHalf', targetHandle: 'value' },
+    { source: 'legHeight', sourceHandle: 'value', target: 'legHeightHalf', targetHandle: 'value' },
     { source: 'input', sourceHandle: 'feetY', target: 'legCenterYCalc', targetHandle: 'a' },
     { source: 'legHeightHalf', sourceHandle: 'value', target: 'legCenterYCalc', targetHandle: 'b' },
     { source: 'legCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'legCenterY' },
 
     // torsoCapsuleHeight = torsoLength + torsoRadius * capEndsFactor(2)
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoRadiusDoubled', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'torsoLength', target: 'torsoCapsuleHeight', targetHandle: 'a' },
+    { source: 'torsoRadius', sourceHandle: 'value', target: 'torsoRadiusDoubled', targetHandle: 'value' },
+    { source: 'torsoLength', sourceHandle: 'value', target: 'torsoCapsuleHeight', targetHandle: 'a' },
     { source: 'torsoRadiusDoubled', sourceHandle: 'value', target: 'torsoCapsuleHeight', targetHandle: 'b' },
 
     // waistY = feetY + legHeight
     { source: 'input', sourceHandle: 'feetY', target: 'waistYCalc', targetHandle: 'a' },
-    { source: 'input', sourceHandle: 'legHeight', target: 'waistYCalc', targetHandle: 'b' },
+    { source: 'legHeight', sourceHandle: 'value', target: 'waistYCalc', targetHandle: 'b' },
     { source: 'waistYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'waistY' },
 
     // shoulderY = waistY + torsoCapsuleHeight
@@ -90,14 +92,14 @@ defineGroupNode({
 
     // headCenterY = shoulderY + neckLength + headRadius
     { source: 'shoulderYCalc', sourceHandle: 'value', target: 'neckTopYCalc', targetHandle: 'a' },
-    { source: 'input', sourceHandle: 'neckLength', target: 'neckTopYCalc', targetHandle: 'b' },
+    { source: 'neckLength', sourceHandle: 'value', target: 'neckTopYCalc', targetHandle: 'b' },
     { source: 'neckTopYCalc', sourceHandle: 'value', target: 'headCenterYCalc', targetHandle: 'a' },
-    { source: 'input', sourceHandle: 'headRadius', target: 'headCenterYCalc', targetHandle: 'b' },
+    { source: 'headRadius', sourceHandle: 'value', target: 'headCenterYCalc', targetHandle: 'b' },
     { source: 'headCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'headCenterY' },
 
     // armCenterY = shoulderY - armLength * half - torsoRadius * armTorsoOverlapRatio(0.8)
-    { source: 'input', sourceHandle: 'armLength', target: 'armLengthHalf', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'armTorsoOverlap', targetHandle: 'value' },
+    { source: 'armLength', sourceHandle: 'value', target: 'armLengthHalf', targetHandle: 'value' },
+    { source: 'torsoRadius', sourceHandle: 'value', target: 'armTorsoOverlap', targetHandle: 'value' },
     { source: 'shoulderYCalc', sourceHandle: 'value', target: 'armCenterYStep1', targetHandle: 'a' },
     { source: 'armLengthHalf', sourceHandle: 'value', target: 'armCenterYStep1', targetHandle: 'b' },
     { source: 'armCenterYStep1', sourceHandle: 'value', target: 'armCenterYCalc', targetHandle: 'a' },

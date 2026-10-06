@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import './definitions';
 import { getNodeType } from './registry';
+import { defineGroupNode } from './definitions/groupNodeFactory';
 import { BODY_DIMENSIONS } from './definitions/bodyDimensionDefaults';
 import type { GraphNode } from './types';
 import {
@@ -9,6 +10,25 @@ import {
   isGroupInstanceStale,
   migrateGroupToTemplate,
 } from './groupTemplate';
+
+// groupOutput のソケットが既定値を持つ(入力欄の値がそのまま出力になる)グループ。このテスト専用。
+defineGroupNode({
+  type: 'testOutputDefaultsGroup',
+  label: 'Test Output Defaults',
+  internalNodes: [
+    {
+      id: 'output',
+      type: 'groupOutput',
+      data: {
+        sockets: [
+          { id: 'first', label: 'First', type: 'number', default: 0.1 },
+          { id: 'second', label: 'Second', type: 'number', default: 0.25 },
+        ],
+      },
+    },
+  ],
+  internalEdges: [],
+});
 
 const SKIRT_SCALE = BODY_DIMENSIONS.torsoRadius * 1.15;
 const n = (id: string, type: string, data: Record<string, unknown> = {}): GraphNode => ({ id, type, data });
@@ -93,17 +113,17 @@ describe('migrateGroupToTemplate', () => {
   });
 
   it('同じ id の groupOutput のソケットの既定値(Group Output で編集した値)を引き継ぐ', () => {
-    const template = getNodeType('bodyDimensionsGroup').createDefaultData() as { nodes: GraphNode[] };
+    const template = getNodeType('testOutputDefaultsGroup').createDefaultData() as { nodes: GraphNode[] };
     const output = template.nodes.find((node) => node.id === 'output')!;
     const edited = {
       ...output,
-      data: { sockets: (output.data.sockets as { id: string }[]).map((sock) => (sock.id === 'headRadius' ? { ...sock, default: 0.5 } : sock)) },
+      data: { sockets: (output.data.sockets as { id: string }[]).map((sock) => (sock.id === 'first' ? { ...sock, default: 0.5 } : sock)) },
     };
-    const migrated = migrateGroupToTemplate('bodyDimensionsGroup', [edited]);
+    const migrated = migrateGroupToTemplate('testOutputDefaultsGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'output')?.data.sockets as { id: string; default: unknown }[];
-    expect(sockets.find((sock) => sock.id === 'headRadius')?.default).toBe(0.5);
+    expect(sockets.find((sock) => sock.id === 'first')?.default).toBe(0.5);
     // 編集していないソケットはテンプレートの既定値のまま
-    expect(sockets.find((sock) => sock.id === 'legHeight')?.default).toBe(0.5754);
+    expect(sockets.find((sock) => sock.id === 'second')?.default).toBe(0.25);
   });
 
   it('値の置き場所が別のノードへ移っている場合は追跡せず、最新のテンプレートの既定値になる', () => {

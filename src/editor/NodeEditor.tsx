@@ -90,10 +90,10 @@ function NodeEditorInner() {
   // <ReactFlow> 自体は階層が変わっても(enterGroup/exitGroup・階層を跨ぐ Undo/Redo)アンマウントされず、nodes/edges の
   // props だけが丸ごと差し替わる(state/CLAUDE.md の「グループの中に入る」節参照)。
   // すべてのグループの groupInput/groupOutput ノードは慣例的に id 'input'/'output' を
-  // 使う(nodes/CLAUDE.md 参照)ため、多段ネスト(例: bodyGroup の中の bodyDimensionsGroup)
+  // 使う(nodes/CLAUDE.md 参照)ため、多段ネスト(例: bodyGroup の中の limbPair)
   // では props 差し替えの前後で同じ id 'input' のノードを React が「同一要素の更新」と
-  // 誤認しうる。実際に発生した不具合として、Body Dimensions グループへ一度入って出て、
-  // 再度入り直すと(bodyGroup 自身の 'input' → bodyDimensionsGroup の 'input' → …と
+  // 誤認しうる。実際に発生した不具合として、ネストしたグループへ一度入って出て、
+  // 再度入り直すと(bodyGroup 自身の 'input' → ネストしたグループの 'input' → …と
   // 同じ id が複数回入れ替わった後)、Group Input ノードの出力から伸びるはずのエッジが
   // ストア上のデータ(evaluateGraph・Export JSON では正しい)とは無関係に描画されなくなる、
   // という React Flow 側のハンドル計測キャッシュの取り違えが起きていた。`key={scopePath}`

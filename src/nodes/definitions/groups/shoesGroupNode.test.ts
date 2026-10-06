@@ -18,7 +18,7 @@ function num(v: number) {
 // scaleZ の影響を受けない。
 describe('shoesGroup', () => {
   const { legRadius } = BODY_DIMENSIONS;
-  const DEFAULTS = { soleRadius: 1.3 * legRadius, cuffRadius: 0.91 * legRadius, height: 0.12, toeLength: 1.95, legSpacing: 0.08, offsetY: 0 };
+  const DEFAULTS = { soleRadius: 1.3 * legRadius, cuffRadius: 0.91 * legRadius, height: 0.12, toeLength: 1.95, offsetY: 0 };
   const maxRadius = Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius);
 
   it('未接続でも描画対象として出力される', () => {
@@ -31,7 +31,7 @@ describe('shoesGroup', () => {
     const result = getNodeType('shoesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius, 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(BODY_DIMENSIONS.legSpacing + maxRadius, 5);
   });
 
   it('legRadius × 倍率の Cuff Radius が、履き口(最上端)の半径になる', () => {
@@ -44,7 +44,7 @@ describe('shoesGroup', () => {
     // (scaleZ は Z 方向だけを伸ばすので、X 方向の広がりには影響しない)。
     let cuff = 0;
     for (let i = 0; i < position.count; i++) {
-      if (position.getX(i) > 0 && Math.abs(position.getY(i) - maxY) < 1e-6) cuff = Math.max(cuff, Math.abs(position.getX(i) - DEFAULTS.legSpacing));
+      if (position.getX(i) > 0 && Math.abs(position.getY(i) - maxY) < 1e-6) cuff = Math.max(cuff, Math.abs(position.getX(i) - BODY_DIMENSIONS.legSpacing));
     }
     expect(cuff).toBeCloseTo(DEFAULTS.cuffRadius, 4);
   });

@@ -27,12 +27,12 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number', default: 0.15 },
           anchorYSocket,
           colorSocket('#5b8fa8'),
         ],
       },
     },
+    { id: 'shoulderSpacing', type: 'numberInput', data: { value: BODY_DIMENSIONS.shoulderSpacing } },
     ...scale.nodes,
     ...sleeveScale.nodes,
     { id: 'neckline', type: 'necklineShapes', data: {} },
@@ -53,7 +53,7 @@ defineGroupNode({
     ...body.edges,
     { source: 'profile', sourceHandle: 'curve', target: 'gen', targetHandle: 'profile' },
     { source: 'neckline', sourceHandle: 'roundShape', target: 'gen', targetHandle: 'necklineWeights' },
-    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'sleeveGen', targetHandle: 'spacing' },
+    { source: 'shoulderSpacing', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'spacing' },
     { source: 'sleeveScale', sourceHandle: 'value', target: 'sleeveGen', targetHandle: 'sleeveRadius' },
     { source: 'gen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'sleeveGen', sourceHandle: 'geometry', target: 'sleeveTranslate', targetHandle: 'geometry' },

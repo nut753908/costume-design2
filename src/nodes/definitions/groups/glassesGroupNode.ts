@@ -12,7 +12,7 @@ import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
  * 3つのパーツが共有する値(`lensRadiusIn`/`lensSpacingIn`/`forwardDepthCalc`)だけをこのグループに
  * 置いて各パーツへ配線し、1つのパーツだけが使う値(管の太さ、ブリッジ/テンプルの太さなど)は
  * そのパーツのグループの内部に持つ。
- * 顔の前面の深さ `forwardDepthCalc` は、ボディの頭半径(`bodyDimensions.headRadius` の基準値)に
+ * 顔の前面の深さ `forwardDepthCalc` は、ボディの頭半径(`BODY_DIMENSIONS.headRadius`)に
  * 0.01(頭の表面より少し前)を足した固定値。
  * レンズは平面なので、表面ちょうどだと頭の球面が中心寄りでレンズの輪より前に出て、輪の内側が欠ける。
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される

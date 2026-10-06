@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
@@ -14,9 +15,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `limbPair.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。socks は shoes/hat と同じ
  * `direction: 'up'`(足首から上=ふくらはぎ側へ伸びる)。
  *
- * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
+ * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される feetY)は外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0.09, geometry: 'mirror' });
 
 const scale = fixedBodyRadius('legRadius', 0.92);
@@ -33,12 +33,12 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
           anchorYSocket,
           colorSocket('#d4a83a'),
         ],
       },
     },
+    { id: 'legSpacing', type: 'numberInput', data: { value: BODY_DIMENSIONS.legSpacing } },
     ...scale.nodes,
     ...calfScale.nodes,
     ...lathe.nodes,
@@ -50,7 +50,7 @@ defineGroupNode({
     ...calfScale.edges,
     ...lathe.edges,
     { source: 'sockGen', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
+    { source: 'legSpacing', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
     ...output.edges,
   ],
 });

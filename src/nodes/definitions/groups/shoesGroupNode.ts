@@ -1,4 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
@@ -15,9 +16,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scale`(X/Y/Z を持つ汎用の
  * 非一様スケールノード、`translate` と対になる形)の Z 入力欄だけを使って表現する。
  *
- * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
+ * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される feetY)は外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
 
 const scale = fixedBodyRadius('legRadius', 1.3);
@@ -34,12 +34,12 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
           anchorYSocket,
           colorSocket('#3d3630'),
         ],
       },
     },
+    { id: 'legSpacing', type: 'numberInput', data: { value: BODY_DIMENSIONS.legSpacing } },
     ...scale.nodes,
     ...cuffScale.nodes,
     ...lathe.nodes,
@@ -53,7 +53,7 @@ defineGroupNode({
     ...lathe.edges,
     { source: 'latheGen', sourceHandle: 'geometry', target: 'scaleZ', targetHandle: 'geometry' },
     { source: 'scaleZ', sourceHandle: 'geometry', target: 'mirror', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'legSpacing', target: 'mirror', targetHandle: 'offset' },
+    { source: 'legSpacing', sourceHandle: 'value', target: 'mirror', targetHandle: 'offset' },
     ...output.edges,
   ],
 });

@@ -6,6 +6,14 @@ import { getNodeType } from '../../registry';
 import '../../definitions';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
+/** 内部の numberInput(`id`)の入力欄の値だけを差し替えた data で評価する。 */
+function evaluateWithInput(type: string, id: string, value: number) {
+  const def = getNodeType(type);
+  const data = def.createDefaultData() as { nodes: { id: string; data: Record<string, unknown> }[] };
+  const nodes = data.nodes.map((node) => (node.id === id ? { ...node, data: { ...node.data, value } } : node));
+  return def.evaluate({}, { ...data, nodes });
+}
+
 function num(v: number) {
   return { type: 'number' as const, value: v };
 }
@@ -17,7 +25,7 @@ function num(v: number) {
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
   const ARM_RADIUS = BODY_DIMENSIONS.armRadius;
-  const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, armSpacing: 0.15, offsetY: 0.04 };
+  const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, offsetY: 0.04 };
   const maxRadius = Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius);
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -30,11 +38,11 @@ describe('glovesGroup', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + maxRadius, 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(BODY_DIMENSIONS.shoulderSpacing + maxRadius, 5);
   });
 
-  it('外部から注入された armSpacing が左右の間隔になる', () => {
-    const result = getNodeType('glovesGroup').evaluate({ armSpacing: num(0.5) }, {});
+  it('armSpacing の値を変えると左右の間隔になる', () => {
+    const result = evaluateWithInput('glovesGroup', 'armSpacing', 0.5);
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(0.5 + maxRadius, 5);
