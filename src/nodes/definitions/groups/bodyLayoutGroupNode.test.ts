@@ -25,11 +25,6 @@ describe('bodyLayoutGroup', () => {
     expect(result.legCenterY).toEqual(num(0.425));
   });
 
-  it('neckCenterY = shoulderY + neckLength / 2', () => {
-    const result = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
-    expect(result.neckCenterY?.type === 'number' && result.neckCenterY.value).toBeCloseTo(1.95, 10);
-  });
-
   it('headCenterY = shoulderY + neckLength + headRadius', () => {
     const result = getNodeType('bodyLayoutGroup').evaluate(inputs, {});
     expect(result.headCenterY?.type === 'number' && result.headCenterY.value).toBeCloseTo(2.14, 10);
@@ -45,7 +40,7 @@ describe('bodyLayoutGroup', () => {
     const raised = getNodeType('bodyLayoutGroup').evaluate({ ...inputs, feetY: num(0.3) }, {});
     const value = (r: Record<string, { type: string; value?: unknown }>, key: string) => (r[key] as { value: number }).value;
     expect(value(raised, 'feetY')).toBeCloseTo(0.3, 10);
-    for (const key of ['waistY', 'legCenterY', 'neckCenterY', 'headCenterY', 'armCenterY', 'shoulderY', 'wristY']) {
+    for (const key of ['waistY', 'legCenterY', 'headCenterY', 'armCenterY', 'shoulderY', 'wristY']) {
       expect(value(raised, key) - value(base, key), key).toBeCloseTo(0.3, 10);
     }
   });

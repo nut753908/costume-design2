@@ -41,8 +41,6 @@ defineGroupNode({
     { id: 'torsoCapsuleHeight', type: 'numberAdd', data: {} },
     { id: 'shoulderYCalc', type: 'numberAdd', data: {} },
     { id: 'neckTopYCalc', type: 'numberAdd', data: {} },
-    { id: 'neckLengthHalf', type: 'numberHalf', data: {} },
-    { id: 'neckCenterYCalc', type: 'numberAdd', data: {} },
     { id: 'headCenterYCalc', type: 'numberAdd', data: {} },
     { id: 'armLengthHalf', type: 'numberHalf', data: {} },
     { id: 'armTorsoOverlap', type: 'numberMultiply', data: { factor: 0.8 } },
@@ -59,7 +57,6 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'legCenterY', label: 'Leg Center Y', type: 'number' },
-          { id: 'neckCenterY', label: 'Neck Center Y', type: 'number' },
           { id: 'headCenterY', label: 'Head Center Y', type: 'number' },
           { id: 'armCenterY', label: 'Arm Center Y', type: 'number' },
           { id: 'feetY', label: 'Feet Y', type: 'number' },
@@ -90,12 +87,6 @@ defineGroupNode({
     // shoulderY = waistY + torsoCapsuleHeight
     { source: 'waistYCalc', sourceHandle: 'value', target: 'shoulderYCalc', targetHandle: 'a' },
     { source: 'torsoCapsuleHeight', sourceHandle: 'value', target: 'shoulderYCalc', targetHandle: 'b' },
-
-    // neckCenterY = shoulderY + neckLength * half
-    { source: 'input', sourceHandle: 'neckLength', target: 'neckLengthHalf', targetHandle: 'value' },
-    { source: 'shoulderYCalc', sourceHandle: 'value', target: 'neckCenterYCalc', targetHandle: 'a' },
-    { source: 'neckLengthHalf', sourceHandle: 'value', target: 'neckCenterYCalc', targetHandle: 'b' },
-    { source: 'neckCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'neckCenterY' },
 
     // headCenterY = shoulderY + neckLength + headRadius
     { source: 'shoulderYCalc', sourceHandle: 'value', target: 'neckTopYCalc', targetHandle: 'a' },
