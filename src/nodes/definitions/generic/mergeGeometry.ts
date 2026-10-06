@@ -33,7 +33,8 @@ registerNodeType({
         : list,
     );
     if (!merged) return {};
-    merged.computeVertexNormals();
+    // 入力の法線をそのまま使う(計算し直すと、`loftGenerator` が平均した継ぎ目・極の法線が戻って陰影に縦の段差が出る)。
+    if (!merged.getAttribute('normal')) merged.computeVertexNormals();
     return { geometry: { type: 'geometry', value: merged } };
   },
 });

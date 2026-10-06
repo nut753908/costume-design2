@@ -18,6 +18,26 @@ describe('mergeGeometry', () => {
     expect(merged!.boundingBox!.max.x).toBeCloseTo(0.25, 5);
   });
 
+  it('入力の法線をそのまま使い、結合のあとで計算し直さない', () => {
+    const a = box(-0.2);
+    a.getAttribute('normal').setXYZ(0, 0, 1, 0);
+    const result = getNodeType('mergeGeometry').evaluate({ geometries: list(a, box(0.2)) }, {});
+    const merged = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    const normal = merged!.getAttribute('normal');
+    expect([normal.getX(0), normal.getY(0), normal.getZ(0)]).toEqual([0, 1, 0]);
+  });
+
+  it('法線が無い入力どうしなら、結合のあとで法線を計算する', () => {
+    const bare = (x: number) => {
+      const g = box(x);
+      g.deleteAttribute('normal');
+      return g;
+    };
+    const result = getNodeType('mergeGeometry').evaluate({ geometries: list(bare(-0.2), bare(0.2)) }, {});
+    const merged = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
+    expect(merged!.getAttribute('normal')).toBeDefined();
+  });
+
   it('3つ以上でもすべて結合する', () => {
     const result = getNodeType('mergeGeometry').evaluate({ geometries: list(box(-0.2), box(0), box(0.2)) }, {});
     const merged = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
