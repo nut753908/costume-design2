@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 import { expectOutwardWinding } from '../../../geometry/windingTestHelpers';
 // necktieGroup の埋め込みサブグラフが参照する numberInput/colorInput/boxGenerator/translate/
-// taperedRectTubeGenerator/mergeGeometry/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
+// taperedRectTubeGenerator/mergeGeometry/toonMaterial/translate/sceneOutput を含め、全ノードタイプを登録する。
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
@@ -21,7 +21,7 @@ describe('necktieGroup', () => {
     bladeThickness: 0.008,
     bladeLength: 0.3,
     frontDepth: 1.15 * BODY_DIMENSIONS.torsoRadius,
-    offsetY: -0.04,
+    y: 1.1769,
   };
 
   const geometryOf = (inputs: Record<string, { type: 'number'; value: number }> = {}) => {
@@ -35,11 +35,11 @@ describe('necktieGroup', () => {
     expect(result.sceneOutputMaterial0?.type).toBe('material');
   });
 
-  it('結び目は胸の上端(Offset Y、既定 -0.04)にあり、ブレードはその下へ knotHeight + bladeLength まで垂れる', () => {
+  it('結び目は胸の上端(取り付け位置 y、既定 1.1769)にあり、ブレードはその下へ knotHeight + bladeLength まで垂れる', () => {
     const geom = geometryOf()!;
     geom.computeBoundingBox();
-    expect(geom.boundingBox!.max.y).toBeCloseTo(DEFAULTS.offsetY, 5);
-    expect(geom.boundingBox!.min.y).toBeCloseTo(DEFAULTS.offsetY - (DEFAULTS.knotHeight + DEFAULTS.bladeLength), 5);
+    expect(geom.boundingBox!.max.y).toBeCloseTo(DEFAULTS.y, 5);
+    expect(geom.boundingBox!.min.y).toBeCloseTo(DEFAULTS.y - (DEFAULTS.knotHeight + DEFAULTS.bladeLength), 5);
   });
 
   it('X方向の広がりは結び目とブレード下端の広い方、Z方向は frontDepth を中心にした厚みで決まる', () => {
@@ -54,7 +54,7 @@ describe('necktieGroup', () => {
   it('ブレード(キャップ無しの矩形チューブ)は結び目を除いて外向きの巻き順になっている', () => {
     // 結び目(BoxGeometry)は上面・下面を持つためチューブ基準の放射判定は当てはまらない。
     // 結び目は自身の中心、ブレードは前面(Z=frontDepth)を通る Y軸方向の軸を基準に判定する。
-    const knotCenter = new THREE.Vector3(0, DEFAULTS.offsetY - DEFAULTS.knotHeight / 2, DEFAULTS.frontDepth);
+    const knotCenter = new THREE.Vector3(0, DEFAULTS.y - DEFAULTS.knotHeight / 2, DEFAULTS.frontDepth);
     const KNOT_INDEX_COUNT = 36; // BoxGeometry は既定で6面×2三角形×3 = 36 indices
     expectOutwardWinding(geometryOf()!, (centroid, i) =>
       i < KNOT_INDEX_COUNT ? knotCenter : new THREE.Vector3(0, centroid.y, DEFAULTS.frontDepth),
@@ -68,13 +68,4 @@ describe('necktieGroup', () => {
     expect(color?.getHexString()).toBe(new THREE.Color('#7a1f2b').getHexString());
   });
 
-  it('anchorY が配線されると Offset Y(既定0)に加算されて平行移動される', () => {
-    const withoutAnchor = getNodeType('necktieGroup').evaluate({}, {});
-    const withAnchor = getNodeType('necktieGroup').evaluate({ anchorY: { type: 'number', value: 1 } }, {});
-    const geomWithout = withoutAnchor.sceneOutputGeometry0?.type === 'geometry' ? withoutAnchor.sceneOutputGeometry0.value : undefined;
-    const geomWith = withAnchor.sceneOutputGeometry0?.type === 'geometry' ? withAnchor.sceneOutputGeometry0.value : undefined;
-    geomWithout!.computeBoundingBox();
-    geomWith!.computeBoundingBox();
-    expect(geomWith!.boundingBox!.min.y).toBeCloseTo(geomWithout!.boundingBox!.min.y + 1, 5);
-  });
 });

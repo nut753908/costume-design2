@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // shoesGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheCurve/
-// latheGenerator/scale/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、
+// latheGenerator/scale/mirrorPair/toonMaterial/translate/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
-
-function num(v: number) {
-  return { type: 'number' as const, value: v };
-}
 
 // shoes は靴1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Sole Radius
 // (y=0)、終点=Cuff Radius(y=Height)、どちらも BODY_DIMENSIONS.legRadius × 倍率の固定値)に `scaleZ` で
@@ -18,7 +14,7 @@ function num(v: number) {
 // scaleZ の影響を受けない。
 describe('shoesGroup', () => {
   const { legRadius } = BODY_DIMENSIONS;
-  const DEFAULTS = { soleRadius: 1.3 * legRadius, cuffRadius: 0.91 * legRadius, height: 0.12, toeLength: 1.95, offsetY: 0 };
+  const DEFAULTS = { soleRadius: 1.3 * legRadius, cuffRadius: 0.91 * legRadius, height: 0.12, toeLength: 1.95, y: 0 };
   const maxRadius = Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius);
 
   it('未接続でも描画対象として出力される', () => {
@@ -64,13 +60,4 @@ describe('shoesGroup', () => {
     expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.height, 5);
   });
 
-  it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {
-    const withoutAnchor = getNodeType('shoesGroup').evaluate({}, {});
-    const withAnchor = getNodeType('shoesGroup').evaluate({ anchorY: num(1) }, {});
-    const geomWithout = withoutAnchor.sceneOutputGeometry0?.type === 'geometry' ? withoutAnchor.sceneOutputGeometry0.value : undefined;
-    const geomWith = withAnchor.sceneOutputGeometry0?.type === 'geometry' ? withAnchor.sceneOutputGeometry0.value : undefined;
-    geomWithout!.computeBoundingBox();
-    geomWith!.computeBoundingBox();
-    expect(geomWith!.boundingBox!.min.y).toBeCloseTo(geomWithout!.boundingBox!.min.y + 1, 5);
-  });
 });

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // dressGroup の埋め込みサブグラフが参照する numberInput/colorInput/numberMultiply/
-// easedLatheCurve/ringGridGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
+// easedLatheCurve/ringGridGenerator/toonMaterial/translate/sceneOutput を含め、全ノードタイプを登録する。
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
@@ -52,15 +52,5 @@ describe('dressGroup', () => {
     const material = result.sceneOutputMaterial0;
     const color = material?.type === 'material' ? (material.value as THREE.MeshToonMaterial).color : undefined;
     expect(color?.getHexString()).toBe(new THREE.Color('#3d7a72').getHexString());
-  });
-
-  it('anchorY が配線されると Offset Y(既定0)に加算されて平行移動される', () => {
-    const withoutAnchor = getNodeType('dressGroup').evaluate({}, {});
-    const withAnchor = getNodeType('dressGroup').evaluate({ anchorY: { type: 'number', value: 1 } }, {});
-    const geomWithout = withoutAnchor.sceneOutputGeometry0?.type === 'geometry' ? withoutAnchor.sceneOutputGeometry0.value : undefined;
-    const geomWith = withAnchor.sceneOutputGeometry0?.type === 'geometry' ? withAnchor.sceneOutputGeometry0.value : undefined;
-    geomWithout!.computeBoundingBox();
-    geomWith!.computeBoundingBox();
-    expect(geomWith!.boundingBox!.min.y).toBeCloseTo(geomWithout!.boundingBox!.min.y + 1, 5);
   });
 });

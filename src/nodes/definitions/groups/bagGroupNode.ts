@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** bag の寸法の大半は独立したスタイル寄りの値だが、体の側面の位置(Hip Offset、胴体半径と
  * 同程度)と前面の深さ(`bagFrontDepthCalc`)だけは、胴体の壁の外側に置く必要があるため、
@@ -20,10 +20,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `translate` の両方から同じ計算結果を参照する
  * (定数は各ノードの入力欄の値)。ストラップと
  * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。複数のノードが同じ値を使うパラメータ(`bagHeightIn`)だけ `numberInput` を置いて配線し、
- * 他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される shoulderY)は外部ソケット。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
+ * 他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。 */
+const output = garmentOutput({ y: 1.2169, geometry: 'merge' });
 
 defineGroupNode({
   type: 'bagGroup',
@@ -35,7 +33,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          anchorYSocket,
           colorSocket('#8a4a2e'),
         ],
       },

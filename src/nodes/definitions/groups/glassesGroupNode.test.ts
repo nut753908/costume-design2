@@ -12,9 +12,8 @@ import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 // numberInput に閉じており groupInput 経由では外部から注入できないため、既定値での
 // 評価結果を検証する。
 describe('glassesGroup', () => {
-  // offsetYIn の既定値(-0.02)ぶん、garmentPlacement が最終的な geometry 全体をY方向へ
-  // 平行移動する(anchorY はここでは未接続のため0にフォールバックする)。
-  const DEFAULTS = { lensRadius: 0.08, frameThickness: 0.008, offsetY: -0.02 };
+  // `placement`(translate)が最終的な geometry 全体を取り付け位置 y=1.55 へ平行移動する。
+  const DEFAULTS = { lensRadius: 0.08, frameThickness: 0.008, placementY: 1.55 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('glassesGroup').evaluate({}, {});
@@ -46,7 +45,7 @@ describe('glassesGroup', () => {
     const result = getNodeType('glassesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    const expectedMaxY = DEFAULTS.lensRadius + DEFAULTS.frameThickness / 2 + DEFAULTS.offsetY;
+    const expectedMaxY = DEFAULTS.lensRadius + DEFAULTS.frameThickness / 2 + DEFAULTS.placementY;
     expect(geom!.boundingBox!.max.y).toBeCloseTo(expectedMaxY, 2);
   });
 

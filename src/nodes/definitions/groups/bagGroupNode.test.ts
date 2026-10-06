@@ -11,6 +11,8 @@ import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 // チェーンで導出)を merge で1つにまとめる配線が正しいかを検証する(bagGroupNode.ts の
 // コメント参照)。寸法パラメータはグループ内部の numberInput に閉じており、既定値での評価結果を検証する。
 describe('bagGroup', () => {
+  // ガーメントを置く高さ(`placement`(translate)の `y`)。
+  const PLACEMENT_Y = 1.2169;
   const DEFAULTS = { torsoRadius: BODY_DIMENSIONS.torsoRadius, hipOffsetRatio: 1, frontDepthRatio: 1.4, drop: 0.42, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -38,7 +40,7 @@ describe('bagGroup', () => {
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     const expectedBottom = -DEFAULTS.drop - DEFAULTS.bagHeight / 2 - DEFAULTS.bagHeight / 2;
-    expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom, 2);
+    expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom + PLACEMENT_Y, 2);
   });
 
   it('バッグ本体は bagFrontDepthCalc(= 1.4 × ボディの基準の胴体半径、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {

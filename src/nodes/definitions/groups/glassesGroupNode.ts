@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 import type { GraphEdge } from '../../types';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
@@ -14,10 +14,8 @@ import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
  * そのパーツのグループの内部に持つ。
  * 顔の前面の深さ `forwardDepthCalc` は、ボディの頭半径(`BODY_DIMENSIONS.headRadius`)に
  * 0.01(頭の表面より少し前)を足した固定値。
- * レンズは平面なので、表面ちょうどだと頭の球面が中心寄りでレンズの輪より前に出て、輪の内側が欠ける。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
- * headCenterY)は外部ソケット。 */
-const output = garmentOutput({ offsetY: -0.02, geometry: 'mergeAll' });
+ * レンズは平面なので、表面ちょうどだと頭の球面が中心寄りでレンズの輪より前に出て、輪の内側が欠ける。 */
+const output = garmentOutput({ y: 1.55, geometry: 'mergeAll' });
 
 const share = (target: string): GraphEdge[] =>
   ['lensRadiusIn:lensRadius', 'lensSpacingIn:lensSpacing', 'forwardDepthCalc:forwardDepth'].map((pair) => {
@@ -35,7 +33,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          anchorYSocket,
           colorSocket('#2a2a2a'),
         ],
       },

@@ -1,6 +1,6 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { fixedBodyRadius } from '../garmentParts';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** necktie の結び目・ブレードの大きさはスタイル寄りの独立した寸法だが、前面の深さ
  * (`scale`)だけは、胴体の壁より前に出す必要があるため、他のガーメントの「体に触れる半径」と
@@ -12,11 +12,9 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 上端は結び目の陰、下端は先細りの点に近いため、ブレードにキャップは付けない。2つは
  * `merge`(`mergeGeometry`)で結合する。Y座標は `numberHalf`/`numberNegate`/`numberSubtract` の
  * 可視の四則演算チェーンで導出する。複数のノードが同じ値を使うパラメータ(`knotHeightIn`/`bladeThicknessIn`)だけ
- * `numberInput` を置いて配線し、他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される
- * shoulderY)は外部ソケット。 */
+ * `numberInput` を置いて配線し、他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。 */
 // 結び目を肩の頂点より少し下(服の襟ぐりの底)に置く。
-const output = garmentOutput({ offsetY: -0.04, geometry: 'merge' });
+const output = garmentOutput({ y: 1.1769, geometry: 'merge' });
 
 const scale = fixedBodyRadius('torsoRadius', 1.15);
 
@@ -30,7 +28,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          anchorYSocket,
           colorSocket('#7a1f2b'),
         ],
       },

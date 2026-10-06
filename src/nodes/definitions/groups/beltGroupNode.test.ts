@@ -23,11 +23,11 @@ describe('beltGroup', () => {
     expect(geometryOf()!.getAttribute('position').count).toBe(13 * 25);
   });
 
-  it('既定値(radius=1.05 × ボディの基準の胴体半径, thickness=0.05, bulge=1.15)の範囲に収まり、offsetY(0.19)だけ押し上げられる', () => {
+  it('既定値(radius=1.05 × ボディの基準の胴体半径, thickness=0.05, bulge=1.15)の範囲に収まり、取り付け位置(y=0.7654)へ置かれる', () => {
     const geom = geometryOf()!;
     geom.computeBoundingBox();
-    expect(geom.boundingBox!.min.y).toBeCloseTo(-0.05 + 0.19, 5);
-    expect(geom.boundingBox!.max.y).toBeCloseTo(0.19, 5);
+    expect(geom.boundingBox!.min.y).toBeCloseTo(-0.05 + 0.7654, 5);
+    expect(geom.boundingBox!.max.y).toBeCloseTo(0.7654, 5);
     expect(geom.boundingBox!.max.x).toBeCloseTo(1.05 * BODY_DIMENSIONS.torsoRadius * 1.15, 5);
   });
 });

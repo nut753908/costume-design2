@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // glovesGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheCurve/
-// latheGenerator/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを
+// latheGenerator/mirrorPair/toonMaterial/translate/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
@@ -14,10 +14,6 @@ function evaluateWithInput(type: string, id: string, value: number) {
   return def.evaluate({}, { ...data, nodes });
 }
 
-function num(v: number) {
-  return { type: 'number' as const, value: v };
-}
-
 // gloves は手袋1つぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Wrist Radius、
 // 終点=Hand Radius、どちらもボディの基準の腕の半径 × 倍率の固定値)を mirrorPair で ±Arm Spacing だけ
 // X方向に離した左右対称ペアへまとめる(glovesGroupNode.ts のコメント参照)。mirrorPair は
@@ -25,7 +21,7 @@ function num(v: number) {
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
   const ARM_RADIUS = BODY_DIMENSIONS.armRadius;
-  const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, offsetY: 0.04 };
+  const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, placementY: 0.66572 };
   const maxRadius = Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius);
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -48,21 +44,11 @@ describe('glovesGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(0.5 + maxRadius, 5);
   });
 
-  it('Length ぶん下(-Y)に伸び、Offset Y(既定0.04、手の上端を覆う)だけ押し上げられる', () => {
+  it('Length ぶん下(-Y)に伸び、取り付け位置(y=0.66572、手首より少し上で手の上端を覆う)へ置かれる', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.length + DEFAULTS.offsetY, 5);
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.offsetY, 5);
-  });
-
-  it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {
-    const withoutAnchor = getNodeType('glovesGroup').evaluate({}, {});
-    const withAnchor = getNodeType('glovesGroup').evaluate({ anchorY: num(1) }, {});
-    const geomWithout = withoutAnchor.sceneOutputGeometry0?.type === 'geometry' ? withoutAnchor.sceneOutputGeometry0.value : undefined;
-    const geomWith = withAnchor.sceneOutputGeometry0?.type === 'geometry' ? withAnchor.sceneOutputGeometry0.value : undefined;
-    geomWithout!.computeBoundingBox();
-    geomWith!.computeBoundingBox();
-    expect(geomWith!.boundingBox!.min.y).toBeCloseTo(geomWithout!.boundingBox!.min.y + 1, 5);
+    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.length + DEFAULTS.placementY, 5);
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.placementY, 5);
   });
 });

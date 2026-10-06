@@ -105,11 +105,11 @@ describe('migrateGroupToTemplate', () => {
     const input = template.nodes.find((node) => node.id === 'input')!;
     const edited = {
       ...input,
-      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'anchorY' ? { ...sock, default: 0.4 } : sock)) },
+      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'color' ? { ...sock, default: '#112233' } : sock)) },
     };
     const migrated = migrateGroupToTemplate('skirtGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'input')?.data.sockets as { id: string; default: unknown }[];
-    expect(sockets.find((sock) => sock.id === 'anchorY')?.default).toBe(0.4);
+    expect(sockets.find((sock) => sock.id === 'color')?.default).toBe('#112233');
   });
 
   it('同じ id の groupOutput のソケットの既定値(Group Output で編集した値)を引き継ぐ', () => {

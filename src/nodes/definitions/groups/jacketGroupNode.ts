@@ -1,15 +1,13 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { fixedBodyRadius, shoulderedBody } from '../garmentParts';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** scale(numberInput、胸の半径)+hemRadiusCalc(flaredRadius、裾半径 = 胸の半径 × (1 + hemFlare))+
  * profile(shoulderedProfile、肩の丸みで首まわりまで閉じたプロファイル、`garmentParts.ts` の
  * `shoulderedBody()`)+gen(latheGenerator)+末端(`garmentOutput()`)を1枚にまとめたグループノード。
  * 半径(ボディの基準寸法 × 倍率の固定値、`fixedBodyRadius()`)/Length/Hem Flare/Segments は他のガーメントと共有されない単独パラメータのため、
- * numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
- * 配線される shoulderY)は外部ソケットのまま。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
+ * numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。 */
+const output = garmentOutput({ y: 1.2169, geometry: 'gen' });
 
 const scale = fixedBodyRadius('torsoRadius', 1.15);
 // 首まわりの開口は Top(1.8)より広くして、肩の丸みで Top の外側に重ねる。
@@ -25,7 +23,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          anchorYSocket,
           colorSocket('#4a5c3e'),
         ],
       },

@@ -17,7 +17,7 @@ describe('scarfGroup', () => {
     tailLength: 0.35,
     segments: 20,
     bulge: 1.05,
-    offsetY: 0.08,
+    y: 1.2969,
   };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
@@ -39,13 +39,13 @@ describe('scarfGroup', () => {
   it('タイは tailCenterY(= (0 - bandThickness) - tailLength × 0.5)の高さまで垂れ下がる', () => {
     // 帯自身のY方向の広がり(厚み ±bandThickness/2 程度)より、タイの下端の方がずっと低いため、
     // 全体の bounding box の下端はタイ側で決まる。negatedBandThickness/halfTailLength/
-    // tailCenterY の四則演算チェーンと translate の Y への配線、さらに garmentPlacement の
-    // offsetY(既定0.08)ぶんの平行移動が正しいことの検証になる。
+    // tailCenterY の四則演算チェーンと translate の Y への配線、さらに末端の translate の
+    // y(既定1.2969)ぶんの平行移動が正しいことの検証になる。
     const result = getNodeType('scarfGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     const tailCenterY = -DEFAULTS.bandThickness - DEFAULTS.tailLength / 2;
-    const expectedMinY = tailCenterY - DEFAULTS.tailLength / 2 + DEFAULTS.offsetY;
+    const expectedMinY = tailCenterY - DEFAULTS.tailLength / 2 + DEFAULTS.y;
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedMinY, 2);
   });
 });

@@ -1,11 +1,11 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** shoesSoleScale(numberInput)+profile(easedLatheCurve)+latheGen(latheGenerator)+
  * scaleZ(scale)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+
- * placement(garmentPlacement)+sceneOut(sceneOutput)の9ノードを1枚にまとめたグループノード。
+ * placement(translate)+sceneOut(sceneOutput)の9ノードを1枚にまとめたグループノード。
  * Sole Radius と Cuff Radius は、どちらもボディの脚の半径に倍率を掛けた固定値(`scale`/`cuffScale`、`fixedBodyRadius()`)。
  * Sole Radius/Cuff Radius/Height/Toe Length/Segments は他のガーメントと共有されない
  * 単独パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
@@ -16,9 +16,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 楕円形のシルエットを作る `.scale(1, 1, toeLength)` は `scale`(X/Y/Z を持つ汎用の
  * 非一様スケールノード、`translate` と対になる形)の Z 入力欄だけを使って表現する。
  *
- * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される feetY)は外部ソケットのまま。 */
-const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
+ * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。 */
+const output = garmentOutput({ y: 0, geometry: 'mirror' });
 
 const scale = fixedBodyRadius('legRadius', 1.3);
 const cuffScale = fixedBodyRadius('legRadius', 0.91, 'cuffScale');
@@ -34,7 +33,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          anchorYSocket,
           colorSocket('#3d3630'),
         ],
       },

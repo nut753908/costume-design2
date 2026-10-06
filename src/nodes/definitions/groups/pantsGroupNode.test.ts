@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // pantsGroup の埋め込みサブグラフが参照する numberInput/numberMultiply/easedLatheCurve/
-// latheGenerator/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを
+// latheGenerator/mirrorPair/toonMaterial/translate/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
-
-function num(v: number) {
-  return { type: 'number' as const, value: v };
-}
 
 /** 内部の numberInput(`id`)の入力欄の値だけを差し替えた data で評価する。 */
 function evaluateWithInput(type: string, id: string, value: number) {
@@ -22,7 +18,7 @@ function evaluateWithInput(type: string, id: string, value: number) {
 // 終点=Hem Radius(BODY_DIMENSIONS.legRadius × 倍率)。いずれも固定値)を mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(pantsGroupNode.ts のコメント参照)。Leg Spacing は BODY_DIMENSIONS.legSpacing の固定値。
 describe('pantsGroup', () => {
-  const DEFAULTS = { waistRatio: 0.62, waistMinRatio: 1.1, hemRatio: 0.91, inseam: 1.04, offsetY: 0.1 };
+  const DEFAULTS = { waistRatio: 0.62, waistMinRatio: 1.1, hemRatio: 0.91, inseam: 1.04, y: 0.6754 };
   const { torsoRadius, legRadius } = BODY_DIMENSIONS;
   const waistRadius = Math.max(DEFAULTS.waistRatio * torsoRadius, DEFAULTS.waistMinRatio * legRadius);
   const maxRadius = Math.max(waistRadius, DEFAULTS.hemRatio * legRadius);
@@ -61,21 +57,12 @@ describe('pantsGroup', () => {
     expect(geom!.boundingBox!.max.x).toBeCloseTo(0.3 + maxRadius, 5);
   });
 
-  it('Inseam ぶん下(-Y)に伸び、Offset Y(既定0.1)だけ全体が押し上げられる', () => {
+  it('Inseam ぶん下(-Y)に伸び、取り付け位置 y(既定0.6754)だけ全体が押し上げられる', () => {
     const result = getNodeType('pantsGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.inseam + DEFAULTS.offsetY, 5);
-    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.offsetY, 5);
+    expect(geom!.boundingBox!.min.y).toBeCloseTo(-DEFAULTS.inseam + DEFAULTS.y, 5);
+    expect(geom!.boundingBox!.max.y).toBeCloseTo(DEFAULTS.y, 5);
   });
 
-  it('anchorY が配線されると Offset Y に加算されてさらに平行移動される', () => {
-    const withoutAnchor = getNodeType('pantsGroup').evaluate({}, {});
-    const withAnchor = getNodeType('pantsGroup').evaluate({ anchorY: num(1) }, {});
-    const geomWithout = withoutAnchor.sceneOutputGeometry0?.type === 'geometry' ? withoutAnchor.sceneOutputGeometry0.value : undefined;
-    const geomWith = withAnchor.sceneOutputGeometry0?.type === 'geometry' ? withAnchor.sceneOutputGeometry0.value : undefined;
-    geomWithout!.computeBoundingBox();
-    geomWith!.computeBoundingBox();
-    expect(geomWith!.boundingBox!.min.y).toBeCloseTo(geomWithout!.boundingBox!.min.y + 1, 5);
-  });
 });

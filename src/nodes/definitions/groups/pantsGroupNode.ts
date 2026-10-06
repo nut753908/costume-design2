@@ -1,11 +1,11 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 
 /** pantsWaistScale(numberInput)+profile(easedLatheCurve)+legGen(latheGenerator)+
  * mirror(mirrorPair)+pantsMaterial(toonMaterial)+
- * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
+ * placement(translate)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * 腰側の Waist Radius は腰(お尻)を包むのでボディの胴体半径、裾の
  * Hem Radius は脚の半径に、それぞれ倍率を掛けた固定値(`scale`/`hemScale`、`fixedBodyRadius()`)。
  * Waist Radius は脚の半径 × 1.1(`waistMin`)を下限にする(`waistRadius`、`numberMax`)ので、
@@ -17,9 +17,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 左右対称ペアへまとめる処理(`mirror`)は分離している(`limbPair.ts` の腕/脚の
  * `cylinderGenerator`→`mirrorPair` と同じ形、`nodes/CLAUDE.md` 参照)。
  *
- * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)は外部ソケットのまま。 */
-const output = garmentOutput({ offsetY: 0.1, geometry: 'mirror' });
+ * Leg Spacing(`legSpacing`)は bodyGroup の脚と同じ値(ボディの基準寸法)の固定値。 */
+const output = garmentOutput({ y: 0.6754, geometry: 'mirror' });
 
 const scale = fixedBodyRadius('torsoRadius', 0.62);
 const hemScale = fixedBodyRadius('legRadius', 0.91, 'hemScale');
@@ -36,7 +35,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          anchorYSocket,
           colorSocket('#9c7b4f'),
         ],
       },
