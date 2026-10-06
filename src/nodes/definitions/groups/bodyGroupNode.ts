@@ -14,7 +14,7 @@ import { colorSocket, shadowMaterialParts } from '../garmentOutput';
  *   `rotate` で前後へ傾け、`translate`(Y だけを配線)で置く。
  * - 頭+耳: `headShape` と `earPair` を `translate` で置く。
  * - 腕1組/脚1組: 軸(`armShaft`/`legShaft`、`generic/limbShaft.ts`)と足(`footShape`)から
- *   `limbPair`(`generic/limbPair.ts`)で作る。軸の補助の算術ノード(`arm*`/`leg*`)は体型への追従量の調整。
+ *   `limbPair`(`generic/limbPair.ts`)で作る。軸の長さ・位置の補正は `armShaftAdjust`/`legShaftAdjust`。
  * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
  * belt+box を `mergeGeometry` でまとめるのと同じ形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。
  * 全パーツが同じマテリアルなので、結合した方がノードグラフ上の階層が1段減る。
@@ -78,15 +78,8 @@ defineGroupNode({
 
     // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
     // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
-    // 腕の付け根を `armDropIn` だけ下げる(付け根の丸みを胴体の中へ埋め、肩の上に盛り上がって
-    // 見えないようにする)。手の位置は変えないよう、腕の長さをその分だけ短くし、腕の中心を半分だけ下げる。
-    { id: 'armDropIn', type: 'numberInput', data: { value: 0.0293 } },
-    { id: 'armDropHalf', type: 'numberHalf', data: {} },
-    // 腕の付け根(軸の上端)を首側(内側)へ `armInsetIn` だけ寄せる。手の位置は `swingAngle` で保つ。
-    { id: 'armInsetIn', type: 'numberInput', data: { value: 0.01843 } },
-    { id: 'armSpacingAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armCenterYAdjusted', type: 'numberSubtract', data: {} },
-    { id: 'armLengthAdjusted', type: 'numberSubtract', data: {} },
+    // 腕の付け根を胴体へ寄せる補正(下げる量・内側へ寄せる量は `armShaftAdjust` の `drop`/`inset` の既定値)。
+    { id: 'armAdjust', type: 'armShaftAdjust', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
     // 脚の軸の長さと持ち上げ量(下端を短く・上端を伸ばす。値は `legShaftAdjust` の `trim`/`raise` の既定値)。
     { id: 'legAdjust', type: 'legShaftAdjust', data: {} },
@@ -132,18 +125,14 @@ defineGroupNode({
 
     { source: 'input', sourceHandle: 'armRadius', target: 'armPair', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'armRadius', target: 'armShaftGen', targetHandle: 'radius' },
-    { source: 'armLengthAdjusted', sourceHandle: 'value', target: 'armShaftGen', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'armLength', target: 'armAdjust', targetHandle: 'length' },
+    { source: 'input', sourceHandle: 'armCenterY', target: 'armAdjust', targetHandle: 'centerY' },
+    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armAdjust', targetHandle: 'spacing' },
+    { source: 'armAdjust', sourceHandle: 'length', target: 'armShaftGen', targetHandle: 'length' },
+    { source: 'armAdjust', sourceHandle: 'length', target: 'armPair', targetHandle: 'length' },
+    { source: 'armAdjust', sourceHandle: 'spacing', target: 'armPair', targetHandle: 'spacing' },
+    { source: 'armAdjust', sourceHandle: 'centerY', target: 'armPair', targetHandle: 'centerY' },
     { source: 'armShaftGen', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'shaft' },
-    { source: 'input', sourceHandle: 'armLength', target: 'armLengthAdjusted', targetHandle: 'a' },
-    { source: 'armDropIn', sourceHandle: 'value', target: 'armLengthAdjusted', targetHandle: 'b' },
-    { source: 'armLengthAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'length' },
-    { source: 'armDropIn', sourceHandle: 'value', target: 'armDropHalf', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'armCenterY', target: 'armCenterYAdjusted', targetHandle: 'a' },
-    { source: 'armDropHalf', sourceHandle: 'value', target: 'armCenterYAdjusted', targetHandle: 'b' },
-    { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armSpacingAdjusted', targetHandle: 'a' },
-    { source: 'armInsetIn', sourceHandle: 'value', target: 'armSpacingAdjusted', targetHandle: 'b' },
-    { source: 'armSpacingAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'spacing' },
-    { source: 'armCenterYAdjusted', sourceHandle: 'value', target: 'armPair', targetHandle: 'centerY' },
 
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
