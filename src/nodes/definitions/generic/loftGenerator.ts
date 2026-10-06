@@ -46,6 +46,8 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
  * 前後へずらして表す(前後で別々の半径にすると、側面の継ぎ目に稜線が立つ)。
  * `tiltProfile`(符号付きの曲線、値は度数)を繋ぐと、各高さの輪を輪の中心まわりに前後へ傾ける(正で輪の面の法線が前(+Z)を向き、
  * 輪の後ろ側が上がり前側が下がる)。軸が斜めに曲がった部分(胴体から前へ傾く首)の輪を、軸に垂直にするためのもの。
+ * `ringProfile`(`ringSpacingCurve`)を繋ぐと、輪を置く高さの割合を等間隔ではなくその曲線で決める(球の極のように曲線が
+ * 急に曲がる所へ輪を密に置いて、少ない段数でなめらかな面にする)。
  * 曲線は同じ高さの範囲を持つこと(同じ `t` で同じ高さを指すこと)を前提にする。 */
 registerNodeType<LoftGeneratorData>({
   type: 'loftGenerator',
@@ -57,6 +59,7 @@ registerNodeType<LoftGeneratorData>({
     { id: 'dropProfile', label: 'Drop Profile (Y)', type: 'curve' },
     { id: 'offsetZProfile', label: 'Offset Profile (Z)', type: 'curve' },
     { id: 'tiltProfile', label: 'Tilt Profile (deg)', type: 'curve' },
+    { id: 'ringProfile', label: 'Ring Spacing', type: 'curve' },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -66,25 +69,32 @@ registerNodeType<LoftGeneratorData>({
     if (!inputs.profile || inputs.profile.type !== 'curve') return {};
     const segments = Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 24)));
     const steps = Math.max(1, Math.round(asNumber(inputs.steps, data.steps ?? 24)));
-    const points = inputs.profile.value.getPoints(steps);
+    // `ringProfile`(`ringSpacingCurve`)を繋ぐと、輪の高さの割合を等間隔(`i / steps`)ではなく曲線の値にする。
+    // 全プロファイル曲線を同じ割合で評価する(曲線が急に曲がる所へ輪を密に置ける)。
+    const ringT = (i: number) => {
+      const u = i / steps;
+      return inputs.ringProfile?.type === 'curve' ? inputs.ringProfile.value.getPoint(u).x : u;
+    };
+    const sample = (curve: THREE.Curve<THREE.Vector2>) => Array.from({ length: steps + 1 }, (_, i) => curve.getPoint(ringT(i)));
+    const points = sample(inputs.profile.value);
     const geometry = new THREE.LatheGeometry(points, segments);
     if (inputs.depthProfile?.type === 'curve') {
       const ratioOf = (curve: THREE.Curve<THREE.Vector2>) =>
-        curve.getPoints(steps).map((depthPoint, i) => (points[i].x > 1e-9 ? Math.max(0, depthPoint.x) / points[i].x : 1));
+        sample(curve).map((depthPoint, i) => (points[i].x > 1e-9 ? Math.max(0, depthPoint.x) / points[i].x : 1));
       const ratios = ratioOf(inputs.depthProfile.value);
       const position = geometry.getAttribute('position');
       // LatheGeometry の頂点は「セグメント(周方向)ごとに、輪郭の点を下から順に」並ぶ。
       // `dropProfile` の値(曲線の x)だけ、各高さの輪を丸ごと下げる(頭の下面のように、輪の形は保ったまま高さだけを
       // ずらす)。極の頂点も含めて全周を同じ量だけ動かすので、前後の境目やしわは出ない。
-      const drops = inputs.dropProfile?.type === 'curve' ? inputs.dropProfile.value.getPoints(steps).map((dropPoint) => dropPoint.x) : null;
+      const drops = inputs.dropProfile?.type === 'curve' ? sample(inputs.dropProfile.value).map((dropPoint) => dropPoint.x) : null;
       // `offsetZProfile` の値(曲線の x、符号付き)だけ、各高さの輪を丸ごと前(+Z)へずらす。前後を別々の半径にせず
       // 1つの楕円のまま前後非対称の形を表せるので、前後の継ぎ目に稜線(エッジ)ができない。
       const offsets =
-        inputs.offsetZProfile?.type === 'curve' ? inputs.offsetZProfile.value.getPoints(steps).map((offsetPoint) => offsetPoint.x) : null;
+        inputs.offsetZProfile?.type === 'curve' ? sample(inputs.offsetZProfile.value).map((offsetPoint) => offsetPoint.x) : null;
       // `tiltProfile` の値(度)だけ、各高さの輪を輪の中心まわりに X 軸方向へ傾ける。
       const tilts =
         inputs.tiltProfile?.type === 'curve'
-          ? inputs.tiltProfile.value.getPoints(steps).map((tiltPoint) => (tiltPoint.x * Math.PI) / 180)
+          ? sample(inputs.tiltProfile.value).map((tiltPoint) => (tiltPoint.x * Math.PI) / 180)
           : null;
       for (let i = 0; i < position.count; i++) {
         const ring = i % points.length;

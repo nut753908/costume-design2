@@ -52,7 +52,10 @@ defineGroupNode({
       type: 'profileCurve17',
       data: { r0: 0.053, r1: 0.05, r2: 0.052, r3: 0.056, r4: 0.052, r5: 0.032, r6: 0.012, r7: 0, r8: 0, r9: -0.0002369, r10: 0.008, r11: 0.008, r12: 0.002, r13: -0.001847, r14: 0.008, r15: 0, r16: 0 },
     },
-    { id: 'gen', type: 'loftGenerator', data: { steps: 48, segments: 64 } },
+    // 輪を置く高さの割合。あごの下(球の極に近い下面)や頭頂のように曲線が急に曲がる所へ輪を密に置いて、少ない段数
+    // (32)で、等間隔の48段より、プロファイル曲線からのずれを約1/3(最大 3.4 → 1.1 mm)にしている。
+    { id: 'ringSpacing', type: 'ringSpacingCurve', data: { r0: 0, r1: 0.024, r2: 0.0947, r3: 0.1583, r4: 0.23, r5: 0.322, r6: 0.482, r7: 0.6163, r8: 0.7703, r9: 0.8953, r10: 0.938, r11: 0.98, r12: 1 } },
+    { id: 'gen', type: 'loftGenerator', data: { steps: 32, segments: 64 } },
 
     {
       id: 'output',
@@ -82,6 +85,7 @@ defineGroupNode({
     { source: 'depthProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'depthProfile' },
     { source: 'offsetProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'offsetZProfile' },
     { source: 'dropProfile', sourceHandle: 'curve', target: 'gen', targetHandle: 'dropProfile' },
+    { source: 'ringSpacing', sourceHandle: 'curve', target: 'gen', targetHandle: 'ringProfile' },
     { source: 'gen', sourceHandle: 'geometry', target: 'output', targetHandle: 'geometry' },
   ],
 });

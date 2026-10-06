@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 import { SignedSplineCurve, SplineProfileCurve } from '../../../geometry/splineProfile';
+import { RingSpacingCurve } from '../../../geometry/ringSpacing';
 import './loftGenerator';
 
 const num = (value: number) => ({ type: 'number' as const, value });
@@ -183,5 +184,30 @@ describe('loftGenerator の tiltProfile', () => {
       expect(b.getY(i)).toBeCloseTo(a.getY(i), 8);
       expect(b.getZ(i)).toBeCloseTo(a.getZ(i), 8);
     }
+  });
+});
+
+describe('loftGenerator の ringProfile', () => {
+  const runWith = (ring?: number[]) => {
+    const inputs: Record<string, unknown> = {
+      profile: { type: 'curve', value: new THREE.LineCurve(new THREE.Vector2(1, 0), new THREE.Vector2(1, 10)) },
+      steps: { type: 'number', value: 4 },
+      segments: { type: 'number', value: 8 },
+    };
+    if (ring) inputs.ringProfile = { type: 'curve', value: new RingSpacingCurve(ring) };
+    const out = getNodeType('loftGenerator').evaluate(inputs as never, {}).geometry;
+    const position = (out as { value: THREE.BufferGeometry }).value.getAttribute('position');
+    const ys = new Set<number>();
+    for (let i = 0; i < position.count; i++) ys.add(Math.round(position.getY(i) * 1e6) / 1e6);
+    return [...ys].sort((a, b) => a - b);
+  };
+
+  it('ringProfile が未接続なら、輪は等間隔(これまでと同じ)', () => {
+    expect(runWith()).toEqual([0, 2.5, 5, 7.5, 10]);
+  });
+
+  it('ringProfile の値の高さの割合に輪が置かれる(端の近くに密に置ける)', () => {
+    const ys = runWith([0, 0.05, 0.5, 0.95, 1]);
+    expect(ys).toEqual([0, 0.5, 5, 9.5, 10]);
   });
 });
