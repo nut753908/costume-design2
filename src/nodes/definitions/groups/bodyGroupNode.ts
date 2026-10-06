@@ -119,7 +119,6 @@ defineGroupNode({
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoY', targetHandle: 'b' },
     { source: 'torsoY', sourceHandle: 'value', target: 'torsoTranslate', targetHandle: 'y' },
 
-
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
     { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'headCenterY', target: 'headBottomY', targetHandle: 'a' },
@@ -141,7 +140,6 @@ defineGroupNode({
     { source: 'armAdjust', sourceHandle: 'spacing', target: 'armPair', targetHandle: 'spacing' },
     { source: 'armAdjust', sourceHandle: 'centerY', target: 'armPair', targetHandle: 'centerY' },
     { source: 'armShaftGen', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'shaft' },
-
 
     { source: 'input', sourceHandle: 'legRadius', target: 'legEnd', targetHandle: 'radius' },
     { source: 'legEnd', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'end' },

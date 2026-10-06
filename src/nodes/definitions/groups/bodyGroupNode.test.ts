@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { getNodeType } from '../../registry';
 // bodyGroup の埋め込みサブグラフが参照する torsoShape/sphereGenerator/
-// cylinderGenerator/mirrorPair/translate/mergeGeometry/toonMaterial/sceneOutput を
+// cylinderGenerator/mirrorPair/translate/mergeGeometry/toonShadowMaterial/sceneOutput を
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
 
