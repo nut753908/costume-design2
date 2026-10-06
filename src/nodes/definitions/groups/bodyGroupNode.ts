@@ -77,7 +77,7 @@ defineGroupNode({
     { id: 'earGen', type: 'earPair', data: {} },
 
     // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
-    // 手は手首から少し下に垂らした丸、足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
+    // 足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
     // 腕の付け根を胴体へ寄せる補正(下げる量・内側へ寄せる量は `armShaftAdjust` の `drop`/`inset` の既定値)。
     { id: 'armAdjust', type: 'armShaftAdjust', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
@@ -88,11 +88,18 @@ defineGroupNode({
     // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
     { id: 'footGen', type: 'footShape', data: {} },
     { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
-    { id: 'armPair', type: 'limbPair', data: { endRatio: 1.309, endScaleY: 1.0109, endScaleZ: 1.071, endShiftY: -0.5547, endShiftX: -0.2, endRoll: 2, swingAngle: 16.62, pitchAngle: -14.87, centerZ: -0.1151, endScaleX: 0.9, endPitch: -22.48 } },
+    { id: 'armPair', type: 'limbPair', data: { swingAngle: 16.62, pitchAngle: -14.87, centerZ: -0.1151 } },
+    // 腕の先端の手(手首から少し下に垂らした丸)と、脚の先端で足に隠れる小さな球。
+    {
+      id: 'armEnd',
+      type: 'limbEnd',
+      data: { ratio: 1.309, scaleX: 0.9, scaleY: 1.0109, scaleZ: 1.071, pitch: -22.48, roll: 2, shiftX: -0.2, shiftY: -0.5547 },
+    },
+    { id: 'legEnd', type: 'limbEnd', data: { ratio: 0.02 } },
     {
       id: 'legPair',
       type: 'limbPair',
-      data: { endRatio: 0.02, swingAngle: 2.388, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footX: -0.004, footPitch: 0.297 },
+      data: { swingAngle: 2.388, pitchAngle: 9.2, centerZ: 0.0205, footZ: -0.0367, footY: -0.008, footX: -0.004, footPitch: 0.297 },
     },
 
     // 全パーツを1つのジオメトリへ結合してから単一の sceneOutput へ。
@@ -123,7 +130,8 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'headCenterY', target: 'earGen', targetHandle: 'centerY' },
     { source: 'headZIn', sourceHandle: 'value', target: 'earGen', targetHandle: 'centerZ' },
 
-    { source: 'input', sourceHandle: 'armRadius', target: 'armPair', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'armRadius', target: 'armEnd', targetHandle: 'radius' },
+    { source: 'armEnd', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'end' },
     { source: 'input', sourceHandle: 'armRadius', target: 'armShaftGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'armLength', target: 'armAdjust', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'armCenterY', target: 'armAdjust', targetHandle: 'centerY' },
@@ -135,7 +143,8 @@ defineGroupNode({
     { source: 'armShaftGen', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'shaft' },
 
 
-    { source: 'input', sourceHandle: 'legRadius', target: 'legPair', targetHandle: 'radius' },
+    { source: 'input', sourceHandle: 'legRadius', target: 'legEnd', targetHandle: 'radius' },
+    { source: 'legEnd', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'end' },
     { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legAdjust', targetHandle: 'length' },
     { source: 'legAdjust', sourceHandle: 'length', target: 'legShaftGen', targetHandle: 'length' },

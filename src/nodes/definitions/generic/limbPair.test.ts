@@ -5,13 +5,18 @@ import '../../definitions';
 
 const num = (value: number) => ({ type: 'number' as const, value });
 
+// `end*` で始まる入力は先端の球(`limbEnd`)の入力へ(`endRatio` → `ratio` など)、それ以外は `limbPair` へ渡す。
 function evaluateBox(inputs: Record<string, number>) {
   // 軸は `armShaft`(中心が原点、高さ length)を `radius`/`length` で作って渡す。
   const shaft = getNodeType('armShaft').evaluate({ radius: num(inputs.radius), length: num(inputs.length) }, {}).geometry;
-  const result = getNodeType('limbPair').evaluate(
-    { ...Object.fromEntries(Object.entries(inputs).map(([k, v]) => [k, num(v)])), shaft },
-    {},
-  );
+  const endInputs: Record<string, ReturnType<typeof num>> = { radius: num(inputs.radius) };
+  const pairInputs: Record<string, ReturnType<typeof num>> = {};
+  for (const [k, v] of Object.entries(inputs)) {
+    if (k.startsWith('end')) endInputs[k.charAt(3).toLowerCase() + k.slice(4)] = num(v);
+    else if (k !== 'radius') pairInputs[k] = num(v);
+  }
+  const end = getNodeType('limbEnd').evaluate(endInputs, {}).geometry;
+  const result = getNodeType('limbPair').evaluate({ ...pairInputs, shaft, end }, {});
   const geometry = result.geometry?.type === 'geometry' ? result.geometry.value : undefined;
   geometry!.computeBoundingBox();
   return geometry!.boundingBox!;
@@ -53,7 +58,8 @@ describe('limbPair', () => {
     const bbox = (footX: number) => {
       const shaft = getNodeType('armShaft').evaluate({ radius: num(0.1), length: num(0.6) }, {}).geometry;
       const foot = { type: 'geometry' as const, value: new THREE.BoxGeometry(0.05, 0.05, 0.05) };
-      const inputs = { radius: num(0.1), length: num(0.6), spacing: num(0.3), centerY: num(1), endRatio: num(0.01), footX: num(footX), shaft, foot };
+      const end = getNodeType('limbEnd').evaluate({ radius: num(0.1), ratio: num(0.01) }, {}).geometry;
+      const inputs = { length: num(0.6), spacing: num(0.3), centerY: num(1), footX: num(footX), shaft, end, foot };
       const g = (getNodeType('limbPair').evaluate(inputs, {}).geometry as { value: THREE.BufferGeometry }).value;
       g.computeBoundingBox();
       return g.boundingBox!;

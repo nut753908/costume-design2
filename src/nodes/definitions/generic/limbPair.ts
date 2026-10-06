@@ -1,18 +1,16 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
-/** 腕/脚1本の軸(`armShaft`/`legShaft`、`limbShaft.ts`)を外部入力 `shaft` で受け取り、先端の手/足の球を
- * 結合して、±spacing だけ X方向に離した左右対称ペアにして Y方向へ配置するグループノード。
+/** 腕/脚1本の軸(`armShaft`/`legShaft`、`limbShaft.ts`)を外部入力 `shaft` で、先端の手の球(`limbEnd`)を
+ * `end` で受け取って結合し、±spacing だけ X方向に離した左右対称ペアにして Y方向へ配置するグループノード。
  * `bodyGroupNode.ts` が腕1組・脚1組の2箇所で使う。
  *
- * 根元(上端)の肩/股の丸みは、軸が球の半径ぶん外側まで伸びて自分で丸く閉じるので、関節の球は別に付けない
- * (付けると、球と軸の太さの違いが継ぎ目の輪になる)。先端(下端)には手/足になる球(`end`)を結合する(脚は代わりに `foot` を受け取るので、`endRatio` を小さくして球を隠す)。
- * 半径は `radius × endRatio`、`endScaleX`/`endScaleY`/`endScaleZ` で幅・上下・前後につぶし/伸ばし、
- * `endPitch`(度)で前後へ、`endRoll`(度)で左右へ傾け、中心を先端から `endShiftX`/`endShiftY`/`endShiftZ`(端の球の半径を単位にした量、
- * X は +が外側)だけずらす。腕(手)と脚(足)で形が違うので、どれも呼び出し側(`bodyGroup`)の入力欄の値で持つ。
- *
- * `swingAngle`(度)は、付け根(軸の上端の丸みの中心)を支点にして先端を外(+X 側、左右対称ペアの外側)へ
- * 振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度によらず有効。`pitchAngle`(度)は
- * 同じ支点で先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、`centerZ` は左右ペア全体の前後位置。 */
+ * - 根元(上端)の肩/股の丸みは、軸が球の半径ぶん外側まで伸びて自分で丸く閉じるので、関節の球は別に付けない
+ *   (付けると、球と軸の太さの違いが継ぎ目の輪になる)。
+ * - 先端(下端): `end`(軸の先端が原点の形)を高さ -length/2 へ置く。脚は代わりに `foot`(かかとが原点の形)を
+ *   `footY`/`footZ`/`footX`(+が外側)だけずらし、`footPitch`(度)だけ前後へ傾けて置く(脚の `end` は小さな球で隠す)。
+ * - `swingAngle`(度)は、付け根(軸の上端の丸みの中心)を支点にして先端を外(+X 側、左右対称ペアの外側)へ
+ *   振る角度。支点は動かないので、`centerY`(付け根の高さから決まる位置)は角度によらず有効。`pitchAngle`(度)は
+ *   同じ支点で先端を後ろ(-Z)へ振る角度(前へ振るなら負)で、`centerZ` は左右ペア全体の前後位置。 */
 defineGroupNode({
   type: 'limbPair',
   label: 'Limb Pair',
@@ -23,24 +21,15 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'shaft', label: 'Shaft', type: 'geometry' },
+          { id: 'end', label: 'End', type: 'geometry' },
           { id: 'foot', label: 'Foot', type: 'geometry' },
-          { id: 'radius', label: 'Radius', type: 'number', default: 0 },
           { id: 'length', label: 'Length', type: 'number', default: 0 },
           { id: 'spacing', label: 'Spacing', type: 'number', default: 0 },
           { id: 'centerY', label: 'Center Y', type: 'number', default: 0 },
-          { id: 'endRatio', label: 'End Ratio', type: 'number', default: 1 },
-          { id: 'endScaleX', label: 'End Scale X', type: 'number', default: 1 },
-          { id: 'endScaleY', label: 'End Scale Y', type: 'number', default: 1 },
-          { id: 'endScaleZ', label: 'End Scale Z', type: 'number', default: 1 },
-          { id: 'endPitch', label: 'End Pitch (deg)', type: 'number', default: 0 },
           { id: 'footY', label: 'Foot Y', type: 'number', default: 0 },
           { id: 'footZ', label: 'Foot Z', type: 'number', default: 0 },
           { id: 'footX', label: 'Foot X', type: 'number', default: 0 },
           { id: 'footPitch', label: 'Foot Pitch (deg)', type: 'number', default: 0 },
-          { id: 'endShiftY', label: 'End Shift Y', type: 'number', default: 0 },
-          { id: 'endShiftZ', label: 'End Shift Z', type: 'number', default: 0 },
-          { id: 'endShiftX', label: 'End Shift X', type: 'number', default: 0 },
-          { id: 'endRoll', label: 'End Roll (deg)', type: 'number', default: 0 },
           { id: 'swingAngle', label: 'Swing Angle (deg)', type: 'number', default: 0 },
           { id: 'pitchAngle', label: 'Pitch Angle (deg)', type: 'number', default: 0 },
           { id: 'centerZ', label: 'Center Z', type: 'number', default: 0 },
@@ -48,21 +37,13 @@ defineGroupNode({
       },
     },
     { id: 'halfLength', type: 'numberHalf', data: {} },
-    // 先端の球: 中心 = (0, -length/2 + endRadius × endShiftY, endRadius × endShiftZ)
-    { id: 'endRadius', type: 'numberMultiply', data: {} },
-    { id: 'end', type: 'sphereGenerator', data: {} },
-    { id: 'endScale', type: 'scale', data: {} },
-    { id: 'endTilt', type: 'rotate', data: {} },
+    // 先端の球(`end`、軸の先端が原点の形)を軸の先端の高さ(-length/2)へ置く。
+    { id: 'endLower', type: 'translate', data: {} },
     // 足(`foot`、かかとが原点の形)を先端の高さに置く: y = -length/2 + footY、z = footZ、x = footX(+が外側、footPitch 度だけ前後へ傾ける)。
     { id: 'footTilt', type: 'rotate', data: {} },
     { id: 'footBaseY', type: 'numberAdd', data: {} },
     { id: 'footTranslate', type: 'translate', data: {} },
     { id: 'negHalfLength', type: 'numberNegate', data: {} },
-    { id: 'endLift', type: 'numberMultiply', data: {} },
-    { id: 'endY', type: 'numberAdd', data: {} },
-    { id: 'endZ', type: 'numberMultiply', data: {} },
-    { id: 'endX', type: 'numberMultiply', data: {} },
-    { id: 'endTranslate', type: 'translate', data: {} },
     { id: 'withJoint', type: 'mergeGeometry', data: {} },
     // 付け根(軸の上端の丸みの中心)を支点に、先端を外(+X 側)へ swingAngle 度だけ振る。
     { id: 'pivotDown', type: 'translate', data: {} },
@@ -80,8 +61,10 @@ defineGroupNode({
   ],
   internalEdges: [
     { source: 'input', sourceHandle: 'length', target: 'halfLength', targetHandle: 'value' },
+    { source: 'input', sourceHandle: 'end', target: 'endLower', targetHandle: 'geometry' },
+    { source: 'negHalfLength', sourceHandle: 'value', target: 'endLower', targetHandle: 'y' },
     { source: 'input', sourceHandle: 'shaft', target: 'withJoint', targetHandle: 'geometries' },
-    { source: 'endTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
+    { source: 'endLower', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
     { source: 'input', sourceHandle: 'foot', target: 'footTilt', targetHandle: 'geometry' },
     { source: 'input', sourceHandle: 'footPitch', target: 'footTilt', targetHandle: 'x' },
     { source: 'footTilt', sourceHandle: 'geometry', target: 'footTranslate', targetHandle: 'geometry' },
@@ -92,29 +75,7 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'footX', target: 'footTranslate', targetHandle: 'x' },
     { source: 'footTranslate', sourceHandle: 'geometry', target: 'withJoint', targetHandle: 'geometries' },
 
-    { source: 'input', sourceHandle: 'radius', target: 'endRadius', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'endRatio', target: 'endRadius', targetHandle: 'factor' },
-    { source: 'endRadius', sourceHandle: 'value', target: 'end', targetHandle: 'radius' },
-    { source: 'end', sourceHandle: 'geometry', target: 'endScale', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'endScaleX', target: 'endScale', targetHandle: 'x' },
-    { source: 'input', sourceHandle: 'endScaleY', target: 'endScale', targetHandle: 'y' },
-    { source: 'input', sourceHandle: 'endScaleZ', target: 'endScale', targetHandle: 'z' },
     { source: 'halfLength', sourceHandle: 'value', target: 'negHalfLength', targetHandle: 'value' },
-    { source: 'endRadius', sourceHandle: 'value', target: 'endLift', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'endShiftY', target: 'endLift', targetHandle: 'factor' },
-    { source: 'negHalfLength', sourceHandle: 'value', target: 'endY', targetHandle: 'a' },
-    { source: 'endLift', sourceHandle: 'value', target: 'endY', targetHandle: 'b' },
-    { source: 'endRadius', sourceHandle: 'value', target: 'endZ', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'endShiftZ', target: 'endZ', targetHandle: 'factor' },
-    { source: 'endRadius', sourceHandle: 'value', target: 'endX', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'endShiftX', target: 'endX', targetHandle: 'factor' },
-    { source: 'endX', sourceHandle: 'value', target: 'endTranslate', targetHandle: 'x' },
-    { source: 'input', sourceHandle: 'endRoll', target: 'endTilt', targetHandle: 'z' },
-    { source: 'endScale', sourceHandle: 'geometry', target: 'endTilt', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'endPitch', target: 'endTilt', targetHandle: 'x' },
-    { source: 'endTilt', sourceHandle: 'geometry', target: 'endTranslate', targetHandle: 'geometry' },
-    { source: 'endY', sourceHandle: 'value', target: 'endTranslate', targetHandle: 'y' },
-    { source: 'endZ', sourceHandle: 'value', target: 'endTranslate', targetHandle: 'z' },
     { source: 'withJoint', sourceHandle: 'geometry', target: 'pivotDown', targetHandle: 'geometry' },
     { source: 'negHalfLength', sourceHandle: 'value', target: 'pivotDown', targetHandle: 'y' },
     { source: 'pivotDown', sourceHandle: 'geometry', target: 'swing', targetHandle: 'geometry' },
