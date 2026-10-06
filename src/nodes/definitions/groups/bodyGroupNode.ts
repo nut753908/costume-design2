@@ -1,5 +1,5 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { colorSocket } from '../garmentOutput';
+import { colorSocket, shadowMaterialParts } from '../garmentOutput';
 
 /** Body を他14種のガーメントと同じ「`<name>Group` ノード」パターンで表現する。
  * `Garments.tsx` はノードの型を問わず内部の `sceneOutput` だけを見て描画するため、
@@ -51,9 +51,8 @@ defineGroupNode({
         ],
       },
     },
-    // 肌は影が暗くなるだけでなく暖かい色へ移る塗りにする(`toonShadowMaterial`)。影の色は肌の色から `shade` で作る。
-    { id: 'shade', type: 'shadeColor', data: {} },
-    { id: 'material', type: 'toonShadowMaterial', data: {} },
+    // 肌もガーメントと同じ塗り(`shade` + `toonShadowMaterial`)。
+    ...shadowMaterialParts().nodes,
 
     // 胴体(torsoShape、原点が股)。
     { id: 'torsoGen', type: 'torsoShape', data: {} },
@@ -184,9 +183,7 @@ defineGroupNode({
     { source: 'legPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
 
     { source: 'merge', sourceHandle: 'geometry', target: 'sceneOut', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'color', target: 'material', targetHandle: 'color' },
-    { source: 'input', sourceHandle: 'color', target: 'shade', targetHandle: 'color' },
-    { source: 'shade', sourceHandle: 'color', target: 'material', targetHandle: 'shadowColor' },
+    ...shadowMaterialParts().edges,
     { source: 'material', sourceHandle: 'material', target: 'sceneOut', targetHandle: 'material' },
   ],
 });
