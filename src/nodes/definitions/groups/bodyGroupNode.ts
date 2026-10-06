@@ -5,9 +5,8 @@ import { colorSocket, shadowMaterialParts } from '../garmentOutput';
  * `Garments.tsx` はノードの型を問わず内部の `sceneOutput` だけを見て描画するため、
  * `bodyGroup` もガーメントと全く同じ経路でシーンへ描画される(ルート CLAUDE.md 参照)。
  *
- * 外部ソケットのうち、寸法(半径・長さ・間隔)は固定値のリテラルを既定値に持つ
- * (グループカードの入力欄から調整する)。胴体・頭・腕・脚のY座標(`legCenterY`/`waistY`/`headCenterY`/`armCenterY`)も
- * 外部ソケットで、寸法とは連動しない固定値(寸法を変えたときは、これも手で直す)を既定値に持つ。
+ * 外部ソケットは寸法(半径・長さ・間隔)で、固定値のリテラルを既定値に持つ(グループカードの入力欄から調整する)。
+ * 胴体・頭・腕・脚のY座標は、この寸法から `bodyLayout`(`generic/bodyLayout.ts`)が求める(寸法を変えると位置も連動する)。
  *
  * 部位ごとの構成:
  * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で `extra` に首の長さの 2.4 倍を渡す)を
@@ -41,14 +40,13 @@ defineGroupNode({
           { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0.0523 },
           { id: 'shoulderSpacing', label: 'Shoulder Spacing', type: 'number', default: 0.1443 },
           { id: 'neckLength', label: 'Neck Length', type: 'number', default: 0.0565 },
-          { id: 'legCenterY', label: 'Leg Center Y', type: 'number', default: 0.2877 },
-          { id: 'waistY', label: 'Waist Y', type: 'number', default: 0.5754 },
-          { id: 'headCenterY', label: 'Head Center Y', type: 'number', default: 1.5699999999999998 },
-          { id: 'armCenterY', label: 'Arm Center Y', type: 'number', default: 0.8598699999999999 },
           colorSocket('#fae6da'),
         ],
       },
     },
+
+    // 胴体・頭・腕・脚のY座標(寸法から求める)。
+    { id: 'layout', type: 'bodyLayout', data: {} },
 
     // 肌もガーメントと同じ塗り(`shade` + `toonShadowMaterial`)。
     ...shadowMaterialParts().nodes,
@@ -108,6 +106,12 @@ defineGroupNode({
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
+    { source: 'input', sourceHandle: 'legHeight', target: 'layout', targetHandle: 'legHeight' },
+    { source: 'input', sourceHandle: 'torsoLength', target: 'layout', targetHandle: 'torsoLength' },
+    { source: 'input', sourceHandle: 'torsoRadius', target: 'layout', targetHandle: 'torsoRadius' },
+    { source: 'input', sourceHandle: 'neckLength', target: 'layout', targetHandle: 'neckLength' },
+    { source: 'input', sourceHandle: 'headRadius', target: 'layout', targetHandle: 'headRadius' },
+    { source: 'input', sourceHandle: 'armLength', target: 'layout', targetHandle: 'armLength' },
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoLengthLifted', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoLengthLifted', targetHandle: 'b' },
@@ -116,25 +120,25 @@ defineGroupNode({
     { source: 'neckExtension', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'extra' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTilt', targetHandle: 'geometry' },
     { source: 'torsoTilt', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'waistY', target: 'torsoY', targetHandle: 'a' },
+    { source: 'layout', sourceHandle: 'waistY', target: 'torsoY', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoY', targetHandle: 'b' },
     { source: 'torsoY', sourceHandle: 'value', target: 'torsoTranslate', targetHandle: 'y' },
 
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
     { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
-    { source: 'input', sourceHandle: 'headCenterY', target: 'headBottomY', targetHandle: 'a' },
+    { source: 'layout', sourceHandle: 'headCenterY', target: 'headBottomY', targetHandle: 'a' },
     { source: 'input', sourceHandle: 'headRadius', target: 'headBottomY', targetHandle: 'b' },
     { source: 'headBottomY', sourceHandle: 'value', target: 'headTranslate', targetHandle: 'y' },
     { source: 'headZIn', sourceHandle: 'value', target: 'headTranslate', targetHandle: 'z' },
     { source: 'input', sourceHandle: 'headRadius', target: 'earGen', targetHandle: 'radius' },
-    { source: 'input', sourceHandle: 'headCenterY', target: 'earGen', targetHandle: 'centerY' },
+    { source: 'layout', sourceHandle: 'headCenterY', target: 'earGen', targetHandle: 'centerY' },
     { source: 'headZIn', sourceHandle: 'value', target: 'earGen', targetHandle: 'centerZ' },
 
     { source: 'input', sourceHandle: 'armRadius', target: 'armEnd', targetHandle: 'radius' },
     { source: 'armEnd', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'end' },
     { source: 'input', sourceHandle: 'armRadius', target: 'armShaftGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'armLength', target: 'armAdjust', targetHandle: 'length' },
-    { source: 'input', sourceHandle: 'armCenterY', target: 'armAdjust', targetHandle: 'centerY' },
+    { source: 'layout', sourceHandle: 'armCenterY', target: 'armAdjust', targetHandle: 'centerY' },
     { source: 'input', sourceHandle: 'shoulderSpacing', target: 'armAdjust', targetHandle: 'spacing' },
     { source: 'armAdjust', sourceHandle: 'length', target: 'armShaftGen', targetHandle: 'length' },
     { source: 'armAdjust', sourceHandle: 'length', target: 'armPair', targetHandle: 'length' },
@@ -156,7 +160,7 @@ defineGroupNode({
     { source: 'footGen', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'foot' },
     { source: 'input', sourceHandle: 'legHeight', target: 'legPair', targetHandle: 'length' },
     { source: 'input', sourceHandle: 'legSpacing', target: 'legPair', targetHandle: 'spacing' },
-    { source: 'input', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
+    { source: 'layout', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
 
     { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },

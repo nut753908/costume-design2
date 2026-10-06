@@ -32,30 +32,24 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
-  it('首は胴体の延長として作られ、neckLength の 2.4 倍だけ胴体の上端が高くなる', () => {
+  it('neckLength を大きくすると、その分だけ頭が上がる(頭の位置は寸法から内部で求める)', () => {
     const topOf = (neckLength: number) => {
-      const result = getNodeType('bodyGroup').evaluate(inputs({ torsoRadius: 0.15, torsoLength: 0.3, neckLength, waistY: 0, headCenterY: 0, legCenterY: 0, armCenterY: 0 }), {});
+      const result = getNodeType('bodyGroup').evaluate(inputs({ neckLength }), {});
       const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
       geom!.computeBoundingBox();
       return geom!.boundingBox!.max.y;
     };
-    // 胴体は股(原点)を支点に `torsoTilt` の角度だけ後ろへ傾いているので、延長の分は cos(傾き) 倍だけ上がる。
-    const tilt = (getNodeType('bodyGroup').createDefaultData() as { nodes: { id: string; data: { x: number } }[] }).nodes.find(
-      (n) => n.id === 'torsoTilt',
-    )!.data.x;
-    const rise = topOf(0.1) - topOf(0);
-    expect(rise).toBeGreaterThan(2.4 * 0.1 * Math.cos((tilt * Math.PI) / 180) - 0.02);
-    expect(rise).toBeLessThan(2.4 * 0.1 + 0.02);
+    expect(topOf(0.1) - topOf(0)).toBeCloseTo(0.1, 5);
   });
 
-  it('headCenterY が大きくなるほど結合済みジオメトリの上端(頭)が上がる', () => {
-    const lowResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 1.5 } }, {});
-    const highResult = getNodeType('bodyGroup').evaluate({ headCenterY: { type: 'number', value: 2.0 } }, {});
-    const lowGeom = lowResult.sceneOutputGeometry0?.type === 'geometry' ? lowResult.sceneOutputGeometry0.value : undefined;
-    const highGeom = highResult.sceneOutputGeometry0?.type === 'geometry' ? highResult.sceneOutputGeometry0.value : undefined;
-    lowGeom!.computeBoundingBox();
-    highGeom!.computeBoundingBox();
-    expect(highGeom!.boundingBox!.max.y).toBeGreaterThan(lowGeom!.boundingBox!.max.y);
+  it('legHeight を大きくすると、その分だけ全体の上端(頭)が上がる', () => {
+    const topOf = (legHeight: number) => {
+      const result = getNodeType('bodyGroup').evaluate(inputs({ legHeight }), {});
+      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
+      geom!.computeBoundingBox();
+      return geom!.boundingBox!.max.y;
+    };
+    expect(topOf(0.7) - topOf(0.5)).toBeCloseTo(0.2, 5);
   });
 
   it('color ソケットの既定値(#fae6da)が結合済みメッシュのマテリアルに使われ、注入した色で上書きできる', () => {
