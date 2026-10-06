@@ -9,7 +9,7 @@ import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMater
 export interface GroupNodeConfig {
   type: string;
   label: string;
-  /** パレットでの振り分け先。ガーメントと Body 関連(`bodyGroup`/`bodyLayout`)は
+  /** パレットでの振り分け先。ガーメントと Body(`bodyGroup`)は
    *  `'garment'`、自作グループは `'group'`、省略時は部品・補助(`'group-part'`)。 */
   paletteSection?: 'garment' | 'group-part' | 'group';
   /** テンプレートを持たない、ユーザーが中身を一から組む自作グループ(`customGroup`)。

@@ -18,10 +18,6 @@ import { computeAutoLayout } from '../nodes/autoLayout';
 // 専念するため)。ガーメントは各 <name>GroupNode.ts の定義が残っており、ノード追加メニューから
 // 追加できる。
 const initialNodeDefs: Omit<Node, 'position'>[] = [
-  // 配置Y座標(7個、うち5個は waist/shoulder/feet/wrist/head のアンカー候補)を計算する共有ノード。
-  // bodyGroup へ普通の外部ソケットとして渡す(nodes/CLAUDE.md の「グループノード」節参照)。
-  { id: 'bodyLayout', type: 'bodyLayoutGroup', data: {} },
-
   // Body(3Dモデル本体)。ガーメントと同じグループノードで、胴体/頭/腕/脚を
   // 組み立てて描画する(nodes/definitions/groups/bodyGroupNode.ts 参照)。寸法は
   // 固定値(bodyDimensionDefaults.ts)、配置Y座標も固定値で、どちらも外部ソケットの既定値として持つ。

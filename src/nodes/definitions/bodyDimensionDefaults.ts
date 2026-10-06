@@ -1,5 +1,4 @@
-/** ボディの各部位の半径・長さの基準値。ボディ(`bodyGroup`/`bodyLayout`)と各ガーメントの固定値の元になる単一の値で、`bodyGroup` の外部ソケットの既定値と
- * `bodyLayout` の内部の入力欄にここから値が入る(ガーメントの「体に触れる半径」は倍率を掛けたもの、`garmentParts.ts` の `fixedBodyRadius`)。 */
+/** ボディの各部位の半径・長さの基準値。`bodyGroup` の外部ソケットの既定値と各ガーメントの固定値の元になる値(ガーメントの「体に触れる半径」は倍率を掛けたもの、`garmentParts.ts` の `fixedBodyRadius`)。 */
 export const BODY_DIMENSIONS = {
   legHeight: 0.5754,
   legRadius: 0.0691,

@@ -19,7 +19,7 @@ function uniqueSocketId(sockets: GroupIOSocket[]): string {
 /** Blender の Geometry Nodes における「Group Output」ノード相当のカスタム描画。
  * グループの中に入っている間、外部へ公開したい内部ノードの出力をこのノードへ配線するだけで
  * グループ本体の外部から見える出力ハンドルが増減する(`nodes/definitions/groupOutput.ts`/
- * `nodes/resolveNodeSockets.ts` 参照)。geometry(`garmentPlacement`)/material(`toonMaterial`
+ * `nodes/resolveNodeSockets.ts` 参照)。geometry(`translate`)/material(`toonMaterial`
  * など)のような主要な出力も、他ガーメントへの再公開と同じくこのノードへの配線が必須
  * (`groupNodeFactory.ts` の `defineGroupNode()` 参照 — 区別しない)。`number`/`color` の入力に
  * 何も配線されていなければ、その行の入力欄(`SocketField.tsx`)でデフォルト値(`socket.default`)を

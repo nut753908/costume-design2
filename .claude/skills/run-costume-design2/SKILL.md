@@ -98,7 +98,7 @@ page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  
 ```
 
 ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
-`bodyLayout`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
+`bodyGroup`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
 (色を除く)は対応するグループの中のノード(`scale` など)の入力欄として
 埋め込まれている(色はグループカード自身の Color 欄)ため、上のステップ5と同様に
 まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。

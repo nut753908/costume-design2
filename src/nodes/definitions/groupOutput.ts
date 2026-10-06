@@ -5,8 +5,8 @@ import { literalGroupInputValue, type GroupIOSocket } from './groupIOSocket';
 /** Blender の Geometry Nodes における「Group Output」ノード相当。`data.sockets` が動的な
  * 入力ソケット一覧になり、グループ本体が外部に見せる出力ソケットもここから導出される
  * (`resolveNodeSockets.ts`/`groupNodeFactory.ts` 参照)。グループ本体の出力はすべて、この
- * ノードに実際に配線された値だけになる — `anchorY`/`offsetY` のように `garmentPlacement`
- * が内部で消費してジオメトリへ焼き込む値は、ここまで配線しない限り外へは出ない
+ * ノードに実際に配線された値だけになる — ガーメントの取り付け位置(`placement` の `y`)のように、
+ * 内部で消費してジオメトリへ焼き込む値は、ここまで配線しない限り外へは出ない
  * (詳細は `nodes/CLAUDE.md` の「グループノード」節)。 */
 export interface GroupOutputData extends Record<string, unknown> {
   sockets: GroupIOSocket[];

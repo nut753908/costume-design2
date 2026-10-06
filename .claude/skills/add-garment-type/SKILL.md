@@ -20,7 +20,7 @@ description: 新しいガーメント種(skirt/belt/hat のような衣装アイ
 
 - 三角形の巻き順が逆だと、手前の面がカリングで消えて**形が欠けて見える**。目視では原因に気づきにくいので `windingTestHelpers.ts` の `expectOutwardWinding()` で検証する。単純な放射対称形状(Y軸中心)でなければ、形状に応じた `axisPoint` を渡す必要がある(箱なら自身の中心点、鏡像ペアなら centroid ではなく index 位置で左右判定、など)。
 - `mergeGeometries()` は結合する全ジオメトリが同じ頂点属性(名前・itemSize)を持つことを要求する。標準プリミティブ(position/normal/uv)と手組み `BufferGeometry`(position のみ)を混ぜると `null` を返して後段が `Cannot read properties of null` で落ちる。`mergeGeometry` ノードは uv の有無だけの違いなら吸収するが、それ以外の属性の違いは吸収しない。
-- アンカーは体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`bagGroupNode.ts`/`glassesGroupNode.ts` の `bagFrontDepthCalc`/`forwardDepthCalc` のような固定 `numberInput`、`necktieGroupNode.ts` の `frontDepthIn` を参照)。また複数の出力ノードが同じアンカーを共有すると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
+- 取り付け位置は体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(`bagGroupNode.ts`/`glassesGroupNode.ts` の `bagFrontDepthCalc`/`forwardDepthCalc` のような固定 `numberInput`、`necktieGroupNode.ts` の `frontDepthIn` を参照)。また複数のガーメントを同時に着せると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
 
 ## 2. (方式2のみ)ジオメトリ関数とジェネレーターノード
 
@@ -46,34 +46,30 @@ defineGeneratorNode({
 - `fields` の `default` は `DEFAULTS`/`inputs`/`createDefaultData` に自動展開されるので、リテラル値を複数箇所に書く必要はない。
 - `build*Geometry` が受け取るがソケット化しない固定値(角度分割数など)は `fields` ではなく `extra` で渡す。
 
-## 3. 配置(anchorY 用の外部ソケット + offsetY 用の入力欄 / garmentPlacement)
+## 3. 配置(placement の `y`)
 
-ガーメント自体はどこにも取り付かない。取り付け位置は次の連携で決まる:
+ガーメントの形は自分の原点が基準で、ボディ上の取り付け位置は `placement`(汎用 `translate`、Y だけを配線)の入力欄 `y` の固定値で決まる(`garmentOutput({ y, geometry })` が設定する)。体の寸法とは連動しない固定値で、体の位置や大きさに囚われず自由に決める。`translate` は geometry の頂点そのものを平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。
 
-- `anchorY`(外部ソケット、`number`)— `src/state/initialGraph.ts` 側のトップレベル共有ノード `bodyLayout`(`bodyLayoutGroup`)が計算した5つのアンカー候補(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に使う1つを配線する(`state/initialGraph.ts` の `e-anchor-*` エッジを参照)。**新しいアンカー種を増やす場合はこの5候補と `bodyLayoutGroupNode.ts` 側の出力を同時に変更する必要がある**(通常の追加では既存5候補のどれかを再利用すれば足りる)。どのアンカーを使うかはこの配線そのものが仕様であり、実行時に選択する仕組みは無い(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
-- `offsetY` — アンカー座標からの微調整量。`garmentPlacement` の `Offset Y` 入力欄の値として持つ(`garmentOutput()` が設定する)。
-- `garmentPlacement` — `geometry`・`anchorY`・`offsetY` を受け取り、`anchorY + offsetY` を計算して geometry の頂点を平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。出力は位置が焼き込まれた geometry 1つだけ。
-
-`garmentPlacement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `sceneOutput` ノードへ**直接**配線する(anchorY/offsetY 自体はグループの外まで出ない)。
+`placement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `sceneOutput` ノードへ**直接**配線する。
 
 Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `sceneOutput` が転送する予約キー(`sceneOutputGeometry<N>`/`sceneOutputMaterial<N>`)を持つ評価結果を走査してレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
 
 ## 4. グループノードの定義(src/nodes/definitions/groups/\<name\>GroupNode.ts)
 
-`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
+`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`translate`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
-- `anchorYSocket`/`colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY`/`color`(既定の色 `hex`)ソケット定義。`garmentOutput({ offsetY, geometry })`(同ファイル)— `material`(toonMaterial、色は `input.color` から配線)→`sceneOut` と `input.anchorY`→`placement`(garmentPlacement、`Offset Y` 入力欄が offsetY)→`sceneOut` のノード3個・エッジ5本。`geometry` には最終的な geometry を出力するノードの id を渡す。
+- `colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `color`(既定の色 `hex`)ソケット定義。`garmentOutput({ y, geometry })`(同ファイル)— `material`(toonShadowMaterial、色は `input.color` から配線)→`sceneOut` と `placement`(translate、`y` 入力欄が取り付け位置)→`sceneOut` のノードと配線。`geometry` には最終的な geometry を出力するノードの id を渡す。
 - `fixedBodyRadius(radius, ratio)`(`garmentParts.ts`)— 「体に触れる半径」の固定値。ボディの基準寸法(`bodyDimensionDefaults.ts` の `BODY_DIMENSIONS`、`radius` は `'torsoRadius'`/`'legRadius'`/`'armRadius'`/`'neckRadius'`/`'headRadius'`)× 倍率(`ratio`)を、`scale`(`numberInput`)の入力欄の値として持つ。体の寸法を変えてもガーメントは追従しない(ガーメントに体の半径の外部ソケットは無い)。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheCurve`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
 
-外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、体の半径(`torsoRadius` など、体に追従させる半径がある場合)や `legSpacing`(どちらも `bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
+外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。ガーメントの外部ソケットは `color` だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
-import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
+import { colorSocket, garmentOutput } from '../garmentOutput';
 import { fixedBodyRadius, latheBody } from '../garmentParts';
 
-const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
+const output = garmentOutput({ y: 1.2169, geometry: 'gen' });
 const scale = fixedBodyRadius('torsoRadius', 1.15);
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 0.2, distance: 0.5, segments: 24 });
 
@@ -86,9 +82,8 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        // anchorY/color は全ガーメント共通で必須。
+        // color は全ガーメント共通で必須。
         sockets: [
-          anchorYSocket,
           colorSocket('#cccccc'),
         ],
       },
@@ -105,22 +100,22 @@ defineGroupNode({
 
 ## 5. initialGraph.ts への配線(慣例)
 
-既存14種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。**`anchorY` は、`garmentPlacement` の取り付け座標計算のために必ず配線すること** — トップレベルの共有ノード `bodyLayout`(`bodyLayoutGroup`)の5つのアンカー候補出力(`waistY`/`shoulderY`/`feetY`/`wristY`/`headCenterY`)のうち、そのガーメントが実際に取り付く1つを選び、`bodyLayout → xxxGroup.anchorY` という形で配線する(既存の `e-anchor-*` エッジを参照)。これを省くと、`garmentPlacement` は既定値(0)にフォールバックするため、そのガーメントが原点付近に張り付いたまま描画される。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`fixedBodyRadius()` で固定値にすること(体の寸法には追従しない)。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、そのまま入力欄の値でよい(ただし `anchorY` 配線は省略しない)。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
+既存14種は、ガーメント固有の生パラメータ・Color を上記のとおりグループの `internalNodes` に埋め込み済みのため、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(パレットからのドラッグ待ちにしていない、という方針自体は変わらない)。ガーメントの外部入力は `color` だけなので、配線は不要(取り付け位置は `placement` の `y` の固定値)。加えて、そのガーメントの「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)がある場合は、`fixedBodyRadius()` で固定値にすること(体の寸法には追従しない)。hand/cuff/calf/brim/crown 相当の独立したスタイル寄りの半径は、そのまま入力欄の値でよい。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
 
-新しいガーメントが `anchorY`(`bodyLayout` の計算結果を全ガーメントと共有する)のように**複数のグループで共有される値**を必要とする場合は、その値を生パラメータのグループへ内包せず、`src/state/initialGraph.ts` 側に外部の共有ノードとして置き、関係する各グループの `groupInput` ソケットへファンアウトすること(`bodyLayout.waistY → skirtGroup.anchorY` などの実例を参照)。ボディの寸法の固定値(間隔・半径)は共有ノードにせず、各グループが `bodyDimensionDefaults.ts` の `BODY_DIMENSIONS` から自分の `numberInput` の値として持つ。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
+新しいガーメントが、複数のグループで共有される値を必要とする場合は、その値を生パラメータのグループへ内包せず、`src/state/initialGraph.ts` 側に外部の共有ノードとして置き、関係する各グループの `groupInput` ソケットへファンアウトすること。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
 
 ノードの `position` は `initialGraph.ts` には書かず、モジュール読み込み時に `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンと同じ関数)で自動算出される。ガーメントを追加しても座標を手で更新する必要は無い(グループ内部の `internalNodes` の座標も同じく自動算出)。
 
 ## 6. テスト
 
 - **グループの配線**: `src/nodes/definitions/groupNodeWiring.test.ts` が登録済みの全グループ型について、内部ノードの type が登録済みか・内部エッジの端点が実在するノードの実在するソケットか・1入力に複数エッジが無いかを自動で走査するので、新しいグループも追加するだけで対象になる(タイポの検知はこれで足りる)。
-- **グループの挙動**: `src/nodes/definitions/groups/<name>GroupNode.test.ts` に、既定値での出力(`sceneOutputGeometry0`/`sceneOutputMaterial0` が出る)、体の半径(`torsoRadius` など)への追従、`anchorY` の加算、主なパラメータの効果を bounding box で検証する。Lathe 系は `direction` に応じたプロファイルの半径が単調に変化することを使って `LatheGeometry` の bounding box から期待値を計算できる(`skirtGroupNode.test.ts`/`pantsGroupNode.test.ts` 参照)。専用のジオメトリ関数を呼ぶ形(方式2)は `topGroupNode.test.ts`/`dressGroupNode.test.ts` のように `vi.spyOn` で呼び出し引数を検証する。
+- **グループの挙動**: `src/nodes/definitions/groups/<name>GroupNode.test.ts` に、既定値での出力(`sceneOutputGeometry0`/`sceneOutputMaterial0` が出る)、`placement` の `y` による取り付け位置、主なパラメータの効果を bounding box で検証する。Lathe 系は `direction` に応じたプロファイルの半径が単調に変化することを使って `LatheGeometry` の bounding box から期待値を計算できる(`skirtGroupNode.test.ts`/`pantsGroupNode.test.ts` 参照)。専用のジオメトリ関数を呼ぶ形(方式2)は `topGroupNode.test.ts`/`dressGroupNode.test.ts` のように `vi.spyOn` で呼び出し引数を検証する。
 - **(方式2のみ)ジオメトリ**(`src/geometry/<name>.test.ts`): 妥当性(index が3の倍数・NaN無し)、パラメータを変えたときの効果、`expectOutwardWinding()` による巻き順検証。`belt.test.ts`/`dress.test.ts`/`alignedBox.test.ts` を参照。
 - **(方式2のみ)ジェネレーター**(`groups/<name>Generator.test.ts`): `testHelpers.ts` の `expectGeneratorForwardsData()` で、フィールド名の取り違えが無いか検証する。
 
 ## 7. 見た目の確認
 
-テストと型チェックだけでは「実際に画面でどう見えるか」は分からない。[`run-costume-design2` スキル](../run-costume-design2/SKILL.md)でヘッドレスChromiumから実際にノードを繋いでスクリーンショットを撮り、形が欠けていないか・アンカー位置がおかしくないかを確認すること。
+テストと型チェックだけでは「実際に画面でどう見えるか」は分からない。[`run-costume-design2` スキル](../run-costume-design2/SKILL.md)でヘッドレスChromiumから実際にノードを繋いでスクリーンショットを撮り、形が欠けていないか・取り付け位置がおかしくないかを確認すること。
 
 ## 8. ドキュメント更新
 

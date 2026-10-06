@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // topGroup の埋め込みサブグラフが参照する numberInput/
-// garmentPlacement/easedLatheCurve/ringGridGenerator/sleevePair を含め、全ノードタイプを登録する。
+// translate/easedLatheCurve/ringGridGenerator/sleevePair を含め、全ノードタイプを登録する。
 import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
@@ -63,7 +63,7 @@ describe('topGroup', () => {
     expect(sleeveMinY(-BODY_DIMENSIONS.torsoRadius * 0.7)).toBeCloseTo(sleeveMinY(0) - BODY_DIMENSIONS.torsoRadius * 0.7, 5);
   });
 
-  it('Top と袖は1つのジオメトリへ結合され、sceneOutputGeometry0/sceneOutputMaterial0 の1組だけが出力される(anchor/offsetY は含まれない — garmentPlacement が内部で消費し座標へ焼き込む)', () => {
+  it('Top と袖は1つのジオメトリへ結合され、sceneOutputGeometry0/sceneOutputMaterial0 の1組だけが出力される(取り付け位置は `placement` の `y` が内部で消費して座標へ焼き込む)', () => {
     const result = getNodeType('topGroup').evaluate({}, {});
     expect(result.sceneOutputGeometry0?.type).toBe('geometry');
     expect(result.sceneOutputMaterial0?.type).toBe('material');

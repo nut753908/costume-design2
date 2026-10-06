@@ -6,8 +6,8 @@ import { getNodeType } from '../../registry';
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
 
-// bodyGroup の寸法は内部の固定値(numberInput)で、配置Y座標だけを state/initialGraph.ts 側の
-// 共有ノード bodyLayout から外部ソケットとして受け取る(bodyGroupNode.ts のコメント参照)。
+// bodyGroup の寸法と胴体/頭/腕/脚のY座標は、どれも外部ソケットで、未接続なら固定値が既定値になる
+// (bodyGroupNode.ts のコメント参照)。
 // 胴体/頭/腕/脚の4パーツは mergeGeometry で1つのジオメトリへ結合してから単一の
 // sceneOutput へ配線しているため、描画対象は常に1パーツ(インデックス0)だけになる。
 // 寸法(半径・長さ・間隔)は外部ソケットで、未接続なら BODY_DIMENSIONS の値が既定値になる。

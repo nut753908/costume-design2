@@ -13,13 +13,11 @@ import { initialEdges, initialNodes } from './initialGraph';
 describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () => {
   const nodesById = new Map(initialNodes.map((n) => [n.id, n]));
 
-  it('bodyGroup、bodyLayout が存在する', () => {
-    // これらのノードのいずれかが無くなっても evaluateGraph は例外を投げない(単に該当
-    // ソケットが未接続扱いになるだけ)ため、下記の整合性テスト群では検知できない。無くなると
-    // Body/各ガーメントが静かにデフォルト寸法・原点付近の位置にフォールバックしてしまうため、
-    // id の存在自体をここで保証する。肌色は bodyGroup の外部ソケット `color` の既定値として
-    // 持つため、ここには現れない(bodyGroupNode.test.ts 参照)。
-    expect(['bodyLayout', 'bodyGroup'].every((id) => nodesById.has(id))).toBe(true);
+  it('bodyGroup が存在する', () => {
+    // bodyGroup が無くなっても evaluateGraph は例外を投げない(単に何も描画されなくなる)ため、
+    // 下記の整合性テスト群では検知できない。id の存在自体をここで保証する。肌色は bodyGroup の
+    // 外部ソケット `color` の既定値として持つため、ここには現れない(bodyGroupNode.test.ts 参照)。
+    expect(nodesById.has('bodyGroup')).toBe(true);
   });
 
   it('ノードidに重複が無い', () => {
@@ -81,33 +79,6 @@ describe('initialNodes/initialEdges(デフォルトグラフ)の整合性', () =
       targetHandle: e.targetHandle,
     }));
     expect(() => evaluateGraph(graphNodes, graphEdges)).not.toThrow();
-  });
-});
-
-// evaluateGraph.ts のノード単位メモ化キャッシュ(nodes/CLAUDE.md の「ノードグラフエンジン」節
-// 参照)が、実際のデフォルトグラフの上でも意図どおりに
-// 効くことを検証する — 合成テストの小さなグラフ(evaluateGraph.test.ts)だけでなく、実際に
-// 「1つの値を動かすと無関係なグループは再評価されない」が成立していることの
-// 回帰テスト。
-describe('initialNodes/initialEdges でのノード単位メモ化', () => {
-  // evaluateGraph() が要求する GraphNode[]/GraphEdge[] へ変換する(上の「evaluateGraph が
-  // 例外を投げずに評価できる」テストと同じ変換)。
-  const graphNodes = initialNodes.map((n) => ({ id: n.id, type: n.type ?? '', data: n.data }));
-  const graphEdges = initialEdges.map((e) => ({
-    source: e.source,
-    sourceHandle: e.sourceHandle,
-    target: e.target,
-    targetHandle: e.targetHandle,
-  }));
-
-  it('無関係なトップレベルノード(bodyGroup)の data だけを差し替えても、bodyLayout の結果は同じ参照のまま再利用される', () => {
-    const before = evaluateGraph(graphNodes, graphEdges);
-    const changedNodes = graphNodes.map((n) =>
-      n.id === 'bodyGroup' ? { ...n, data: { ...n.data, memo: 'changed' } } : n,
-    );
-    const after = evaluateGraph(changedNodes, graphEdges);
-
-    expect(after.get('bodyLayout')).toBe(before.get('bodyLayout'));
   });
 });
 

@@ -66,8 +66,7 @@ export const BESPOKE_HEIGHT_TYPES: readonly string[] = [...Object.keys(BESPOKE_N
  * - それ以外(generator/material/output/group)は `GenericNode.tsx` の描画に対応する
  *   `CARD_BASE_HEIGHT + 行数 * CARD_ROW_HEIGHT`。行数は `resolveNodeSockets()` の入力+出力の合計
  *   (group の「中に入る」ボタンはタイトル行に収まるので高さに影響しない)。
- * - `garmentPlacement`(geometry)も静的な `outputs` として宣言されているため
- *   (`src/nodes/CLAUDE.md` の「グループノード」節参照)、個別の特殊扱いは不要で、
+ * - `translate` などの汎用ノードも静的な `outputs` として宣言されているため、個別の特殊扱いは不要で、
  *   この一般式にそのまま乗る。
  * - 複数接続できる入力ソケット(`SocketDef.multiple`)の行は接続本数に応じて高くなるため、
  *   `multiInputCounts`(ソケット id → 接続本数)の分を足す(`multiInputSocket.ts`)。
