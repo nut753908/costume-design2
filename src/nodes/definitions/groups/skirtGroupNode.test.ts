@@ -4,21 +4,22 @@ import { getNodeType } from '../../registry';
 // easedLatheCurve/latheGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// skirt は geometry/skirt.ts のような専用の build*Geometry() を持たず、waistRadius(= torsoRadius × 倍率)→
+// skirt は geometry/skirt.ts のような専用の build*Geometry() を持たず、waistRadius(= BODY_DIMENSIONS.torsoRadius × 倍率の固定値)→
 // hemRadius(= waistRadius × (1 + flare))という裾半径の導出も含めてすべて可視のノードグラフへ
 // 展開されている(skirtGroupNode.ts のコメント参照)。`Down` 出力の easedLatheCurve の
 // 半径は始点(waistRadius)→終点(hemRadius)まで単調に変化するため、LatheGeometry の
 // bounding box の X/Z 半径は必ず max(waistRadius, hemRadius) に一致する(latheProfile.ts 参照)。
 describe('skirtGroup', () => {
-  const DEFAULTS = { torsoRadius: 0.14, waistRatio: 1.15, length: 0.55, flare: 0.6, offsetY: 0.19 };
-  const hemRadius = (torsoRadius: number) => torsoRadius * DEFAULTS.waistRatio * (1 + DEFAULTS.flare);
+  const DEFAULTS = { waistRatio: 1.15, length: 0.55, flare: 0.6, offsetY: 0.19 };
+  const hemRadius = BODY_DIMENSIONS.torsoRadius * DEFAULTS.waistRatio * (1 + DEFAULTS.flare);
 
-  it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
+  it('未接続でも描画対象として出力される', () => {
     const result = getNodeType('skirtGroup').evaluate({}, {});
     expect(result.sceneOutputGeometry0?.type).toBe('geometry');
     expect(result.sceneOutputMaterial0?.type).toBe('material');
@@ -28,14 +29,7 @@ describe('skirtGroup', () => {
     const result = getNodeType('skirtGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(hemRadius(DEFAULTS.torsoRadius), 5);
-  });
-
-  it('torsoRadius に比例してウエスト/裾どちらもスケールする', () => {
-    const result = getNodeType('skirtGroup').evaluate({ torsoRadius: num(0.5) }, {});
-    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-    geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(hemRadius(0.5), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(hemRadius, 5);
   });
 
   it('Length ぶん下(-Y)に伸び、Offset Y(既定0.19)だけ全体が押し上げられる', () => {

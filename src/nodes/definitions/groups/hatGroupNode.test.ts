@@ -3,19 +3,18 @@ import { getNodeType } from '../../registry';
 // hatGroup の埋め込みサブグラフが参照する numberInput/easedLatheCurve/latheGenerator/
 // toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
-// hat は体の太さへの追従(numberMultiply の倍率)の対象外のため、他の
-// ガーメントと違い Body Build 入力を持たない。つばの半径は headRadius × Brim Ratio(既定 1.25、
-// 既定の headRadius 0.28 で 0.35)で決まる(hatGroupNode.ts のコメント参照)。
+// つばの半径はボディの基準の頭半径 × 1.25 の固定値(hatGroupNode.ts のコメント参照)。
 // `Up` 出力の easedLatheCurve は始点(つば=brimRadius、y=0)→終点(クラウン=
 // crownRadius、y=height)まで半径が単調に変化するため、bounding box の X/Z 半径は必ず
 // max(brimRadius, crownRadius) に一致する(既定値では brim の方が大きい)。
 describe('hatGroup', () => {
-  const DEFAULTS = { brimRadius: 0.35, crownRadius: 0.02, height: 0.35, offsetY: 0.1 };
+  const DEFAULTS = { brimRadius: BODY_DIMENSIONS.headRadius * 1.25, crownRadius: 0.02, height: 0.35, offsetY: 0.1 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('hatGroup').evaluate({}, {});
@@ -28,13 +27,6 @@ describe('hatGroup', () => {
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
     expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.brimRadius, 5);
-  });
-
-  it('外部から注入された headRadius に Brim Ratio(1.25)を掛けた値がつばの半径になる', () => {
-    const result = getNodeType('hatGroup').evaluate({ headRadius: num(0.24) }, {});
-    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-    geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.24 * 1.25, 5);
   });
 
   it('つば(y=0)から Height ぶん上(+Y)に伸び、Offset Y(既定0.1)だけ全体が押し上げられる', () => {

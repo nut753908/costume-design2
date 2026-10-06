@@ -1,36 +1,21 @@
+import { BODY_DIMENSIONS } from './bodyDimensionDefaults';
 import type { GraphEdge, GraphNode } from '../types';
 
-/** ガーメントの「体に触れる半径」が追従する体の半径の外部ソケット(id は `bodyDimensions` の出力と
- * 同じ)。既定値は `bodyDimensions` の基準値と同じなので、未接続でも既定の体型に合った大きさになる。 */
-export const bodyRadiusSockets = {
-  torsoRadius: { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0.14 },
-  legRadius: { id: 'legRadius', label: 'Leg Radius', type: 'number', default: 0.06 },
-  armRadius: { id: 'armRadius', label: 'Arm Radius', type: 'number', default: 0.04 },
-  neckRadius: { id: 'neckRadius', label: 'Neck Radius', type: 'number', default: 0.045 },
-} as const;
+export type BodyRadius = 'torsoRadius' | 'legRadius' | 'armRadius' | 'neckRadius' | 'headRadius';
 
-export type BodyRadius = keyof typeof bodyRadiusSockets;
-
-/** 「体に触れる半径」を体の半径に追従させる定型: 体の半径(外部ソケット `input.<radius>`)×
- * 倍率(`scale` の `Value` 入力欄)を `scale`(`numberMultiply`)で求める。出力は `scale.value`。
- * 1つのグループで複数の半径を求める場合は、`scaleId` で別々の id を付ける。`input`(groupInput、
- * `bodyRadiusSockets[radius]` を持つ)が別途 `internalNodes` に存在することを前提にする。 */
-export function bodyRadiusScale(
-  radius: BodyRadius,
-  ratio: number,
-  scaleId = 'scale',
-): { nodes: GraphNode[]; edges: GraphEdge[] } {
+/** ガーメントの「体に触れる半径」の固定値のノード: ボディの基準寸法(`bodyDimensionDefaults.ts`)× `ratio` を
+ * `id`(`numberInput`)の入力欄の値として持つ(体の寸法を変えても追従しない)。出力は `<id>.value`。 */
+export function fixedBodyRadius(radius: BodyRadius, ratio: number, id = 'scale'): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
-    nodes: [{ id: scaleId, type: 'numberMultiply', data: { value: ratio } }],
-    edges: [{ source: 'input', sourceHandle: radius, target: scaleId, targetHandle: 'factor' }],
+    nodes: [{ id, type: 'numberInput', data: { value: BODY_DIMENSIONS[radius] * ratio } }],
+    edges: [],
   };
 }
 
 /** 肩の丸みで首まわりまで閉じた上衣のプロファイルの定型: `profile`(`shoulderedProfile`、
- * `generic/shoulderedProfile.ts`)と、首まわりの開口の半径 `neckOpening`(体の Neck Radius ×
- * `neckOpeningRatio`)。胸の半径は `scale`(`bodyRadiusScale('torsoRadius', …)` の出力)、裾の半径は
- * `hemRadius` のノードの `value` 出力を配線する。`input` が `torsoRadius`/`neckRadius` ソケットを
- * 持つことを前提にする。出力の曲線は `profile.curve`。top/dress/jacket が使う。 */
+ * `generic/shoulderedProfile.ts`)と、体の胴体半径 `bodyTorsoRadius`・首まわりの開口の半径 `neckOpening`
+ * (体の首の半径 × `neckOpeningRatio`、どちらも固定値)。胸の半径は `scale`(`fixedBodyRadius('torsoRadius', …)` の出力)、
+ * 裾の半径は `hemRadius` のノードの `value` 出力を配線する。出力の曲線は `profile.curve`。top/dress/jacket が使う。 */
 export function shoulderedBody(config: {
   length: number;
   hemRadius: string;
@@ -38,12 +23,12 @@ export function shoulderedBody(config: {
 }): { nodes: GraphNode[]; edges: GraphEdge[] } {
   return {
     nodes: [
-      { id: 'neckOpening', type: 'numberMultiply', data: { value: config.neckOpeningRatio } },
+      { id: 'bodyTorsoRadius', type: 'numberInput', data: { value: BODY_DIMENSIONS.torsoRadius } },
+      { id: 'neckOpening', type: 'numberInput', data: { value: BODY_DIMENSIONS.neckRadius * config.neckOpeningRatio } },
       { id: 'profile', type: 'shoulderedProfile', data: { length: config.length } },
     ],
     edges: [
-      { source: 'input', sourceHandle: 'neckRadius', target: 'neckOpening', targetHandle: 'factor' },
-      { source: 'input', sourceHandle: 'torsoRadius', target: 'profile', targetHandle: 'torsoRadius' },
+      { source: 'bodyTorsoRadius', sourceHandle: 'value', target: 'profile', targetHandle: 'torsoRadius' },
       { source: 'scale', sourceHandle: 'value', target: 'profile', targetHandle: 'chestRadius' },
       { source: config.hemRadius, sourceHandle: 'value', target: 'profile', targetHandle: 'hemRadius' },
       { source: 'neckOpening', sourceHandle: 'value', target: 'profile', targetHandle: 'neckOpening' },

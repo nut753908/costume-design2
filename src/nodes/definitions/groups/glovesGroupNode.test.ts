@@ -4,21 +4,21 @@ import { getNodeType } from '../../registry';
 // latheGenerator/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを
 // 登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
 // gloves は手袋1つぶんのジオメトリ(`Down` 出力の easedLatheCurve、始点=Wrist Radius、
-// 終点=Hand Radius、どちらも armRadius × 倍率)を mirrorPair で ±Arm Spacing だけ
+// 終点=Hand Radius、どちらもボディの基準の腕の半径 × 倍率の固定値)を mirrorPair で ±Arm Spacing だけ
 // X方向に離した左右対称ペアへまとめる(glovesGroupNode.ts のコメント参照)。mirrorPair は
 // 元のジオメトリ(半径 r で X=0中心)を ±offset へ平行移動するだけなので、結合後の
 // bounding box の最大Xは offset + max(startRadius, endRadius) に一致する。
 describe('glovesGroup', () => {
-  const ARM_RADIUS = 0.04;
+  const ARM_RADIUS = BODY_DIMENSIONS.armRadius;
   const DEFAULTS = { wristRadius: 1.4 * ARM_RADIUS, handRadius: 1.55 * ARM_RADIUS, length: 0.16, armSpacing: 0.15, offsetY: 0.04 };
-  // `k` は既定の armRadius に対する倍率。
-  const maxRadius = (k: number) => Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius) * k;
+  const maxRadius = Math.max(DEFAULTS.wristRadius, DEFAULTS.handRadius);
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
@@ -30,21 +30,14 @@ describe('glovesGroup', () => {
     const result = getNodeType('glovesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + maxRadius(1), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + maxRadius, 5);
   });
 
-  it('armRadius を大きくすると Wrist Radius と Hand Radius の両方がスケールし、最大Xを押し広げる', () => {
-    const result = getNodeType('glovesGroup').evaluate({ armRadius: num(ARM_RADIUS * 3) }, {});
-    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-    geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.armSpacing + DEFAULTS.handRadius * 3, 5);
-  });
-
-  it('外部から注入された armSpacing が左右の間隔になる(bodyDimensions.shoulderSpacing の配線)', () => {
+  it('外部から注入された armSpacing が左右の間隔になる', () => {
     const result = getNodeType('glovesGroup').evaluate({ armSpacing: num(0.5) }, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.5 + maxRadius(1), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(0.5 + maxRadius, 5);
   });
 
   it('Length ぶん下(-Y)に伸び、Offset Y(既定0.04、手の上端を覆う)だけ押し上げられる', () => {

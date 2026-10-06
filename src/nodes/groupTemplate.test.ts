@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import './definitions';
 import { getNodeType } from './registry';
+import { BODY_DIMENSIONS } from './definitions/bodyDimensionDefaults';
 import type { GraphNode } from './types';
 import {
   fingerprintGroupStructure,
@@ -9,6 +10,7 @@ import {
   migrateGroupToTemplate,
 } from './groupTemplate';
 
+const SKIRT_SCALE = BODY_DIMENSIONS.torsoRadius * 1.15;
 const n = (id: string, type: string, data: Record<string, unknown> = {}): GraphNode => ({ id, type, data });
 
 describe('fingerprintGroupStructure', () => {
@@ -57,7 +59,7 @@ describe('isGroupInstanceStale', () => {
 describe('migrateGroupToTemplate', () => {
   it('同じ id・型のノードの入力欄の値を引き継ぐ', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [
-      n('scale', 'numberMultiply', { value: 0.45 }),
+      n('scale', 'numberInput', { value: 0.45 }),
       n('material', 'toonShadowMaterial', { color: '#123456' }),
       n('removedNode', 'numberInput', { value: 7 }),
     ]);
@@ -70,7 +72,7 @@ describe('migrateGroupToTemplate', () => {
 
   it('型が変わっている同じ id の値は引き継がない', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [n('scale', 'colorInput', { hex: '#fff' })]);
-    expect(migrated.nodes.find((node) => node.id === 'scale')?.data.value).toBe(1.15);
+    expect(migrated.nodes.find((node) => node.id === 'scale')?.data.value).toBe(SKIRT_SCALE);
   });
 
   it('同じ id・型の numberInput/colorInput の値を引き継ぐ(最新のテンプレートにも入力ノードがあるグループ)', () => {
@@ -83,11 +85,11 @@ describe('migrateGroupToTemplate', () => {
     const input = template.nodes.find((node) => node.id === 'input')!;
     const edited = {
       ...input,
-      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'torsoRadius' ? { ...sock, default: 0.4 } : sock)) },
+      data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'anchorY' ? { ...sock, default: 0.4 } : sock)) },
     };
     const migrated = migrateGroupToTemplate('skirtGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'input')?.data.sockets as { id: string; default: unknown }[];
-    expect(sockets.find((sock) => sock.id === 'torsoRadius')?.default).toBe(0.4);
+    expect(sockets.find((sock) => sock.id === 'anchorY')?.default).toBe(0.4);
   });
 
   it('同じ id の groupOutput のソケットの既定値(Group Output で編集した値)を引き継ぐ', () => {
@@ -109,6 +111,6 @@ describe('migrateGroupToTemplate', () => {
     const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'numberInput', { value: 0.45 })]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
     expect(byId.has('waistRadiusIn')).toBe(false);
-    expect(byId.get('scale')?.data.value).toBe(1.15);
+    expect(byId.get('scale')?.data.value).toBe(SKIRT_SCALE);
   });
 });

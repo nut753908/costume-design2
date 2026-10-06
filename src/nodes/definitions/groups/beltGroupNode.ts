@@ -1,18 +1,18 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyRadiusScale, bodyRadiusSockets } from '../garmentParts';
+import { fixedBodyRadius } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** beltRadiusScale(numberMultiply)+material(toonMaterial)+
+/** scale(numberInput、ボディの基準寸法 × 倍率の固定値)+material(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)に加え、山なりのバックル部分の帯を作る
  * `band`(`bulgedBand`、`nodes/definitions/generic/bulgedBand.ts`、scarf と共有)を1枚に
  * まとめたグループノード。
  * Radius/Thickness/Bulge/Segments は他のガーメントと共有されない単独パラメータのため、
  * numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Torso Radius(体の胴体半径、`scale` が倍率を掛ける)と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される waistY)は外部ソケットのまま(`nodes/CLAUDE.md` の「グループノード」節参照)。 */
 const output = garmentOutput({ offsetY: 0.19, geometry: 'band' });
 
-const scale = bodyRadiusScale('torsoRadius', 1.05);
+const scale = fixedBodyRadius('torsoRadius', 1.05);
 
 defineGroupNode({
   type: 'beltGroup',
@@ -24,7 +24,6 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#3a2e26'),
         ],

@@ -4,24 +4,24 @@ import { getNodeType } from '../../registry';
 // latheGenerator/scale/mirrorPair/toonMaterial/garmentPlacement/sceneOutput を含め、
 // 全ノードタイプを登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 function num(v: number) {
   return { type: 'number' as const, value: v };
 }
 
 // shoes は靴1本ぶんのジオメトリ(`Up` 出力の easedLatheCurve、始点=Sole Radius
-// (y=0)、終点=Cuff Radius(y=Height)、どちらも legRadius × 倍率)に `scaleZ` で
+// (y=0)、終点=Cuff Radius(y=Height)、どちらも BODY_DIMENSIONS.legRadius × 倍率の固定値)に `scaleZ` で
 // つま先方向(Z)だけ Toe Length 倍のスケールを掛けてから、mirrorPair で ±Leg Spacing だけ
 // X方向に離した左右対称ペアへまとめる(shoesGroupNode.ts のコメント参照)。scaleZ は
 // `.scale(1, 1, z)` で Z軸だけを拡大するため(X軸は不変)、mirror 後の最大Xは
 // scaleZ の影響を受けない。
 describe('shoesGroup', () => {
-  const LEG_RADIUS = 0.06;
-  const DEFAULTS = { soleRadius: 1.3 * LEG_RADIUS, cuffRadius: 0.91 * LEG_RADIUS, height: 0.12, toeLength: 1.95, legSpacing: 0.08, offsetY: 0 };
-  // `k` は既定の legRadius に対する倍率。
-  const maxRadius = (k: number) => Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius) * k;
+  const { legRadius } = BODY_DIMENSIONS;
+  const DEFAULTS = { soleRadius: 1.3 * legRadius, cuffRadius: 0.91 * legRadius, height: 0.12, toeLength: 1.95, legSpacing: 0.08, offsetY: 0 };
+  const maxRadius = Math.max(DEFAULTS.soleRadius, DEFAULTS.cuffRadius);
 
-  it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
+  it('未接続でも描画対象として出力される', () => {
     const result = getNodeType('shoesGroup').evaluate({}, {});
     expect(result.sceneOutputGeometry0?.type).toBe('geometry');
     expect(result.sceneOutputMaterial0?.type).toBe('material');
@@ -31,18 +31,11 @@ describe('shoesGroup', () => {
     const result = getNodeType('shoesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(1), 5);
-  });
-
-  it('legRadius が大きくなるほど Sole Radius がスケールし最大Xを押し広げる', () => {
-    const result = getNodeType('shoesGroup').evaluate({ legRadius: num(LEG_RADIUS * 2) }, {});
-    const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-    geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius(2), 5);
+    expect(geom!.boundingBox!.max.x).toBeCloseTo(DEFAULTS.legSpacing + maxRadius, 5);
   });
 
   it('legRadius × 倍率の Cuff Radius が、履き口(最上端)の半径になる', () => {
-    const result = getNodeType('shoesGroup').evaluate({ legRadius: num(LEG_RADIUS * 1.3) }, {});
+    const result = getNodeType('shoesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     const position = geom!.getAttribute('position');
     let maxY = -Infinity;
@@ -53,14 +46,14 @@ describe('shoesGroup', () => {
     for (let i = 0; i < position.count; i++) {
       if (position.getX(i) > 0 && Math.abs(position.getY(i) - maxY) < 1e-6) cuff = Math.max(cuff, Math.abs(position.getX(i) - DEFAULTS.legSpacing));
     }
-    expect(cuff).toBeCloseTo(DEFAULTS.cuffRadius * 1.3, 4);
+    expect(cuff).toBeCloseTo(DEFAULTS.cuffRadius, 4);
   });
 
   it('Toe Length ぶんつま先方向(Z)だけ最大半径が伸びる(scaleZ は X には影響しない)', () => {
     const result = getNodeType('shoesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.max.z).toBeCloseTo(maxRadius(1) * DEFAULTS.toeLength, 5);
+    expect(geom!.boundingBox!.max.z).toBeCloseTo(maxRadius * DEFAULTS.toeLength, 5);
   });
 
   it('地面(Sole側、y=0)から Height ぶん上(+Y)に伸びる', () => {

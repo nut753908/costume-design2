@@ -3,6 +3,7 @@ import { getNodeType } from '../../registry';
 // beltGroup の埋め込みサブグラフが参照する bulgedBand/numberMultiply/toonMaterial/sceneOutput を
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 // 帯の形状そのものの検証は bulgedBand.test.ts が持つため、ここでは beltGroup の配線
 // (パラメータが bulgedBand へ正しく渡っていること)だけを確認する。
@@ -22,11 +23,11 @@ describe('beltGroup', () => {
     expect(geometryOf()!.getAttribute('position').count).toBe(13 * 25);
   });
 
-  it('既定値(radius=1.05 × torsoRadius, thickness=0.05, bulge=1.15)の範囲に収まり、offsetY(0.19)だけ押し上げられる', () => {
+  it('既定値(radius=1.05 × ボディの基準の胴体半径, thickness=0.05, bulge=1.15)の範囲に収まり、offsetY(0.19)だけ押し上げられる', () => {
     const geom = geometryOf()!;
     geom.computeBoundingBox();
     expect(geom.boundingBox!.min.y).toBeCloseTo(-0.05 + 0.19, 5);
     expect(geom.boundingBox!.max.y).toBeCloseTo(0.19, 5);
-    expect(geom.boundingBox!.max.x).toBeCloseTo(1.05 * 0.14 * 1.15, 5);
+    expect(geom.boundingBox!.max.x).toBeCloseTo(1.05 * BODY_DIMENSIONS.torsoRadius * 1.15, 5);
   });
 });

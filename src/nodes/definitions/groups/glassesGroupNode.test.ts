@@ -4,6 +4,7 @@ import { getNodeType } from '../../registry';
 // numberAdd/numberSubtract/translate/mirrorPair/mergeGeometry/
 // toonMaterial/sceneOutput を含め、全ノードタイプを登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 // 左右のレンズ(torusGenerator+translate を mirrorPair で ±lensSpacing へ複製)と、
 // ブリッジ+左右テンプル(alignedBoxGenerator のブリッジ1本+テンプル1本を mirrorPair で
@@ -49,24 +50,13 @@ describe('glassesGroup', () => {
     expect(geom!.boundingBox!.max.y).toBeCloseTo(expectedMaxY, 2);
   });
 
-  it('顔の前面の深さが headRadius − Forward Depth Inset(-0.01)に追従する', () => {
-    const maxZ = (headRadius?: number) => {
-      const result = getNodeType('glassesGroup').evaluate(headRadius === undefined ? {} : { headRadius: { type: 'number', value: headRadius } }, {});
-      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-      geom!.computeBoundingBox();
-      return geom!.boundingBox!.max.z;
-    };
-    // 既定の headRadius(0.28)から 0.44 へ 0.16 増やすと、前面(=最大Z)が同じ 0.16 だけ前へ出る。
-    expect(maxZ(0.44) - maxZ()).toBeCloseTo(0.16, 5);
-  });
-
   it('テンプルが前面(Z=forwardDepth)から後方 templeBackZ まで伸びる', () => {
-    // レンズは Z=forwardDepth(0.29)付近だけにあるため、全体の最小 Z はテンプルの後端
-    // (templeBackZ = (0.29 - 0.02) - 0.12 = 0.15)で決まる。alignedBox の太さは軸に垂直な方向にだけ
+    // レンズは Z=forwardDepth(ボディの基準の頭半径 + 0.01)付近だけにあるため、全体の最小 Z はテンプルの後端
+    // (templeBackZ = (forwardDepth - 0.02) - 0.12)で決まる。alignedBox の太さは軸に垂直な方向にだけ
     // 広がるので、後端はちょうど templeBackZ になる。
     const result = getNodeType('glassesGroup').evaluate({}, {});
     const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
     geom!.computeBoundingBox();
-    expect(geom!.boundingBox!.min.z).toBeCloseTo(0.15, 5);
+    expect(geom!.boundingBox!.min.z).toBeCloseTo(BODY_DIMENSIONS.headRadius + 0.01 - 0.02 - 0.12, 5);
   });
 });

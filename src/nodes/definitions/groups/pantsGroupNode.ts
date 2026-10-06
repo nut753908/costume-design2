@@ -1,14 +1,14 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyRadiusScale, bodyRadiusSockets, latheBody } from '../garmentParts';
+import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** pantsWaistScale(numberMultiply)+profile(easedLatheCurve)+legGen(latheGenerator)+
+/** pantsWaistScale(numberInput)+profile(easedLatheCurve)+legGen(latheGenerator)+
  * mirror(mirrorPair)+pantsMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
- * 腰側の Waist Radius は腰(お尻)を包むので体の胴体半径(外部ソケット Torso Radius)に、裾の
- * Hem Radius は体の脚の半径(外部ソケット Leg Radius)に、それぞれ倍率を掛けて求める(`scale`/`hemScale`)。
- * 胴体だけを細くしたとき腰が脚より細くなって脚に埋もれないよう、Waist Radius は脚の半径 × 1.1
- * (`waistMin`)を下限にする(`waistRadius`、`numberMax`)。
+ * 腰側の Waist Radius は腰(お尻)を包むのでボディの胴体半径、裾の
+ * Hem Radius は脚の半径に、それぞれ倍率を掛けた固定値(`scale`/`hemScale`、`fixedBodyRadius()`)。
+ * Waist Radius は脚の半径 × 1.1(`waistMin`)を下限にする(`waistRadius`、`numberMax`)ので、
+ * 値を編集しても腰が脚に埋もれない。
  * Waist Radius/Hem Radius/Inseam/Segments は他のガーメントと共有されない単独パラメータ
  * のため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
@@ -17,14 +17,13 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `cylinderGenerator`→`mirrorPair` と同じ形、`nodes/CLAUDE.md` 参照)。
  *
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を
- * shoesGroup/socksGroup と共に受け取るため、Torso Radius・Leg Radius・
- * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)と合わせて
+ * shoesGroup/socksGroup と共に受け取るため、Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される waistY)と合わせて
  * 外部ソケットのまま。 */
 const output = garmentOutput({ offsetY: 0.1, geometry: 'mirror' });
 
-const scale = bodyRadiusScale('torsoRadius', 0.62);
-const hemScale = bodyRadiusScale('legRadius', 0.91, 'hemScale');
-const waistMin = bodyRadiusScale('legRadius', 1.1, 'waistMin');
+const scale = fixedBodyRadius('torsoRadius', 0.62);
+const hemScale = fixedBodyRadius('legRadius', 0.91, 'hemScale');
+const waistMin = fixedBodyRadius('legRadius', 1.1, 'waistMin');
 const lathe = latheBody({ genId: 'legGen', direction: 'down', steps: 10, startRadius: 'waistRadius', endRadius: 'hemScale', distance: 1.04, segments: 16 });
 
 defineGroupNode({
@@ -38,8 +37,6 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
-          bodyRadiusSockets.torsoRadius,
-          bodyRadiusSockets.legRadius,
           anchorYSocket,
           colorSocket('#9c7b4f'),
         ],

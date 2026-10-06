@@ -1,13 +1,11 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyRadiusScale, bodyRadiusSockets, latheBody } from '../garmentParts';
+import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** shoesSoleScale(numberMultiply)+profile(easedLatheCurve)+latheGen(latheGenerator)+
+/** shoesSoleScale(numberInput)+profile(easedLatheCurve)+latheGen(latheGenerator)+
  * scaleZ(scale)+mirror(mirrorPair)+shoesMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の9ノードを1枚にまとめたグループノード。
- * Sole Radius と Cuff Radius はどちらも体の脚の半径(外部ソケット Leg Radius)に倍率を掛けてから
- * lathe へ渡す(`scale`/`cuffScale`、内部ノード id の `scale` とは別)。履き口を固定にすると、
- * 脚を太くしたとき履き口が脚の内側に入る。
+ * Sole Radius と Cuff Radius は、どちらもボディの脚の半径に倍率を掛けた固定値(`scale`/`cuffScale`、`fixedBodyRadius()`)。
  * Sole Radius/Cuff Radius/Height/Toe Length/Segments は他のガーメントと共有されない
  * 単独パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
  *
@@ -18,12 +16,12 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * 非一様スケールノード、`translate` と対になる形)の Z 入力欄だけを使って表現する。
  *
  * Leg Spacing は bodyGroup の脚と同じ値(`bodyDimensions` の `legSpacing`)を受け取る外部入力として、
- * Leg Radius・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される feetY)と合わせて外部ソケットのまま受け取る。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'mirror' });
 
-const scale = bodyRadiusScale('legRadius', 1.3);
-const cuffScale = bodyRadiusScale('legRadius', 0.91, 'cuffScale');
+const scale = fixedBodyRadius('legRadius', 1.3);
+const cuffScale = fixedBodyRadius('legRadius', 0.91, 'cuffScale');
 const lathe = latheBody({ genId: 'latheGen', direction: 'up', steps: 10, startRadius: 'scale', endRadius: 'cuffScale', distance: 0.12, segments: 16 });
 
 defineGroupNode({
@@ -37,7 +35,6 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'legSpacing', label: 'Leg Spacing', type: 'number', default: 0.08 },
-          bodyRadiusSockets.legRadius,
           anchorYSocket,
           colorSocket('#3d3630'),
         ],

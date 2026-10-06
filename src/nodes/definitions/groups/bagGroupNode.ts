@@ -1,10 +1,10 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyRadiusSockets } from '../garmentParts';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
 /** bag の寸法の大半は独立したスタイル寄りの値だが、体の側面の位置(Hip Offset、胴体半径と
  * 同程度)と前面の深さ(`bagFrontDepthCalc`)だけは、胴体の壁の外側に置く必要があるため、
- * 体の胴体半径(外部ソケット Torso Radius)に倍率を掛けて求める(`hipOffsetScaled`/`bagFrontDepthCalc`)。
+ * ボディの胴体半径に倍率を掛けた固定値(`hipOffsetScaled`/`bagFrontDepthCalc`、`numberInput`)にする。
  * ストラップ・バッグ本体のどちらも完全にノードグラフへ展開されている。ストラップは
  * `alignedBoxGenerator`(`nodes/definitions/generic/alignedBoxGenerator.ts`、`geometry/
  * alignedBox.ts` の `buildAlignedBox()` を薄くラップした汎用プリミティブノード)で
@@ -14,15 +14,15 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  *
  * ストラップの終点(反対の腰側)とバッグ本体の中心座標 `bagCenter = strapEnd +
  * (0, -bagHeight/2, 0)`は同じ深さ(Z)を共有するため、
- * X: `negatedHipOffset = -(1.0 × torsoRadius)`(`numberNegate`)、Y(本体側): `bagCenterY =
- * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthCalc = 1.4 × torsoRadius` という可視の四則演算
+ * X: `negatedHipOffset = -hipOffsetScaled`(`numberNegate`)、Y(本体側): `bagCenterY =
+ * negatedDrop - bagHeight * 0.5`、Z: `bagFrontDepthCalc` という可視の四則演算
  * チェーンへ展開し、ストラップの `endX`/`endY`/`endZ` と本体の
  * `translate` の両方から同じ計算結果を参照する
  * (定数は各ノードの入力欄の値)。ストラップと
  * 本体は最後に `merge`(`mergeGeometry`)で1つにまとめる。複数のノードが同じ値を使うパラメータ(`bagHeightIn`)だけ `numberInput` を置いて配線し、
  * 他は numberInput/colorInput ノードを置かず、各ノードの入力欄の値として持つ。
  * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
- * から配線される shoulderY)と Torso Radius は外部ソケット。 */
+ * から配線される shoulderY)は外部ソケット。 */
 const output = garmentOutput({ offsetY: 0, geometry: 'merge' });
 
 defineGroupNode({
@@ -35,15 +35,14 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#8a4a2e'),
         ],
       },
     },
     { id: 'bagHeightIn', type: 'numberInput', data: { value: 0.14} },
-    { id: 'bagFrontDepthCalc', type: 'numberMultiply', data: { value: 1.4 } },
-    { id: 'hipOffsetScaled', type: 'numberMultiply', data: { value: 1 } },
+    { id: 'bagFrontDepthCalc', type: 'numberInput', data: { value: 1.4 * BODY_DIMENSIONS.torsoRadius } },
+    { id: 'hipOffsetScaled', type: 'numberInput', data: { value: BODY_DIMENSIONS.torsoRadius } },
     { id: 'strapGen', type: 'alignedBoxGenerator', data: { width: 0.04, thickness: 0.015, startX: 0.08, startZ: 0.05 } },
     { id: 'boxGen', type: 'boxGenerator', data: { width: 0.16, depth: 0.08 } },
     { id: 'negatedHipOffset', type: 'numberNegate', data: {} },
@@ -64,8 +63,6 @@ defineGroupNode({
 
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'boxGen', targetHandle: 'height' },
 
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'bagFrontDepthCalc', targetHandle: 'factor' },
-    { source: 'input', sourceHandle: 'torsoRadius', target: 'hipOffsetScaled', targetHandle: 'factor' },
     { source: 'hipOffsetScaled', sourceHandle: 'value', target: 'negatedHipOffset', targetHandle: 'value' },
 
     { source: 'bagHeightIn', sourceHandle: 'value', target: 'halfBagHeight', targetHandle: 'value' },

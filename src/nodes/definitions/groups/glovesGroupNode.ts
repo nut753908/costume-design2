@@ -1,15 +1,14 @@
 import { defineGroupNode } from '../groupNodeFactory';
-import { bodyRadiusScale, bodyRadiusSockets, latheBody } from '../garmentParts';
+import { fixedBodyRadius, latheBody } from '../garmentParts';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** 手首半径と手の半径はどちらも体の腕の半径(外部ソケット Arm Radius)に倍率を掛けてから
- * lathe へ渡す(`scale`/`handScale`)。手袋全体の大きさを腕の太さに揃えるため。
- * glovesWristScale(numberMultiply)+profile(easedLatheCurve)+gloveGen(latheGenerator)+
+/** 手首半径と手の半径は、どちらもボディの腕の半径に倍率を掛けた固定値(`scale`/`handScale`、`fixedBodyRadius()`)。
+ * glovesWristScale(numberInput)+profile(easedLatheCurve)+gloveGen(latheGenerator)+
  * mirror(mirrorPair)+glovesMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput)の8ノードを1枚にまとめたグループノード。
  * Wrist Radius/Hand Radius/Length は他のガーメントと共有されない単独
  * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Arm Radius・Arm Spacing(bodyGroup の腕と同じ
+ * Arm Spacing(bodyGroup の腕と同じ
  * `bodyDimensions.shoulderSpacing`)・Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノード
  * から配線される wristY)は外部ソケットのまま。
  *
@@ -18,8 +17,8 @@ import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
  * `limbPair.ts` の腕/脚と同じ形、`nodes/CLAUDE.md` 参照)。 */
 const output = garmentOutput({ offsetY: 0.04, geometry: 'mirror' });
 
-const scale = bodyRadiusScale('armRadius', 1.4);
-const handScale = bodyRadiusScale('armRadius', 1.55, 'handScale');
+const scale = fixedBodyRadius('armRadius', 1.4);
+const handScale = fixedBodyRadius('armRadius', 1.55, 'handScale');
 const lathe = latheBody({ genId: 'gloveGen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 'handScale', distance: 0.16, segments: 12 });
 
 defineGroupNode({
@@ -33,7 +32,6 @@ defineGroupNode({
       data: {
         sockets: [
           { id: 'armSpacing', label: 'Arm Spacing', type: 'number', default: 0.15 },
-          bodyRadiusSockets.armRadius,
           anchorYSocket,
           colorSocket('#b0413e'),
         ],

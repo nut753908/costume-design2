@@ -4,14 +4,14 @@ import { getNodeType } from '../../registry';
 // numberMultiply/translate/mergeGeometry/toonMaterial/sceneOutput を
 // 含め、全ノードタイプを登録する。
 import '../../definitions';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 
 // ストラップ(ノードグラフ側の alignedBoxGenerator)とバッグ本体(ノードグラフ側の
 // boxGenerator+translate、bagCenter = strapEnd + (0, -bagHeight/2, 0) を四則演算
 // チェーンで導出)を merge で1つにまとめる配線が正しいかを検証する(bagGroupNode.ts の
-// コメント参照)。寸法パラメータはグループ内部の numberInput に閉じており、外部から注入できる
-// のは torsoRadius だけ(体の側面の位置と前面の深さに掛かる)。それ以外は既定値での評価結果を検証する。
+// コメント参照)。寸法パラメータはグループ内部の numberInput に閉じており、既定値での評価結果を検証する。
 describe('bagGroup', () => {
-  const DEFAULTS = { torsoRadius: 0.14, hipOffsetRatio: 1, frontDepthRatio: 1.4, drop: 0.42, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
+  const DEFAULTS = { torsoRadius: BODY_DIMENSIONS.torsoRadius, hipOffsetRatio: 1, frontDepthRatio: 1.4, drop: 0.42, bagWidth: 0.16, bagHeight: 0.14, bagDepth: 0.08 };
 
   it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
     const result = getNodeType('bagGroup').evaluate({}, {});
@@ -41,7 +41,7 @@ describe('bagGroup', () => {
     expect(geom!.boundingBox!.min.y).toBeCloseTo(expectedBottom, 2);
   });
 
-  it('バッグ本体は bagFrontDepthCalc(= 1.4 × torsoRadius、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
+  it('バッグ本体は bagFrontDepthCalc(= 1.4 × ボディの基準の胴体半径、ストラップの終端 endZ と共有する値)の深さに置かれる', () => {
     // ストラップの厚み(thickness=0.015)よりバッグ本体の奥行き(depth=0.08)の方が大きいため、
     // 全体の bounding box の最大Z(手前側)はバッグ本体側で決まる。translate の Z への配線が
     // 正しいことの検証になる。
@@ -51,20 +51,5 @@ describe('bagGroup', () => {
     const bagFrontDepth = DEFAULTS.frontDepthRatio * DEFAULTS.torsoRadius;
     const expectedMaxZ = bagFrontDepth + DEFAULTS.bagDepth / 2;
     expect(geom!.boundingBox!.max.z).toBeCloseTo(expectedMaxZ, 2);
-  });
-
-  it('torsoRadius に比例して、体の側面の位置(Hip Offset)と前面の深さ(Bag Front Depth)が外へ動く', () => {
-    const bounds = (torsoRadius?: number) => {
-      const result = getNodeType('bagGroup').evaluate(torsoRadius === undefined ? {} : { torsoRadius: { type: 'number', value: torsoRadius } }, {});
-      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-      geom!.computeBoundingBox();
-      return geom!.boundingBox!;
-    };
-    const base = bounds();
-    const delta = 0.1;
-    const wide = bounds(DEFAULTS.torsoRadius + delta);
-    // バッグ本体は x = -1.0 × torsoRadius、z = 1.4 × torsoRadius を中心に置かれる(幅・奥行きは不変)。
-    expect(wide.min.x - base.min.x).toBeCloseTo(-DEFAULTS.hipOffsetRatio * delta, 2);
-    expect(wide.max.z - base.max.z).toBeCloseTo(DEFAULTS.frontDepthRatio * delta, 2);
   });
 });

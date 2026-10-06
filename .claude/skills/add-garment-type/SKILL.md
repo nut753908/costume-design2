@@ -63,7 +63,7 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 `nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`garmentPlacement`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
 
 - `anchorYSocket`/`colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `anchorY`/`color`(既定の色 `hex`)ソケット定義。`garmentOutput({ offsetY, geometry })`(同ファイル)— `material`(toonMaterial、色は `input.color` から配線)→`sceneOut` と `input.anchorY`→`placement`(garmentPlacement、`Offset Y` 入力欄が offsetY)→`sceneOut` のノード3個・エッジ5本。`geometry` には最終的な geometry を出力するノードの id を渡す。
-- `bodyRadiusScale(radius, ratio)`/`bodyRadiusSockets`(`garmentParts.ts`)— 「体に触れる半径」を、触れる体の部位の半径(`radius` は `'torsoRadius'`/`'legRadius'`/`'armRadius'`/`'neckRadius'`、外部ソケット `input.<radius>`)× 倍率(`ratio` は `scale` の `Value` 入力欄の値)で求める `scale`(`numberMultiply`)。`groupInput` の `sockets` には `bodyRadiusSockets.<radius>` を入れる。体に追従させる半径がある場合だけ使う。
+- `fixedBodyRadius(radius, ratio)`(`garmentParts.ts`)— 「体に触れる半径」の固定値。ボディの基準寸法(`bodyDimensionDefaults.ts` の `BODY_DIMENSIONS`、`radius` は `'torsoRadius'`/`'legRadius'`/`'armRadius'`/`'neckRadius'`/`'headRadius'`)× 倍率(`ratio`)を、`scale`(`numberInput`)の入力欄の値として持つ。体の寸法を変えてもガーメントは追従しない(ガーメントに体の半径の外部ソケットは無い)。
 - `latheBody({ genId, direction, steps, startRadius, endRadius, distance, segments })`(`garmentParts.ts`)— `profile`(`easedLatheCurve`)→ `genId`(`latheGenerator`)の定型。`startRadius`/`endRadius`/`distance` は他のノードの id(その `value` 出力を配線)かリテラルの数値(`profile` の入力欄の値)、`segments` は `genId` の入力欄の値。
 
 外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。**`anchorY` は、`garmentPlacement` が取り付け座標を計算するために全ガーメントが例外なく外部ソケットとして持つ**(下記5節参照)。それ以外に外部ソケットとして公開してよいのは、体の半径(`torsoRadius` など、体に追従させる半径がある場合)や `legSpacing`(どちらも `bodyDimensions` から配線)のように複数ガーメントで共有される値だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系(半径スケーリングあり)の最小例:
@@ -71,10 +71,10 @@ Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `scen
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
-import { bodyRadiusScale, bodyRadiusSockets, latheBody } from '../garmentParts';
+import { fixedBodyRadius, latheBody } from '../garmentParts';
 
 const output = garmentOutput({ offsetY: 0, geometry: 'gen' });
-const scale = bodyRadiusScale('torsoRadius', 1.15);
+const scale = fixedBodyRadius('torsoRadius', 1.15);
 const lathe = latheBody({ genId: 'gen', direction: 'down', steps: 10, startRadius: 'scale', endRadius: 0.2, distance: 0.5, segments: 24 });
 
 defineGroupNode({
@@ -86,9 +86,8 @@ defineGroupNode({
       id: 'input',
       type: 'groupInput',
       data: {
-        // anchorY/color は全ガーメント共通で必須。体の半径は体に追従させる半径がある場合だけ。
+        // anchorY/color は全ガーメント共通で必須。
         sockets: [
-          bodyRadiusSockets.torsoRadius,
           anchorYSocket,
           colorSocket('#cccccc'),
         ],

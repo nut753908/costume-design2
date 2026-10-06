@@ -1,16 +1,14 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { latheBody } from '../garmentParts';
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import { anchorYSocket, colorSocket, garmentOutput } from '../garmentOutput';
 
-/** hat は体の太さへの追従(`numberMultiply` の倍率)の対象外なので Body Build 入力は無い。頭に被さるつばの半径は、
- * 頭半径(`bodyDimensions.headRadius`、bodyGroup の頭と同じ値)に Brim Ratio を掛けて
- * 求める(`brimRadiusCalc`)ため、頭の大きさを変えるとつばも追従する。
+/** 頭に被さるつばの半径(`brimRadiusCalc`)は、ボディの頭半径(`bodyDimensions.headRadius` の基準値)× 1.25 の固定値。
  * profile(easedLatheCurve)+hatGen(latheGenerator)+hatMaterial(toonMaterial)+
  * placement(garmentPlacement)+sceneOut(sceneOutput) を1枚に
- * まとめる。Brim Ratio/Crown Radius/Height は他のガーメントと共有されない単独
+ * まとめる。Crown Radius/Height は他のガーメントと共有されない単独
  * パラメータのため、numberInput/colorInput ノードは置かず、各ノードの入力欄の値として持つ。
- * Head Radius と Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから
- * 配線される headCenterY)は外部ソケット。
+ * Anchor Y(取り付け位置、ルートの `bodyLayout` 共有ノードから配線される headCenterY)は外部ソケット。
  *
  * head は左右対称な単一パーツなので `mirrorPair` は挟まない。hat は shoes/socks と同じ
  * `direction: 'up'`(つばから上=クラウン側へ伸びる)。 */
@@ -28,18 +26,16 @@ defineGroupNode({
       type: 'groupInput',
       data: {
         sockets: [
-          { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0.28 },
           anchorYSocket,
           colorSocket('#4a3b6b'),
         ],
       },
     },
-    { id: 'brimRadiusCalc', type: 'numberMultiply', data: { factor: 1.25 } },
+    { id: 'brimRadiusCalc', type: 'numberInput', data: { value: BODY_DIMENSIONS.headRadius * 1.25 } },
     ...lathe.nodes,
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'input', sourceHandle: 'headRadius', target: 'brimRadiusCalc', targetHandle: 'value' },
     ...lathe.edges,
     ...output.edges,
   ],

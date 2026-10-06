@@ -4,14 +4,15 @@ import { getNodeType } from '../../registry';
 import * as ringGridGeometry from '../../../geometry/ringGrid';
 // dressGroup の埋め込みサブグラフが参照する numberInput/colorInput/numberMultiply/
 // easedLatheCurve/ringGridGenerator/toonMaterial/garmentPlacement/sceneOutput を含め、全ノードタイプを登録する。
+import { BODY_DIMENSIONS } from '../bodyDimensionDefaults';
 import '../../definitions';
 
 // dress は easedLatheCurve(肩→裾の半径)→ ringGridGenerator(geometry/ringGrid.ts による
 // ネックライン彫り込み)で組まれる(dressGroupNode.ts のコメント参照)。Torso Radius は
-// 体の torsoRadius × 1.12、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
+// BODY_DIMENSIONS.torsoRadius × 1.12、Hem Radius はその (1 + flare) 倍で決まり、他のパラメータは内部の numberInput のデフォルトのまま
 // 渡ることを、buildRingGridGeometry() への引数の spy で検証する(topGroupNode.test.ts と同じ手法)。
 describe('dressGroup', () => {
-  const DEFAULTS = { torsoRadius: 1.12 * 0.14, hemRadius: 1.12 * 0.14 * 1.3, length: 0.9, necklineDepth: 0.02 };
+  const DEFAULTS = { torsoRadius: 1.12 * BODY_DIMENSIONS.torsoRadius, hemRadius: 1.12 * BODY_DIMENSIONS.torsoRadius * 1.3, length: 0.9, necklineDepth: 0.02 };
 
   /** 直近の buildRingGridGeometry() 呼び出しの引数を、DEFAULTS と同じ名前の値へ戻す。 */
   function ringGridArgs(spy: { mock: { calls: unknown[][] } }) {
@@ -30,27 +31,17 @@ describe('dressGroup', () => {
     expect(actual.length).toBeCloseTo(expected.length, 10);
   };
 
-  it('未接続でも(groupInput ソケット自身のデフォルトにより)描画対象として出力される', () => {
+  it('描画対象として出力される', () => {
     const result = getNodeType('dressGroup').evaluate({}, {});
     expect(result.sceneOutputGeometry0?.type).toBe('geometry');
     expect(result.sceneOutputMaterial0?.type).toBe('material');
   });
 
-  it('未接続なら torsoRadius は groupInput ソケット自身のデフォルト(0.14)になる', () => {
+  it('Torso Radius/Hem Radius/Length/ネックラインの深さが既定の固定値で渡る', () => {
     const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
     try {
       getNodeType('dressGroup').evaluate({}, {});
       closeTo(ringGridArgs(spy), DEFAULTS);
-    } finally {
-      spy.mockRestore();
-    }
-  });
-
-  it('torsoRadius に比例して Torso Radius と Hem Radius が変化し、Length 等は変わらない', () => {
-    const spy = vi.spyOn(ringGridGeometry, 'buildRingGridGeometry');
-    try {
-      getNodeType('dressGroup').evaluate({ torsoRadius: { type: 'number', value: 0.14 * 2 } }, {});
-      closeTo(ringGridArgs(spy), { ...DEFAULTS, torsoRadius: DEFAULTS.torsoRadius * 2, hemRadius: DEFAULTS.hemRadius * 2 });
     } finally {
       spy.mockRestore();
     }
