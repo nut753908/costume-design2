@@ -9,20 +9,18 @@ import { colorSocket, shadowMaterialParts } from '../garmentOutput';
  * 共有ノード)が計算済みの生の値(半径・長さ・Y座標)そのもので、`bodyGroup` 自身は
  * スケール計算を行わない。
  *
- * 胴体と首は1本の連続した輪郭(`torsoShape`、`generic/torsoShape.ts`。首は胴体の延長で、`extra` に首の長さの 2.4 倍を渡す)・頭(`headShape`)をそれぞれ `translate`(Y だけを配線)で配置し、
- * 腕1組/脚1組は `limbPair`(`nodes/definitions/generic/limbPair.ts`)で作ってから、
+ * 部位ごとの構成:
+ * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で `extra` に首の長さの 2.4 倍を渡す)を
+ *   `rotate` で前後へ傾け、`translate`(Y だけを配線)で置く。
+ * - 頭+耳: `headShape` と `earPair` を `translate` で置く。
+ * - 腕1組/脚1組: 軸(`armShaft`/`legShaft`、`generic/limbShaft.ts`)と足(`footShape`)から
+ *   `limbPair`(`generic/limbPair.ts`)で作る。軸の補助の算術ノード(`arm*`/`leg*`)は体型への追従量の調整。
  * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
- * belt+box を `mergeGeometry` でまとめるのと同じ、複数プリミティブを1グループ内で完結させる
- * 形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。全パーツが同じマテリアルなので、個別の
- * `sceneOutput`(=個別メッシュ)として描画しても1つに結合してから描画しても見た目は変わらず、
- * 結合した方がノードグラフ上の階層(ネストしたグループ)が1段減る。
+ * belt+box を `mergeGeometry` でまとめるのと同じ形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。
+ * 全パーツが同じマテリアルなので、結合した方がノードグラフ上の階層が1段減る。
  *
- * 腕/脚の軸は `armShaft`/`legShaft`(`generic/limbShaft.ts`)で、太ももや腕の付け根の太さの変化は、それぞれの
- * 3枚の `profileCurve` カードの値として別々に持つ(腕用/脚用は別のノードなので区別できる)。
- *
- * 肌色は他のガーメントと同じ外部ソケット `color`(`colorSocket()`)で、`material`(`toonMaterial`)の
- * `color` へ配線し、`material` から `sceneOut` の `material` へ1本配線するだけでよい
- * (全パーツが同じマテリアルを使う)。 */
+ * 肌色は他のガーメントと同じ外部ソケット `color`(`colorSocket()`)で、`shadowMaterialParts()` の
+ * `material`(`toonShadowMaterial`)へ配線し、`sceneOut` の `material` へ1本配線するだけでよい。 */
 defineGroupNode({
   type: 'bodyGroup',
   label: 'Body',
