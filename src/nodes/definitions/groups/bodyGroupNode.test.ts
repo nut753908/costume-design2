@@ -32,16 +32,6 @@ describe('bodyGroup', () => {
     expect(wideGeom!.boundingBox!.max.x).toBeGreaterThan(narrowGeom!.boundingBox!.max.x);
   });
 
-  it('neckLength を大きくすると、その分だけ頭が上がる(頭の位置は寸法から内部で求める)', () => {
-    const topOf = (neckLength: number) => {
-      const result = getNodeType('bodyGroup').evaluate(inputs({ neckLength }), {});
-      const geom = result.sceneOutputGeometry0?.type === 'geometry' ? result.sceneOutputGeometry0.value : undefined;
-      geom!.computeBoundingBox();
-      return geom!.boundingBox!.max.y;
-    };
-    expect(topOf(0.1) - topOf(0)).toBeCloseTo(0.1, 5);
-  });
-
   it('legHeight を大きくすると、その分だけ全体の上端(頭)が上がる', () => {
     const topOf = (legHeight: number) => {
       const result = getNodeType('bodyGroup').evaluate(inputs({ legHeight }), {});

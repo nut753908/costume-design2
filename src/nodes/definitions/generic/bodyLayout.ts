@@ -18,12 +18,13 @@ defineGroupNode({
           { id: 'legHeight', label: 'Leg Height', type: 'number', default: 0 },
           { id: 'torsoLength', label: 'Torso Length', type: 'number', default: 0 },
           { id: 'torsoRadius', label: 'Torso Radius', type: 'number', default: 0 },
-          { id: 'neckLength', label: 'Neck Length', type: 'number', default: 0 },
           { id: 'headRadius', label: 'Head Radius', type: 'number', default: 0 },
           { id: 'armLength', label: 'Arm Length', type: 'number', default: 0 },
         ],
       },
     },
+    // 首の長さ(固定値。首は胴体の延長として `torsoShape` が作るので、外部入力にはしない)。
+    { id: 'neckLength', type: 'numberInput', data: { value: 0.0565 } },
     { id: 'legCenterYCalc', type: 'numberHalf', data: {} },
     { id: 'torsoRadiusDoubled', type: 'numberMultiply', data: { factor: 2 } },
     { id: 'torsoCapsuleHeight', type: 'numberAdd', data: {} },
@@ -59,7 +60,7 @@ defineGroupNode({
     { source: 'torsoCapsuleHeight', sourceHandle: 'value', target: 'shoulderYCalc', targetHandle: 'b' },
 
     { source: 'shoulderYCalc', sourceHandle: 'value', target: 'neckTopYCalc', targetHandle: 'a' },
-    { source: 'input', sourceHandle: 'neckLength', target: 'neckTopYCalc', targetHandle: 'b' },
+    { source: 'neckLength', sourceHandle: 'value', target: 'neckTopYCalc', targetHandle: 'b' },
     { source: 'neckTopYCalc', sourceHandle: 'value', target: 'headCenterYCalc', targetHandle: 'a' },
     { source: 'input', sourceHandle: 'headRadius', target: 'headCenterYCalc', targetHandle: 'b' },
     { source: 'headCenterYCalc', sourceHandle: 'value', target: 'output', targetHandle: 'headCenterY' },
