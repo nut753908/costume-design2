@@ -7,7 +7,7 @@ import { Garments } from './Garments';
 export function Scene() {
   return (
     <Canvas
-      camera={{ position: [0, 0.95, 4.0], fov: 40 }}
+      camera={{ position: [0, 0.95, 3.2], fov: 40 }}
       gl={{ toneMapping: THREE.NoToneMapping }}
       frameloop="demand"
     >
