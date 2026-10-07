@@ -34,8 +34,7 @@ function xRatio(k: number): number {
 }
 
 describe('torsoShape', () => {
-  // extra の既定値は首の延長(0.1356)なので、胴体だけの形を検証するテストは 0 を渡す。
-  const base = { radius: 0.15, length: 0.3, extra: 0 };
+  const base = { radius: 0.15, length: 0.3 };
   const height = 0.3 + 2 * 0.15;
 
   it('原点(股)から length + 2 × radius の高さまで伸びる', () => {
@@ -73,17 +72,6 @@ describe('torsoShape', () => {
     };
     expect(widthNear((8 / 32) * height)).toBeCloseTo(0.15 * xRatio(8), 1);
     expect(widthNear((16 / 32) * height)).toBeCloseTo(0.15 * xRatio(16), 1);
-  });
-
-  it('extra だけ上端が伸び(首の延長)、先端は細く(首の太さ)なって丸く閉じる', () => {
-    const geometry = evaluateGeometry({ ...base, extra: 0.1 });
-    geometry.computeBoundingBox();
-    expect(geometry.boundingBox!.max.y).toBeGreaterThanOrEqual(height + 0.1 - 1e-5);
-    expect(geometry.boundingBox!.max.y).toBeLessThan(height + 0.1 + 0.02);
-    // 首のあたり(延長の中ほど)の幅は、胴体の最大幅よりずっと細い
-    expect(extentAt(geometry, height + 0.04, 0.006).x).toBeLessThan(0.15 * 0.6);
-    // 先端の近くで半径が小さくなる
-    expect(extentAt(geometry, height + 0.1 - 0.004).x).toBeLessThan(0.15 * 0.4);
   });
 
   it('両端は丸く閉じる(下端・上端の近くで半径が小さくなる)', () => {

@@ -1,8 +1,8 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
 /** 胴体と首を1本の連続した輪郭で作る(胴体の延長が首)、`bodyGroupNode.ts` 用のグループノード。幅(X)・前後の厚み(Z)・
- * 前後のずらし量の3本の輪郭曲線から作る。原点が胴体の下端(股)で、+Y へ `length + 2 × radius + extra` の高さまで
- * 伸びる(`length + 2 × radius` はカプセルと同じ高さで、肩の上端まで。`extra` は首の分の延長で、先端は頭の中に埋まる)。
+ * 前後のずらし量の3本の輪郭曲線から作る。原点が胴体の下端(股)で、+Y へ `length + 2 × radius` の高さまで
+ * 伸びる(輪郭の曲線はこの全体の高さに対する割合で決まり、肩・首の細まりもその中に含まれる。上端は頭の中に埋まる)。
  *
  * - `xProfile`/`depthProfile`(いずれも `profileCurve33`)と `offsetProfile`(`signedProfileCurve33`)は、高さを
  *   32 等分した 33 点の値(`radius` の `r0`〜`r32` 倍、両端 `r0`/`r32` の半径は 0 で丸く閉じる)をなめらかにつないだ輪郭曲線を
@@ -30,12 +30,10 @@ defineGroupNode({
         sockets: [
           { id: 'radius', label: 'Radius', type: 'number', default: 0 },
           { id: 'length', label: 'Length', type: 'number', default: 0 },
-          { id: 'extra', label: 'Extra Length', type: 'number', default: 0.1356 },
         ],
       },
     },
     { id: 'radiusDoubled', type: 'numberMultiply', data: { factor: 2 } },
-    { id: 'heightBase', type: 'numberAdd', data: {} },
     { id: 'height', type: 'numberAdd', data: {} },
 
     // 幅(X)方向と前後(Z)方向の半径。値は `radius` に対する比(前後は幅のおよそ 0.5〜0.6 倍の薄い胴)。
@@ -77,12 +75,10 @@ defineGroupNode({
     },
   ],
   internalEdges: [
-    // height = length + radius × 2(カプセルと同じ高さ) + extra(首の分の延長)
+    // height = length + radius × 2
     { source: 'input', sourceHandle: 'radius', target: 'radiusDoubled', targetHandle: 'value' },
-    { source: 'input', sourceHandle: 'length', target: 'heightBase', targetHandle: 'a' },
-    { source: 'radiusDoubled', sourceHandle: 'value', target: 'heightBase', targetHandle: 'b' },
-    { source: 'heightBase', sourceHandle: 'value', target: 'height', targetHandle: 'a' },
-    { source: 'input', sourceHandle: 'extra', target: 'height', targetHandle: 'b' },
+    { source: 'input', sourceHandle: 'length', target: 'height', targetHandle: 'a' },
+    { source: 'radiusDoubled', sourceHandle: 'value', target: 'height', targetHandle: 'b' },
 
     { source: 'input', sourceHandle: 'radius', target: 'xProfile', targetHandle: 'radius' },
     { source: 'height', sourceHandle: 'value', target: 'xProfile', targetHandle: 'length' },

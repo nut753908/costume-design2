@@ -9,7 +9,7 @@ import { colorSocket, shadowMaterialParts } from '../garmentOutput';
  * 胴体・頭・腕・脚のY座標は、この寸法から `bodyLayout`(`generic/bodyLayout.ts`)が求める(寸法を変えると位置も連動する)。
  *
  * 部位ごとの構成:
- * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で、`extra` は未接続の既定値 0.1356 = 首の長さ 0.0565 の 2.4 倍)を
+ * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で、輪郭の長さに 0.1356 = 首の長さ 0.0565 の 2.4 倍を足す)を
  *   `rotate` で前後へ傾け、`translate`(Y だけを配線)で置く。
  * - 頭+耳: `headShape` と `earPair` を `translate` で置く。
  * - 腕1組/脚1組: 軸(`armShaft`/`legShaft`、`generic/limbShaft.ts`)と足(`footShape`)から
@@ -58,9 +58,10 @@ defineGroupNode({
     // 胴体の下端(股の高さ)だけを `torsoLift` ぶん上げる(長さを短くし、上端が動かないよう同じだけ持ち上げる)。
     { id: 'torsoLift', type: 'numberInput', data: { value: 0.0465 } },
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
+    // 首は胴体の延長として `torsoGen` が作る: 輪郭の高さは、胴体の長さに首の延長(首の長さ 0.0565 の 2.4 倍)を足した長さで決まる。
+    { id: 'torsoShapeLength', type: 'numberAdd', data: { b: 0.1356 } },
     { id: 'torsoY', type: 'numberAdd', data: {} },
 
-    // 首は胴体の延長として `torsoGen` が作る(`torsoShape` の `extra` は既定値のまま)。
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -112,7 +113,8 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoLengthLifted', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoLengthLifted', targetHandle: 'b' },
-    { source: 'torsoLengthLifted', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'length' },
+    { source: 'torsoLengthLifted', sourceHandle: 'value', target: 'torsoShapeLength', targetHandle: 'a' },
+    { source: 'torsoShapeLength', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'length' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTilt', targetHandle: 'geometry' },
     { source: 'torsoTilt', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
     { source: 'layout', sourceHandle: 'waistY', target: 'torsoY', targetHandle: 'a' },
