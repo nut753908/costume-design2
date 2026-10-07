@@ -34,7 +34,8 @@ function xRatio(k: number): number {
 }
 
 describe('torsoShape', () => {
-  const base = { radius: 0.15, length: 0.3 };
+  // extra の既定値は首の延長(0.1356)なので、胴体だけの形を検証するテストは 0 を渡す。
+  const base = { radius: 0.15, length: 0.3, extra: 0 };
   const height = 0.3 + 2 * 0.15;
 
   it('原点(股)から length + 2 × radius の高さまで伸びる', () => {

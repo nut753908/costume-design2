@@ -30,7 +30,7 @@ defineGroupNode({
         sockets: [
           { id: 'radius', label: 'Radius', type: 'number', default: 0 },
           { id: 'length', label: 'Length', type: 'number', default: 0 },
-          { id: 'extra', label: 'Extra Length', type: 'number', default: 0 },
+          { id: 'extra', label: 'Extra Length', type: 'number', default: 0.1356 },
         ],
       },
     },

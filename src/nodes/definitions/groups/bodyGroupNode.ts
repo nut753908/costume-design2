@@ -9,7 +9,7 @@ import { colorSocket, shadowMaterialParts } from '../garmentOutput';
  * 胴体・頭・腕・脚のY座標は、この寸法から `bodyLayout`(`generic/bodyLayout.ts`)が求める(寸法を変えると位置も連動する)。
  *
  * 部位ごとの構成:
- * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で、`extra` に固定値(首の長さ 0.0565 の 2.4 倍)を渡す)を
+ * - 胴体+首: 1本の連続した輪郭(`torsoShape`。首は胴体の延長で、`extra` は未接続の既定値 0.1356 = 首の長さ 0.0565 の 2.4 倍)を
  *   `rotate` で前後へ傾け、`translate`(Y だけを配線)で置く。
  * - 頭+耳: `headShape` と `earPair` を `translate` で置く。
  * - 腕1組/脚1組: 軸(`armShaft`/`legShaft`、`generic/limbShaft.ts`)と足(`footShape`)から
@@ -60,8 +60,7 @@ defineGroupNode({
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
     { id: 'torsoY', type: 'numberAdd', data: {} },
 
-    // 首は胴体の延長として `torsoGen` が作る(`torsoShape` の `extra`)。延長の長さは固定値(首の長さ 0.0565 × 2.4)で、先端は頭の中に埋まる。
-    { id: 'neckExtension', type: 'numberInput', data: { value: 0.1356 } },
+    // 首は胴体の延長として `torsoGen` が作る(`torsoShape` の `extra` は既定値のまま)。
 
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
@@ -114,7 +113,6 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoLengthLifted', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoLengthLifted', targetHandle: 'b' },
     { source: 'torsoLengthLifted', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'length' },
-    { source: 'neckExtension', sourceHandle: 'value', target: 'torsoGen', targetHandle: 'extra' },
     { source: 'torsoGen', sourceHandle: 'geometry', target: 'torsoTilt', targetHandle: 'geometry' },
     { source: 'torsoTilt', sourceHandle: 'geometry', target: 'torsoTranslate', targetHandle: 'geometry' },
     { source: 'layout', sourceHandle: 'waistY', target: 'torsoY', targetHandle: 'a' },
