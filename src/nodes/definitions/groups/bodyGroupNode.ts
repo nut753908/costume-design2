@@ -50,19 +50,19 @@ defineGroupNode({
     // 肌もガーメントと同じ塗り(`shade` + `toonShadowMaterial`)。
     ...shadowMaterialParts().nodes,
 
-    // 胴体(torsoShape、原点が股)。
+    // --- 胴体+首(torsoShape、原点が股) ---
     { id: 'torsoGen', type: 'torsoShape', data: {} },
-    // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
-    { id: 'torsoTilt', type: 'rotate', data: { x: -8.599 } },
-    { id: 'torsoTranslate', type: 'translate', data: {} },
     // 胴体の下端(股の高さ)だけを `torsoLift` ぶん上げる(長さを短くし、上端が動かないよう同じだけ持ち上げる)。
     { id: 'torsoLift', type: 'numberInput', data: { value: 0.0465 } },
     { id: 'torsoLengthLifted', type: 'numberSubtract', data: {} },
     // 首は胴体の延長として `torsoGen` が作る: 輪郭の高さは、胴体の長さに首の延長(首の長さ 0.0565 の 2.4 倍)を足した長さで決まる。
     { id: 'torsoShapeLength', type: 'numberAdd', data: { b: 0.1356 } },
     { id: 'torsoY', type: 'numberAdd', data: {} },
+    // 股(原点)を支点に、上端を前後へ傾ける(`torsoTilt` の入力欄 `x`、負なら上端が後ろへ倒れる)。
+    { id: 'torsoTilt', type: 'rotate', data: { x: -8.599 } },
+    { id: 'torsoTranslate', type: 'translate', data: {} },
 
-
+    // --- 頭+耳 ---
     // 頭(`headShape`、原点が下端)。下端を首の上端(`headCenterY - headRadius`)に合わせて置き、
     // 重心は後ろ(Z 負)へずらす(`headTranslate` の入力欄 `z`。あごが前に出て見えるように、頭は
     // 胴体の中心より後ろに置く)。
@@ -74,26 +74,28 @@ defineGroupNode({
     // 頭の側面の耳(左右の小さな楕円体)。
     { id: 'earGen', type: 'earPair', data: {} },
 
-    // 腕1組・脚1組(limbPair)。先端の球(手/足)の形は腕用/脚用で別々の値を持つ。
-    // 足は上下につぶして前に伸ばし、底が地面に来る高さに置く。
+    // --- 腕1組(limbPair) ---
     // 腕の付け根を胴体へ寄せる補正(下げる量・内側へ寄せる量は `armShaftAdjust` の `drop`/`inset` の既定値)。
     { id: 'armAdjust', type: 'armShaftAdjust', data: {} },
     { id: 'armShaftGen', type: 'armShaft', data: {} },
-    // 脚の軸の長さと持ち上げ量(下端を短く・上端を伸ばす。値は `legShaftAdjust` の `trim`/`raise` の既定値)。
-    { id: 'legAdjust', type: 'legShaftAdjust', data: {} },
-    { id: 'legShaftGen', type: 'legShaft', data: {} },
-    { id: 'legShaftLift', type: 'translate', data: {} },
-    // 足(footShape、足の長さは脚の半径の `footLength` の `factor` 倍)。脚の先端の球は使わず、足をこれで作る。
-    { id: 'footGen', type: 'footShape', data: {} },
-    { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
-    { id: 'armPair', type: 'limbPair', data: { swingAngle: 16.62, pitchAngle: -14.87, centerZ: -0.1151 } },
-    // 腕の先端の手(手首から少し下に垂らした丸)と、脚の先端で足に隠れる小さな球。
+    // 腕の先端の手(手首から少し下に垂らした丸)。
     {
       id: 'armEnd',
       type: 'limbEnd',
       data: { ratio: 1.309, scaleX: 0.9, scaleY: 1.0109, scaleZ: 1.071, pitch: -22.48, roll: 2, shiftX: -0.2, shiftY: -0.5547 },
     },
+    { id: 'armPair', type: 'limbPair', data: { swingAngle: 16.62, pitchAngle: -14.87, centerZ: -0.1151 } },
+
+    // --- 脚1組(limbPair) ---
+    // 脚の軸の長さと持ち上げ量(下端を短く・上端を伸ばす。値は `legShaftAdjust` の `trim`/`raise` の既定値)。
+    { id: 'legAdjust', type: 'legShaftAdjust', data: {} },
+    { id: 'legShaftGen', type: 'legShaft', data: {} },
+    { id: 'legShaftLift', type: 'translate', data: {} },
+    // 脚の先端の球は足に隠れる小さな球にして、足(footShape)を先端の高さに置く。足の長さは脚の半径の `footLength` の `factor` 倍で、
+    // 上下につぶして前に伸ばし、底が地面に来る高さに置く。
     { id: 'legEnd', type: 'limbEnd', data: { ratio: 0.02 } },
+    { id: 'footGen', type: 'footShape', data: {} },
+    { id: 'footLength', type: 'numberMultiply', data: { factor: 2.688 } },
     {
       id: 'legPair',
       type: 'limbPair',
@@ -105,11 +107,13 @@ defineGroupNode({
     { id: 'sceneOut', type: 'sceneOutput', data: {} },
   ],
   internalEdges: [
+    // 位置の計算(bodyLayout)
     { source: 'input', sourceHandle: 'legHeight', target: 'layout', targetHandle: 'legHeight' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'layout', targetHandle: 'torsoLength' },
     { source: 'input', sourceHandle: 'torsoRadius', target: 'layout', targetHandle: 'torsoRadius' },
     { source: 'input', sourceHandle: 'headRadius', target: 'layout', targetHandle: 'headRadius' },
     { source: 'input', sourceHandle: 'armLength', target: 'layout', targetHandle: 'armLength' },
+    // 胴体+首
     { source: 'input', sourceHandle: 'torsoRadius', target: 'torsoGen', targetHandle: 'radius' },
     { source: 'input', sourceHandle: 'torsoLength', target: 'torsoLengthLifted', targetHandle: 'a' },
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoLengthLifted', targetHandle: 'b' },
@@ -121,6 +125,7 @@ defineGroupNode({
     { source: 'torsoLift', sourceHandle: 'value', target: 'torsoY', targetHandle: 'b' },
     { source: 'torsoY', sourceHandle: 'value', target: 'torsoTranslate', targetHandle: 'y' },
 
+    // 頭+耳
     { source: 'input', sourceHandle: 'headRadius', target: 'headGen', targetHandle: 'radius' },
     { source: 'headGen', sourceHandle: 'geometry', target: 'headTranslate', targetHandle: 'geometry' },
     { source: 'layout', sourceHandle: 'headCenterY', target: 'headBottomY', targetHandle: 'a' },
@@ -131,6 +136,7 @@ defineGroupNode({
     { source: 'layout', sourceHandle: 'headCenterY', target: 'earGen', targetHandle: 'centerY' },
     { source: 'headZIn', sourceHandle: 'value', target: 'earGen', targetHandle: 'centerZ' },
 
+    // 腕
     { source: 'input', sourceHandle: 'armRadius', target: 'armEnd', targetHandle: 'radius' },
     { source: 'armEnd', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'end' },
     { source: 'input', sourceHandle: 'armRadius', target: 'armShaftGen', targetHandle: 'radius' },
@@ -143,6 +149,7 @@ defineGroupNode({
     { source: 'armAdjust', sourceHandle: 'centerY', target: 'armPair', targetHandle: 'centerY' },
     { source: 'armShaftGen', sourceHandle: 'geometry', target: 'armPair', targetHandle: 'shaft' },
 
+    // 脚
     { source: 'input', sourceHandle: 'legRadius', target: 'legEnd', targetHandle: 'radius' },
     { source: 'legEnd', sourceHandle: 'geometry', target: 'legPair', targetHandle: 'end' },
     { source: 'input', sourceHandle: 'legRadius', target: 'legShaftGen', targetHandle: 'radius' },
@@ -159,6 +166,7 @@ defineGroupNode({
     { source: 'input', sourceHandle: 'legSpacing', target: 'legPair', targetHandle: 'spacing' },
     { source: 'layout', sourceHandle: 'legCenterY', target: 'legPair', targetHandle: 'centerY' },
 
+    // 結合と出力
     { source: 'torsoTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'headTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     { source: 'earGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
