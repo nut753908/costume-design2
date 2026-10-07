@@ -7,9 +7,8 @@ import { EasedLatheCurve } from '../../../geometry/latheProfile';
  * 半径をイージングしながら結ぶ曲線(`getPoint(t)` は `(半径, 高さ)`)を出力する汎用ノード。
  * `latheGenerator`(`latheGenerator.ts`)/`ringGridGenerator` へ渡すと、その `Profile Steps` 個に
  * 分割した点列から回転体になる(分割数は曲線ではなく受け取る側の設定)。
- * アンカー側から反対側へどちらのY方向に伸ばすか(skirt/pants/gloves のように腰/手首から垂れ下がる
- * 形状は `down`、shoes/hat/socks のように地面/頭から上へ伸びる形状は `up`)は、どちらの出力を配線
- * するかで選ぶ(`necklineShapes` の形の選択と同じ)。使われなかった側は評価されるだけで何にも使われない。 */
+ * アンカー側から反対側へどちらのY方向に伸ばすか(腰/手首から垂れ下がる形状は `down`、
+ * 地面/頭から上へ伸びる形状は `up`)は、どちらの出力を配線するかで選ぶ。使われなかった側は評価されるだけで何にも使われない。 */
 registerNodeType({
   type: 'easedLatheCurve',
   label: 'Eased Lathe Curve',

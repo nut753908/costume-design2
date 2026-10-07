@@ -9,7 +9,7 @@ export interface NumberNegateData extends Record<string, unknown> {
 const DEFAULTS = { value: 0 };
 
 /** `numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax` と対になる、`-value` を計算する
- * 汎用の単項演算ノード。`mirrorPair` の ±offset や、bag/glasses/belt/scarf が使う
+ * 汎用の単項演算ノード。`mirrorPair` の ±offset のような
  * 「符号を反転させるだけ」の配線に使う。 */
 registerNodeType<NumberNegateData>({
   type: 'numberNegate',

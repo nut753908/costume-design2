@@ -29,7 +29,7 @@ defineGroupNode({
   internalEdges: [],
 });
 
-const SKIRT_SCALE = 0.17664;
+const TORSO_LIFT = 0.0465;
 const n = (id: string, type: string, data: Record<string, unknown> = {}): GraphNode => ({ id, type, data });
 
 describe('fingerprintGroupStructure', () => {
@@ -52,61 +52,61 @@ describe('fingerprintGroupStructure', () => {
 
 describe('isGroupInstanceStale', () => {
   it('実体化前(data.nodes なし)は常に最新', () => {
-    expect(isGroupInstanceStale('skirtGroup', {})).toBe(false);
+    expect(isGroupInstanceStale('bodyGroup', {})).toBe(false);
   });
 
   it('createDefaultData() 直後のインスタンスは最新で、指紋が古ければ stale になる', () => {
-    const data = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[]; templateFingerprint: string };
-    expect(data.templateFingerprint).toBe(getGroupTemplateFingerprint('skirtGroup'));
-    expect(isGroupInstanceStale('skirtGroup', data)).toBe(false);
-    expect(isGroupInstanceStale('skirtGroup', { ...data, templateFingerprint: 'deadbeef' })).toBe(true);
+    const data = getNodeType('bodyGroup').createDefaultData() as { nodes: GraphNode[]; templateFingerprint: string };
+    expect(data.templateFingerprint).toBe(getGroupTemplateFingerprint('bodyGroup'));
+    expect(isGroupInstanceStale('bodyGroup', data)).toBe(false);
+    expect(isGroupInstanceStale('bodyGroup', { ...data, templateFingerprint: 'deadbeef' })).toBe(true);
   });
 
   it('指紋を持たない古いインスタンスは、内部構造そのものの指紋で比較する', () => {
-    const data = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[]; edges: never[] };
-    expect(isGroupInstanceStale('skirtGroup', { nodes: data.nodes, edges: data.edges })).toBe(false);
-    expect(isGroupInstanceStale('skirtGroup', { nodes: data.nodes.slice(1), edges: data.edges })).toBe(true);
+    const data = getNodeType('bodyGroup').createDefaultData() as { nodes: GraphNode[]; edges: never[] };
+    expect(isGroupInstanceStale('bodyGroup', { nodes: data.nodes, edges: data.edges })).toBe(false);
+    expect(isGroupInstanceStale('bodyGroup', { nodes: data.nodes.slice(1), edges: data.edges })).toBe(true);
   });
 
   it('ユーザーが値だけ編集しても(構造が同じなら)stale にならない', () => {
-    const data = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[]; templateFingerprint: string };
-    const edited = data.nodes.map((node) => (node.id === 'scale' ? { ...node, data: { ...node.data, value: 0.5 } } : node));
-    expect(isGroupInstanceStale('skirtGroup', { ...data, nodes: edited })).toBe(false);
+    const data = getNodeType('bodyGroup').createDefaultData() as { nodes: GraphNode[]; templateFingerprint: string };
+    const edited = data.nodes.map((node) => (node.id === 'torsoLift' ? { ...node, data: { ...node.data, value: 0.5 } } : node));
+    expect(isGroupInstanceStale('bodyGroup', { ...data, nodes: edited })).toBe(false);
   });
 });
 
 describe('migrateGroupToTemplate', () => {
   it('同じ id・型のノードの入力欄の値を引き継ぐ', () => {
-    const migrated = migrateGroupToTemplate('skirtGroup', [
-      n('scale', 'numberInput', { value: 0.45 }),
+    const migrated = migrateGroupToTemplate('bodyGroup', [
+      n('torsoLift', 'numberInput', { value: 0.45 }),
       n('material', 'toonShadowMaterial', { color: '#123456' }),
       n('removedNode', 'numberInput', { value: 7 }),
     ]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
-    expect(byId.get('scale')?.data.value).toBe(0.45);
+    expect(byId.get('torsoLift')?.data.value).toBe(0.45);
     expect(byId.get('material')?.data.color).toBe('#123456');
     expect(byId.has('removedNode')).toBe(false);
-    expect(migrated.templateFingerprint).toBe(getGroupTemplateFingerprint('skirtGroup'));
+    expect(migrated.templateFingerprint).toBe(getGroupTemplateFingerprint('bodyGroup'));
   });
 
   it('型が変わっている同じ id の値は引き継がない', () => {
-    const migrated = migrateGroupToTemplate('skirtGroup', [n('scale', 'colorInput', { hex: '#fff' })]);
-    expect(migrated.nodes.find((node) => node.id === 'scale')?.data.value).toBe(SKIRT_SCALE);
+    const migrated = migrateGroupToTemplate('bodyGroup', [n('torsoLift', 'colorInput', { hex: '#fff' })]);
+    expect(migrated.nodes.find((node) => node.id === 'torsoLift')?.data.value).toBe(TORSO_LIFT);
   });
 
-  it('同じ id・型の numberInput/colorInput の値を引き継ぐ(最新のテンプレートにも入力ノードがあるグループ)', () => {
-    const migrated = migrateGroupToTemplate('scarfGroup', [n('bandThicknessIn', 'numberInput', { value: 0.5 })]);
-    expect(migrated.nodes.find((node) => node.id === 'bandThicknessIn')?.data.value).toBe(0.5);
+  it('同じ id・型の numberInput の値を引き継ぐ(最新のテンプレートにも入力ノードがあるグループ)', () => {
+    const migrated = migrateGroupToTemplate('bodyGroup', [n('headZIn', 'numberInput', { value: -0.2 })]);
+    expect(migrated.nodes.find((node) => node.id === 'headZIn')?.data.value).toBe(-0.2);
   });
 
   it('同じ id の groupInput のソケットの既定値(Group Input で編集した値)を引き継ぐ', () => {
-    const template = getNodeType('skirtGroup').createDefaultData() as { nodes: GraphNode[] };
+    const template = getNodeType('bodyGroup').createDefaultData() as { nodes: GraphNode[] };
     const input = template.nodes.find((node) => node.id === 'input')!;
     const edited = {
       ...input,
       data: { sockets: (input.data.sockets as { id: string }[]).map((sock) => (sock.id === 'color' ? { ...sock, default: '#112233' } : sock)) },
     };
-    const migrated = migrateGroupToTemplate('skirtGroup', [edited]);
+    const migrated = migrateGroupToTemplate('bodyGroup', [edited]);
     const sockets = migrated.nodes.find((node) => node.id === 'input')?.data.sockets as { id: string; default: unknown }[];
     expect(sockets.find((sock) => sock.id === 'color')?.default).toBe('#112233');
   });
@@ -126,10 +126,10 @@ describe('migrateGroupToTemplate', () => {
   });
 
   it('値の置き場所が別のノードへ移っている場合は追跡せず、最新のテンプレートの既定値になる', () => {
-    // 古いテンプレートで numberInput(waistRadiusIn)が持っていた値は、最新のテンプレートでは scale の入力欄にある。
-    const migrated = migrateGroupToTemplate('skirtGroup', [n('waistRadiusIn', 'numberInput', { value: 0.45 })]);
+    // 古いテンプレートで numberInput(liftIn)が持っていた値は、最新のテンプレートでは torsoLift の入力欄にある。
+    const migrated = migrateGroupToTemplate('bodyGroup', [n('liftIn', 'numberInput', { value: 0.45 })]);
     const byId = new Map(migrated.nodes.map((node) => [node.id, node]));
-    expect(byId.has('waistRadiusIn')).toBe(false);
-    expect(byId.get('scale')?.data.value).toBe(SKIRT_SCALE);
+    expect(byId.has('liftIn')).toBe(false);
+    expect(byId.get('torsoLift')?.data.value).toBe(TORSO_LIFT);
   });
 });

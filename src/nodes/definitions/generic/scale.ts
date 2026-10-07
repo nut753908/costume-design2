@@ -5,8 +5,7 @@ import { asNumber } from '../../socketHelpers';
 /** geometry を X/Y/Z の3軸方向へ非一様スケールする汎用ノード。`translate` と対になる形で
  * 3軸すべてを入力ソケットとして持つが、平行移動と違い拡大縮小のため、未接続時のフォール
  * バックはスケールなしを表す `1` になる(`translate` の未接続時 `0` と対照的)。
- * `shoesGroupNode.ts` が、つま先方向に伸びた靴らしい楕円形のシルエットを作るため Z だけ
- * 配線して使う。 */
+ * 1軸だけを配線して、その方向にだけ伸ばす/つぶす使い方もできる。 */
 registerNodeType({
   type: 'scale',
   label: 'Scale',

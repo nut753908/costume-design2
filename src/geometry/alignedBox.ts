@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /** start から end まで(その方向を「高さ」として)伸びる、幅 width・厚み thickness の箱を作る。
- * bag.ts(斜めがけストラップ)と glasses.ts(ブリッジ/テンプル)で共有する。BoxGeometry を
+ * `alignedBoxGenerator` が使う。BoxGeometry を
  * 中点に平行移動し、+Y 軸が start→end 方向を向くよう回転させるだけなので、反転(負のスケール)
  * を伴わない剛体変換であり、標準プリミティブの正しい巻き順がそのまま保たれる。 */
 export function buildAlignedBox(

@@ -5,7 +5,7 @@ import { isMeshVisible, sceneMeshKey, useViewStore } from '../state/viewStore';
 import { ToonMesh } from '../rendering/ToonMesh';
 import { matchSceneOutputGeometryIndex, sceneOutputGeometryKey, sceneOutputMaterialKey } from '../nodes/definitions/generic/sceneOutput';
 
-/** `bodyGroup`(Body、3Dモデル本体)も他14種のガーメントと同じ `<name>Group` パターンで
+/** `bodyGroup`(Body、3Dモデル本体)もガーメントと同じ `<name>Group` パターンで
  * 実装されており、内部の `sceneOutput` を通じてこのコンポーネントが走査する
  * `rootEvaluatedResults` に現れる — Body 専用の描画コード・専用コンポーネントは無い
  * (ノードの型を一切問わないこの走査ロジックのおかげ)。

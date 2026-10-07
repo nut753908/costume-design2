@@ -12,7 +12,6 @@ import.meta.glob(
     '!./generatorNodeFactory.ts',
     '!./groupNodeFactory.ts',
     '!./garmentOutput.ts',
-    '!./garmentParts.ts',
   ],
   { eager: true },
 );

@@ -29,7 +29,7 @@ type ParamsFromFields<F extends readonly FieldSpec[]> = {
 type DataFromFields<F extends readonly FieldSpec[]> = Partial<ParamsFromFields<F>> & Record<string, unknown>;
 
 /**
- * ガーメントジェネレーターノード(skirt/belt/hat/...)は「フィールドの値を解決して
+ * ジェネレーターノードは「フィールドの値を解決して
  * build*Geometry へそのまま渡すだけ」という同じ形をしている。この関数がその共通部分
  * (data 型・DEFAULTS・inputs 配列・createDefaultData・evaluate)をフィールド仕様から
  * 機械的に組み立てて registerNodeType を呼ぶ。
@@ -42,7 +42,7 @@ export function defineGeneratorNode<
   // `const` を付けないと呼び出し側の fields 配列が `FieldSpec[]`(id: string)に広がってしまい、
   // 'torsoRadius' 等のリテラル id が失われて ParamsFromFields のキーが効かなくなる。
   const F extends readonly FieldSpec[],
-  // extra を渡さないノード(skirt/belt/hat 等の大半)では Extra を空オブジェクト型にして、
+  // extra を渡さないノード(大半)では Extra を空オブジェクト型にして、
   // ParamsFromFields<F> & Extra が ParamsFromFields<F> のままになるようにする。
   Extra extends Record<string, unknown> = Record<never, never>,
 >(config: {

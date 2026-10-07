@@ -34,20 +34,20 @@
 
 - `state/selectors.ts` の `useRootGraphLite()` — `useNodesLite`/`useEdgesLite` と同じ参照安定化パターンで、合成後のグラフを返す。
 - `state/useRootEvaluatedGraph.ts` — 上記を `evaluateGraph()` に渡し、結果をストアの `rootEvaluatedResults`(`evaluatedResults` とは別フィールド)に書き込む。`App.tsx` で `useEvaluatedGraph()` と並行して常時マウントする。
-- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
+- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body もガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
 - `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
 
 一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(ノードカード上のリアルタイム値表示などを駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
 
 ## 初期状態への復帰: initialGraph.ts と「初期状態(デフォルト)」プリセット
 
-`state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例、体の半径の配線、socks の再引きなど)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
+`state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例など)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
 
-初期状態のグラフは体だけで、`bodyGroup` の1ノードから成ります(寸法は固定値で `bodyGroup` の外部ソケットの既定値、Y座標はその寸法から内部で求めます)(体の作り込みに専念するため、ガーメントのグループノードは置かない)。ガーメントの定義(`<name>GroupNode.ts`)は残っており、ノード追加メニューから追加できます。ガーメントは外部入力が `color` だけで、追加するだけで配線なしに取り付け位置に着ます。
+初期状態のグラフは体だけで、`bodyGroup` の1ノードから成ります(寸法は固定値で `bodyGroup` の外部ソケットの既定値、Y座標はその寸法から内部で求めます)(ガーメントは現在1つも無く、今後作り直す。ガーメントは外部入力が `color` だけで、追加するだけで配線なしに取り付け位置に着る設計にする)。
 
 `initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
 
-プリセット(`state/presetStore.ts`)は `scope` を持ち、`PresetPanel.tsx` は今開いている階層に合うものだけを一覧に出す。トップレベルでは `scope` なし(グラフ全体)、グループの中に入っている間は今開いているグループの型名(`scopeStack` の最後のフレームの親ノードの `type`、例: `skirtGroup`)で、同じ型のグループの内部グラフだけを保存・読み込みできる(同名は同じ `scope` 内でだけ上書き)。グループの中では「初期状態(デフォルト)」がそのグループ型のテンプレート(`createDefaultData()`)になり、内部編集を捨ててテンプレートへ戻す用途を兼ねる。ストアの `nodes`/`edges` が「今開いている階層」の内部グラフに差し替わる仕組み(上記)のため、保存・読み込みのロジック自体は階層によらず同じ。GraphIO の Export JSON はグラフと一緒にプリセットの一覧(全 `scope`)も書き出し、Import JSON は既存の一覧へマージする(同名・同じ `scope` は上書き)。
+プリセット(`state/presetStore.ts`)は `scope` を持ち、`PresetPanel.tsx` は今開いている階層に合うものだけを一覧に出す。トップレベルでは `scope` なし(グラフ全体)、グループの中に入っている間は今開いているグループの型名(`scopeStack` の最後のフレームの親ノードの `type`、例: `bodyGroup`)で、同じ型のグループの内部グラフだけを保存・読み込みできる(同名は同じ `scope` 内でだけ上書き)。グループの中では「初期状態(デフォルト)」がそのグループ型のテンプレート(`createDefaultData()`)になり、内部編集を捨ててテンプレートへ戻す用途を兼ねる。ストアの `nodes`/`edges` が「今開いている階層」の内部グラフに差し替わる仕組み(上記)のため、保存・読み込みのロジック自体は階層によらず同じ。GraphIO の Export JSON はグラフと一緒にプリセットの一覧(全 `scope`)も書き出し、Import JSON は既存の一覧へマージする(同名・同じ `scope` は上書き)。
 
 `editor/PresetPanel.tsx` はこの `initialNodes`/`initialEdges` を、`usePresetStore` に保存されたユーザープリセットとは別に「初期状態(デフォルト)」という擬似プリセット(固定ID `__initial__`、常にドロップダウン先頭に表示、削除不可)としてロード可能にしています。上記の「リロード後は Undo で戻せない」問題への対処として、ユーザーはこのプリセットを選んで Load することでいつでも初期グラフに戻せます。
 

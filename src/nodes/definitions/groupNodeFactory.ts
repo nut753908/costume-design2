@@ -17,8 +17,8 @@ export interface GroupNodeConfig {
    *  行わず、インスタンスごとに表示名(`data.label`)を付けられるようにする。 */
   userDefined?: boolean;
   /** `type: 'groupInput'`/`type: 'groupOutput'` ノードはどちらも省略可 — 省略すると
-   *  外部から見た入出力ソケットはそれぞれ0個になる(既存14種のガーメントは `groupOutput`
-   *  を全て省略している。描画は `sceneOutput` が別途担うため出番が無い)。 */
+   *  外部から見た入出力ソケットはそれぞれ0個になる(ガーメントや `bodyGroup` は `groupOutput`
+   *  を省略する。描画は `sceneOutput` が別途担うため出番が無い)。 */
   /** `position` を持つノードはその座標に置き、持たないノードは自動レイアウトで配置する。 */
   internalNodes: (GraphNode & { position?: { x: number; y: number } })[];
   internalEdges: GraphEdge[];

@@ -42,16 +42,14 @@ node .claude/skills/run-costume-design2/driver.mjs
 やること:
 1. `localhost:5173` が応答していなければ `npm run dev` をプロジェクトルートで自動起動し、
    準備完了までポーリングで待つ(既に起動済みなら何もしない)。
-2. ヘッドレスChromiumで開き、`.react-flow__node[data-id="skirtGroup"]` と `canvas` の描画を待つ。
+2. ヘッドレスChromiumで開き、`.react-flow__node[data-id="bodyGroup"]` と `canvas` の描画を待つ。
 3. 初期状態のスクリーンショットを撮る。
 4. `OrbitControls` でカメラをドラッグ操作し、再描画されることを確認するスクリーンショットを撮る
    (`frameloop="demand"` でもカメラ操作時に再描画されるかの検証を兼ねる)。
-5. `skirtGroup` のタイトル行右上の「→」(グループの中に入る)ボタンを押して中に入り(ガーメント固有の生パラメータは
-   `<name>GroupNode.ts` の `internalNodes` に埋め込まれているため、中に入らないと操作できない
-   — `src/nodes/CLAUDE.md` の「グループノード」節参照)、`scale`(numberMultiplyノード)の Value 入力欄
-   (未接続の数値入力ソケットの欄)に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが
-   追従して変化した後のスクリーンショットを撮る。
-6. トップレベルへ戻り、`skirtGroup` カードの未接続の Color 入力欄の色を変更して、
+5. `bodyGroup` カードの未接続の数値入力欄(例: Torso Radius)に高頻度のinputイベントを連続発火させ(連続入力の再現)、ジオメトリが
+   追従して変化した後のスクリーンショットを撮る(グループ内部のノードの入力欄を操作する場合は、タイトル行右上の「→」
+   (グループの中に入る)ボタンで中に入る — `src/nodes/CLAUDE.md` の「グループノード」節参照)。
+6. トップレベルへ戻り、`bodyGroup` カードの未接続の Color 入力欄の色を変更して、
    ガーメントの色が変わった後のスクリーンショットを撮る(`Group Input` 上では色のデフォルト値は編集できない)。
 7. コンソールエラー/ページエラーを収集し、1件でもあれば非ゼロ終了。
 8. このスクリプト自身が起動した dev サーバーのみ停止する(元から起動していたものは触らない)。
@@ -97,11 +95,7 @@ page.locator('.react-flow__node[data-id="<ノードID>"] input[type="number"]') 
 page.locator('.react-flow__node[data-id="<ノードID>"] input[type="color"]')  // colorInput、または未接続の色入力ソケットの欄
 ```
 
-ノードIDの一覧は `src/state/graphStore.ts` の `initialNodes` を参照(トップレベルには
-`bodyGroup`・各 `<name>Group` しか無い点に注意。各ガーメント固有の生パラメータ
-(色を除く)は対応するグループの中のノード(`scale` など)の入力欄として
-埋め込まれている(色はグループカード自身の Color 欄)ため、上のステップ5と同様に
-まず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。
+ノードIDの一覧は `src/state/initialGraph.ts` の `initialNodes` を参照(トップレベルには `bodyGroup` しか無い点に注意。グループ固有の内部パラメータは対応するグループの中のノードの入力欄として埋め込まれているため、上のステップ5と同様にまず中に入ってから探す。ラベルではなく `id` フィールドを使うこと)。
 
 number/color input は React の controlled input なので、値を直接 `el.value = ...` するだけでは
 onChangeが発火しない。ネイティブの value setter 経由で値をセットしてから `input` イベントを
@@ -140,5 +134,5 @@ onChangeが発火しない。ネイティブの value setter 経由で値をセ�
 |---|---|
 | `Chromium 実行ファイルが見つかりません` | `~/.cache/ms-playwright` にキャッシュが無い。`cd .claude/skills/run-costume-design2 && npm install && npx playwright-core install chromium` |
 | `dev server が30秒以内に応答しませんでした` | ポート5173が塞がっている可能性。`lsof -ti:5173 -sTCP:LISTEN \| xargs -r kill` してから再実行 |
-| `.react-flow__node[data-id="skirtGroup"]`/`scale`/`input` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された、または対象ノードがグループの中に埋め込まれた)。`src/state/graphStore.ts` の `initialNodes` や該当する `<name>GroupNode.ts` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |
+| `.react-flow__node[data-id="bodyGroup"]`/`input` が見つからずタイムアウト | デフォルトグラフの構成が変わった(ノードIDが変更/削除された、または対象ノードがグループの中に埋め込まれた)。`src/state/initialGraph.ts` の `initialNodes` や該当する `<name>GroupNode.ts` で現在のノードIDを確認し、`driver.mjs` 内のセレクタを更新する |
 | `check-card-heights.mjs` が全ノードで「未描画」になる | 長時間動かした dev server は HMR で `graphStore.ts` が2つのモジュールインスタンスに分かれ、検査が操作するストアとアプリが描画に使うストアが別物になる。dev server を再起動してから実行する |

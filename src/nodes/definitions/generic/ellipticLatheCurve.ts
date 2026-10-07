@@ -5,8 +5,7 @@ import { EllipticLatheCurve } from '../../../geometry/latheProfile';
 
 /** `geometry/latheProfile.ts` の `EllipticLatheCurve` を薄くラップし、アンカー側から反対側の端まで
  * 楕円の 1/4 で結ぶ曲線(アンカー側で水平、反対端で垂直)を出力する汎用ノード。入出力と使い方は
- * `easedLatheCurve` と同じ(`Curve Up`/`Curve Down` のどちらを配線するかで向きを選ぶ)。
- * `shoulderedProfile` が服の肩の丸みに使う。 */
+ * `easedLatheCurve` と同じ(`Curve Up`/`Curve Down` のどちらを配線するかで向きを選ぶ)。 */
 registerNodeType({
   type: 'ellipticLatheCurve',
   label: 'Elliptic Lathe Curve',

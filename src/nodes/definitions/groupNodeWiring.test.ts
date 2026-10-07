@@ -13,7 +13,7 @@ const groupTypes = [...nodeTypeRegistry.values()].filter((def) => def.category =
 
 describe('全グループノードの内部配線', () => {
   it('グループ型が登録されている(走査対象が空になっていない)', () => {
-    expect(groupTypes.length).toBeGreaterThanOrEqual(18);
+    expect(groupTypes.length).toBeGreaterThanOrEqual(10);
   });
 
   describe.each(groupTypes.map((def) => [def.type, def] as const))('%s', (_type, def) => {

@@ -1,8 +1,7 @@
 import * as THREE from 'three';
 
 /** THREE.js 標準プリミティブをそのまま返すだけの、特定のガーメント/パーツに紐付かない
- * 汎用のジオメトリ生成関数群。巻き順は最初から正しい(geometry/CLAUDE.md の bag.ts/glasses.ts
- * と同じ理由)。`bodyGroupNode.ts` が胴体/頭/腕/脚のジェネレーターとして使う。 */
+ * 汎用のジオメトリ生成関数群。巻き順は最初から正しい(geometry/CLAUDE.md の `alignedBox.ts` と同じ理由)。`bodyGroupNode.ts` が胴体/頭/腕/脚のジェネレーターとして使う。 */
 
 export function buildCapsuleGeometry({
   radius,

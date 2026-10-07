@@ -7,12 +7,12 @@ export interface RingGridRow {
 }
 
 /**
- * 角度×高さのリングからなる手組み BufferGeometry を構築する(top.ts/dress.ts で共有)。
+ * 角度×高さのリングからなる手組み BufferGeometry を構築する(`ringGridGenerator` が使う)。
  * rows[0] を最上段(首まわり)として、角度ごとに「最上段から necklineDepth × necklineWeight() だけ
  * 下がった高さ」を彫り込みの線とし(`necklineWeights` は角度に対する落ち込み量の曲線)、その線より上に
  * ある行の頂点を線上の点(半径は上下の行から補間)へ寄せてネックラインを彫り込む。最上段だけを
  * 下げると、肩の丸みで行の間隔が狭い所では下の行を越えて面が折り返すため、線より上の行をまとめて
- * 寄せる。放射対称な Lathe では表現できないネックラインの落ち込みを扱うための、top/dress 共通の構築ロジック。
+ * 寄せる。放射対称な Lathe では表現できないネックラインの落ち込みを扱うためのための構築ロジック。
  */
 export function buildRingGridGeometry(
   rows: RingGridRow[],

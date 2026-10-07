@@ -1,7 +1,7 @@
 import { defineGroupNode } from '../groupNodeFactory';
 import { colorSocket, shadowMaterialParts } from '../garmentOutput';
 
-/** Body を他14種のガーメントと同じ「`<name>Group` ノード」パターンで表現する。
+/** Body をガーメントと同じ「`<name>Group` ノード」パターンで表現する。
  * `Garments.tsx` はノードの型を問わず内部の `sceneOutput` だけを見て描画するため、
  * `bodyGroup` もガーメントと全く同じ経路でシーンへ描画される(ルート CLAUDE.md 参照)。
  *
@@ -14,8 +14,8 @@ import { colorSocket, shadowMaterialParts } from '../garmentOutput';
  * - 頭+耳: `headShape` と `earPair` を `translate` で置く。
  * - 腕1組/脚1組: 軸(`armShaft`/`legShaft`、`generic/limbShaft.ts`)と足(`footShape`)から
  *   `limbPair`(`generic/limbPair.ts`)で作る。軸の長さ・位置の補正は `armShaftAdjust`/`legShaftAdjust`。
- * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(scarf が
- * belt+box を `mergeGeometry` でまとめるのと同じ形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。
+ * すべて `mergeGeometry` 1つで1つのジオメトリへ結合し、`sceneOutput` を1個だけ持つ(複数のプリミティブを1グループ内で
+ * 完結させる形 — 詳細は `nodes/CLAUDE.md` の「グループノード」節)。
  * 全パーツが同じマテリアルなので、結合した方がノードグラフ上の階層が1段減る。
  *
  * 肌色は他のガーメントと同じ外部ソケット `color`(`colorSocket()`)で、`shadowMaterialParts()` の

@@ -25,7 +25,7 @@ WebGL に触れない React フック(zustand ストアの購読 + useMemo/useRe
 実装内容が、このファイルや各ディレクトリの `CLAUDE.md` に書かれている設計意図・アーキテクチャ上の前提・既知の落とし穴を変える場合は、**その変更と同じコミットで該当する `CLAUDE.md` も更新してください**。「後で直す」は基本的に発生しないため、実装コミットの一部として扱うこと。該当するかどうか迷う場合の目安:
 
 - 新しいノードタイプ・ソケットタイプ・評価ルールを追加/変更した → [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md)
-- ガーメントのジオメトリ生成ロジックや半径/長さのスケーリング規則を変更した → [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md)、および本ファイルの「Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる」節
+- ガーメントのジオメトリ生成ロジックを変更した → [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md)、および本ファイルの「Body(3Dモデル本体)もガーメントと同じ `<name>Group` ノードで組み立てられる」節
 - トゥーンシェーディングの仕組みを変更した → [`src/rendering/CLAUDE.md`](src/rendering/CLAUDE.md)
 - シーン組み立て(ボディ/ガーメントの配置)を変更した → [`src/scene/CLAUDE.md`](src/scene/CLAUDE.md)
 - zustand ストアの構造、Undo/Redo の仕組みを変更した → [`src/state/CLAUDE.md`](src/state/CLAUDE.md)
@@ -40,16 +40,16 @@ WebGL に触れない React フック(zustand ストアの購読 + useMemo/useRe
 
 これはノードグラフ(Blender の Geometry Nodes 風)で 3D コスチュームをデザインする Web アプリで、フォトリアルな 3D ではなく、フラットなトゥーンシェーディングのイラスト調でレンダリングされます。スタック: React + react-three-fiber (Three.js) + React Flow (`@xyflow/react`)、状態管理に zustand、バックエンドなし — 完全にクライアントサイドで、グラフの状態は localStorage に永続化されます。
 
-**すべてがコード上で手続き的に生成されます — 外部の 3D メッシュアセットは使用しません。** ボディと両方のガーメント(衣装)は、インポートしたモデルではなく、実行時にプリミティブ/カーブから構築されます。これは見落としではなく、意図的な制約です。
+**すべてがコード上で手続き的に生成されます — 外部の 3D メッシュアセットは使用しません。** ボディとガーメント(衣装)は、インポートしたモデルではなく、実行時にプリミティブ/カーブから構築されます。これは見落としではなく、意図的な制約です。
 
-各モジュールのより詳細な設計意図・落とし穴は、該当ディレクトリで作業する際に自動的に読み込まれる `CLAUDE.md` にまとめています: [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md)(ノードグラフエンジン)、[`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md)(カスタムガーメントジオメトリ)、[`src/rendering/CLAUDE.md`](src/rendering/CLAUDE.md)(トゥーンシェーディング)、[`src/scene/CLAUDE.md`](src/scene/CLAUDE.md)(シーン組み立て)、[`src/state/CLAUDE.md`](src/state/CLAUDE.md)(リアクティビティ・Undo/Redo)、[`src/editor/CLAUDE.md`](src/editor/CLAUDE.md)(ノードグラフの操作/エディタUX)。
+各モジュールのより詳細な設計意図・落とし穴は、該当ディレクトリで作業する際に自動的に読み込まれる `CLAUDE.md` にまとめています: [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md)(ノードグラフエンジン)、[`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md)(カスタムジオメトリ)、[`src/rendering/CLAUDE.md`](src/rendering/CLAUDE.md)(トゥーンシェーディング)、[`src/scene/CLAUDE.md`](src/scene/CLAUDE.md)(シーン組み立て)、[`src/state/CLAUDE.md`](src/state/CLAUDE.md)(リアクティビティ・Undo/Redo)、[`src/editor/CLAUDE.md`](src/editor/CLAUDE.md)(ノードグラフの操作/エディタUX)。
 
-### Body(3Dモデル本体)も他14種のガーメントと同じ `<name>Group` ノードで組み立てられる
+### Body(3Dモデル本体)もガーメントと同じ `<name>Group` ノードで組み立てられる
 
-Body は専用のノードタイプ・専用の描画コンポーネントを持たず、他14種のガーメントと全く同じ「`<name>Group`」パターン(`bodyGroup`)で表現されています。ボディの寸法(各部位の半径・長さ・間隔)は固定値で、`bodyGroup` の外部ソケット(`bodyGroupNode.ts`)の既定値のリテラルとして持ちます。胴体・頭・腕・脚のY座標は、その寸法から内部の `bodyLayout`(`nodes/definitions/generic/bodyLayout.ts`、四則演算のノード)が求めるので、寸法を変えると連動します。ガーメントの取り付け位置も、各ガーメント内の `placement`(汎用 `translate`)の `y` の固定値です。内部構造の詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節、ジオメトリ関数は [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md) を参照してください。
+Body は専用のノードタイプ・専用の描画コンポーネントを持たず、ガーメントと全く同じ「`<name>Group`」パターン(`bodyGroup`)で表現されています。ボディの寸法(各部位の半径・長さ・間隔)は固定値で、`bodyGroup` の外部ソケット(`bodyGroupNode.ts`)の既定値のリテラルとして持ちます。胴体・頭・腕・脚のY座標は、その寸法から内部の `bodyLayout`(`nodes/definitions/generic/bodyLayout.ts`、四則演算のノード)が求めるので、寸法を変えると連動します。内部構造の詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節、ジオメトリ関数は [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md) を参照してください。
 
-**Body の見た目の目標は、アットゲームズ/ポケットランドのアバター「セルフィ」のようなモデルです。** 約3頭身で、大きく丸い(あごが少しすぼまった)頭・短めで前へ傾いた首・なで肩でくびれのある薄い胴(前後が幅より薄い楕円断面)・体の脇から少し外へ開き、やや前へ出した細い腕・細めで短めの脚・小さく丸い手足を持ちます。セルフィ自体は 2D イラストのアバターなので、この形を 3D で再解釈しています。寸法と比率は、元画像から画像生成 AI で起こした参照メッシュを左右で平均した形の、正面・側面・斜め・上面のシルエットと、体積に対する一致度(IoU)が最大になるように調整した値です。体型や服の形を変えるときは、この目標から外れないかを確認してください。
+**Body の見た目の目標は、アットゲームズ/ポケットランドのアバター「セルフィ」のようなモデルです。** 約3頭身で、大きく丸い(あごが少しすぼまった)頭・短めで前へ傾いた首・なで肩でくびれのある薄い胴(前後が幅より薄い楕円断面)・体の脇から少し外へ開き、やや前へ出した細い腕・細めで短めの脚・小さく丸い手足を持ちます。セルフィ自体は 2D イラストのアバターなので、この形を 3D で再解釈しています。寸法と比率は、元画像から画像生成 AI で起こした参照メッシュを左右で平均した形の、正面・側面・斜め・上面のシルエットと、体積に対する一致度(IoU)が最大になるように調整した値です。体型を変えるときは、この目標から外れないかを確認してください。
 
-ガーメントの「体に触れる半径」(skirt/pants/belt の waist 半径(pants は裾半径も)、top/jacket の shoulder 側半径(top は袖の太さも)、scarf の首元の輪の半径、gloves の wrist/hand 半径、shoes の sole/cuff 半径、socks の ankle/calf 半径、necktie/bag の胴体からの前後・左右の距離、hat のつば、glasses の前面の深さ)は、リテラルの固定値で、`numberInput` ノードの入力欄の値(`garmentParts.ts` の `radiusInput()` が作る)として持ちます。**ガーメントはボディの寸法に追従しません**(ガーメントのグループに体の半径の外部ソケットは無く、配線もしません。体の位置や大きさに囚われず、それぞれ自由に決める値です)。ガーメント全14種は生成ノード・出力ノードとともに1枚の `<name>Group` ノード(`defineGroupNode()` で定義、詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節を参照)にまとめられ、これらの値はグループの中に入って初めて編集できます。裾の広がりやバックルの膨らみなど「体に触れる半径」から式で導出される二次的な半径(skirt/dress の hemRadius、belt の bulgeRadius など)は、導出元の値を変えると自動的に一緒に変わります。長さ系のパラメータ(skirt の length、top の sleeveLength など)も、いずれもグループ内部のノードの入力欄の値として保持しています(複数のノードが同じ値を使う場合だけ `numberInput` ノードを置いて配線します)。
+ガーメントは現在1つも無く、今後ゼロから作ります。作るときの方針: ガーメントは `<name>Group`(`defineGroupNode()` で定義、詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節)1枚に、生成ノードと末端(`garmentOutput({ y, geometry })`)をまとめます。外部入力は `color` だけで、体に触れる半径・間隔・取り付け位置(`placement` の `y`)などは、すべてリテラルの固定値(各ノードの入力欄の値。複数のノードが同じ値を使うときだけ `numberInput` ノードを置いて配線)として、そのグループの中に入って編集します。ガーメントはボディの寸法に追従しません(ボディへの配線も外部ソケットも持たず、体の位置や大きさに囚われず自由に値を決めます)。
 
 初期状態のプリセット(`src/state/initialGraph.ts`)がトップレベルに残す共有ノードの一覧は [`src/state/CLAUDE.md`](src/state/CLAUDE.md) を参照してください。

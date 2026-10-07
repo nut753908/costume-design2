@@ -9,7 +9,7 @@ export interface Preset {
   nodes: Node[];
   edges: Edge[];
   /** プリセットが対象とする階層。省略(または undefined)ならトップレベルのグラフ全体、
-   * グループノードの型名(`skirtGroup` など)ならそのグループの内部グラフだけ。 */
+   * グループノードの型名(`bodyGroup` など)ならそのグループの内部グラフだけ。 */
   scope?: string;
   /** グループの内部グラフのプリセット(`scope` あり)を保存した時点の、元のテンプレートの構造の
    * 指紋(`nodes/groupTemplate.ts`)。読み込み時に現在のテンプレートと比べて古さを検知する。 */

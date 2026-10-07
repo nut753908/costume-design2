@@ -13,7 +13,7 @@ export interface RingGridGeneratorData extends Record<string, unknown> {
  * 受け取り、`geometry/ringGrid.ts` の `buildRingGridGeometry()` で最上段から
  * ネックラインを彫り込んだ手組みのチューブを作る。`necklineWeights` は正面からの角度(0〜1に
  * 正規化)に対する落ち込み量の曲線(x=角度、y=重み、`geometry/neckline.ts` 参照)。`latheGenerator` の放射非対称版
- * (ネックラインの落ち込みは Lathe では表現できない)で、top/dress が使う。プロファイルは
+ * (ネックラインの落ち込みは Lathe では表現できない)。プロファイルは
  * 上(肩)から下(裾)の順へ並べ直してから渡す。`segments` は `latheGenerator` と同じく
  * 未接続なら `data` の値を使い、3 未満に丸まらないようクランプする。 */
 registerNodeType<RingGridGeneratorData>({
@@ -33,7 +33,7 @@ registerNodeType<RingGridGeneratorData>({
     if (!inputs.profile || inputs.profile.type !== 'curve') return {};
     const steps = Math.max(1, Math.round(asNumber(inputs.steps, data.steps ?? 10)));
     const segments = Math.max(3, Math.round(asNumber(inputs.segments, data.segments ?? 24)));
-    // 未接続ならネックラインを彫り込まない(形はノード構成で選ぶ。`generic/necklineShapes.ts` の `necklineShapes` グループ)。
+    // 未接続ならネックラインを彫り込まない(形はノード構成で選ぶ。`rampCurve` と `Scale/Translate/Multiply Curve Y` で曲線を作れる)。
     const necklineWeights = inputs.necklineWeights?.type === 'curve' ? inputs.necklineWeights.value : undefined;
     const necklineDepth = asNumber(inputs.necklineDepth, data.necklineDepth ?? 0.12);
     const rows = inputs.profile.value

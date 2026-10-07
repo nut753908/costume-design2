@@ -66,15 +66,15 @@ describe('viewStore', () => {
       ['d', { sceneOutputGeometry0: geometry }],
     ]);
     const nodes = [
-      { id: 'a', type: 'topGroup', data: {} },
-      { id: 'b', type: 'skirtGroup', data: { label: 'ignored' } },
+      { id: 'a', type: 'bodyGroup', data: {} },
+      { id: 'b', type: 'armShaftAdjust', data: { label: 'ignored' } },
       { id: 'c', type: 'numberInput', data: {} },
       { id: 'd', type: 'customGroup', data: { label: 'Cape' } },
     ];
     expect(listSceneOutputs(nodes, results)).toEqual([
-      { key: 'a:0', nodeId: 'a', label: 'Top #0' },
-      { key: 'a:1', nodeId: 'a', label: 'Top #1' },
-      { key: 'b:0', nodeId: 'b', label: getNodeType('skirtGroup').label },
+      { key: 'a:0', nodeId: 'a', label: 'Body #0' },
+      { key: 'a:1', nodeId: 'a', label: 'Body #1' },
+      { key: 'b:0', nodeId: 'b', label: getNodeType('armShaftAdjust').label },
       { key: 'd:0', nodeId: 'd', label: 'Cape' },
     ]);
     expect(listSceneOutputs(nodes, null)).toEqual([]);

@@ -3,7 +3,7 @@ import type { SocketValue } from '../../types';
 import { ConcatCurve } from '../../../geometry/concatCurve';
 
 /** 2つの曲線を、`t` の前半を `curveA`、後半を `curveB` としてつないだ1本の曲線にする汎用ノード
- * (`geometry/concatCurve.ts`)。`bulgedBand` が、上下2つのプロファイルの連結に使う。
+ * (`geometry/concatCurve.ts`)。上下2つのプロファイルの連結などに使う。
  * 受け取る側で `Profile Steps` を `n × 2` にすると、`curveA` と `curveB` を `n` 分割ずつ並べた
  * 点列になり、つなぎ目の点は重複しない。 */
 registerNodeType({

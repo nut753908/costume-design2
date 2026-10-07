@@ -1,9 +1,8 @@
 import { defineGroupNode } from '../groupNodeFactory';
 
 /** 受け取った1つの geometry を、±offset だけ X方向に離した左右対称なペアへまとめる
- * グループノード。`limbPair.ts`(腕/脚1組、`bodyGroupNode.ts` が使う)/`pantsGroupNode.ts`(左右2脚)/
- * `shoesGroupNode.ts`(左右2本)/`glovesGroupNode.ts`(左右2つ)/`socksGroupNode.ts`
- * (左右2本)/`glassesGroupNode.ts` が使う、共通の左右対称ペア化ノード。
+ * グループノード。`limbPair.ts`(腕/脚1組、`bodyGroupNode.ts` が使う)や `earPair.ts` が使う、
+ * 共通の左右対称ペア化ノード。
  *
  * `translate`(X だけを配線)で +offset へ平行移動した geometry を、そのまま +側とし、`mirrorX`(X=0 について
  * 鏡像反転)した geometry を -側として `mergeGeometry` で結合する(`nodes/CLAUDE.md` の
