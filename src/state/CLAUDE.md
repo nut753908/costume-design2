@@ -4,50 +4,43 @@
 
 ## リアクティビティ: ノードをドラッグしても evaluator が再実行されない理由
 
-`state/selectors.ts` (`useNodesLite`/`useEdgesLite`) は React Flow の揮発性フィールド(position、selected、dragging)を取り除き — これが重要な点ですが — それらの揮発性フィールドのみが変化した場合には**同一の配列参照**を返します。これは ref にキャッシュした手動の等価性チェックによるものです(最初に試した zustand の `useShallow` ではありません。これは新しくマップされたオブジェクトに対して一階層のみの `Object.is` 比較を行うため、無限レンダーループを引き起こしました)。`state/useEvaluatedGraph.ts` はこれらの安定した参照を持つ配列を `useMemo(() => evaluateGraph(...))` に渡すため、ジオメトリ/マテリアルの再計算はノードの*データ*やエッジが実際に変化したときにのみ発生し、ドラッグ中やフレームごとには発生しません。これはシーンペイン右下に表示される `evaluations: N` カウンターで実際に確認できます。
+`state/selectors.ts` の `useNodesLite`/`useEdgesLite` は React Flow の揮発性フィールド(position・selected・dragging)を取り除き、それだけが変化したときは**同じ配列参照**を返します(ref にキャッシュした手動の等価性チェック。zustand の `useShallow` は新しくマップしたオブジェクトを一階層しか比べないため、無限レンダーループになる)。`useEvaluatedGraph.ts` はこの配列を `useMemo` に渡すので、再評価はノードの `data` かエッジが変わったときだけ起き、ドラッグ中には起きません(シーン右下の `evaluations: N` で確認できる)。
 
-この参照安定化ロジックの核である `sameNodes`/`sameEdges`/`toGraphNode`/`toGraphEdge` は純粋関数として `selectors.test.ts` で直接テストしているが、`useNodesLite`/`useEdgesLite` フック自体(useMemo/useRef + ストア購読の配線)も vitest + jsdom + `@testing-library/react` の `renderHook` で end-to-end に検証している(同ファイル内の「(フック)」describe ブロック)。ルートの CLAUDE.md 参照。
-
-**落とし穴**: `Garments.tsx` は evaluator の結果を `useEvaluatedGraph()` の戻り値からではなく、`useGraphStore((s) => s.evaluatedResults)` でストアから直接読む。この値を埋め戻すのは `useEvaluatedGraph.ts` の `useEffect(() => setEvaluatedResults(evaluated), [evaluated])` だけであり、その `evaluated` は上記の参照安定化を経た `nodesLite`/`edgesLite` が実際に変化したときにしか再計算されない。かつて `graphStore.ts` の `loadGraph` は呼ばれるたびに `evaluatedResults: null` を無条件にセットしていたが、渡された `nodes`/`edges` が現在の state と**同一参照**の場合(例: `initialNodes`/`initialEdges` のような module-level singleton を保持する「初期状態」プリセットを2回連続で Load する)、ストアの `nodes`/`edges` が変化しないため `nodesLite`/`edgesLite` も再計算されず、`evaluatedResults` が null のまま固まってガーメントが消える、という分かりにくいバグになっていた(修正前に実際に発生していた)。`loadGraph` は現在この null リセットを行わず、`nodes`/`edges` が実際に変化した場合にのみ上記の通常のリアクティブな経路で `evaluatedResults` が再計算されるのに任せている。`evaluatedResults` を書き込む箇所を増やす場合、この「未変化なら再計算されない」制約を踏まえること。
+**落とし穴**: `evaluatedResults` は、`nodesLite`/`edgesLite` が実際に変化したときにしか再計算されません。そのため `evaluatedResults` を別の箇所で null などにリセットすると、同じ参照のグラフを読み込み直したとき(「初期状態」プリセットを2回続けて Load するなど)に null のまま固まり、ガーメントが消えます。`evaluatedResults` を書き込む箇所を増やすときは、この制約を踏まえること。
 
 ## 保存データの復元と検証
 
-グループノードは編集済みのインスタンスごとに内部のノード/エッジ(`data.nodes`/`data.edges`)を独立したコピーとして持つため、localStorage やプリセットに保存されたグラフには、保存時点のテンプレートの内部構造(後のバージョンで削除されたノードタイプを含みうる)がそのまま残る。`validateGraph()`(`state/validateGraph.ts`)は、この内部サブグラフも含めて再帰的に未登録のノードタイプと循環を検証し、Import JSON・プリセット読み込みに加えて、`graphStore.ts` の `persist` の `merge`(localStorage からの自動復元)でも使う。検証に失敗した保存データは復元せず初期状態で起動し、元のデータは `GRAPH_BACKUP_STORAGE_KEY`(`costume-design-graph-invalid-backup`)へ退避する(検証を通らないまま復元すると `evaluateGraph()` が例外を投げ、`ErrorBoundary` の全消去リセットしか手段が無くなるため)。
+保存されたグラフには、グループの内部グラフが保存時点の構造のまま残ります(削除されたノードタイプを含みうる)。`validateGraph()` は内部サブグラフまで再帰的に、未登録のノードタイプと循環を検証します。Import JSON・プリセット読み込み・localStorage からの復元(`persist` の `merge`)で使い、失敗した保存データは復元せず初期状態で起動して、元のデータを `costume-design-graph-invalid-backup` へ退避します(復元すると `evaluateGraph()` が例外を投げ、全消去しか手段が無くなるため)。
 
-## onConnect: 1つの入力ソケットには常に最大1本
+## 1つの入力ソケットには常に最大1本
 
-`state/graphStore.ts` の `onConnect`(と、入力ソケットから掴んだエッジを落とす `dropPickedEdge`。どちらも内部ヘルパー `connectEdge` を通る)は、新しいエッジを追加する前に同じ `target`/`targetHandle` への既存のエッジを取り除く。`isValidConnection`(`editor/NodeEditor.tsx`)は型の一致と循環の有無しかチェックしないため、これを onConnect 側でやらないと、既に接続済みの入力ソケットへ別のノードから繋いでも(`@xyflow/react` の `addEdge()` は source/target/両handle が完全一致する場合しか重複除去しないため)両方のエッジが共存してしまう。`nodes/evaluateGraph.ts` の `incomingEdges.find(...)` は配列中で最初に見つかったエッジ(=古い方)しか採用しないため、後から繋いだ方は静かに無視され、古い方のエッジを消した瞬間に見た目の値が突然切り替わるという分かりにくいバグになる(修正前に実際に発生していた)。新しいノードタイプ/接続経路を追加する際、エッジを直接 `set({ edges: ... })` する箇所を増やすなら、この置き換えロジックも一緒に通すこと。
+`graphStore.ts` の `onConnect`/`dropPickedEdge`(どちらも `connectEdge` を通る)は、同じ `target`/`targetHandle` への既存のエッジを取り除いてから追加します。`isValidConnection` は型と循環しか見ず、`addEdge()` は完全一致しか重複除去しないので、これが無いと2本が共存します。evaluator は最初のエッジしか使わないため、後から繋いだ方が静かに無視されます。エッジを直接 `set({ edges })` する経路を増やすなら、この置き換えも通すこと。
 
-**例外**: `SocketDef.multiple` な入力ソケット(現在は `mergeGeometry` の `geometries`)は置き換えず、接続を追加する。`evaluateGraph()` はそのソケットについて、繋がったすべてのエッジの値をエッジ配列の並び順で集めるため、この並びが結合順になる。`onConnect`/`dropPickedEdge` に `slot` を渡すと、新しいエッジは同じソケットへのエッジの中でその番目に来るよう配列の途中に挿入される(省略時は末尾。エディタは離した位置から `slot` を求める — `src/editor/CLAUDE.md` 参照)。グループのテンプレート内のエッジ id(`groupNodeFactory.ts`)は、この場合に衝突しないよう接続元も含めて作る。
+例外は `SocketDef.multiple` の入力で、置き換えずに追加します。エッジ配列の並びが結合順になり、`slot` を渡すとその位置へ挿入します。
 
 ## Undo/Redo
 
-`state/graphStore.ts` は `past`/`future` の2つのスナップショットスタック(`{nodes, edges, scopeStack}`)を持ち、Ctrl+Z / Ctrl+Shift+Z(または Ctrl+Y)と `HistoryControls.tsx` のボタンで操作できます。すべての変更操作(`onNodesChange` の remove、`onEdgesChange` の remove、`onConnect`、`addNode`、`updateNodeData`、`loadGraph`/`loadGroupGraph`(JSON インポート/プリセット読み込み)など)は、実際に `set()` する前に内部ヘルパー `pushHistory(key?, coalesceMs?)` を呼びます。
+`past`/`future` のスナップショット(`{nodes, edges, scopeStack}`)を持ち、すべての変更操作は `set()` の前に `pushHistory(key?, coalesceMs?)` を呼びます。
 
-スライダー/カラーピッカーのドラッグは `updateNodeData` を1ジェスチャーあたり何十回も連続発火させるため、`key`(`data:${id}` など)と `coalesceMs` を指定すると、直前のプッシュから `coalesceMs` 以内・同じ `key` での呼び出しはスタックに新規エントリを積まず「同じジェスチャーの続き」として吸収されます(タイムスタンプだけ更新)。配線付きノードの削除では React Flow が接続エッジの削除(`onEdgesChange`)とノード自身の削除(`onNodesChange`)を続けて呼ぶため、この2つの削除は同じ `key`(`'remove'`)と短い `coalesceMs`(`REMOVE_COALESCE_MS`)で1件にまとめ、Undo 1回で戻る。ノードのドラッグ移動は `dragging` フラグの立ち上がりエッジ(`_dragging` 内部状態)で1ドラッグ=1エントリに区切っており、こちらは時間ベースのコアレッシングを使っていません。`past`/`future` は localStorage に永続化されず(`partialize` は下記「グループの中に入る」節で説明する合成後の `{nodes, edges}` のみ)、スナップショットは `scopeStack` を含むため1件でグラフ全体と表示中の階層がそろい、`enterGroup`/`exitGroup`(グループの中に入る/出る)を跨いでも履歴は保持されます(入る/出る自体は履歴を積みません)。階層を跨いで Undo/Redo すると、表示中の階層もその時点のものへ戻ります(同じ深さのまま別のグループへ移ることもあるため、`NodeEditor.tsx` の `<ReactFlow>` の `key` は深さではなく階層の経路にしている — `src/editor/CLAUDE.md` 参照)。`_historyKey` は階層を移るたびにリセットし、階層ごとに重複しうるノード id(`'input'` など)でコアレッシングが階層を跨がないようにしています。**リロード後は Undo で以前の状態に戻すことはできません。**
+- 同じ `key` で `coalesceMs` 以内に続く呼び出し(スライダーのドラッグ、エッジとノードの連続削除)は1件にまとめる。ノードのドラッグ移動は `dragging` の立ち上がりで1件に区切る。
+- スナップショットは `scopeStack` を含むので、階層を跨いで Undo/Redo すると表示中の階層も戻る(入る/出る自体は履歴を積まない)。`_historyKey` は階層を移るたびにリセットし、階層ごとに重複しうるノード id でまとめ処理が階層を跨がないようにしている。
+- 履歴は永続化しないので、リロード後は Undo できない(初期状態へは「初期状態(デフォルト)」プリセットで戻す)。
 
 ## グループの中に入る(スコープ切り替え)とトップレベル評価パイプライン
 
-`nodes/definitions/groupNodeFactory.ts` のグループノードのタイトル行の「→」(グループの中に入る)ボタンを押すと `enterGroup(nodeId)` が呼ばれ、`scopeStack`(`state/composeRootGraph.ts` の `ScopeFrame[]`)に現在の `nodes`/`edges` を退避してpushした上で、ストアの `nodes`/`edges` をそのグループインスタンスの内部データ(`data.nodes`/`data.edges`)へ**丸ごと差し替えます**。`exitGroup()` は逆に、編集後の現在の `nodes`/`edges` を退避先の親ノードの `data` へ書き戻してから1つ上の階層を復元します。**この差し替え方式のおかげで、`onNodesChange`/`onConnect`/`addNode`/`updateNodeData`/Undo/Redo/コピペといった既存アクションは一切改修不要**でした(それらは「今ストアが指している `nodes`/`edges` を素直に読み書きする」だけで、今どの階層にいるかを一切意識しないため)。グループの外部入出力ソケット構成は、埋め込みサブグラフ内の `groupInput`/`groupOutput` ノード(`category:'group-io'`)自身の `data.sockets` が定義するため、それらを編集するのも通常の `updateNodeData()` で足りる(そのノードは「今開いている階層」の `nodes` の中に普通に存在するため)。唯一 `updateNodeData()` では届かないのは、そのグループノード自身(親)の `data` — 中に入っている間は現在の `nodes`(内部グラフ)ではなく直近の `scopeStack` フレームに退避されているが、`removeGroupIOSocket(nodeId, socketId)` はソケット削除に伴う内部/外部エッジの後始末のためだけにこのフレームへ触れる専用アクション(詳細は `src/nodes/CLAUDE.md` の「グループノード」節)。
+`enterGroup()` は現在の `nodes`/`edges` を `scopeStack` へ退避し、ストアの `nodes`/`edges` をそのグループの内部グラフへ**丸ごと差し替えます**。`exitGroup()` は内部グラフを親ノードの `data` へ書き戻します。これにより既存の編集アクションは、今どの階層にいるかを意識せずにそのまま使えます。`removeGroupIOSocket()` だけは、親ノード側の外部エッジも消すために `scopeStack` のフレームへ触れます。
 
-**落とし穴**: この差し替え方式は、グループの中に入っている間 `state.nodes`/`state.edges` が「今開いている階層」の内部ノードだけになることを意味します。これを知らずに `s.nodes`/`s.edges` を直接読む新しいコードを書くと、`Garments.tsx`(3D描画)・`persist` の `partialize` がそうだったように、グループの中に入った瞬間に他の全ガーメントが3Dビューから消える・リロードで他の設計が失われる、といった壊れ方をします(実際に設計時に見つかった欠陥)。**トップレベル視点で「完全なグラフ」が必要な箇所は、必ず `composeRootGraph(scopeStack, nodes, edges)` を経由すること**:
+**落とし穴**: グループの中にいる間、`state.nodes`/`state.edges` はその階層の内部だけです。`s.nodes`/`s.edges` を直接読むコードを書くと、中に入った瞬間に他のガーメントが3Dビューから消える、リロードで他の設計が失われる、といった壊れ方をします。**トップレベルの完全なグラフが必要な箇所は `composeRootGraph(scopeStack, nodes, edges)` を経由すること**:
 
-- `state/selectors.ts` の `useRootGraphLite()` — `useNodesLite`/`useEdgesLite` と同じ参照安定化パターンで、合成後のグラフを返す。
-- `state/useRootEvaluatedGraph.ts` — 上記を `evaluateGraph()` に渡し、結果をストアの `rootEvaluatedResults`(`evaluatedResults` とは別フィールド)に書き込む。`App.tsx` で `useEvaluatedGraph()` と並行して常時マウントする。
-- `Garments.tsx` は `rootEvaluatedResults` を直接 `entries()` で走査する(`s.nodes` を経由しない)。Body(3Dモデル本体、`bodyGroup`)もこの走査対象に含まれる普通のエントリの1つで、id を特別扱いする読み取りは無い(ルート CLAUDE.md の「Body もガーメントと同じ `<name>Group` ノードで組み立てられる」節参照)。
-- `graphStore.ts` の `partialize` は `composeRootGraph(state.scopeStack, state.nodes, state.edges)`。`scopeStack` 自体(ナビゲーション位置)は永続化しないため、リロードすると常にトップレベル表示に戻る。
+- `selectors.ts` の `useRootGraphLite()`: 合成後のグラフを参照を安定させて返す。
+- `useRootEvaluatedGraph.ts`: それを評価して `rootEvaluatedResults` に書く(`App.tsx` で常時マウント)。
+- `Garments.tsx`: `rootEvaluatedResults` を走査する。
+- `persist` の `partialize`: 合成後のグラフを保存する(`scopeStack` は保存しないので、リロード後はトップレベルに戻る)。
 
-一方、既存の `evaluatedResults`/`useEvaluatedGraph.ts`(ノードカード上のリアルタイム値表示などを駆動)は無改修のまま残っており、**「今開いている階層」を評価し続けます**。つまりこのアプリには2つの評価パイプラインが並行して走っています — 新しいコードが評価結果を必要とする場合、「今見えているものの値が欲しいのか」(`evaluatedResults`)か「シーン全体・ボディスケールのように常にトップレベル視点が必要なのか」(`rootEvaluatedResults`)を区別すること。
+評価パイプラインは2本並行して走ります。今見えている階層の値が欲しいなら `evaluatedResults`(ノードカードの値表示など)、シーン全体のように常にトップレベルが必要なら `rootEvaluatedResults` を使うこと。
 
-## 初期状態への復帰: initialGraph.ts と「初期状態(デフォルト)」プリセット
+## 初期状態とプリセット
 
-`state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例など)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
+`initialGraph.ts` は `bodyGroup` とガーメント(`camisoleDressGroup`)を TypeScript のリテラルで持ちます。座標は持たず、読み込み時に `computeAutoLayout()` で求めます。各ノードのそばのコメントが設計意図なので、編集時は合わせて見直してください。
 
-初期状態のグラフは、体の `bodyGroup` とガーメントの `camisoleDress`(`camisoleDressGroup`)の2ノードから成ります(体の寸法は固定値で `bodyGroup` の外部ソケットの既定値、Y座標はその寸法から内部で求めます。ガーメントは外部入力が `color` だけで、配線なしに取り付け位置に着る)。
-
-`initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
-
-プリセット(`state/presetStore.ts`)は `scope` を持ち、`PresetPanel.tsx` は今開いている階層に合うものだけを一覧に出す。トップレベルでは `scope` なし(グラフ全体)、グループの中に入っている間は今開いているグループの型名(`scopeStack` の最後のフレームの親ノードの `type`、例: `bodyGroup`)で、同じ型のグループの内部グラフだけを保存・読み込みできる(同名は同じ `scope` 内でだけ上書き)。グループの中では「初期状態(デフォルト)」がそのグループ型のテンプレート(`createDefaultData()`)になり、内部編集を捨ててテンプレートへ戻す用途を兼ねる。ストアの `nodes`/`edges` が「今開いている階層」の内部グラフに差し替わる仕組み(上記)のため、保存・読み込みのロジック自体は階層によらず同じ。GraphIO の Export JSON はグラフと一緒にプリセットの一覧(全 `scope`)も書き出し、Import JSON は既存の一覧へマージする(同名・同じ `scope` は上書き)。
-
-`editor/PresetPanel.tsx` はこの `initialNodes`/`initialEdges` を、`usePresetStore` に保存されたユーザープリセットとは別に「初期状態(デフォルト)」という擬似プリセット(固定ID `__initial__`、常にドロップダウン先頭に表示、削除不可)としてロード可能にしています。上記の「リロード後は Undo で戻せない」問題への対処として、ユーザーはこのプリセットを選んで Load することでいつでも初期グラフに戻せます。
-
+プリセットは `scope` を持ちます。トップレベルでは `scope` なし(グラフ全体)、グループの中ではそのグループの型名で、同じ型の内部グラフだけを保存・読み込みします。グループの中の「初期状態(デフォルト)」は、そのグループのテンプレートです。
