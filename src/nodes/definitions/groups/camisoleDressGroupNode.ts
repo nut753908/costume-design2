@@ -54,7 +54,10 @@ defineGroupNode({
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
     // 白の影は肌色寄りの既定の倍率だと黄ばんで見えるので、少し青みのある灰色にする。
-    ...output.nodes.map((n) => (n.id === 'shade' ? { ...n, data: { r: 0.86, g: 0.87, b: 0.92 } } : n)),
+    // スカートは裾が開いていて内側が見えるので、裏面も描く(片面だと裾の奥が抜けて背景が見える)。
+    ...output.nodes.map((n) =>
+      n.id === 'shade' ? { ...n, data: { r: 0.86, g: 0.87, b: 0.92 } } : n.id === 'material' ? { ...n, data: { doubleSided: 1 } } : n,
+    ),
     { id: 'placementY', type: 'numberInput', data: { value: 0.32 } },
 
     // --- リボン(腰の脇、別の色) ---

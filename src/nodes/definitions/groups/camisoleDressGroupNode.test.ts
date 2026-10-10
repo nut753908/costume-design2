@@ -42,4 +42,14 @@ describe('camisoleDressGroup', () => {
     expect(colorOf(after, 0)).toBe('112233');
     expect(colorOf(after, 1)).toBe(colorOf(before, 1));
   });
+
+  it('本体は裾の内側が見えるよう両面を描き、リボンは表面だけ', () => {
+    const result = evaluate();
+    const sideOf = (index: number) => {
+      const value = result[`sceneOutputMaterial${index}`];
+      return value?.type === 'material' ? value.value.side : undefined;
+    };
+    expect(sideOf(0)).toBe(THREE.DoubleSide);
+    expect(sideOf(1)).toBe(THREE.FrontSide);
+  });
 });

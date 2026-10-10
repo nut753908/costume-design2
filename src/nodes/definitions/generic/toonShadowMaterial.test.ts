@@ -20,4 +20,13 @@ describe('toonShadowMaterial', () => {
     const material = out?.type === 'material' ? (out.value as THREE.MeshToonMaterial) : undefined;
     expect(material!.color.getHexString()).toBe('cccccc');
   });
+
+  it('doubleSided が 1 なら裏面も描き、既定(0)なら表面だけ', () => {
+    const sideOf = (data: Record<string, unknown>) => {
+      const out = getNodeType('toonShadowMaterial').evaluate({}, data).material;
+      return out?.type === 'material' ? (out.value as THREE.MeshToonMaterial).side : undefined;
+    };
+    expect(sideOf({})).toBe(THREE.FrontSide);
+    expect(sideOf({ doubleSided: 1 })).toBe(THREE.DoubleSide);
+  });
 });
