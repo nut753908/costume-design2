@@ -282,3 +282,42 @@ describe('loftGenerator の scallop', () => {
     expect(new Set(topHeights(run(0, 0)).map((h) => h.toFixed(6)))).toEqual(new Set(['1.000000']));
   });
 });
+
+describe('loftGenerator の topDropDepth', () => {
+  // 半径 1 の円筒(高さ 0〜1)を 8 列で作る。列 j の前後方向の位置は (1 - cos(j × 45°)) / 2
+  const run = (data: Record<string, number> = {}) =>
+    getNodeType('loftGenerator')
+      .evaluate({ profile: { type: 'curve', value: new SplineProfileCurve([1, 1, 1], 1) }, steps: num(4), segments: num(8) } as never, data)
+      .geometry!.value as THREE.BufferGeometry;
+  // 列 j(0〜8)の輪 i(0〜4)の頂点
+  const vertex = (geometry: THREE.BufferGeometry, column: number, ring: number) => {
+    const position = geometry.getAttribute('position');
+    const i = column * 5 + ring;
+    return { x: position.getX(i), y: position.getY(i), z: position.getZ(i) };
+  };
+
+  it('前は水平、前後方向の位置に比例して脇で下がり、後ろは下げたまま水平', () => {
+    // 位置 0.1 まで下げず、0.9 で 0.4 下げきる
+    const geometry = run({ topDropDepth: 0.4, topDropStart: 0.1, topDropEnd: 0.9 });
+    // 正面(列 0、位置 0)は下げない
+    expect(vertex(geometry, 0, 4).y).toBeCloseTo(1, 6);
+    // 真横(列 2、位置 0.5)は半分の 0.2 下がる
+    expect(vertex(geometry, 2, 4).y).toBeCloseTo(0.8, 6);
+    // 列 1(位置 (1 - cos45°) / 2)は位置に比例した量
+    const p1 = (1 - Math.cos(Math.PI / 4)) / 2;
+    expect(vertex(geometry, 1, 4).y).toBeCloseTo(1 - (0.4 * (p1 - 0.1)) / 0.8, 6);
+    // 背中(列 4、位置 1)は 0.4 下がり、輪は 0〜0.6 に等間隔で詰まる。下端は動かさない
+    expect(vertex(geometry, 4, 4).y).toBeCloseTo(0.6, 6);
+    expect(vertex(geometry, 4, 2).y).toBeCloseTo(0.3, 6);
+    expect(vertex(geometry, 4, 0).y).toBeCloseTo(0, 6);
+    // 半径は変えない(輪郭の曲線をその高さで引く)
+    expect(Math.hypot(vertex(geometry, 4, 4).x, vertex(geometry, 4, 4).z)).toBeCloseTo(1, 6);
+    // 左右対称
+    expect(vertex(geometry, 1, 4).y).toBeCloseTo(vertex(geometry, 7, 4).y, 6);
+  });
+
+  it('既定(0)なら上端は全周で同じ高さ', () => {
+    const geometry = run();
+    for (let column = 0; column <= 8; column++) expect(vertex(geometry, column, 4).y).toBeCloseTo(1, 6);
+  });
+});

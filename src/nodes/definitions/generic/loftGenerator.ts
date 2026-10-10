@@ -9,6 +9,9 @@ export interface LoftGeneratorData extends Record<string, unknown> {
   pleatCount?: number;
   scallopCount?: number;
   scallopHeight?: number;
+  topDropDepth?: number;
+  topDropStart?: number;
+  topDropEnd?: number;
 }
 
 /** 位置が重なる頂点(回転体の始点と終点の継ぎ目、極)の法線を平均し、継ぎ目に縦の筋(陰影の段差)が出ないようにする。
@@ -56,6 +59,9 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
  * 山と谷の面がはっきり分かれるよう、`segments` はプリーツ1つあたり数本になる値にする。
  * `scallopCount`/`scallopHeight` が 0 より大きいと、上端の輪を周に `scallopCount` 個の半円の山(⋂⋂⋂)の形に持ち上げる
  * (服の上端のレースのような縁)。山の数は `segments` の約数にすると、どの山も同じ形になる。
+ * `topDropDepth` が 0 より大きいと、上端を前後方向の位置 p(輪の上で正面 0・背中 1、`(1 - cos φ) / 2`)に応じて下げる:
+ * p が `topDropStart` までは下げず(前は水平)、`topDropEnd` までは p に比例して下げ(楕円の輪では前後方向の座標に比例
+ * するので、横から見て脇の上端がまっすぐな線になる)、そこから後ろは `topDropDepth` だけ下げたまま(後ろも水平)。
  * 曲線は同じ高さの範囲を持つこと(同じ `t` で同じ高さを指すこと)を前提にする。 */
 registerNodeType<LoftGeneratorData>({
   type: 'loftGenerator',
@@ -72,6 +78,9 @@ registerNodeType<LoftGeneratorData>({
     { id: 'pleatCount', label: 'Pleat Count', type: 'number', default: 16 },
     { id: 'scallopCount', label: 'Scallop Count', type: 'number', default: 0 },
     { id: 'scallopHeight', label: 'Scallop Height', type: 'number', default: 0 },
+    { id: 'topDropDepth', label: 'Top Drop Depth', type: 'number', default: 0 },
+    { id: 'topDropStart', label: 'Top Drop Start (0-1)', type: 'number', default: 0.25 },
+    { id: 'topDropEnd', label: 'Top Drop End (0-1)', type: 'number', default: 0.75 },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -89,68 +98,100 @@ registerNodeType<LoftGeneratorData>({
     };
     const sample = (curve: THREE.Curve<THREE.Vector2>) => Array.from({ length: steps + 1 }, (_, i) => curve.getPoint(ringT(i)));
     const points = sample(inputs.profile.value);
+    const rings = points.length;
     const geometry = new THREE.LatheGeometry(points, segments);
-    if (inputs.pleatProfile?.type === 'curve') {
-      const depths = sample(inputs.pleatProfile.value).map((depthPoint) => depthPoint.x);
+    const position = geometry.getAttribute('position');
+    const curveOf = (id: string) => {
+      const value = inputs[id];
+      return value?.type === 'curve' ? value.value : null;
+    };
+    // LatheGeometry の頂点は「周方向の列ごとに、輪郭の点を下から順に」並ぶ(列 j の角度は j / segments × 2π、正面(+Z)が 0)。
+    // `topDropDepth` があると、列ごとに上端の高さを下げ、その列の輪を下端から下げた上端までの範囲に詰めて並べ直す
+    // (上の輪を切り落とすのではなく詰めるので、面が折り返さず、上端の縁はその高さの線に沿う)。そのため曲線は
+    // 輪ごとではなく頂点ごとの位置 t で評価する。高さは t に比例する(`profileCurve` の曲線)ことを前提にする。
+    const topDropDepth = Math.max(0, asNumber(inputs.topDropDepth, data.topDropDepth ?? 0));
+    const topDropStart = asNumber(inputs.topDropStart, data.topDropStart ?? 0.25);
+    const topDropEnd = asNumber(inputs.topDropEnd, data.topDropEnd ?? 0.75);
+    const height = points[rings - 1].y - points[0].y;
+    const topDrop = topDropDepth > 0 && height > 0;
+    const dropAt = (column: number) => {
+      const p = (1 - Math.cos((2 * Math.PI * column) / segments)) / 2;
+      const ramp = topDropEnd > topDropStart ? (p - topDropStart) / (topDropEnd - topDropStart) : p >= topDropStart ? 1 : 0;
+      return topDropDepth * Math.min(1, Math.max(0, ramp));
+    };
+    const vertexT = new Float64Array(position.count);
+    for (let i = 0; i < position.count; i++) {
+      const t = ringT(i % rings);
+      vertexT[i] = topDrop ? t * Math.max(0, 1 - dropAt(Math.floor(i / rings)) / height) : t;
+    }
+    // 曲線の値(x)を頂点ごとに引く。上端を下げないなら輪ごとに引いて配る(どの列も同じ t なので)。
+    const perVertex = (curve: THREE.Curve<THREE.Vector2>) => {
+      const values = new Float64Array(position.count);
+      if (!topDrop) {
+        const ringValues = sample(curve).map((point) => point.x);
+        for (let i = 0; i < position.count; i++) values[i] = ringValues[i % rings];
+      } else for (let i = 0; i < position.count; i++) values[i] = curve.getPoint(vertexT[i]).x;
+      return values;
+    };
+    const radii = perVertex(inputs.profile.value);
+    if (topDrop) {
+      for (let i = 0; i < position.count; i++) {
+        const angle = (2 * Math.PI * Math.floor(i / rings)) / segments;
+        position.setXYZ(i, radii[i] * Math.sin(angle), inputs.profile.value.getPoint(vertexT[i]).y, radii[i] * Math.cos(angle));
+      }
+    }
+    let reshaped = topDrop;
+    const pleatProfile = curveOf('pleatProfile');
+    if (pleatProfile) {
+      const depths = perVertex(pleatProfile);
       const count = Math.max(1, Math.round(asNumber(inputs.pleatCount, data.pleatCount ?? 16)));
-      const position = geometry.getAttribute('position');
       for (let i = 0; i < position.count; i++) {
         // LatheGeometry は x = r sin φ, z = r cos φ。三角波は φ = 0(正面)で山(1)、山と山の中間で谷(0)。
         const u = (count * Math.atan2(position.getX(i), position.getZ(i))) / (2 * Math.PI);
         const wave = Math.abs(2 * (u - Math.floor(u)) - 1);
-        const factor = 1 + depths[i % points.length] * wave;
+        const factor = 1 + depths[i] * wave;
         position.setX(i, position.getX(i) * factor);
         position.setZ(i, position.getZ(i) * factor);
       }
-      position.needsUpdate = true;
-      if (inputs.depthProfile?.type !== 'curve') {
-        geometry.computeVertexNormals();
-        smoothCoincidentNormals(geometry);
-      }
+      reshaped = true;
     }
     const scallopCount = Math.round(asNumber(inputs.scallopCount, data.scallopCount ?? 0));
     const scallopHeight = asNumber(inputs.scallopHeight, data.scallopHeight ?? 0);
     if (scallopCount > 0 && scallopHeight > 0) {
-      const position = geometry.getAttribute('position');
-      for (let i = points.length - 1; i < position.count; i += points.length) {
-        // 上端の輪の頂点だけ。周方向の列(i / points.length)から、山の中の位置 s(0〜1)を決め、半円の高さだけ持ち上げる。
-        const u = (scallopCount * Math.floor(i / points.length)) / segments;
+      for (let i = rings - 1; i < position.count; i += rings) {
+        // 上端の輪の頂点だけ。周方向の列(i / rings)から、山の中の位置 s(0〜1)を決め、半円の高さだけ持ち上げる。
+        const u = (scallopCount * Math.floor(i / rings)) / segments;
         const s = u - Math.floor(u);
         position.setY(i, position.getY(i) + scallopHeight * Math.sqrt(Math.max(0, 1 - (2 * s - 1) ** 2)));
       }
-      position.needsUpdate = true;
-      if (inputs.depthProfile?.type !== 'curve') {
-        geometry.computeVertexNormals();
-        smoothCoincidentNormals(geometry);
-      }
+      reshaped = true;
     }
-    if (inputs.depthProfile?.type === 'curve') {
-      const ratioOf = (curve: THREE.Curve<THREE.Vector2>) =>
-        sample(curve).map((depthPoint, i) => (points[i].x > 1e-9 ? Math.max(0, depthPoint.x) / points[i].x : 1));
-      const ratios = ratioOf(inputs.depthProfile.value);
-      const position = geometry.getAttribute('position');
-      // LatheGeometry の頂点は「セグメント(周方向)ごとに、輪郭の点を下から順に」並ぶ。
+    const depthProfile = curveOf('depthProfile');
+    if (depthProfile) {
+      const depthRadii = perVertex(depthProfile);
       // `dropProfile` の値(曲線の x)だけ、各高さの輪を丸ごと下げる(頭の下面のように、輪の形は保ったまま高さだけを
       // ずらす)。極の頂点も含めて全周を同じ量だけ動かすので、前後の境目やしわは出ない。
-      const drops = inputs.dropProfile?.type === 'curve' ? sample(inputs.dropProfile.value).map((dropPoint) => dropPoint.x) : null;
+      const dropProfile = curveOf('dropProfile');
+      const drops = dropProfile ? perVertex(dropProfile) : null;
       // `offsetZProfile` の値(曲線の x、符号付き)だけ、各高さの輪を丸ごと前(+Z)へずらす。前後を別々の半径にせず
       // 1つの楕円のまま前後非対称の形を表せるので、前後の継ぎ目に稜線(エッジ)ができない。
-      const offsets =
-        inputs.offsetZProfile?.type === 'curve' ? sample(inputs.offsetZProfile.value).map((offsetPoint) => offsetPoint.x) : null;
+      const offsetProfile = curveOf('offsetZProfile');
+      const offsets = offsetProfile ? perVertex(offsetProfile) : null;
       // `tiltProfile` の値(度)だけ、各高さの輪を輪の中心まわりに X 軸方向へ傾ける。
-      const tilts =
-        inputs.tiltProfile?.type === 'curve'
-          ? sample(inputs.tiltProfile.value).map((tiltPoint) => (tiltPoint.x * Math.PI) / 180)
-          : null;
+      const tiltProfile = curveOf('tiltProfile');
+      const tilts = tiltProfile ? perVertex(tiltProfile).map((degrees) => (degrees * Math.PI) / 180) : null;
       for (let i = 0; i < position.count; i++) {
-        const ring = i % points.length;
-        const depth = position.getZ(i) * ratios[ring];
-        if (drops) position.setY(i, position.getY(i) - drops[ring]);
+        const ratio = radii[i] > 1e-9 ? Math.max(0, depthRadii[i]) / radii[i] : 1;
+        const depth = position.getZ(i) * ratio;
+        if (drops) position.setY(i, position.getY(i) - drops[i]);
         if (tilts) {
-          position.setY(i, position.getY(i) - depth * Math.sin(tilts[ring]));
-          position.setZ(i, depth * Math.cos(tilts[ring]) + (offsets ? offsets[ring] : 0));
-        } else position.setZ(i, depth + (offsets ? offsets[ring] : 0));
+          position.setY(i, position.getY(i) - depth * Math.sin(tilts[i]));
+          position.setZ(i, depth * Math.cos(tilts[i]) + (offsets ? offsets[i] : 0));
+        } else position.setZ(i, depth + (offsets ? offsets[i] : 0));
       }
+      reshaped = true;
+    }
+    if (reshaped) {
       position.needsUpdate = true;
       geometry.computeVertexNormals();
       smoothCoincidentNormals(geometry);
