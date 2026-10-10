@@ -5,65 +5,26 @@ description: 新しいガーメント種(スカート・帽子のような衣装
 
 # 新しいガーメント種の追加
 
-既存のガーメントは `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`。体の断面に沿わせた `loftGenerator` の身頃+スカート、楕円の輪を横に倒した平たい帯の肩ひも、色の違う別の `sceneOutput` のリボン(羽は前後2層))で、`bodyGroup` と同じ `<name>Group` パターン。
+ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表す。グループの中の `sceneOutput` が唯一の描画経路なので、グループ化は必須。既存の例は `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`)で、`bodyGroup` と同じパターン。方針(外部入力は `color` だけ、ボディの寸法に追従しない)はルートの `CLAUDE.md` を参照。
 
-ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
+## 1. 形状の作り方を決める
 
-1. **ノードグラフだけで組む(既定)**: 汎用ノード(`easedLatheCurve`+`latheGenerator`、`capsuleGenerator`/`boxGenerator`/`torusGenerator` などのプリミティブ、`alignedBoxGenerator`、`translate`、`scale`、`mergeGeometry`、`mirrorPair` など、一覧は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「汎用ノード一覧」)の組み合わせだけで形状を作る。専用の `geometry/*.ts` も `*Generator.ts` も要らない(`bodyGroupNode.ts`/`generic/limbPair.ts` などが複数プリミティブ・左右対称ペアの実例)。
-2. **専用ジオメトリ関数+ジェネレーターノードを作る**: 汎用ノード(`ringGridGenerator`/`taperedEllipseTubeGenerator` など)でも表現しきれない形状の場合のみ。`src/geometry/<name>.ts` の `build<Name>Geometry(params) -> THREE.BufferGeometry` と、それを配線する `groups/<name>Generator.ts` を追加し、グループの中でその Generator ノードを使う。
+**まず汎用ノードの組み合わせだけで組めないかを検討する(既定)。** `nodes/definitions/generic/` のノード(`profileCurve`+`loftGenerator`、`easedLatheCurve`+`latheGenerator`、`ringGridGenerator`、プリミティブ、`translate`/`scale`/`rotate`、`mergeGeometry`、`mirrorPair` など)で作れば、専用の `geometry/*.ts` もジェネレーターも要らない。各ノードの使い方はそのファイルの冒頭コメントにある。`camisoleDressGroupNode.ts`・`bodyGroupNode.ts`・`generic/limbPair.ts` が実例。
 
-ノードタイプ自体の登録は `import.meta.glob` により自動化されており、レジストリへの手動登録は不要([`add-node-type` スキル](../add-node-type/SKILL.md)参照)。
+汎用ノードで表現しきれない形だけ、`src/geometry/<name>.ts` の `build<Name>Geometry(params)` と、それを `defineGeneratorNode()` で包むジェネレーターノードを追加する(書き方は `add-node-type` スキル)。
 
-## 1. 形状の設計
+どちらの場合も、実装前に `src/geometry/CLAUDE.md` の落とし穴(巻き順・`mergeGeometries()` の頂点属性・取り付け位置が中心線上の1点だけ)を読むこと。
 
-`bodyGroupNode.ts`(複数パーツの結合)・`generic/limbPair.ts`/`generic/mirrorPair.ts`(左右対称ペア)・`generic/earPair.ts` を実例として読むのが早い。技法一覧・共有ヘルパーの使い分けは [`src/geometry/CLAUDE.md`](../../../src/geometry/CLAUDE.md) の「カスタムジオメトリ」節にまとまっているので、実装前に必ず読むこと。座標を求める四則演算は `numberAdd`/`numberSubtract`/`numberMultiply`/`numberMax`/`numberNegate`(符号反転)/`numberHalf`(半分)のノードで可視の配線として展開し、コード側の式としては持たない。定数(0/1/固定値)は、単独のノードだけが使う値ならそのノードの入力欄の値に、複数のノードが使う値なら `numberInput` ノードを1つ置いて配線する([`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節参照)。
+座標を求める計算は `numberAdd`/`numberSubtract`/`numberMultiply` などのノードで可視の配線にし、コード側の式としては持たない。定数の置き場所(入力欄の値か `numberInput` か)は `src/nodes/CLAUDE.md` の「グループノード」節に従う。
 
-**同じファイルに書かれている「すでに一度踏んだ落とし穴」も実装前に必ず読むこと**(同 CLAUDE.md 末尾):
+## 2. グループノードを定義する
 
-- 三角形の巻き順が逆だと、手前の面がカリングで消えて**形が欠けて見える**。目視では原因に気づきにくいので `windingTestHelpers.ts` の `expectOutwardWinding()` で検証する。単純な放射対称形状(Y軸中心)でなければ、形状に応じた `axisPoint` を渡す必要がある(箱なら自身の中心点、鏡像ペアなら centroid ではなく index 位置で左右判定、など)。
-- `mergeGeometries()` は結合する全ジオメトリが同じ頂点属性(名前・itemSize)を持つことを要求する。標準プリミティブ(position/normal/uv)と手組み `BufferGeometry`(position のみ)を混ぜると `null` を返して後段が `Cannot read properties of null` で落ちる。`mergeGeometry` ノードは uv の有無だけの違いなら吸収するが、それ以外の属性の違いは吸収しない。
-- 取り付け位置は体の中心線(x=0, z=0)上の1点のみ。体の前面より前に出すべきアクセサリは z=0 付近だとガーメントの壁に埋もれて見えなくなる(胴体半径などに応じた固定の深さを `numberInput` の入力欄で与える)。また複数のガーメントを同時に着せると、後から広がる大きなガーメントが薄いアクセサリを覆い隠すことがある — バグではなく既知の特性。
+`defineGroupNode()` で、形状を作るノード群と末端をまとめる。末端は `garmentOutput.ts` のヘルパーが作る:
 
-## 2. (方式2のみ)ジオメトリ関数とジェネレーターノード
+- `colorSocket(hex)`: `groupInput` の `sockets` に入れる `color` ソケット(全ガーメント共通で必須)。
+- `garmentOutput({ y, geometry })`: マテリアル(`toonShadowMaterial`、色は `input.color`)・`placement`(`translate`、入力欄 `y` が取り付け位置)・`sceneOut` のノードと配線。`geometry` には最終的な geometry を出力するノードの id を渡す。
 
-`src/geometry/<name>.ts` に純粋関数 `build<Name>Geometry(params)` を書き、`src/nodes/definitions/groups/<name>Generator.ts` で `defineGeneratorNode()`(`generatorNodeFactory.ts`)を使ってノード化する。
-
-```ts
-import { buildXxxGeometry } from '../../../geometry/xxx';
-import { defineGeneratorNode } from '../generatorNodeFactory';
-
-defineGeneratorNode({
-  type: 'xxxGenerator',
-  label: 'Xxx',
-  build: (params) => buildXxxGeometry(params), // 必ずアロー関数で包む(下記参照)
-  fields: [
-    { id: 'radius', label: 'Radius', default: 0.3 },
-    // ...
-    { id: 'segments', label: 'Segments', default: 24, round: true }, // 整数丸め+下限3クランプ
-  ],
-});
-```
-
-- `build` は `build: buildXxxGeometry` と値で直接渡さない。ESM のライブバインディングが切れ、`vi.spyOn(module, 'buildXxxGeometry')` を使うテスト(`testHelpers.ts` の `expectGeneratorForwardsData`)が呼び出しを検出できなくなる。
-- `fields` の `default` は `DEFAULTS`/`inputs`/`createDefaultData` に自動展開されるので、リテラル値を複数箇所に書く必要はない。
-- `build*Geometry` が受け取るがソケット化しない固定値(角度分割数など)は `fields` ではなく `extra` で渡す。
-
-## 3. 配置(placement の `y`)
-
-ガーメントの形は自分の原点が基準で、ボディ上の取り付け位置は `placement`(汎用 `translate`、Y だけを配線)の入力欄 `y` の固定値で決まる(`garmentOutput({ y, geometry })` が設定する)。体の寸法とは連動しない固定値で、体の位置や大きさに囚われず自由に決める。`translate` は geometry の頂点そのものを平行移動する(Blender の Geometry Nodes で位置をジオメトリに焼き込む考え方と同じ)。
-
-`placement` の geometry 出力と、material を生成するノード(`toonMaterial` など)の出力は、次節で作るグループの `sceneOutput` ノードへ**直接**配線する。
-
-Scene 側の登録は不要 — `Garments.tsx` はグループの内部の `sceneOutput` が転送する予約キー(`sceneOutputGeometry<N>`/`sceneOutputMaterial<N>`)を持つ評価結果を走査してレンダリングする([`src/scene/CLAUDE.md`](../../../src/scene/CLAUDE.md))。
-
-## 4. グループノードの定義(src/nodes/definitions/groups/\<name\>GroupNode.ts)
-
-`nodes/definitions/groupNodeFactory.ts` の `defineGroupNode()` で、形状を作るノード群+末端(`toonMaterial`・`translate`・`sceneOutput`)を1枚の `<name>Group` ノードに集約する(詳細は [`src/nodes/CLAUDE.md`](../../../src/nodes/CLAUDE.md) の「グループノード」節)。定型部分は次のヘルパー(いずれも `nodes/definitions/` 直下、`index.ts` の自動登録 glob の対象外)が生成する:
-
-- `colorSocket(hex)`(`garmentOutput.ts`)— 全ガーメントの `groupInput` の `sockets` に入れる `color`(既定の色 `hex`)ソケット定義。`garmentOutput({ y, geometry })`(同ファイル)— `material`(toonShadowMaterial、色は `input.color` から配線)→`sceneOut` と `placement`(translate、`y` 入力欄が取り付け位置)→`sceneOut` のノードと配線。`geometry` には最終的な geometry を出力するノードの id を渡す。
-- 「体に触れる半径」などの固定値は、`numberInput` ノード(入力欄の値がリテラルの数値)として `internalNodes` に置く。ガーメントはボディの寸法に追従しないので、値はボディの大きさに合わせて自由に決める(ガーメントに体の半径の外部ソケットは無い)。
-
-外部から見える入出力ソケットは、埋め込みサブグラフの中に置く `groupInput` ノード自身が定義する(`config` に `inputs`/`outputs` フィールドは無い)。ガーメントの外部ソケットは `color` だけ。ガーメント固有の生パラメータ(半径・長さ・色など)は `groupInput` のソケットにはせず、`internalNodes` に直接 `numberInput`/`colorInput` ノードとして書く。Lathe 系の最小例(`easedLatheCurve` → `latheGenerator`、値は `numberInput`):
+`groupOutput` は含めない(描画は `sceneOutput` が担う)。最小の例:
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';
@@ -76,48 +37,32 @@ defineGroupNode({
   label: 'Xxx',
   paletteSection: 'garment',
   internalNodes: [
-    {
-      id: 'input',
-      type: 'groupInput',
-      data: {
-        // color は全ガーメント共通で必須。
-        sockets: [colorSocket('#cccccc')],
-      },
-    },
-    { id: 'radius', type: 'numberInput', data: { value: 0.17 } },
-    { id: 'profile', type: 'easedLatheCurve', data: { distance: 0.5 } },
+    { id: 'input', type: 'groupInput', data: { sockets: [colorSocket('#cccccc')] } },
+    { id: 'profile', type: 'easedLatheCurve', data: { startRadius: 0.17, distance: 0.5 } },
     { id: 'gen', type: 'latheGenerator', data: { steps: 10, segments: 24 } },
     ...output.nodes,
   ],
   internalEdges: [
-    { source: 'radius', sourceHandle: 'value', target: 'profile', targetHandle: 'startRadius' },
-    { source: 'profile', sourceHandle: 'curveDown', target: 'gen', targetHandle: 'profile' },
+    { source: 'profile', sourceHandle: 'down', target: 'gen', targetHandle: 'profile' },
     ...output.edges,
   ],
 });
 ```
 
-`groupOutput` は省略可能で、ガーメントは含めない設計にする(描画は `sceneOutput` が専任で担う)。他のグループの内部値を再引きしたい場合に `groupOutput` で公開する方法も技術的には可能だが、その値が本当にそのガーメント専用か、複数ガーメントで共有すべき値かは下記5節の判断基準を先に確認すること。
+## 3. 初期状態に着せる(必要なら)
 
-## 5. initialGraph.ts への配線(慣例)
+`src/state/initialGraph.ts` にそのグループノードを1つ置くだけでよい(配線も座標も不要)。複数のグループで共有する値が必要になったら、`src/nodes/CLAUDE.md` の「グループノード」節に従ってトップレベルの共有ノードへ引き上げる。
 
-ガーメント固有の生パラメータ・Color は上記のとおりグループの `internalNodes` に埋め込むので、`src/state/initialGraph.ts` 側には**そのグループノード自体を1つ置くだけ**でよい(配線は不要。取り付け位置は `placement` の `y` の固定値)。「体に触れる半径」(waist/shoulder側/wrist/sole/ankle 相当)も固定値の `numberInput` にする(ボディの寸法には追従しない)。詳細はルート [`CLAUDE.md`](../../../CLAUDE.md) の「Body(3Dモデル本体)もガーメントと同じ `<name>Group` ノードで組み立てられる」節を参照。
+## 4. テスト
 
-新しいガーメントが、複数のグループで共有される値を必要とする場合は、その値を生パラメータのグループへ内包せず、`src/state/initialGraph.ts` 側に外部の共有ノードとして置き、関係する各グループの `groupInput` ソケットへファンアウトすること。共有元の計算(`numberMultiply`/`toonMaterial` など)自体もどちらか一方のグループの内部に置かず、この共有ノード側に置くこと — 一方のグループに計算を残して `groupOutput` で他方へ再公開する形は、後から見て「なぜこの値だけ特別扱いなのか」が分かりにくくなる(`src/nodes/CLAUDE.md` の「グループノード」節参照)。
+- 内部配線の誤りは `groupNodeWiring.test.ts` が自動で検知する(追加するだけで対象になる)。
+- `groups/<name>GroupNode.test.ts` に、既定値で `sceneOutputGeometry0`/`sceneOutputMaterial0` が出ること、`placement` の `y` で取り付け位置が動くこと、主なパラメータの効果を bounding box で検証する(`camisoleDressGroupNode.test.ts` 参照)。
+- 専用のジオメトリ関数を作った場合は、`src/geometry/<name>.test.ts` で妥当性(index が3の倍数・NaN 無し)と `expectOutwardWinding()` による巻き順を、ジェネレーターは `expectGeneratorForwardsData()` でフィールドの取り違えを検証する。
 
-ノードの `position` は `initialGraph.ts` には書かず、モジュール読み込み時に `nodes/autoLayout.ts` の `computeAutoLayout()`(Arrange ボタンと同じ関数)で自動算出される。ガーメントを追加しても座標を手で更新する必要は無い(グループ内部の `internalNodes` の座標も同じく自動算出)。
+## 5. 見た目の確認
 
-## 6. テスト
+`run-costume-design2` スキルでスクリーンショットを撮り、形が欠けていないか・取り付け位置がおかしくないかを確認する。
 
-- **グループの配線**: `src/nodes/definitions/groupNodeWiring.test.ts` が登録済みの全グループ型について、内部ノードの type が登録済みか・内部エッジの端点が実在するノードの実在するソケットか・1入力に複数エッジが無いかを自動で走査するので、新しいグループも追加するだけで対象になる(タイポの検知はこれで足りる)。
-- **グループの挙動**: `src/nodes/definitions/groups/<name>GroupNode.test.ts` に、既定値での出力(`sceneOutputGeometry0`/`sceneOutputMaterial0` が出る)、`placement` の `y` による取り付け位置、主なパラメータの効果を bounding box で検証する。Lathe 系は `direction` に応じたプロファイルの半径が単調に変化することを使って `LatheGeometry` の bounding box から期待値を計算できる(`bodyGroupNode.test.ts` 参照)。専用のジオメトリ関数を呼ぶ形(方式2)は `vi.spyOn` で呼び出し引数を検証する。
-- **(方式2のみ)ジオメトリ**(`src/geometry/<name>.test.ts`): 妥当性(index が3の倍数・NaN無し)、パラメータを変えたときの効果、`expectOutwardWinding()` による巻き順検証。`alignedBox.test.ts` を参照。
-- **(方式2のみ)ジェネレーター**(`groups/<name>Generator.test.ts`): `testHelpers.ts` の `expectGeneratorForwardsData()` で、フィールド名の取り違えが無いか検証する。
+## 6. ドキュメント
 
-## 7. 見た目の確認
-
-テストと型チェックだけでは「実際に画面でどう見えるか」は分からない。[`run-costume-design2` スキル](../run-costume-design2/SKILL.md)でヘッドレスChromiumから実際にノードを繋いでスクリーンショットを撮り、形が欠けていないか・取り付け位置がおかしくないかを確認すること。
-
-## 8. ドキュメント更新
-
-`src/geometry/CLAUDE.md` の「カスタムジオメトリ」冒頭の記述(専用の `build*Geometry()` を持たないこと)と矛盾しないか確認し、必要なら追加したガーメントの構成を足す。新しい構築技法・共有ヘルパーを導入した場合や、新しい落とし穴を踏んだ場合はその節も追記する。pre-commit フックがステージ内容と対応する `CLAUDE.md` の有無をリマインドするが、機械判定なので実際に更新が必要かは都度判断すること。
+新しい落とし穴を踏んだ、またはモジュールをまたぐ前提を変えた場合だけ、該当する `CLAUDE.md` に追記する。追加したガーメントの構成は書かない(コードのコメントに書く)。
