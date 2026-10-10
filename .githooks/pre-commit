@@ -12,7 +12,7 @@ npm run lint
 
 staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
 
-echo "pre-commit: CLAUDE.md check"
+echo "pre-commit: CLAUDE.md / SKILL.md check"
 # 警告だけでコミットは止めない。文字数は wc -m(バイト数ではない)で数える。
 max_chars=6000
 max_total_chars=20000
@@ -22,22 +22,26 @@ path_pattern='[A-Za-z0-9_.@-]*/[A-Za-z0-9_./@-]*\.(ts|tsx|js|mjs|css|json|md)'
 
 claude_md_staged=0
 while IFS= read -r f; do
+  # 文字数は CLAUDE.md だけ(常に読み込まれるため)。経緯の表現と参照の実在はスキルも調べる。
   case "$f" in
-    CLAUDE.md|*/CLAUDE.md) ;;
+    CLAUDE.md|*/CLAUDE.md) is_claude_md=1 ;;
+    .claude/skills/*/SKILL.md) is_claude_md=0 ;;
     *) continue ;;
   esac
-  claude_md_staged=1
   content=$(git show ":$f")
-  chars=$(printf '%s' "$content" | LC_ALL=C.UTF-8 wc -m)
-  if [ "$chars" -gt "$max_chars" ]; then
-    echo "  warning: $f が ${chars} 文字あります(目安 ${max_chars} 文字)。コードから分かる記述・重複を削れないか確認してください。"
+  if [ "$is_claude_md" -eq 1 ]; then
+    claude_md_staged=1
+    chars=$(printf '%s' "$content" | LC_ALL=C.UTF-8 wc -m)
+    if [ "$chars" -gt "$max_chars" ]; then
+      echo "  warning: $f が ${chars} 文字あります(目安 ${max_chars} 文字)。コードから分かる記述・重複を削れないか確認してください。"
+    fi
   fi
   added=$(git diff --cached -U0 -- "$f" | grep -E '^\+[^+]' | grep -E "$history_pattern" || true)
   if [ -n "$added" ]; then
-    echo "  warning: $f の追加行に、履歴表現(経緯の記述)らしき箇所があります。CLAUDE.md には今の設計だけを書いてください:"
+    echo "  warning: $f の追加行に、履歴表現(経緯の記述)らしき箇所があります。今の設計だけを書いてください:"
     echo "$added" | sed 's/^+/    /'
   fi
-  # 参照先は、その CLAUDE.md のディレクトリ・リポジトリのルート・node_modules/ からの相対パスか、
+  # 参照先は、そのファイルのディレクトリ・リポジトリのルート・node_modules/ からの相対パスか、
   # 追跡中のファイルの末尾(`generic/foo.ts` のような短い書き方)と一致すればよい。
   doc_dir=$(dirname "$f")
   while IFS= read -r ref; do
