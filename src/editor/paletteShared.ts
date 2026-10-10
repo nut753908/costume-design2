@@ -17,14 +17,10 @@ export const SECTION_LABELS: Record<PaletteSection, string> = {
 /** パレットからキャンバスへのドラッグ&ドロップで、ノードタイプを運ぶための dataTransfer MIME タイプ。 */
 export const NODE_TYPE_DND_MIME = 'application/costume-design-node-type';
 
-/** `fitView()`/`fitViewOptions` に渡す共通の padding。`NodePalette`(左上の `Panel`
- * 内、幅は内容依存だが実測200px前後)は画面座標に固定表示されるため、
- * 通常の均等な割合パディングだけでは足りず、入次数0のノード(`groupInput` など、
- * `computeAutoLayout()` が常に列0=キャンバス左端に置く)がパレットの真下に完全に隠れて
- * しまうことがある(実際に発生した不具合 — ネストしたグループの Group Input が中に
- * 入るたびにパレットへ隠れ、外部から見て配線が無いように見えていた)。左側だけ固定px、
- * 他3辺は従来どおり割合指定にすることでこれを避ける。呼び出しのたびに新しいオブジェクトを
- * 返す(呼び出し側でそのまま `fitView({ padding: fitViewPadding(), ... })` と渡す想定)。 */
+/** `fitView()`/`fitViewOptions` に渡す共通の padding。`NodePalette`(幅は実測200px前後)は画面座標に
+ * 固定表示されるため、割合だけのパディングだと、`computeAutoLayout()` が列0(キャンバス左端)に置く
+ * 入次数0のノード(`groupInput` など)がパレットの下に隠れる。左側だけ固定px、他3辺は割合にする。
+ * 呼び出しのたびに新しいオブジェクトを返す。 */
 export function fitViewPadding(): { left: `${number}px`; top: number; right: number; bottom: number } {
   return { left: '260px', top: 0.2, right: 0.2, bottom: 0.2 };
 }

@@ -48,7 +48,7 @@ interface GroupInstanceData {
 
 /** 編集済み(実体化済み)のグループインスタンスの内部構造が、現在のテンプレートと食い違って
  * いるか。実体化前(`data.nodes` が無く、テンプレートへフォールバックして評価される)は常に
- * 最新なので false。指紋を持たない(この機能より前に実体化された)インスタンスは、内部構造そのものの
+ * 最新なので false。指紋を保存していないインスタンスは、内部構造そのものの
  * 指紋で比較する。 */
 export function isGroupInstanceStale(type: string, data: GroupInstanceData): boolean {
   if (!data.nodes) return false;

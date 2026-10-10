@@ -5,7 +5,7 @@ import { evaluateGraph } from '../nodes/evaluateGraph';
 
 /** `useEvaluatedGraph.ts` と並行して常時マウントする、トップレベル視点の評価パイプライン。
  * `useEvaluatedGraph.ts` は「今開いている階層」を評価し続け(ノードカード上のリアルタイム値
- * 表示を駆動する、無改修)、こちらは `useRootGraphLite()`(state/selectors.ts)で合成した
+ * 表示を駆動する)、こちらは `useRootGraphLite()`(state/selectors.ts)で合成した
  * 完全なグラフを評価し、結果を `rootEvaluatedResults` に書き込む。`Garments.tsx` の3D描画は
  * こちらだけを見るため、グループの中に入っている間も他の全ガーメントが描画され続ける。 */
 export function useRootEvaluatedGraph(): void {

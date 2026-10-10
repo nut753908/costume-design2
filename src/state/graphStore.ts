@@ -63,8 +63,8 @@ interface GraphState {
   evaluatedResults: EvaluatedGraph | null;
   /** トップレベル視点で合成した完全なグラフの評価結果(`state/useRootEvaluatedGraph.ts` が
    * 書き込む)。`Garments.tsx` の3D描画はこちらを見るため、グループの中に入っている間も
-   * 他の全ガーメントが描画され続ける。`evaluatedResults` は今開いている階層の評価結果の
-   * ままで(ノードカード上のリアルタイム値表示用)、無改修で残す。 */
+   * 他の全ガーメントが描画され続ける。`evaluatedResults` は今開いている階層の評価結果
+   * (ノードカード上のリアルタイム値表示用)。 */
   rootEvaluatedResults: EvaluatedGraph | null;
   /** グループの中に入るたびに積まれる、上位階層のスナップショット。空ならトップレベル。 */
   scopeStack: ScopeFrame[];
@@ -111,7 +111,7 @@ interface GraphState {
   duplicateSelected: () => void;
   autoLayout: () => void;
   /** グループノードの「中に入る」ボタンを押した際に呼ぶ。そのノードが `category: 'group'` でなければ
-   * 何もしない。`data.nodes`/`edges` が未実体化(旧データモデルの `data: {}`)なら
+   * 何もしない。`data.nodes`/`edges` が未実体化(`data: {}`)なら
    * `createDefaultData()` でこのインスタンス自身に実体化してから中に入る。 */
   enterGroup: (nodeId: string) => void;
   /** 直近の階層から1つ上へ戻る。編集結果を親ノードの `data` へ書き戻す。 */
