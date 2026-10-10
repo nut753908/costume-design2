@@ -5,7 +5,7 @@ description: 新しいガーメント種(スカート・帽子のような衣装
 
 # 新しいガーメント種の追加
 
-既存のガーメントは `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`。体の断面に沿わせた `loftGenerator` の身頃+スカート、トーラスの肩ひも、別の色の2つ目の `sceneOutput` のリボン)で、`bodyGroup` と同じ `<name>Group` パターン。
+既存のガーメントは `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`。体の断面に沿わせた `loftGenerator` の身頃+スカート、楕円の輪を横に倒した平たい帯の肩ひも、色の違う別の `sceneOutput` のリボン(羽は前後2層))で、`bodyGroup` と同じ `<name>Group` パターン。
 
 ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
 
