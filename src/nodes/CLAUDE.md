@@ -25,6 +25,7 @@ React Flow(`src/editor/`)は UI の状態(位置・選択・ドラッグ)だけ�
 
 `defineGroupNode()`(`nodes/definitions/groupNodeFactory.ts`)は、既存ノードを埋め込みサブグラフとして内包し、外部には限られたソケットだけを見せるノードを定義します。Body(`bodyGroup`)・ガーメント・自作グループ(`customGroup`)がこの形です。新しいガーメント種の追加手順は `add-garment-type` スキルを参照。
 
+- **共通の処理は、可能なら TS のヘルパー関数ではなく、グループノードなどのノード構成で表す。**
 - **値の置き場所**: 1つのノードだけが使う値(比率や定数など)は `numberInput` を置かず、そのノードの入力欄の値(`data[socketId]`)としてテンプレートに書く。複数のノードが同じ値を使うときだけ `numberInput`/`colorInput` を1つ置いて配線する。定数を `groupOutput` へ渡すときも、そのソケットの入力欄の値に持たせる。
 - **複数のグループで共有する値**は、どれかのグループの中に置いて `groupOutput` で覗かせるのではなく、`state/initialGraph.ts` のトップレベルの共有ノードへ引き上げ、各グループの外部ソケットへファンアウトする。
 - **外部インターフェースは中の `groupInput`/`groupOutput` の `data.sockets` が定義する**(Blender と同じ)。中でソケットを増減・配線すれば、グループ本体のハンドルも増減する。
