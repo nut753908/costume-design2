@@ -4,7 +4,7 @@
 
 ## カスタムジオメトリ
 
-ボディ(`bodyGroup`)と今後作るガーメントは、専用の `build*Geometry()` を持たず、既存の汎用ノードの組み合わせだけで完全にノードグラフ上に表現する。共有ヘルパー:
+ボディ(`bodyGroup`)とガーメントは、専用の `build*Geometry()` を持たず、既存の汎用ノードの組み合わせだけで完全にノードグラフ上に表現する。共有ヘルパー:
 
 - `latheProfile.ts` — `EasedLatheCurve`(`THREE.Curve<Vector2>`)。アンカー側から反対側の端まで、半径を smoothstep でイージングしながら結ぶ `(半径, 高さ)` のプロファイルの曲線で、点列は受け取る側が `getPoints(steps)` で取り出す。この関数呼び出しはノードグラフ側の汎用ノード `easedLatheCurve`(`nodes/definitions/generic/easedLatheCurve.ts`)+`latheGenerator`(`nodes/definitions/generic/latheGenerator.ts`、生の `THREE.LatheGeometry` ラッパー)へ切り出されている。この2ノードの間を流れる値(`(半径, 高さ)` の曲線)には `nodes/types.ts` の `SocketType`/`SocketValue` に `'curve'` という専用の型がある(`nodes/CLAUDE.md` 参照)。プロファイルの分割数 `Profile Steps` は `latheGenerator`/`ringGridGenerator` 側のカード上の入力欄で、向きは `easedLatheCurve` の出力ソケット `Curve Up`/`Curve Down` のどちらを配線するかで選ぶ(数値の `direction` は持たない)。曲線を Y方向にだけ平行移動する `translateCurveY`、2つの曲線を前半・後半につなぐ `concatCurve`、`numberMax` などの二項演算ノードを組み合わせると、半径の導出式を可視の配線として展開できる。非一様スケール(例: `.scale(1, 1, toeLength)`)は `scale`(X/Y/Z を持つ汎用ノード、`translate` と対になる形、`nodes/definitions/generic/scale.ts`)の入力欄で行う。同じファイルの `EllipticLatheCurve` は、アンカー側で水平・反対端で垂直になる楕円の 1/4 の曲線(`ellipticLatheCurve` ノード)で、肩の丸みのように端を水平に閉じる形に使う(smoothstep だと端が短い垂直の筒になる)。
 - 左右対称なパーツ(Body の腕/脚1組、耳)の「±offset だけ平行移動して結合する」処理は、`geometry/` 側の専用関数としては存在しない。ノードグラフ上の `translate`(`translate.ts`、X だけを配線)+`mirrorX`(`mirrorX.ts`、+側を X=0 について鏡像反転して -側にする)+`mergeGeometry`(`mergeGeometry.ts`、`mergeGeometries()` を切り出した汎用ノード)を内包するグループノード `mirrorPair`(`nodes/definitions/generic/mirrorPair.ts`)へ統一されている。

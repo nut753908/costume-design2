@@ -13,5 +13,5 @@ defineGeneratorNode({
     { id: 'radius', label: 'Radius', default: 0.1 },
     { id: 'tube', label: 'Tube', default: 0.02 },
   ],
-  extra: { radialSegments: 8, tubularSegments: 16 },
+  extra: { radialSegments: 8, tubularSegments: 64 },
 });

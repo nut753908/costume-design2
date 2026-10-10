@@ -10,7 +10,7 @@ describe('torusGenerator', () => {
       radius: 0.12,
       tube: 0.025,
       radialSegments: 8,
-      tubularSegments: 16,
+      tubularSegments: 64,
     });
   });
 

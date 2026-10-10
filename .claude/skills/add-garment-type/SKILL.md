@@ -1,11 +1,11 @@
 ---
 name: add-garment-type
-description: 新しいガーメント種(スカート・帽子のような衣装アイテム)を追加する際の手順(ガーメントは現在1つも無い)。新しい <name>GroupNode.ts(と、必要な場合だけ専用のジオメトリ関数+ジェネレーターノード)の実装が必要なときに使用する。
+description: 新しいガーメント種(スカート・帽子のような衣装アイテム)を追加する際の手順。新しい <name>GroupNode.ts(と、必要な場合だけ専用のジオメトリ関数+ジェネレーターノード)の実装が必要なときに使用する。
 ---
 
 # 新しいガーメント種の追加
 
-ガーメントは現在1つも無く、ゼロから作る(`bodyGroup` だけが同じ `<name>Group` パターンで存在する)。
+既存のガーメントは `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`。体の断面に沿わせた `loftGenerator` の身頃+スカート、トーラスの肩ひも、別の色の2つ目の `sceneOutput` のリボン)で、`bodyGroup` と同じ `<name>Group` パターン。
 
 ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表現する(グループ化は必須 — グループの埋め込みサブグラフ内に置く `sceneOutput` ノードが唯一の描画経路であり、グループ化しない個別配線はサポートしていない)。形状の作り方は2通りあり、**まず1(ノードグラフだけで組む)で書けないかを検討する**:
 

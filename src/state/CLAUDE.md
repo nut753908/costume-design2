@@ -43,7 +43,7 @@
 
 `state/initialGraph.ts` は `initialNodes`/`initialEdges`(プリセットや GraphIO の Export/Import と同じ `{ nodes, edges }` 形状)を直接 TypeScript のオブジェクトリテラルとして持ちます。設計意図(シードノードの慣例など)は各ノードのそばにインラインコメントとして書かれているため、ノードを編集する際は近くのコメントが古くならないよう合わせて見直してください。
 
-初期状態のグラフは体だけで、`bodyGroup` の1ノードから成ります(寸法は固定値で `bodyGroup` の外部ソケットの既定値、Y座標はその寸法から内部で求めます)(ガーメントは現在1つも無く、今後作り直す。ガーメントは外部入力が `color` だけで、追加するだけで配線なしに取り付け位置に着る設計にする)。
+初期状態のグラフは、体の `bodyGroup` とガーメントの `camisoleDress`(`camisoleDressGroup`)の2ノードから成ります(体の寸法は固定値で `bodyGroup` の外部ソケットの既定値、Y座標はその寸法から内部で求めます。ガーメントは外部入力が `color` だけで、配線なしに取り付け位置に着る)。
 
 `initialNodes` の `position` はノード定義には持たせず、モジュール読み込み時に `computeAutoLayout()`(Arrange ボタンと同じ関数)で算出する(ノードタイプの登録内容に依存するため `initialGraph.ts` 自身が `nodes/definitions` を読み込む)ので、構成を変えても座標を手で更新する必要は無い。
 
