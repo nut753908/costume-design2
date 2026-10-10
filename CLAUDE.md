@@ -8,48 +8,34 @@
 
 ## コマンド
 
-このリポジトリには WebGL/3D 描画を実際にレンダリングして確認できるブラウザ用テストランナーはありません。UI/3D の変更を確認するには `run-costume-design2` スキル(`.claude/skills/run-costume-design2/`、ヘッドレスChromiumで実際に操作しスクリーンショットを撮る)を使ってください。コンソールエラーとスクリーンショットが、変更が実際にレンダリングされたことを確認する手段です。
+WebGL/3D 描画を確認できるテストランナーはありません。UI/3D の変更は `run-costume-design2` スキル(ヘッドレス Chromium で操作しスクリーンショットを撮る)で確認し、コンソールエラーとスクリーンショットを確認の手段にします。
 
-WebGL に触れない React フック(zustand ストアの購読 + useMemo/useRef など)は、上記と別の話として vitest + jsdom + `@testing-library/react` の `renderHook`/`act` で単体テストできます(`state/selectors.test.ts` 参照)。既定のテスト環境は DOM の無い `'node'` なので、対象ファイルの先頭に `// @vitest-environment jsdom` プラグマを付けて切り替えます。
+WebGL に触れない React フックは vitest + jsdom + `@testing-library/react` の `renderHook`/`act` で単体テストできます(`state/selectors.test.ts` 参照)。既定のテスト環境は `'node'` なので、ファイル先頭に `// @vitest-environment jsdom` を付けます。
 
-### pre-commit フック
+`.githooks/pre-commit` が `npm run build && npm test && npm run lint` を実行し、失敗時はコミットを中断します(有効化はローカルで1回 `git config core.hooksPath .githooks`)。リモートが無いので CI の代わりです。CLAUDE.md がステージされていれば、文字数・経緯の表現・存在しないパスの参照を警告します(コミットは止めない)。
 
-`.githooks/pre-commit`(リポジトリにコミット済み)が `npm run build && npm test && npm run lint` をコミット前に実行し、失敗時はコミットを中断します。有効化には(`.git/hooks/` はコミットされないため)ローカルで1回 `git config core.hooksPath .githooks` を実行する必要があります。リモートが無い個人開発のリポジトリのため CI の代わりとして機能します。
+## CLAUDE.md とコメントに書くこと
 
-さらに、ステージされた変更ファイルに対応する(直近の祖先ディレクトリの)`CLAUDE.md` がステージに含まれていない場合、コミットを止めずに一覧を表示するだけのリマインダーも実行されます。これは機械的な判定(「そのディレクトリの CLAUDE.md が今回のコミットに含まれているか」)しかできないため、実際に内容の更新が必要かどうかは人間(または Claude Code)が都度判断してください。
+CLAUDE.md は作業のたびに読み込まれるので、**コードを読んでも分からないのに、知らないと間違える情報**だけを書きます: 設計上の制約・方針、モジュールをまたぐ前提、踏むと壊れる落とし穴。各ノードのソケットの意味や UI の操作のように、コードを読めば分かること・1つのファイルにだけ関わることは書かず、必要ならそのファイルのコメントに書きます。実装を変えて、ここに書いた前提や落とし穴が変わったときは、同じコミットで該当する CLAUDE.md を直します。
 
-また、ステージされた `CLAUDE.md` が 25,000 文字を超えている場合、または追加行に履歴表現(「以前は」「旧実装」など)らしき語句がある場合も、コミットを止めずに警告します。
-
-### ドキュメントとの同期
-
-実装内容が、このファイルや各ディレクトリの `CLAUDE.md` に書かれている設計意図・アーキテクチャ上の前提・既知の落とし穴を変える場合は、**その変更と同じコミットで該当する `CLAUDE.md` も更新してください**。「後で直す」は基本的に発生しないため、実装コミットの一部として扱うこと。該当するかどうか迷う場合の目安:
-
-- 新しいノードタイプ・ソケットタイプ・評価ルールを追加/変更した → [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md)
-- ガーメントのジオメトリ生成ロジックを変更した → [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md)、および本ファイルの「Body(3Dモデル本体)もガーメントと同じ `<name>Group` ノードで組み立てられる」節
-- トゥーンシェーディングの仕組みを変更した → [`src/rendering/CLAUDE.md`](src/rendering/CLAUDE.md)
-- シーン組み立て(ボディ/ガーメントの配置)を変更した → [`src/scene/CLAUDE.md`](src/scene/CLAUDE.md)
-- zustand ストアの構造、Undo/Redo の仕組みを変更した → [`src/state/CLAUDE.md`](src/state/CLAUDE.md)
-- ノードグラフエディタの操作/UX を変更した → [`src/editor/CLAUDE.md`](src/editor/CLAUDE.md)
-- 上記のいずれにも該当しないプロジェクト全体の慣例・制約を変えた → 本ファイル
-
-上記の pre-commit リマインダーは、この判断を手助けするための機械的な補助であり、代わりにはなりません。
-
-**このファイル・各ディレクトリの `CLAUDE.md`、そしてソースコード/テストコードのコメントは、いずれも「今の設計・実装が何で、なぜそうなっているか」だけを書きます。** どういう変遷を経て今の形になったかという移行の経緯(「以前は〜だったが、〜という理由で今は〜」「旧実装は〜」「かつては〜」)は、必要なら git log/commit メッセージを参照してください — CLAUDE.md にもコードコメントにも書き残す対象ではありません。リファクタリングでノードの実装を展開・統合するたびにこの手の経緯を書き足すと、CLAUDE.md・コード双方が際限なく肥大化します(実際に発生し、2回のコメント整理コミットで削減しました)。コード側のコメントは特に、非自明な WHY(なぜこの値・この構造を選んだか、コードを読むだけでは分からない理由)・既知の落とし穴・非自明な不変条件だけを 1〜3 行程度で書き、それ以外は書かないこと — CLAUDE.md 側の該当節を指し示すだけで十分な場合はそちらに譲ります。
+CLAUDE.md にもコードのコメントにも、今の設計とその理由だけを書き、過去の実装や不具合の経緯は書きません(経緯は git log に任せる)。コードのコメントは、自明でない WHY・落とし穴・不変条件だけを 1〜3 行で書きます。
 
 ## アーキテクチャ
 
-これはノードグラフ(Blender の Geometry Nodes 風)で 3D コスチュームをデザインする Web アプリで、フォトリアルな 3D ではなく、フラットなトゥーンシェーディングのイラスト調でレンダリングされます。スタック: React + react-three-fiber (Three.js) + React Flow (`@xyflow/react`)、状態管理に zustand、バックエンドなし — 完全にクライアントサイドで、グラフの状態は localStorage に永続化されます。
+ノードグラフ(Blender の Geometry Nodes 風)で 3D コスチュームをデザインする Web アプリで、フラットなトゥーンシェーディングのイラスト調で描画します。スタック: React + react-three-fiber (Three.js) + React Flow (`@xyflow/react`)、状態管理に zustand。バックエンドは無く、グラフは localStorage に保存します。
 
-**すべてがコード上で手続き的に生成されます — 外部の 3D メッシュアセットは使用しません。** ボディとガーメント(衣装)は、インポートしたモデルではなく、実行時にプリミティブ/カーブから構築されます。これは見落としではなく、意図的な制約です。
+**すべてをコード上で手続き的に生成し、外部の 3D メッシュアセットは使いません。** ボディもガーメントも実行時にプリミティブ/カーブから組み立てます。これは意図的な制約です。
 
-各モジュールのより詳細な設計意図・落とし穴は、該当ディレクトリで作業する際に自動的に読み込まれる `CLAUDE.md` にまとめています: [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md)(ノードグラフエンジン)、[`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md)(カスタムジオメトリ)、[`src/rendering/CLAUDE.md`](src/rendering/CLAUDE.md)(トゥーンシェーディング)、[`src/scene/CLAUDE.md`](src/scene/CLAUDE.md)(シーン組み立て)、[`src/state/CLAUDE.md`](src/state/CLAUDE.md)(リアクティビティ・Undo/Redo)、[`src/editor/CLAUDE.md`](src/editor/CLAUDE.md)(ノードグラフの操作/エディタUX)。
+各モジュールの詳細は、そのディレクトリの CLAUDE.md にあります: [`src/nodes/`](src/nodes/CLAUDE.md)(ノードグラフエンジン・グループノード)、[`src/geometry/`](src/geometry/CLAUDE.md)、[`src/rendering/`](src/rendering/CLAUDE.md)、[`src/scene/`](src/scene/CLAUDE.md)、[`src/state/`](src/state/CLAUDE.md)(リアクティビティ・Undo/Redo・階層)、[`src/editor/`](src/editor/CLAUDE.md)。
 
-### Body(3Dモデル本体)もガーメントと同じ `<name>Group` ノードで組み立てられる
+### Body とガーメントは同じ `<name>Group` ノードで組み立てる
 
-Body は専用のノードタイプ・専用の描画コンポーネントを持たず、ガーメントと全く同じ「`<name>Group`」パターン(`bodyGroup`)で表現されています。ボディの寸法(各部位の半径・長さ・間隔)は固定値で、`bodyGroup` の外部ソケット(`bodyGroupNode.ts`)の既定値のリテラルとして持ちます。胴体・頭・腕・脚のY座標は、その寸法から内部の `bodyLayout`(`nodes/definitions/generic/bodyLayout.ts`、四則演算のノード)が求めるので、寸法を変えると連動します。内部構造の詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節、ジオメトリ関数は [`src/geometry/CLAUDE.md`](src/geometry/CLAUDE.md) を参照してください。
+Body は専用のノードタイプ・描画コンポーネントを持たず、ガーメントと同じグループノード(`bodyGroup`)です。寸法(各部位の半径・長さ・間隔)は `bodyGroup` の外部ソケットの既定値で、各部位の Y 座標は内部の `bodyLayout` が寸法から求めます。
 
-**Body の見た目の目標は、アットゲームズ/ポケットランドのアバター「セルフィ」のようなモデルです。** 約3頭身で、大きく丸い(あごが少しすぼまった)頭・短めで前へ傾いた首・なで肩でくびれのある薄い胴(前後が幅より薄い楕円断面)・体の脇から少し外へ開き、やや前へ出した細い腕・細めで短めの脚・小さく丸い手足を持ちます。セルフィ自体は 2D イラストのアバターなので、この形を 3D で再解釈しています。寸法と比率は、元画像から画像生成 AI で起こした参照メッシュを左右で平均した形の、正面・側面・斜め・上面のシルエットと、体積に対する一致度(IoU)が最大になるように調整した値です。体型を変えるときは、この目標から外れないかを確認してください。
+**Body の見た目の目標は、アットゲームズ/ポケットランドのアバター「セルフィ」です。** 約3頭身で、大きく丸い(あごが少しすぼまった)頭・短めで前へ傾いた首・なで肩でくびれのある薄い胴(前後が幅より薄い楕円断面)・体の脇から少し外へ開きやや前へ出した細い腕・細めで短めの脚・小さく丸い手足。2D のアバターを 3D で再解釈しています。寸法と比率は、元画像から画像生成 AI で起こした参照メッシュを左右で平均した形と、正面・側面・斜め・上面のシルエットおよび体積の一致度(IoU)が最大になるよう調整した値です。体型を変えるときは、この目標から外れないかを確認してください。
 
-ガーメントはキャミソールワンピース(`camisoleDressGroup`、`groups/camisoleDressGroupNode.ts`)の1つです。方針: ガーメントは `<name>Group`(`defineGroupNode()` で定義、詳細は [`src/nodes/CLAUDE.md`](src/nodes/CLAUDE.md) の「グループノード」節)1枚に、生成ノードと末端(`garmentOutput({ y, geometry })`)をまとめます。外部入力は `color` だけで、体に触れる半径・間隔・取り付け位置(`placement` の `y`)などは、すべてリテラルの固定値(各ノードの入力欄の値。複数のノードが同じ値を使うときだけ `numberInput` ノードを置いて配線。取り付け位置を色の違う複数のメッシュで共有するなら `placement` の `y` にも配線する)として、そのグループの中に入って編集します。ガーメントはボディの寸法に追従しません(ボディへの配線も外部ソケットも持たず、体の位置や大きさに囚われず自由に値を決めます)。
+ガーメントはキャミソールワンピース(`camisoleDressGroup`)の1つです。方針:
 
-初期状態のプリセット(`src/state/initialGraph.ts`)がトップレベルに残す共有ノードの一覧は [`src/state/CLAUDE.md`](src/state/CLAUDE.md) を参照してください。
+- ガーメントは `defineGroupNode()` で定義したグループ1枚に、生成ノードと末端(`garmentOutput({ y, geometry })`)をまとめる。
+- 外部入力は `color` だけ。体に触れる半径・取り付け位置(`placement` の `y`)などはグループ内の固定値として、中に入って編集する。
+- ガーメントはボディの寸法に追従しない(ボディへの配線も外部ソケットも持たない)。
