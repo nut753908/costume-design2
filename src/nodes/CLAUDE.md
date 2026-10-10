@@ -12,7 +12,7 @@ React Flow(`src/editor/`)は UI の状態(位置・選択・ドラッグ)だけ�
   - 受け取った `geometry`/`material`/`curve` を直接ミューテートしないこと(変換するなら `.clone()` してから)。キャッシュが返す前回の結果が書き換わり、無関係な箇所に伝播する。
   - `data` はイミュータブルに更新すること(ネストしたオブジェクトの直接ミューテートは検知できない)。
   - テストで同じ inputs の `evaluate()` を複数回呼ぶと、2回目以降は spy が発火しないことがある。`src/testSetup.ts` が `beforeEach` でキャッシュを空にしている。
-- **描画されるかどうかは、`sceneOutput` へ明示的に配線したかで決まる**。geometry+material を持つ値を型で自動検出することはせず、`groupOutput` 経由の出力は描画されない。`sceneOutput` は必ず `<name>Group` の中に置く(下記)。
+- **描画されるかどうかは、`sceneOutput` へ明示的に配線したかで決まる**。geometry+material を持つ値を型で自動検出することはせず、`groupOutput` 経由の出力は描画されない。`Garments.tsx` はグループが転送する予約キー(下記)しか読まないので、トップレベルに置いた `sceneOutput` は描画されない。
 - `curve` 型の `(半径, 高さ)` のプロファイルは、どの生成ノードも `t` が増えるほど下から上へ進む。分割数(`Profile Steps`)は曲線ではなく受け取る側の設定。
 
 ## 新しいノードタイプの追加
