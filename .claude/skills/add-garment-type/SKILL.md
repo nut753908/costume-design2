@@ -5,7 +5,7 @@ description: 新しいガーメント種(スカート・帽子のような衣装
 
 # 新しいガーメント種の追加
 
-ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表す。グループの中の `sceneOutput` が唯一の描画経路なので、グループ化は必須。既存の例は `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`)で、`bodyGroup` と同じパターン。方針(外部入力は `color` だけ、ボディの寸法に追従しない)はルートの `CLAUDE.md` を参照。
+ガーメント1種は **`src/nodes/definitions/groups/<name>GroupNode.ts` のグループノード1つ**で表す。グループの中の `sceneOutput` が唯一の描画経路なので、グループ化は必須。既存の例は `camisoleDressGroup`(`groups/camisoleDressGroupNode.ts`)で、`bodyGroup` と同じパターン。方針(外部入力、ボディの寸法に追従しないこと)はルートの `CLAUDE.md` を参照。
 
 ## 1. 形状の作り方を決める
 
@@ -24,7 +24,7 @@ description: 新しいガーメント種(スカート・帽子のような衣装
 - `colorSocket(hex)`: `groupInput` の `sockets` に入れる `color` ソケット(全ガーメント共通で必須)。
 - `garmentOutput({ y, geometry })`: マテリアル(`toonShadowMaterial`、色は `input.color`)・`placement`(`translate`、入力欄 `y` が取り付け位置)・`sceneOut` のノードと配線。`geometry` には最終的な geometry を出力するノードの id を渡す。
 
-`groupOutput` は含めない(描画は `sceneOutput` が担う)。最小の例:
+最小の例:
 
 ```ts
 import { defineGroupNode } from '../groupNodeFactory';

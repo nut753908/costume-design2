@@ -5,8 +5,6 @@ description: ノードグラフに新しい NodeTypeDefinition(ノードタイ�
 
 # 新しいノードタイプの追加
 
-まず `nodes/definitions/` と `nodes/definitions/generic/` に、近い処理をする汎用ノードが既に無いか確認する。
-
 ## 置き場所と登録
 
 `nodes/definitions/**/*.ts` に `NodeTypeDefinition`(`evaluate()` と `createDefaultData()`)を実装する。グループノードは `groups/`、使い回す汎用ノードは `generic/` に置く。`definitions/index.ts` の `import.meta.glob()` がサブディレクトリまで再帰的に読み込み、`NodeEditor.tsx` の `nodeTypes` にも自動で反映されるので、手動の登録は要らない。

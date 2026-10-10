@@ -17,7 +17,7 @@ React Flow(`src/editor/`)は UI の状態(位置・選択・ドラッグ)だけ�
 
 ## 新しいノードタイプの追加
 
-手順は `add-node-type` スキルを参照してください。新しいノードを書く前に、`nodes/definitions/` と `nodes/definitions/generic/` に近い処理をする汎用ノードが既に無いか確認すること(専用ノードの重複実装を後で統合し直す手戻りを避けるため)。
+手順は `add-node-type` スキルを参照してください。
 
 `defineGroupNode()` のテンプレートで存在しないノード id/ソケット id を指すエッジを書いても、`evaluateGraph` は静かに無視する。`nodes/definitions/groupNodeWiring.test.ts` が全グループ型の内部配線を検証するので、グループを追加/配線し直したらこのテストで確認する。
 
@@ -28,7 +28,7 @@ React Flow(`src/editor/`)は UI の状態(位置・選択・ドラッグ)だけ�
 - **値の置き場所**: 1つのノードだけが使う値(比率や定数など)は `numberInput` を置かず、そのノードの入力欄の値(`data[socketId]`)としてテンプレートに書く。複数のノードが同じ値を使うときだけ `numberInput`/`colorInput` を1つ置いて配線する。定数を `groupOutput` へ渡すときも、そのソケットの入力欄の値に持たせる。
 - **複数のグループで共有する値**は、どれかのグループの中に置いて `groupOutput` で覗かせるのではなく、`state/initialGraph.ts` のトップレベルの共有ノードへ引き上げ、各グループの外部ソケットへファンアウトする。
 - **外部インターフェースは中の `groupInput`/`groupOutput` の `data.sockets` が定義する**(Blender と同じ)。中でソケットを増減・配線すれば、グループ本体のハンドルも増減する。
-  - どちらも省略でき、省略すると外部ソケットは0個になる(型の静的な `inputs`/`outputs` へは戻さない)。ガーメントと `bodyGroup` は `groupOutput` を持たない。
+  - どちらも省略でき、省略すると外部ソケットは0個になる(型の静的な `inputs`/`outputs` へは戻さない)。
   - 同じ階層に複数置くと `data.sockets` を共有する(`state/groupIOSockets.ts`)。外部の値はすべての `groupInput` に注入され、`groupOutput` はソケットごとに、それを配線している最初のノードの値を出す。
   - `groupInput` のソケットの既定値は `Group Input` ノード上では編集できない。値はグループカードの未接続入力の欄で変える。
 - **インスタンスは内部グラフを独立コピーとして持つ**(`data.nodes`/`data.edges`、無ければテンプレートへフォールバック)。そのため、テンプレートの構造を変えても編集済みのインスタンスは追従しない。構造の指紋(`nodes/groupTemplate.ts`)で古いインスタンスを検知し、「テンプレートへ更新」で同じ id・同じ型のノードの値だけを引き継いで読み込み直す。
