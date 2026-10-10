@@ -250,3 +250,35 @@ describe('loftGenerator の pleatProfile', () => {
     expect(radiusAt(position, 0)).toBeCloseTo(0.55, 6);
   });
 });
+
+describe('loftGenerator の scallop', () => {
+  const run = (scallopCount: number, scallopHeight: number) =>
+    loft({
+      profile: { type: 'curve', value: new THREE.LineCurve(new THREE.Vector2(1, 0), new THREE.Vector2(1, 1)) },
+      steps: num(2),
+      segments: num(32),
+      scallopCount: num(scallopCount),
+      scallopHeight: num(scallopHeight),
+    })!.getAttribute('position');
+  // 上端の輪の頂点の高さを、周方向の列の順に並べる
+  const topHeights = (position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute) => {
+    const heights: number[] = [];
+    for (let i = 2; i < position.count; i += 3) heights.push(position.getY(i));
+    return heights;
+  };
+
+  it('上端の輪を半円の山の形に持ち上げ、山と山の境目は元の高さのまま', () => {
+    // 4 個の山を 32 分割に置くので、1 つの山は 8 列。列 0 が境目、列 4 が山の頂上
+    const heights = topHeights(run(4, 0.1));
+    expect(heights[0]).toBeCloseTo(1, 6);
+    expect(heights[4]).toBeCloseTo(1.1, 6);
+    expect(heights[8]).toBeCloseTo(1, 6);
+    expect(heights[2]).toBeCloseTo(1 + 0.1 * Math.sqrt(1 - 0.5 ** 2), 6);
+  });
+
+  it('上端以外の輪は動かさず、既定(0)なら上端も平らなまま', () => {
+    const position = run(4, 0.1);
+    for (let i = 0; i < position.count; i += 3) expect(position.getY(i)).toBeCloseTo(0, 6);
+    expect(new Set(topHeights(run(0, 0)).map((h) => h.toFixed(6)))).toEqual(new Set(['1.000000']));
+  });
+});

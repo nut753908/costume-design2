@@ -7,6 +7,8 @@ export interface LoftGeneratorData extends Record<string, unknown> {
   segments?: number;
   steps?: number;
   pleatCount?: number;
+  scallopCount?: number;
+  scallopHeight?: number;
 }
 
 /** 位置が重なる頂点(回転体の始点と終点の継ぎ目、極)の法線を平均し、継ぎ目に縦の筋(陰影の段差)が出ないようにする。
@@ -52,6 +54,8 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
  * `pleatProfile`(符号付きの曲線、値は半径に対する比)を繋ぐと、周を `pleatCount` 個に分けた三角波で各高さの輪の半径を
  * 外側へだけ膨らませ、縦のプリーツ(山と谷)を付ける(山が正面)。谷が元の輪郭なので、体に沿わせた輪郭の内側へは入らない。
  * 山と谷の面がはっきり分かれるよう、`segments` はプリーツ1つあたり数本になる値にする。
+ * `scallopCount`/`scallopHeight` が 0 より大きいと、上端の輪を周に `scallopCount` 個の半円の山(⋂⋂⋂)の形に持ち上げる
+ * (服の上端のレースのような縁)。山の数は `segments` の約数にすると、どの山も同じ形になる。
  * 曲線は同じ高さの範囲を持つこと(同じ `t` で同じ高さを指すこと)を前提にする。 */
 registerNodeType<LoftGeneratorData>({
   type: 'loftGenerator',
@@ -66,6 +70,8 @@ registerNodeType<LoftGeneratorData>({
     { id: 'ringProfile', label: 'Ring Spacing', type: 'curve' },
     { id: 'pleatProfile', label: 'Pleat Depth', type: 'curve' },
     { id: 'pleatCount', label: 'Pleat Count', type: 'number', default: 16 },
+    { id: 'scallopCount', label: 'Scallop Count', type: 'number', default: 0 },
+    { id: 'scallopHeight', label: 'Scallop Height', type: 'number', default: 0 },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -95,6 +101,22 @@ registerNodeType<LoftGeneratorData>({
         const factor = 1 + depths[i % points.length] * wave;
         position.setX(i, position.getX(i) * factor);
         position.setZ(i, position.getZ(i) * factor);
+      }
+      position.needsUpdate = true;
+      if (inputs.depthProfile?.type !== 'curve') {
+        geometry.computeVertexNormals();
+        smoothCoincidentNormals(geometry);
+      }
+    }
+    const scallopCount = Math.round(asNumber(inputs.scallopCount, data.scallopCount ?? 0));
+    const scallopHeight = asNumber(inputs.scallopHeight, data.scallopHeight ?? 0);
+    if (scallopCount > 0 && scallopHeight > 0) {
+      const position = geometry.getAttribute('position');
+      for (let i = points.length - 1; i < position.count; i += points.length) {
+        // 上端の輪の頂点だけ。周方向の列(i / points.length)から、山の中の位置 s(0〜1)を決め、半円の高さだけ持ち上げる。
+        const u = (scallopCount * Math.floor(i / points.length)) / segments;
+        const s = u - Math.floor(u);
+        position.setY(i, position.getY(i) + scallopHeight * Math.sqrt(Math.max(0, 1 - (2 * s - 1) ** 2)));
       }
       position.needsUpdate = true;
       if (inputs.depthProfile?.type !== 'curve') {
