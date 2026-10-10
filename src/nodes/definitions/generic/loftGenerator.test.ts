@@ -211,3 +211,42 @@ describe('loftGenerator の ringProfile', () => {
     expect(ys).toEqual([0, 0.5, 5, 9.5, 10]);
   });
 });
+
+describe('loftGenerator の pleatProfile', () => {
+  const run = (depth?: number, extra: Record<string, unknown> = {}) => {
+    const inputs: Record<string, unknown> = {
+      profile: { type: 'curve', value: new THREE.LineCurve(new THREE.Vector2(1, 0), new THREE.Vector2(1, 1)) },
+      steps: num(2),
+      segments: num(32),
+      pleatCount: num(4),
+      ...extra,
+    };
+    if (depth !== undefined) inputs.pleatProfile = { type: 'curve', value: new SignedSplineCurve([depth, depth, depth], 1) };
+    return loft(inputs)!.getAttribute('position');
+  };
+  const radiusAt = (position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute, angle: number) => {
+    for (let i = 0; i < position.count; i++) {
+      if (Math.abs(Math.atan2(position.getX(i), position.getZ(i)) - angle) < 1e-6) return Math.hypot(position.getX(i), position.getZ(i));
+    }
+    throw new Error(`angle ${angle} の頂点が無い`);
+  };
+
+  it('山(正面)は半径が 1 + depth 倍、山と山の中間の谷は元の半径のまま', () => {
+    const position = run(0.1);
+    expect(radiusAt(position, 0)).toBeCloseTo(1.1, 6);
+    // 4 個のプリーツの谷は 45° ごと
+    expect(radiusAt(position, Math.PI / 4)).toBeCloseTo(1, 6);
+    expect(radiusAt(position, Math.PI / 8)).toBeCloseTo(1.05, 6);
+  });
+
+  it('pleatProfile が未接続ならプリーツは付かない', () => {
+    const position = run();
+    expect(radiusAt(position, 0)).toBeCloseTo(1, 6);
+  });
+
+  it('depthProfile と併用すると、プリーツを付けた輪を前後に伸縮する', () => {
+    const depthProfile = { type: 'curve', value: new THREE.LineCurve(new THREE.Vector2(0.5, 0), new THREE.Vector2(0.5, 1)) };
+    const position = run(0.1, { depthProfile });
+    expect(radiusAt(position, 0)).toBeCloseTo(0.55, 6);
+  });
+});

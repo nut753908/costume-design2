@@ -6,6 +6,7 @@ import { asNumber } from '../../socketHelpers';
 export interface LoftGeneratorData extends Record<string, unknown> {
   segments?: number;
   steps?: number;
+  pleatCount?: number;
 }
 
 /** 位置が重なる頂点(回転体の始点と終点の継ぎ目、極)の法線を平均し、継ぎ目に縦の筋(陰影の段差)が出ないようにする。
@@ -48,6 +49,9 @@ function smoothCoincidentNormals(geometry: THREE.BufferGeometry): void {
  * 輪の後ろ側が上がり前側が下がる)。軸が斜めに曲がった部分(胴体から前へ傾く首)の輪を、軸に垂直にするためのもの。
  * `ringProfile`(`ringSpacingCurve`)を繋ぐと、輪を置く高さの割合を等間隔ではなくその曲線で決める(球の極のように曲線が
  * 急に曲がる所へ輪を密に置いて、少ない段数でなめらかな面にする)。
+ * `pleatProfile`(符号付きの曲線、値は半径に対する比)を繋ぐと、周を `pleatCount` 個に分けた三角波で各高さの輪の半径を
+ * 外側へだけ膨らませ、縦のプリーツ(山と谷)を付ける(山が正面)。谷が元の輪郭なので、体に沿わせた輪郭の内側へは入らない。
+ * 山と谷の面がはっきり分かれるよう、`segments` はプリーツ1つあたり数本になる値にする。
  * 曲線は同じ高さの範囲を持つこと(同じ `t` で同じ高さを指すこと)を前提にする。 */
 registerNodeType<LoftGeneratorData>({
   type: 'loftGenerator',
@@ -60,6 +64,8 @@ registerNodeType<LoftGeneratorData>({
     { id: 'offsetZProfile', label: 'Offset Profile (Z)', type: 'curve' },
     { id: 'tiltProfile', label: 'Tilt Profile (deg)', type: 'curve' },
     { id: 'ringProfile', label: 'Ring Spacing', type: 'curve' },
+    { id: 'pleatProfile', label: 'Pleat Depth', type: 'curve' },
+    { id: 'pleatCount', label: 'Pleat Count', type: 'number', default: 16 },
     { id: 'steps', label: 'Profile Steps', type: 'number', default: 24 },
     { id: 'segments', label: 'Segments', type: 'number', default: 24 },
   ],
@@ -78,6 +84,24 @@ registerNodeType<LoftGeneratorData>({
     const sample = (curve: THREE.Curve<THREE.Vector2>) => Array.from({ length: steps + 1 }, (_, i) => curve.getPoint(ringT(i)));
     const points = sample(inputs.profile.value);
     const geometry = new THREE.LatheGeometry(points, segments);
+    if (inputs.pleatProfile?.type === 'curve') {
+      const depths = sample(inputs.pleatProfile.value).map((depthPoint) => depthPoint.x);
+      const count = Math.max(1, Math.round(asNumber(inputs.pleatCount, data.pleatCount ?? 16)));
+      const position = geometry.getAttribute('position');
+      for (let i = 0; i < position.count; i++) {
+        // LatheGeometry は x = r sin φ, z = r cos φ。三角波は φ = 0(正面)で山(1)、山と山の中間で谷(0)。
+        const u = (count * Math.atan2(position.getX(i), position.getZ(i))) / (2 * Math.PI);
+        const wave = Math.abs(2 * (u - Math.floor(u)) - 1);
+        const factor = 1 + depths[i % points.length] * wave;
+        position.setX(i, position.getX(i) * factor);
+        position.setZ(i, position.getZ(i) * factor);
+      }
+      position.needsUpdate = true;
+      if (inputs.depthProfile?.type !== 'curve') {
+        geometry.computeVertexNormals();
+        smoothCoincidentNormals(geometry);
+      }
+    }
     if (inputs.depthProfile?.type === 'curve') {
       const ratioOf = (curve: THREE.Curve<THREE.Vector2>) =>
         sample(curve).map((depthPoint, i) => (points[i].x > 1e-9 ? Math.max(0, depthPoint.x) / points[i].x : 1));
