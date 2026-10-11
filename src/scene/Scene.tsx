@@ -9,6 +9,17 @@ import { Garments } from './Garments';
 // 高さにだけ比例する(App.tsx のシーン幅の計算が前提にしている)ようにする。
 const VISIBLE_HEIGHT = 2.33;
 
+// 初期カメラ: 注視点から距離 CAMERA_DISTANCE、キャラクターの左側(+x)へ方位角35°、俯角5°。
+const TARGET: [number, number, number] = [0, 0.95, 0];
+const CAMERA_DISTANCE = 3.2;
+const AZIMUTH = (35 * Math.PI) / 180;
+const ELEVATION = (5 * Math.PI) / 180;
+const CAMERA_POSITION: [number, number, number] = [
+  TARGET[0] + CAMERA_DISTANCE * Math.sin(AZIMUTH) * Math.cos(ELEVATION),
+  TARGET[1] + CAMERA_DISTANCE * Math.sin(ELEVATION),
+  TARGET[2] + CAMERA_DISTANCE * Math.cos(AZIMUTH) * Math.cos(ELEVATION),
+];
+
 function FitZoom() {
   const height = useThree((s) => s.size.height);
   const camera = useThree((s) => s.camera);
@@ -25,7 +36,7 @@ export function Scene() {
   return (
     <Canvas
       orthographic
-      camera={{ position: [0, 0.95, 3.2] }}
+      camera={{ position: CAMERA_POSITION }}
       gl={{ toneMapping: THREE.NoToneMapping }}
       frameloop="demand"
     >
@@ -33,7 +44,7 @@ export function Scene() {
       <FitZoom />
       <Lighting />
       <Garments />
-      <OrbitControls target={[0, 0.95, 0]} />
+      <OrbitControls target={TARGET} />
     </Canvas>
   );
 }
