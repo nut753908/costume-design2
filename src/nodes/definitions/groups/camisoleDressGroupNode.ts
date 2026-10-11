@@ -21,7 +21,8 @@ const output = garmentOutput({ y: 0.56, geometry: 'merge' });
  *   隠れる位置)と上端(画面で一番高い点)の位置・傾きを参考画像に合わせてある。
  * - リボン: 別の色(`bowColor`)の2つ目の `sceneOutput`。結び目から外へ広がる羽2枚(付け根から先へ太くなり、
  *   先が丸く閉じる平たい `loftGenerator` を横に倒したもの、`mirrorPair`)と結び目。身頃の表面の向きに合わせて回し、
- *   腰の脇に置く。身頃と同じ取り付け位置(`placementY`)だけ持ち上げる。 */
+ *   腰の脇に置く。後ろの層の羽が身頃の表面に接する(身頃へ沈まない)位置で、既定カメラで見た位置は参考画像のまま
+ *   (カメラの視線方向へ寄せてある)。身頃と同じ取り付け位置(`placementY`)だけ持ち上げる。 */
 defineGroupNode({
   type: 'camisoleDressGroup',
   label: 'Camisole Dress',
@@ -108,12 +109,12 @@ defineGroupNode({
     { id: 'bowBackShift', type: 'translate', data: { z: -0.012 } },
     { id: 'bowBackWings', type: 'mirrorPair', data: { offset: 0.004 } },
     // 右の羽が上がるように少し回し(`bowRollZ`)、身頃の表面の向きに合わせて外へ向け(`bowTurnY`)、腰の脇に置く。
-    // 前の層と後ろの層で同じ値を使う。
+    // 前の層と後ろの層で同じ値を使う。位置は、後ろの層の羽が身頃に接し、右の腕に当たらない最大の寄せ量(視線方向)。
     { id: 'bowRollZ', type: 'numberInput', data: { value: 13 } },
-    { id: 'bowTurnY', type: 'numberInput', data: { value: 32 } },
-    { id: 'bowX', type: 'numberInput', data: { value: 0.155 } },
-    { id: 'bowY', type: 'numberInput', data: { value: 0.35 } },
-    { id: 'bowZ', type: 'numberInput', data: { value: 0.0765 } },
+    { id: 'bowTurnY', type: 'numberInput', data: { value: 38 } },
+    { id: 'bowX', type: 'numberInput', data: { value: 0.1345 } },
+    { id: 'bowY', type: 'numberInput', data: { value: 0.3469 } },
+    { id: 'bowZ', type: 'numberInput', data: { value: 0.0473 } },
     { id: 'bowRoll', type: 'rotate', data: {} },
     { id: 'bowTurn', type: 'rotate', data: {} },
     { id: 'bowTranslate', type: 'translate', data: {} },
