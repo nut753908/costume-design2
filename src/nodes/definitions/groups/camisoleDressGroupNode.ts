@@ -82,7 +82,7 @@ defineGroupNode({
     // --- リボン(腰の脇、別の色) ---
     // 羽: 付け根(結び目側)から先へ太くなり、先が丸く閉じる平たい形を Y 方向に作り、横(+X)へ倒す。
     { id: 'bowWingLength', type: 'numberInput', data: { value: 0.075 } },
-    { id: 'bowWingWidth', type: 'profileCurve', data: { radius: 0.052, r0: 0.32, r1: 0.45, r2: 0.58, r3: 0.7, r4: 0.8, r5: 0.88, r6: 0.94, r7: 0.94, r8: 0 } },
+    { id: 'bowWingWidth', type: 'profileCurve', data: { radius: 0.045, r0: 0.32, r1: 0.45, r2: 0.58, r3: 0.7, r4: 0.8, r5: 0.88, r6: 0.94, r7: 0.94, r8: 0 } },
     { id: 'bowWingDepth', type: 'profileCurve', data: { radius: 0.022, r0: 0.6, r1: 0.8, r2: 0.95, r3: 1, r4: 1, r5: 1, r6: 0.95, r7: 0.8, r8: 0 } },
     { id: 'bowWingGen', type: 'loftGenerator', data: { steps: 24, segments: 32 } },
     { id: 'bowWingLay', type: 'rotate', data: { z: -90 } },
@@ -99,7 +99,7 @@ defineGroupNode({
     // 前の層と後ろの層で同じ値を使う。
     { id: 'bowRollZ', type: 'numberInput', data: { value: 13 } },
     { id: 'bowTurnY', type: 'numberInput', data: { value: 32 } },
-    { id: 'bowX', type: 'numberInput', data: { value: 0.135 } },
+    { id: 'bowX', type: 'numberInput', data: { value: 0.155 } },
     { id: 'bowY', type: 'numberInput', data: { value: 0.35 } },
     { id: 'bowZ', type: 'numberInput', data: { value: 0.0765 } },
     { id: 'bowRoll', type: 'rotate', data: {} },
