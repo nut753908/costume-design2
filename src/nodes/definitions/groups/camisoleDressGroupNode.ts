@@ -65,18 +65,18 @@ defineGroupNode({
     // 斜面に帯が沿う。幅・半径・傾き・位置は、見える部分が肌(と服の上端)のすぐ外(平均 3〜4mm、最大でも 6mm ほど)を通り、
     // 既定カメラで見た参考画像の細い肩ひもの足元・傾き・太さに近づくよう当てはめた値。左右で値が違うのは、斜めから見ると
     // カメラに近い右側ほど、後ろへ回る帯が大きく傾いて見えるため。下半分は体の中に隠れる。
-    { id: 'strapWidth', type: 'numberInput', data: { value: 0.0137 } },
-    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1052, r0: 1, r1: 0.9884, r2: 0.9768, r3: 0.9652, r4: 0.9536, r5: 0.942, r6: 0.9304, r7: 0.9188, r8: 0.9072 } },
-    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0671, r0: 1, r1: 0.9925, r2: 0.985, r3: 0.9776, r4: 0.9701, r5: 0.9626, r6: 0.9551, r7: 0.9476, r8: 0.9402 } },
+    { id: 'strapWidth', type: 'numberInput', data: { value: 0.0123 } },
+    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.115, r0: 1, r1: 0.9908, r2: 0.9816, r3: 0.9724, r4: 0.9632, r5: 0.954, r6: 0.9449, r7: 0.9357, r8: 0.9265 } },
+    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0676, r0: 1, r1: 0.9911, r2: 0.9822, r3: 0.9733, r4: 0.9644, r5: 0.9555, r6: 0.9466, r7: 0.9377, r8: 0.9287 } },
     { id: 'strapGen', type: 'loftGenerator', data: { steps: 1, segments: 96 } },
     { id: 'strapHalfWidth', type: 'numberHalf', data: {} },
     { id: 'strapNegHalf', type: 'numberNegate', data: {} },
     { id: 'strapCenter', type: 'translate', data: {} },
     { id: 'strapLay', type: 'rotate', data: { z: -90 } },
-    { id: 'strapRTilt', type: 'rotate', data: { x: -26.2628, y: -0.0637, z: 3.6434 } },
-    { id: 'strapRTranslate', type: 'translate', data: { x: 0.096, y: 0.5282, z: -0.1066 } },
-    { id: 'strapLTilt', type: 'rotate', data: { x: -20.4708, y: -4.043, z: -23.9154 } },
-    { id: 'strapLTranslate', type: 'translate', data: { x: 0.0925, y: 0.5093, z: -0.1021 } },
+    { id: 'strapRTilt', type: 'rotate', data: { x: -26.974, y: -0.4213, z: 2.4791 } },
+    { id: 'strapRTranslate', type: 'translate', data: { x: 0.0965, y: 0.5316, z: -0.1077 } },
+    { id: 'strapLTilt', type: 'rotate', data: { x: -22.4536, y: -1.9711, z: -20.8994 } },
+    { id: 'strapLTranslate', type: 'translate', data: { x: 0.0925, y: 0.5094, z: -0.1023 } },
     { id: 'strapLMirror', type: 'mirrorX', data: {} },
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
