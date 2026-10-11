@@ -12,7 +12,9 @@ const output = garmentOutput({ y: 0.56, geometry: 'merge' });
  *   胸元のレースは上端の輪を半円の山の形に持ち上げたもの(`scallopCount`/`scallopHeight`)で、服と地続き。
  *   プリーツの折り目は胸元の少し下から始まり、裾へ向かって深くなる(`pleatProfile`)。
  * - 肩ひも: 肩を一周する楕円の平たい帯。帯の外側の縁の輪を内側より小さくして(円錐の側面)肩の斜面に沿わせ、
- *   後ろへ傾けて肩に掛ける。下半分は身頃と体の中に隠れる。
+ *   後ろへ傾けて肩に掛ける。下半分は身頃と体の中に隠れる。傾きと位置は左右で別々の値(`strapRTilt`/`strapRTranslate`、
+ *   `strapLTilt`/`strapLTranslate`。左は右と同じ向きで作って `mirrorX` する)で、既定カメラ(斜め)で見た足元・傾き・
+ *   太さを参考画像に合わせてある。
  * - リボン: 別の色(`bowColor`)の2つ目の `sceneOutput`。結び目から外へ広がる羽2枚(付け根から先へ太くなり、
  *   先が丸く閉じる平たい `loftGenerator` を横に倒したもの、`mirrorPair`)と結び目。身頃の表面の向きに合わせて回し、
  *   腰の脇に置く。身頃と同じ取り付け位置(`placementY`)だけ持ち上げる。 */
@@ -60,19 +62,22 @@ defineGroupNode({
     // --- 肩ひも(左右) ---
     // 肩を一周する楕円の平たい帯(幅 `strapWidth`)。Y 方向に帯の幅だけ伸ばした楕円の輪を横(X)へ倒し、後ろへ傾けて肩に掛ける。
     // 輪の半径の曲線は、`r0` が内側の縁、`r8` が外側の縁(段数が1なので両端だけが効く)。外側を小さくすると、肩が外へ下がる
-    // 斜面に帯が沿う。幅・半径・傾き・位置は、見える部分が肌(と服の上端)のすぐ外(平均 3mm 弱、最大でも 5mm ほど)を通り、
-    // 参考画像の細い肩ひもの太さと位置に近づくよう当てはめた値。下半分は体の中に隠れる。
-    { id: 'strapWidth', type: 'numberInput', data: { value: 0.018 } },
-    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1269, r0: 1, r1: 0.9916, r2: 0.9831, r3: 0.9747, r4: 0.9663, r5: 0.9579, r6: 0.9495, r7: 0.941, r8: 0.9326 } },
-    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0731, r0: 1, r1: 0.9915, r2: 0.983, r3: 0.9745, r4: 0.9659, r5: 0.9574, r6: 0.9489, r7: 0.9404, r8: 0.9319 } },
+    // 斜面に帯が沿う。幅・半径・傾き・位置は、見える部分が肌(と服の上端)のすぐ外(平均 3〜4mm、最大でも 6mm ほど)を通り、
+    // 既定カメラで見た参考画像の細い肩ひもの足元・傾き・太さに近づくよう当てはめた値。左右で値が違うのは、斜めから見ると
+    // カメラに近い右側ほど、後ろへ回る帯が大きく傾いて見えるため。下半分は体の中に隠れる。
+    { id: 'strapWidth', type: 'numberInput', data: { value: 0.016 } },
+    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1196, r0: 1, r1: 0.99, r2: 0.98, r3: 0.9699, r4: 0.9599, r5: 0.9499, r6: 0.9399, r7: 0.9299, r8: 0.9199 } },
+    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0697, r0: 1, r1: 0.9892, r2: 0.9785, r3: 0.9677, r4: 0.9569, r5: 0.9462, r6: 0.9354, r7: 0.9246, r8: 0.9139 } },
     { id: 'strapGen', type: 'loftGenerator', data: { steps: 1, segments: 96 } },
     { id: 'strapHalfWidth', type: 'numberHalf', data: {} },
     { id: 'strapNegHalf', type: 'numberNegate', data: {} },
     { id: 'strapCenter', type: 'translate', data: {} },
     { id: 'strapLay', type: 'rotate', data: { z: -90 } },
-    { id: 'strapTilt', type: 'rotate', data: { x: -28.878, y: -4.577, z: -8.492 } },
-    { id: 'strapTranslate', type: 'translate', data: { y: 0.5196, z: -0.1017 } },
-    { id: 'strapPair', type: 'mirrorPair', data: { offset: 0.0813 } },
+    { id: 'strapRTilt', type: 'rotate', data: { x: -26.8184, y: -2.4213, z: 4.1133 } },
+    { id: 'strapRTranslate', type: 'translate', data: { x: 0.0966, y: 0.5312, z: -0.1079 } },
+    { id: 'strapLTilt', type: 'rotate', data: { x: -25.2639, y: -3.1834, z: -19.8687 } },
+    { id: 'strapLTranslate', type: 'translate', data: { x: 0.0896, y: 0.5115, z: -0.1015 } },
+    { id: 'strapLMirror', type: 'mirrorX', data: {} },
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
     // 白の影は肌色寄りの既定の倍率だと黄ばんで見えるので、少し青みのある灰色にする。
@@ -144,12 +149,15 @@ defineGroupNode({
     { source: 'strapGen', sourceHandle: 'geometry', target: 'strapCenter', targetHandle: 'geometry' },
     { source: 'strapNegHalf', sourceHandle: 'value', target: 'strapCenter', targetHandle: 'y' },
     { source: 'strapCenter', sourceHandle: 'geometry', target: 'strapLay', targetHandle: 'geometry' },
-    { source: 'strapLay', sourceHandle: 'geometry', target: 'strapTilt', targetHandle: 'geometry' },
-    { source: 'strapTilt', sourceHandle: 'geometry', target: 'strapTranslate', targetHandle: 'geometry' },
-    { source: 'strapTranslate', sourceHandle: 'geometry', target: 'strapPair', targetHandle: 'geometry' },
+    { source: 'strapLay', sourceHandle: 'geometry', target: 'strapRTilt', targetHandle: 'geometry' },
+    { source: 'strapRTilt', sourceHandle: 'geometry', target: 'strapRTranslate', targetHandle: 'geometry' },
+    { source: 'strapLay', sourceHandle: 'geometry', target: 'strapLTilt', targetHandle: 'geometry' },
+    { source: 'strapLTilt', sourceHandle: 'geometry', target: 'strapLTranslate', targetHandle: 'geometry' },
+    { source: 'strapLTranslate', sourceHandle: 'geometry', target: 'strapLMirror', targetHandle: 'geometry' },
 
     { source: 'dressGen', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
-    { source: 'strapPair', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'strapRTranslate', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
+    { source: 'strapLMirror', sourceHandle: 'geometry', target: 'merge', targetHandle: 'geometries' },
     ...output.edges,
     { source: 'placementY', sourceHandle: 'value', target: 'placement', targetHandle: 'y' },
 
