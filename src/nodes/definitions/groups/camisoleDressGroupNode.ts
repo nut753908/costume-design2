@@ -60,18 +60,19 @@ defineGroupNode({
     // --- 肩ひも(左右) ---
     // 肩を一周する楕円の平たい帯(幅 `strapWidth`)。Y 方向に帯の幅だけ伸ばした楕円の輪を横(X)へ倒し、後ろへ傾けて肩に掛ける。
     // 輪の半径の曲線は、`r0` が内側の縁、`r8` が外側の縁(段数が1なので両端だけが効く)。外側を小さくすると、肩が外へ下がる
-    // 斜面に帯が沿う。半径・傾き・位置は、見える部分が肌(と服の上端)の 0.5〜3mm 外を通るよう当てはめた値。下半分は体の中に隠れる。
-    { id: 'strapWidth', type: 'numberInput', data: { value: 0.024 } },
-    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1467, r0: 1, r1: 0.99148, r2: 0.98296, r3: 0.97444, r4: 0.96592, r5: 0.9574, r6: 0.94888, r7: 0.94035, r8: 0.93183 } },
-    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0767, r0: 1, r1: 0.98289, r2: 0.96578, r3: 0.94866, r4: 0.93155, r5: 0.91444, r6: 0.89733, r7: 0.88022, r8: 0.8631 } },
+    // 斜面に帯が沿う。幅・半径・傾き・位置は、見える部分が肌(と服の上端)のすぐ外(平均 3mm 弱、最大でも 5mm ほど)を通り、
+    // 参考画像の細い肩ひもの太さと位置に近づくよう当てはめた値。下半分は体の中に隠れる。
+    { id: 'strapWidth', type: 'numberInput', data: { value: 0.018 } },
+    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1269, r0: 1, r1: 0.9916, r2: 0.9831, r3: 0.9747, r4: 0.9663, r5: 0.9579, r6: 0.9495, r7: 0.941, r8: 0.9326 } },
+    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0731, r0: 1, r1: 0.9915, r2: 0.983, r3: 0.9745, r4: 0.9659, r5: 0.9574, r6: 0.9489, r7: 0.9404, r8: 0.9319 } },
     { id: 'strapGen', type: 'loftGenerator', data: { steps: 1, segments: 96 } },
     { id: 'strapHalfWidth', type: 'numberHalf', data: {} },
     { id: 'strapNegHalf', type: 'numberNegate', data: {} },
     { id: 'strapCenter', type: 'translate', data: {} },
     { id: 'strapLay', type: 'rotate', data: { z: -90 } },
-    { id: 'strapTilt', type: 'rotate', data: { x: -30.2, y: -6.2, z: -8.7 } },
-    { id: 'strapTranslate', type: 'translate', data: { y: 0.5001, z: -0.0878 } },
-    { id: 'strapPair', type: 'mirrorPair', data: { offset: 0.0845 } },
+    { id: 'strapTilt', type: 'rotate', data: { x: -28.878, y: -4.577, z: -8.492 } },
+    { id: 'strapTranslate', type: 'translate', data: { y: 0.5196, z: -0.1017 } },
+    { id: 'strapPair', type: 'mirrorPair', data: { offset: 0.0813 } },
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
     // 白の影は肌色寄りの既定の倍率だと黄ばんで見えるので、少し青みのある灰色にする。
