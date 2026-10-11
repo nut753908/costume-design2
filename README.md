@@ -4,6 +4,8 @@
 
 スタック: React + react-three-fiber (Three.js) + React Flow (`@xyflow/react`)、状態管理は zustand。バックエンドは無く、完全にクライアントサイドで動作し、グラフの状態は localStorage に永続化されます。
 
+デモ: https://nut753908.github.io/costume-design2/
+
 ## セットアップと実行
 
 ```bash
