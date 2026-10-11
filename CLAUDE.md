@@ -12,7 +12,7 @@ WebGL/3D 描画を確認できるテストランナーはありません。UI/3D
 
 WebGL に触れない React フックは vitest + jsdom + `@testing-library/react` の `renderHook`/`act` で単体テストできます(`state/selectors.test.ts` 参照)。既定のテスト環境は `'node'` なので、ファイル先頭に `// @vitest-environment jsdom` を付けます。
 
-`.githooks/pre-commit` が `npm run build && npm test && npm run lint` を実行し、失敗時はコミットを中断します(有効化はローカルで1回 `git config core.hooksPath .githooks`)。リモートが無いので CI の代わりです。ステージされた CLAUDE.md・スキルの `SKILL.md` について、経緯の表現と存在しないパスの参照を(CLAUDE.md は文字数も)警告します(コミットは止めない)。
+`.githooks/pre-commit` が `npm run build && npm test && npm run lint` を実行し、失敗時はコミットを中断します(有効化はローカルで1回 `git config core.hooksPath .githooks`)。GitHub Actions(`.github/workflows/`)は、プルリクエストで同じ検証を、`main` への push で検証後に GitHub Pages へのデプロイを行います。フックは手元で早く失敗に気づくためのものです。ステージされた CLAUDE.md・スキルの `SKILL.md` について、経緯の表現と存在しないパスの参照を(CLAUDE.md は文字数も)警告します(コミットは止めない)。
 
 ## CLAUDE.md とコメントに書くこと
 
