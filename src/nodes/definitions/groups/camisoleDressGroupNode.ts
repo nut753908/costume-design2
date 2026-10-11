@@ -53,7 +53,7 @@ defineGroupNode({
     {
       id: 'dressGen',
       type: 'loftGenerator',
-      data: { steps: 72, segments: 336, pleatCount: 14, scallopCount: 48, scallopHeight: 0.006, topDropDepth: 0.08, topDropStart: 0.25, topDropEnd: 0.8 },
+      data: { steps: 72, segments: 336, pleatCount: 14, scallopCount: 48, scallopHeight: 0.006, topDropDepth: 0.06, topDropStart: 0.25, topDropEnd: 0.6625 },
     },
 
     // --- 肩ひも(左右) ---
