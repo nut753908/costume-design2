@@ -14,8 +14,8 @@ const output = garmentOutput({ y: 0.56, geometry: 'merge' });
  *   プリーツの折り目は胸元の少し下から始まり、裾へ向かって深くなる(`pleatProfile`)。
  * - 肩ひも: 肩を一周する楕円の平たい帯。帯の外側の縁の輪を内側より小さくして(円錐の側面)肩の斜面に沿わせ、
  *   後ろへ傾けて肩に掛ける。下半分は身頃と体の中に隠れる。傾きと位置は左右で別々の値(`strapRTilt`/`strapRTranslate`、
- *   `strapLTilt`/`strapLTranslate`。左は右と同じ向きで作って `mirrorX` する)で、既定カメラ(斜め)で見た足元・傾き・
- *   太さを参考画像に合わせてある。
+ *   `strapLTilt`/`strapLTranslate`。左は右と同じ向きで作って `mirrorX` する)で、既定カメラ(斜め)で見た足元(服の縁の下へ
+ *   隠れる位置)と上端(画面で一番高い点)の位置・傾きを参考画像に合わせてある。
  * - リボン: 別の色(`bowColor`)の2つ目の `sceneOutput`。結び目から外へ広がる羽2枚(付け根から先へ太くなり、
  *   先が丸く閉じる平たい `loftGenerator` を横に倒したもの、`mirrorPair`)と結び目。身頃の表面の向きに合わせて回し、
  *   腰の脇に置く。身頃と同じ取り付け位置(`placementY`)だけ持ち上げる。 */
@@ -67,17 +67,17 @@ defineGroupNode({
     // 既定カメラで見た参考画像の細い肩ひもの足元・傾き・太さに近づくよう当てはめた値。左右で値が違うのは、斜めから見ると
     // カメラに近い右側ほど、後ろへ回る帯が大きく傾いて見えるため。下半分は体の中に隠れる。
     { id: 'strapWidth', type: 'numberInput', data: { value: 0.0123 } },
-    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.115, r0: 1, r1: 0.9908, r2: 0.9816, r3: 0.9724, r4: 0.9632, r5: 0.954, r6: 0.9449, r7: 0.9357, r8: 0.9265 } },
-    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0676, r0: 1, r1: 0.9911, r2: 0.9822, r3: 0.9733, r4: 0.9644, r5: 0.9555, r6: 0.9466, r7: 0.9377, r8: 0.9287 } },
+    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.120558, r0: 1, r1: 0.9908, r2: 0.9816, r3: 0.9724, r4: 0.9632, r5: 0.954, r6: 0.9449, r7: 0.9357, r8: 0.9265 } },
+    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.070359, r0: 1, r1: 0.9911, r2: 0.9822, r3: 0.9733, r4: 0.9644, r5: 0.9555, r6: 0.9466, r7: 0.9377, r8: 0.9287 } },
     { id: 'strapGen', type: 'loftGenerator', data: { steps: 1, segments: 96 } },
     { id: 'strapHalfWidth', type: 'numberHalf', data: {} },
     { id: 'strapNegHalf', type: 'numberNegate', data: {} },
     { id: 'strapCenter', type: 'translate', data: {} },
     { id: 'strapLay', type: 'rotate', data: { z: -90 } },
-    { id: 'strapRTilt', type: 'rotate', data: { x: -26.974, y: -0.4213, z: 2.4791 } },
-    { id: 'strapRTranslate', type: 'translate', data: { x: 0.0965, y: 0.5316, z: -0.1077 } },
-    { id: 'strapLTilt', type: 'rotate', data: { x: -22.4536, y: -1.9711, z: -20.8994 } },
-    { id: 'strapLTranslate', type: 'translate', data: { x: 0.0925, y: 0.5094, z: -0.1023 } },
+    { id: 'strapRTilt', type: 'rotate', data: { x: -27.520502, y: 0.876599, z: 7.994568 } },
+    { id: 'strapRTranslate', type: 'translate', data: { x: 0.091014, y: 0.538768, z: -0.110492 } },
+    { id: 'strapLTilt', type: 'rotate', data: { x: -26.078329, y: -3.79959, z: -12.32852 } },
+    { id: 'strapLTranslate', type: 'translate', data: { x: 0.090763, y: 0.5186, z: -0.102705 } },
     { id: 'strapLMirror', type: 'mirrorX', data: {} },
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
