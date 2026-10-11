@@ -11,7 +11,8 @@ const output = garmentOutput({ y: 0.56, geometry: 'merge' });
  *   そこから裾へ台形に広がる値。胴体は後ろへ傾いているので、身頃の輪は上ほど後ろへずらす。
  *   胸元のレースは上端の輪を半円の山の形に持ち上げたもの(`scallopCount`/`scallopHeight`)で、服と地続き。
  *   プリーツの折り目は胸元の少し下から始まり、裾へ向かって深くなる(`pleatProfile`)。
- * - 肩ひも: 肩を一周する細いトーラスを楕円に伸ばして後ろへ傾けたもの。下半分は身頃と体の中に隠れる。
+ * - 肩ひも: 肩を一周する楕円の平たい帯。帯の外側の縁の輪を内側より小さくして(円錐の側面)肩の斜面に沿わせ、
+ *   後ろへ傾けて肩に掛ける。下半分は身頃と体の中に隠れる。
  * - リボン: 別の色(`bowColor`)の2つ目の `sceneOutput`。結び目から外へ広がる羽2枚(付け根から先へ太くなり、
  *   先が丸く閉じる平たい `loftGenerator` を横に倒したもの、`mirrorPair`)と結び目。身頃の表面の向きに合わせて回し、
  *   腰の脇に置く。身頃と同じ取り付け位置(`placementY`)だけ持ち上げる。 */
@@ -58,18 +59,19 @@ defineGroupNode({
 
     // --- 肩ひも(左右) ---
     // 肩を一周する楕円の平たい帯(幅 `strapWidth`)。Y 方向に帯の幅だけ伸ばした楕円の輪を横(X)へ倒し、後ろへ傾けて肩に掛ける。
-    // 楕円は、帯の幅の範囲の肩の断面(身頃より上)の外形に、肌のすぐ外を通るよう当てはめた値。下半分は体の中に隠れる。
+    // 輪の半径の曲線は、`r0` が内側の縁、`r8` が外側の縁(段数が1なので両端だけが効く)。外側を小さくすると、肩が外へ下がる
+    // 斜面に帯が沿う。半径・傾き・位置は、見える部分が肌(と服の上端)の 0.5〜3mm 外を通るよう当てはめた値。下半分は体の中に隠れる。
     { id: 'strapWidth', type: 'numberInput', data: { value: 0.024 } },
-    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1444, r0: 1, r1: 1, r2: 1, r3: 1, r4: 1, r5: 1, r6: 1, r7: 1, r8: 1 } },
-    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0727, r0: 1, r1: 1, r2: 1, r3: 1, r4: 1, r5: 1, r6: 1, r7: 1, r8: 1 } },
+    { id: 'strapRingY', type: 'profileCurve', data: { radius: 0.1467, r0: 1, r1: 0.99148, r2: 0.98296, r3: 0.97444, r4: 0.96592, r5: 0.9574, r6: 0.94888, r7: 0.94035, r8: 0.93183 } },
+    { id: 'strapRingZ', type: 'profileCurve', data: { radius: 0.0767, r0: 1, r1: 0.98289, r2: 0.96578, r3: 0.94866, r4: 0.93155, r5: 0.91444, r6: 0.89733, r7: 0.88022, r8: 0.8631 } },
     { id: 'strapGen', type: 'loftGenerator', data: { steps: 1, segments: 96 } },
     { id: 'strapHalfWidth', type: 'numberHalf', data: {} },
     { id: 'strapNegHalf', type: 'numberNegate', data: {} },
     { id: 'strapCenter', type: 'translate', data: {} },
     { id: 'strapLay', type: 'rotate', data: { z: -90 } },
-    { id: 'strapTilt', type: 'rotate', data: { x: -27.54 } },
-    { id: 'strapTranslate', type: 'translate', data: { y: 0.5111, z: -0.0986 } },
-    { id: 'strapPair', type: 'mirrorPair', data: { offset: 0.09 } },
+    { id: 'strapTilt', type: 'rotate', data: { x: -30.2, y: -6.2, z: -8.7 } },
+    { id: 'strapTranslate', type: 'translate', data: { y: 0.5001, z: -0.0878 } },
+    { id: 'strapPair', type: 'mirrorPair', data: { offset: 0.0845 } },
 
     { id: 'merge', type: 'mergeGeometry', data: {} },
     // 白の影は肌色寄りの既定の倍率だと黄ばんで見えるので、少し青みのある灰色にする。
